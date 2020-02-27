@@ -1,1 +1,2 @@
-# Isomorphic - React Redux Admin Dashboard `Version 2.9.6`
+# kry-ser-b2b-ui
+Seramiksan B2B - UI
