@@ -1,18 +1,12 @@
-import React from 'react';
+import React, { useState }  from 'react';
 import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import Input from '@iso/components/uielements/input';
 import Checkbox from '@iso/components/uielements/checkbox';
 import Button from '@iso/components/uielements/button';
 import IntlMessages from '@iso/components/utility/intlMessages';
-import FirebaseLoginForm from '../../FirebaseForm/FirebaseForm';
 import authAction from '@iso/redux/auth/actions';
 import appAction from '@iso/redux/app/actions';
-import Auth0 from '../../Authentication/Auth0/Auth0';
-import {
-  signInWithGoogle,
-  signInWithFacebook,
-} from '@iso/lib/firebase/firebase.authentication.util';
 import SignInStyleWrapper from './SignIn.styles';
 
 const { login } = authAction;
@@ -25,22 +19,44 @@ export default function SignIn() {
   const isLoggedIn = useSelector(state => state.Auth.idToken);
 
   const [redirectToReferrer, setRedirectToReferrer] = React.useState(false);
+
+  //States
+  const [userName, setUsername] = useState('');
+  const [password, setPassword] = useState('')
+
   React.useEffect(() => {
     if (isLoggedIn) {
       setRedirectToReferrer(true);
     }
   }, [isLoggedIn]);
 
+  //Events
   function handleLogin(e, token = false) {
     e.preventDefault();
-    if (token) {
-      dispatch(login(token));
-    } else {
-      dispatch(login());
-    }
-    dispatch(clearMenu());
-    history.push('/dashboard');
+    fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      body: JSON.stringify({
+        userName: userName,
+        password: password
+      })
+    })
+      .then(response => {
+        if (!response.ok) throw Error(response.statusText);
+        return response.json();
+      })
+      .then(data => {
+        if (token) {
+          dispatch(login(token));
+        } else {
+          dispatch(login());
+        }
+        dispatch(clearMenu());
+        window.sessionStorage.setItem("nameAndSurname",userName);
+        history.push('/dashboard');
+      })
+      .catch(error => console.log(error));
   }
+
   let { from } = location.state || { from: { pathname: '/dashboard' } };
 
   if (redirectToReferrer) {
@@ -59,18 +75,22 @@ export default function SignIn() {
             <form>
               <div className="isoInputWrapper">
                 <Input
+                  controlId="userName"
                   size="large"
-                  placeholder="Username"
+                  placeholder="Kullanıcı Adı"
                   autoComplete="true"
+                  onChange={event => setUsername(event.target.value)}
                 />
               </div>
 
               <div className="isoInputWrapper">
                 <Input
+                  name='password'
                   size="large"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Şifre"
                   autoComplete="false"
+                  onChange={event => setPassword(event.target.value)}
                 />
               </div>
 
@@ -82,49 +102,12 @@ export default function SignIn() {
                   <IntlMessages id="page.signInButton" />
                 </Button>
               </div>
-
-              <p className="isoHelperText">
-                <IntlMessages id="page.signInPreview" />
-              </p>
+             
             </form>
-            <div className="isoInputWrapper isoOtherLogin">
-              <Button
-                onClick={signInWithFacebook}
-                type="primary"
-                className="btnFacebook"
-              >
-                <IntlMessages id="page.signInFacebook" />
-              </Button>
-              <Button
-                onClick={signInWithGoogle}
-                type="primary"
-                className="btnGooglePlus"
-              >
-                <IntlMessages id="page.signInGooglePlus" />
-              </Button>
-
-              <Button
-                onClick={() => {
-                  Auth0.login();
-                }}
-                type="primary"
-                className="btnAuthZero"
-              >
-                <IntlMessages id="page.signInAuth0" />
-              </Button>
-
-              <FirebaseLoginForm
-                history={history}
-                login={token => dispatch(login(token))}
-              />
-            </div>
             <div className="isoCenterComponent isoHelperWrapper">
               <Link to="/forgotpassword" className="isoForgotPass">
                 <IntlMessages id="page.signInForgotPass" />
-              </Link>
-              <Link to="/signup">
-                <IntlMessages id="page.signInCreateAccount" />
-              </Link>
+              </Link>            
             </div>
           </div>
         </div>

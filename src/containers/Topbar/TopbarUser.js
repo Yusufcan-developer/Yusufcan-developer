@@ -24,12 +24,6 @@ export default function TopbarUser() {
       <a className="isoDropdownLink" href="# ">
         <IntlMessages id="themeSwitcher.settings" />
       </a>
-      <a className="isoDropdownLink" href="# ">
-        <IntlMessages id="sidebar.feedback" />
-      </a>
-      <a className="isoDropdownLink" href="# ">
-        <IntlMessages id="topbar.help" />
-      </a>
       <div className="isoDropdownLink" onClick={() => dispatch(logout())}>
         <IntlMessages id="topbar.logout" />
       </div>
@@ -46,8 +40,7 @@ export default function TopbarUser() {
       placement="bottomLeft"
     >
       <div className="isoImgWrapper">
-        <img alt="user" src={userpic} />
-        <span className="userActivity online" />
+        <img alt="user" src={userpic} />   
       </div>
     </Popover>
   );
