@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Layout } from 'antd';
 import appActions from '@iso/redux/app/actions';
 import TopbarNotification from './TopbarNotification';
-import TopbarMessage from './TopbarMessage';
 import TopbarSearch from './TopbarSearch';
 import TopbarUser from './TopbarUser';
 import TopbarAddtoCart from './TopbarAddToCart';
@@ -21,6 +20,7 @@ export default function Topbar() {
     dispatch,
   ]);
   const isCollapsed = collapsed && !openDrawer;
+  const userName= window.sessionStorage.getItem("nameAndSurname");
   const styling = {
     background: customizedTheme.backgroundColor,
     position: 'fixed',
@@ -56,16 +56,12 @@ export default function Topbar() {
           >
             <TopbarNotification />
           </li>
-
-          <li onClick={() => setSelectedItem('message')} className="isoMsg">
-            <TopbarMessage />
-          </li>
           <li onClick={() => setSelectedItem('addToCart')} className="isoCart">
             <TopbarAddtoCart />
-          </li>
-
+          </li>        
           <li onClick={() => setSelectedItem('user')} className="isoUser">
-            <TopbarUser />
+            <TopbarUser />                      
+          <h5>{userName}</h5> 
           </li>
         </ul>
       </Header>
