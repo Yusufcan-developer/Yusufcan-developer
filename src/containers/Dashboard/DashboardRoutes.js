@@ -337,6 +337,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/GithubSearch/GithubSearch')),
   },
   {
+    path: 'CustomerRecords',
+    component: lazy(() => import('@iso/containers/CustomerRecords/CustomerRecords')),
+  },
+  {
     path: 'blank_page',
     component: lazy(() => import('@iso/containers/BlankPage')),
   },

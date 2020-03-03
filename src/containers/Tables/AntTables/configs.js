@@ -69,7 +69,7 @@ const columns = [
 ];
 const smallColumns = [columns[1], columns[2], columns[3], columns[4]];
 const sortColumns = [
-  { ...columns[1], sorter: true },
+  { ...columns[1], sorter: true , onFilter:true },
   { ...columns[2], sorter: true },
   { ...columns[3], sorter: true },
   { ...columns[4], sorter: true },
@@ -90,6 +90,13 @@ const groupColumns = [
     title: 'Address',
     children: [columns[3], columns[4]],
   },
+];
+const CustomerRecordsTableInfo = [
+  {
+    title: 'Sortable Table',
+    value: 'sortView',
+    columns: clone(sortColumns) ,
+  }
 ];
 const tableinfos = [
   {
@@ -123,4 +130,4 @@ const tableinfos = [
     columns: clone(columns),
   },
 ];
-export { columns, tableinfos };
+export { columns, tableinfos,CustomerRecordsTableInfo };
