@@ -9,36 +9,74 @@ import Button from '@iso/components/uielements/button';
 import TableDemoStyle from '../Tables/AntTables/Demo.styles';
 import { Table } from 'antd';
 import PageHeader from '@iso/components/utility/pageHeader';
+import { Col} from 'antd';
+import Collapse from '@iso/components/uielements/collapse';
+import  {
+  InputGroup,
+} from '@iso/components/uielements/input';
 
-import { NoteListWrapper } from '../Note/Note.styles';
-const dataList =  [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-  },
-  {
-    key: '4',
-    name: 'Jim Red',
-    age: 32,
-    address: 'London No. 2 Lake Park',
-  },
-];
+const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
+
+const treeData = [
+  {
+    title: "SAHA - 0",
+    children: [
+      {
+        title: "BÖLGE 0",
+        children: [
+          {
+            title: "0-0-0-0",
+            key:   "0-0-0-0"
+          },
+          {
+            title: "0-0-0-1",
+            key:   "0-0-0-1"
+          },
+          {
+            title: "0-0-0-2",
+            key:   "0-0-0-2"
+          }
+        ]
+      },
+      {
+        title: "BÖLGE 1",
+        children: [
+          {
+            title: "0-0-1-0",
+            key:   "0-0-1-0"
+          },
+          {
+            title: "0-0-1-1",
+            key:   "0-0-1-1"
+          },
+          {
+            title: "0-0-1-2",
+            key:   "0-0-1-2"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    title: "SAHA - 1",
+    children: [
+      {
+        title: "0-1-0-0",
+        key:   "0-1-0-0"
+      },
+      {
+        title: "0-1-0-1",
+        key:   "0-1-0-1"
+      },
+      {
+        title: "0-1-0-2",
+        key:   "0-1-0-2"
+      }
+    ]
+  }
+];
 const formItemLayout = {
   labelCol: {
     xs: { span: 4 },
@@ -49,107 +87,109 @@ const formItemLayout = {
     sm: { span: 5 },
   },
 };
-const treeData = [
-  {
-    title: "SAHA - 0",
-    key: "0-0",
-    children: [
-      {
-        title: "BÖLGE 0",
-        key: "0-0-0",
-        children: [
-          {
-            title: "0-0-0-0",
-            key: "0-0-0-0"
-          },
-          {
-            title: "0-0-0-1",
-            key: "0-0-0-1"
-          },
-          {
-            title: "0-0-0-2",
-            key: "0-0-0-2"
-          }
-        ]
-      },
-      {
-        title: "BÖLGE 1",
-        key: "0-0-1",
-        children: [
-          {
-            title: "0-0-1-0",
-            key: "0-0-1-0"
-          },
-          {
-            title: "0-0-1-1",
-            key: "0-0-1-1"
-          },
-          {
-            title: "0-0-1-2",
-            key: "0-0-1-2"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    title: "SAHA - 1",
-    key: "0-1",
-    children: [
-      {
-        title: "0-1-0-0",
-        key: "0-1-0-0"
-      },
-      {
-        title: "0-1-0-1",
-        key: "0-1-0-1"
-      },
-      {
-        title: "0-1-0-2",
-        key: "0-1-0-2"
-      }
-    ]
-  } 
-];
 
 export default function() {
+
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
   const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState([]);
+  const [selectedKeys, setSelectedKeys] = React.useState(getData(0));
   const [iconLoading, setIconLoading] = React.useState(false);
-
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
-  });
-
+  }); 
+ 
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
     // or, you can remove all expanded children keys.
-  
+
     setExpandedKeys(expandedKeys);
     setAutoExpandParent(false);
   };
-  
+
   const onCheck = checkedKeys => {
     console.log("onCheck", checkedKeys);
     setCheckedKeys(checkedKeys);
   };
-  
+
   const onSelect = (selectedKeys, info) => {
     console.log("onSelect", info);
     setSelectedKeys(selectedKeys);
   };
   const enterIconLoading = () => {
+    setSelectedKeys(getData(1));
     setIconLoading(true);
-   
-    
+
+
   };
-  
+
+  function getData(value)
+  {
+    let dataList=[]
+    if(value===0)
+    {
+     dataList =  [
+      {
+       key: '1',
+       name: 'John Brown',
+       age: 32,
+       address: 'New York No. 1 Lake Park',
+     },
+     {
+       key: '2',
+       name: 'Jim Green',
+       age: 42,
+       address: 'London No. 1 Lake Park',
+     },
+     {
+       key: '3',
+       name: 'Joe Black',
+       age: 32,
+       address: 'Sidney No. 1 Lake Park',
+     },
+     {
+       key: '4',
+       name: 'Jim Red',
+       age: 32,
+       address: 'London No. 2 Lake Park',
+     },
+   ]}
+   else
+   {
+     dataList =  [
+      {
+       key: '1',
+       name: 'uur',
+       age: 32,
+       address: 'New York No. 1 Lake Park',
+     },
+     {
+       key: '2',
+       name: 'Jim Green',
+       age: 42,
+       address: 'London No. 1 Lake Park',
+     },
+     {
+       key: '3',
+       name: 'Joe Black',
+       age: 32,
+       address: 'Sidney No. 1 Lake Park',
+     },
+     {
+       key: '4',
+       name: 'Jim Red',
+       age: 32,
+       address: 'London No. 2 Lake Park',
+     },
+   ]
+   }
+   return dataList;
+  }
 function onChange(value, dateString) {
   console.log('Selected Time: ', value);
-  console.log('Formatted Selected Time: ', dateString);
+  console.log('Başlanıç Tarihi: ', dateString[0]);
+  console.log('Bitiş Tarihi: ', dateString[1]);
 }
 
 function onOk(value) {
@@ -196,39 +236,49 @@ const columns = [
   }
 ];
   return (
-    
-      <LayoutWrapper>    
+
+      <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.customerRecordTitle.header" />}
-      </PageHeader> 
-     
-          <Box  title={<IntlMessages id="page.filtered" />}>
-          <Form>
+      </PageHeader>
+          <Box >
+          <Collapse accordion>
+                <Panel
+                  header={<IntlMessages id="page.filtered" />}
+                  key="0"
+                >
+                 <InputGroup  >
+                <Col>
+                <Form>
+                  <FormItem
+                    {...formItemLayout}
+                    label={<IntlMessages id="page.customerRecordTitle" />}
+                  >
+                    <Tree
+                      checkable
+                      onExpand={onExpand}
+                      expandedKeys={expandedKeys}
+                      autoExpandParent={autoExpandParent}
+                      onCheck={onCheck}
+                      checkedKeys={checkedKeys}
+                      onSelect={onSelect}
+                      selectedKeys={selectedKeys}
+                      treeData={treeData}
+                    />
+                  </FormItem>
 
-            <FormItem
-              {...formItemLayout}
-              label={<IntlMessages id="page.customerRecordTitle" />}
-            >
-              <Tree
-                checkable
-                onExpand={onExpand}
-                expandedKeys={expandedKeys}
-                autoExpandParent={autoExpandParent}
-                onCheck={onCheck}
-                checkedKeys={checkedKeys}
-                onSelect={onSelect}
-                selectedKeys={selectedKeys}
-                treeData={treeData}
-              />
-            </FormItem>
+</Form>
+                </Col>
+                <Col span={8}>
+                <RangePicker
 
-          </Form>
-          <RangePicker
             format="DD-MM-YYYY"
             onChange={onChange}
             onOk={onOk}
-          />
-          <Button
+              />
+
+                </Col>
+                <Button
             type="primary"
             icon="poweroff"
             loading={iconLoading}
@@ -236,17 +286,21 @@ const columns = [
           >
             Ara
               </Button>
+              </InputGroup>
+                  </Panel>
+              </Collapse>
+
           </Box>
-        {/* Data list volume */}   
-        <Box title={<IntlMessages id="page.customerRecordDataList" />}> 
+        {/* Data list volume */}
+        <Box title={<IntlMessages id="page.customerRecordDataList" />}>
           <TableDemoStyle className="isoLayoutContent">
           <Table
           columns={columns}
-          dataSource={dataList}  onChange={handleChange}       
+          dataSource={selectedKeys}  onChange={handleChange}
         />
           </TableDemoStyle>
         </Box>
       </LayoutWrapper>
-    
+
   );
 }
