@@ -22,7 +22,7 @@ export default function SignIn() {
 
   //States
   const [userName, setUsername] = useState('');
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState('');
 
   React.useEffect(() => {
     if (isLoggedIn) {
@@ -31,25 +31,26 @@ export default function SignIn() {
   }, [isLoggedIn]);
 
   //Events
-  function handleLogin(e, token = false) {
+  function handleLogin(e) {
     e.preventDefault();
-    fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userName: userName,
-        password: password
-      })
-    })
+        password: password })
+  };
+
+    fetch("http://localhost:5000/user/authenticate", requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
       .then(data => {
-        if (token) {
-          dispatch(login(token));
-        } else {
-          dispatch(login());
-        }
+          console.log("Token :",data.token);
+          dispatch(login(data.token));
+        
         dispatch(clearMenu());
         window.sessionStorage.setItem("nameAndSurname",userName);
         history.push('/dashboard');
