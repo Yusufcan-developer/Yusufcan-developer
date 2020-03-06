@@ -189,16 +189,13 @@ const columns = [
                   header={<IntlMessages id="page.filtered" />}
                   key="0"
                 >
-                 <InputGroup  >              
-                <Col span={8}>
+                 <InputGroup  >
                 <RangePicker
 
             format="DD-MM-YYYY"
             onChange={onChange}
             onOk={onOk}
               />
-
-                </Col>
                 <Button
             type="primary"
             icon="poweroff"
@@ -214,12 +211,10 @@ const columns = [
           </Box>
         {/* Data list volume */}
         <Box title={<IntlMessages id="page.checkingReportsDataList" />}>
-          <TableDemoStyle className="isoLayoutContent">
           <Table
           columns={columns}
           dataSource={selectedKeys}  onChange={handleChange}
         />
-          </TableDemoStyle>
         </Box>
       </LayoutWrapper>
 
