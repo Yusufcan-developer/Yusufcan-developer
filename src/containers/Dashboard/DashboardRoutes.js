@@ -341,6 +341,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/CustomerRecords/CustomerRecords')),
   },
   {
+    path: 'CheckingReports',
+    component: lazy(() => import('@iso/containers/CheckingReports/CheckingReports')),
+  },
+  {
     path: 'blank_page',
     component: lazy(() => import('@iso/containers/BlankPage')),
   },

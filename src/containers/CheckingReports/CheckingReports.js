@@ -19,64 +19,6 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
-const treeData = [
-  {
-    title: "SAHA - 0",
-    children: [
-      {
-        title: "BÖLGE 0",
-        children: [
-          {
-            title: "0-0-0-0",
-            key:   "0-0-0-0"
-          },
-          {
-            title: "0-0-0-1",
-            key:   "0-0-0-1"
-          },
-          {
-            title: "0-0-0-2",
-            key:   "0-0-0-2"
-          }
-        ]
-      },
-      {
-        title: "BÖLGE 1",
-        children: [
-          {
-            title: "0-0-1-0",
-            key:   "0-0-1-0"
-          },
-          {
-            title: "0-0-1-1",
-            key:   "0-0-1-1"
-          },
-          {
-            title: "0-0-1-2",
-            key:   "0-0-1-2"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    title: "SAHA - 1",
-    children: [
-      {
-        title: "0-1-0-0",
-        key:   "0-1-0-0"
-      },
-      {
-        title: "0-1-0-1",
-        key:   "0-1-0-1"
-      },
-      {
-        title: "0-1-0-2",
-        key:   "0-1-0-2"
-      }
-    ]
-  }
-];
 const formItemLayout = {
   labelCol: {
     xs: { span: 4 },
@@ -239,7 +181,7 @@ const columns = [
 
       <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.customerRecordTitle.header" />}
+        {<IntlMessages id="page.checkingReportsTitle.header" />}
       </PageHeader>
           <Box >
           <Collapse accordion>
@@ -247,29 +189,8 @@ const columns = [
                   header={<IntlMessages id="page.filtered" />}
                   key="0"
                 >
-                 <InputGroup  >
-                <Col>
-                <Form>
-                  <FormItem
-                    {...formItemLayout}
-                    label={<IntlMessages id="page.dealerCodeTitle" />}
-                  >
-                    <Tree
-                      checkable
-                      onExpand={onExpand}
-                      expandedKeys={expandedKeys}
-                      autoExpandParent={autoExpandParent}
-                      onCheck={onCheck}
-                      checkedKeys={checkedKeys}
-                      onSelect={onSelect}
-                      selectedKeys={selectedKeys}
-                      treeData={treeData}
-                    />
-                  </FormItem>
-
-</Form>
-                </Col>
-                <Col span={5}>
+                 <InputGroup  >              
+                <Col span={8}>
                 <RangePicker
 
             format="DD-MM-YYYY"
@@ -292,7 +213,7 @@ const columns = [
 
           </Box>
         {/* Data list volume */}
-        <Box title={<IntlMessages id="page.customerRecordDataList" />}>
+        <Box title={<IntlMessages id="page.checkingReportsDataList" />}>
           <TableDemoStyle className="isoLayoutContent">
           <Table
           columns={columns}
