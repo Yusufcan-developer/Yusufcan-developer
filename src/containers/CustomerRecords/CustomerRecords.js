@@ -6,7 +6,6 @@ import LayoutWrapper from '@iso/components/utility/layoutWrapper.js';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import DatePicker from '@iso/components/uielements/datePicker';
 import Button from '@iso/components/uielements/button';
-import TableDemoStyle from '../Tables/AntTables/Demo.styles';
 import { Table } from 'antd';
 import PageHeader from '@iso/components/utility/pageHeader';
 import { Col} from 'antd';
@@ -248,7 +247,6 @@ const columns = [
                   key="0"
                 >
                  <InputGroup  >
-                <Col>
                 <Form>
                   <FormItem
                     {...formItemLayout}
@@ -268,16 +266,13 @@ const columns = [
                   </FormItem>
 
 </Form>
-                </Col>
-                <Col span={5}>
                 <RangePicker
 
             format="DD-MM-YYYY"
             onChange={onChange}
             onOk={onOk}
               />
-
-                </Col>
+              
                 <Button
             type="primary"
             icon="poweroff"
@@ -292,13 +287,11 @@ const columns = [
 
           </Box>
         {/* Data list volume */}
-        <Box title={<IntlMessages id="page.customerRecordDataList" />}>
-          <TableDemoStyle className="isoLayoutContent">
+        <Box title={<IntlMessages id="page.customerRecordDataList" />}>          
           <Table
           columns={columns}
           dataSource={selectedKeys}  onChange={handleChange}
         />
-          </TableDemoStyle>
         </Box>
       </LayoutWrapper>
 

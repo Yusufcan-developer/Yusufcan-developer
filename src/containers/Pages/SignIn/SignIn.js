@@ -8,9 +8,12 @@ import IntlMessages from '@iso/components/utility/intlMessages';
 import authAction from '@iso/redux/auth/actions';
 import appAction from '@iso/redux/app/actions';
 import SignInStyleWrapper from './SignIn.styles';
+import Modals from '@iso/components/Feedback/Modal';
+import Form from '@iso/components/uielements/form';
 
 const { login } = authAction;
 const { clearMenu } = appAction;
+const FormItem = Form.Item;
 
 export default function SignIn() {
   let history = useHistory();
@@ -31,8 +34,21 @@ export default function SignIn() {
   }, [isLoggedIn]);
 
   //Events
+
+function loginError() {
+  Modals.error({
+    title: 'Kullanıcı Girişi',
+    content:
+      'Kullanıcı adı veya şifrenizi kontrol ediniz',
+    okText: 'OK',
+    cancelText: 'Cancel',
+  });
+}
   function handleLogin(e) {
     e.preventDefault();
+    
+    if(!userName|| !password)
+    {return loginError()}
 
     const requestOptions = {
       method: 'POST',
@@ -42,7 +58,7 @@ export default function SignIn() {
         password: password })
   };
 
-    fetch("http://localhost:5000/user/authenticate", requestOptions)
+    fetch("http://localhost:5000/users/authenticate", requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
@@ -55,7 +71,7 @@ export default function SignIn() {
         window.sessionStorage.setItem("nameAndSurname",userName);
         history.push('/dashboard');
       })
-      .catch(error => console.log(error));
+      .catch(error => loginError());
   }
 
   let { from } = location.state || { from: { pathname: '/dashboard' } };
@@ -75,6 +91,7 @@ export default function SignIn() {
           <div className="isoSignInForm">
             <form>
               <div className="isoInputWrapper">
+              
                 <Input
                   controlId="userName"
                   size="large"
