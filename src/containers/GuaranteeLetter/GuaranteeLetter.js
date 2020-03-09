@@ -237,7 +237,7 @@ export default function() {
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.customerRecordTitle.header" />}
+        {<IntlMessages id="page.GuaranteeLetterTitle.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
