@@ -7,13 +7,10 @@ import IntlMessages from '@iso/components/utility/intlMessages';
 import DatePicker from '@iso/components/uielements/datePicker';
 import Button from '@iso/components/uielements/button';
 import TableDemoStyle from '../Tables/AntTables/Demo.styles';
-import { Table } from 'antd';
 import PageHeader from '@iso/components/utility/pageHeader';
-import { Col} from 'antd';
+import { Col, Table, Row} from 'antd';
 import Collapse from '@iso/components/uielements/collapse';
-import  {
-  InputGroup,
-} from '@iso/components/uielements/input';
+import { InputGroup } from '@iso/components/uielements/input';
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -178,45 +175,48 @@ const columns = [
   }
 ];
   return (
-
-      <LayoutWrapper>
+    <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.checkingReportsTitle.header" />}
       </PageHeader>
-          <Box >
-          <Collapse accordion>
-                <Panel
-                  header={<IntlMessages id="page.filtered" />}
-                  key="0"
-                >
-                 <InputGroup  >
-                <RangePicker
+      <Box>
+        <Collapse accordion>
+          <Panel header={<IntlMessages id="page.filtered" />} key="0">
+            <InputGroup>
+              <Row justify="start" align="middle" gutter={24}>
+                <Col xs={{ span: 24 }} sm={{ span: 8 }} md={{ span: 10 }}>
+                  <RangePicker
+                    format="DD-MM-YYYY"
+                    onChange={onChange}
+                    onOk={onOk}
+                  />
 
-            format="DD-MM-YYYY"
-            onChange={onChange}
-            onOk={onOk}
-              />
+                  
+                </Col>
+
+                <Col xs={{ span: 24 }} sm={{ span: 16 }} md={{ span: 14 }}>
                 <Button
-            type="primary"
-            icon="poweroff"
-            loading={iconLoading}
-            onClick={enterIconLoading}
-          >
-            Ara
-              </Button>
-              </InputGroup>
-                  </Panel>
-              </Collapse>
-
-          </Box>
-        {/* Data list volume */}
-        <Box title={<IntlMessages id="page.checkingReportsDataList" />}>
-          <Table
+                    type="primary"
+                    icon="poweroff"
+                    loading={iconLoading}
+                    onClick={enterIconLoading}
+                  >
+                    {<IntlMessages id="forms.button.label_Search" />}
+                  </Button>
+                </Col>
+              </Row>
+            </InputGroup>
+          </Panel>
+        </Collapse>
+      </Box>
+      {/* Data list volume */}
+      <Box title={<IntlMessages id="page.checkingReportsDataList" />}>
+        <Table
           columns={columns}
-          dataSource={selectedKeys}  onChange={handleChange}
+          dataSource={selectedKeys}
+          onChange={handleChange}
         />
-        </Box>
-      </LayoutWrapper>
-
+      </Box>
+    </LayoutWrapper>
   );
 }
