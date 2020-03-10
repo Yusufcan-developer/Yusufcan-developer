@@ -168,6 +168,12 @@ const columns = [
     title: "Address",
     dataIndex: "address",
     key: "address",
+    filters: [
+      { text: "New York", value: "New York" },
+      { text: "London", value: "London" }
+    ],
+    filteredValue: tableOptions.filteredInfo.address || null,
+    onFilter: (value, record) => record.address.includes(value),
 
     sorter: (a, b) => a.address.length - b.address.length,
     sortOrder: tableOptions.sortedInfo.columnKey === "address" && tableOptions.sortedInfo.order,

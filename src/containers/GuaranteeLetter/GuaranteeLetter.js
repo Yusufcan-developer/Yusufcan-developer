@@ -18,9 +18,11 @@ const { RangePicker } = DatePicker;
 const treeData = [
   {
     title: "SAHA - 0",
+    key: "0",
     children: [
       {
         title: "BÖLGE 0",
+        key:"0-0",
         children: [
           {
             title: "0-0-0-0",
@@ -38,6 +40,7 @@ const treeData = [
       },
       {
         title: "BÖLGE 1",
+        key:"0-1",
         children: [
           {
             title: "0-0-1-0",
@@ -57,6 +60,7 @@ const treeData = [
   },
   {
     title: "SAHA - 1",
+    key:"1",
     children: [
       {
         title: "0-1-0-0",
@@ -226,6 +230,12 @@ export default function() {
       title: "Address",
       dataIndex: "address",
       key: "address",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.address || null,
+      onFilter: (value, record) => record.address.includes(value),
 
       sorter: (a, b) => a.address.length - b.address.length,
       sortOrder:
