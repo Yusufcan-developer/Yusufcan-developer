@@ -349,6 +349,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
   },
   {
+    path: 'OrderFollowUp',
+    component: lazy(() => import('@iso/containers/Order/OrderFollowUp')),
+  },
+  {
     path: 'blank_page',
     component: lazy(() => import('@iso/containers/BlankPage')),
   },

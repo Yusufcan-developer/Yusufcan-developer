@@ -464,6 +464,8 @@
   "page.customerRecordDataList": "Cari Hareketler Listesi",  
   "page.checkingReportsTitle.header": "Çek-Senet Raporları",
   "page.checkingReportsDataList": "Çek-Senet Raporları Listesi",
+  "page.orderFollowUpTitle.header":"Sipariş Takip",
+  "page.orderFollowUpDataList": "Siparişler Listesi", 
   "page.filtered": "Filtreleme",
   "page404.title": "404",
   "page404.subTitle": "Looks like you got lost",

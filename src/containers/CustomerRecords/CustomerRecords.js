@@ -120,33 +120,26 @@ export default function() {
   function getData(value) {
     let dataList = [];
     if (value === 0) {
-      dataList = [
-        {
-          key: "1",
-          name: "John Brown",
-          age: 32,
-          address: "New York No. 1 Lake Park"
-        },
-        {
-          key: "2",
-          name: "Jim Green",
-          age: 42,
-          address: "London No. 1 Lake Park"
-        },
-        {
-          key: "3",
-          name: "Joe Black",
-          age: 32,
-          address: "Sidney No. 1 Lake Park"
-        },
-        {
-          key: "4",
-          name: "Jim Red",
-          age: 32,
-          address: "London No. 2 Lake Park"
-        }
-      ];
-    } else {
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+        })
+    };
+  
+      fetch("http://localhost:5000/api/customers/transactions", requestOptions)
+        .then(response => {
+          if (!response.ok) throw Error(response.statusText);
+          return response.json();
+        })
+        .then(data => {
+            dataList=data;
+            console.log("data :",data);
+        
+        })
+        .catch();
+    }
+     else {
       dataList = [
         {
           key: "1",
@@ -174,6 +167,7 @@ export default function() {
         }
       ];
     }
+    console.log("dataList :",dataList);
     return dataList;
   }
   function onChange(value, dateString) {
@@ -197,9 +191,9 @@ export default function() {
 
   const columns = [
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
+      title: "Bayi Kodu",
+      dataIndex: "dealerCode",
+      key: "dealerCode",
       filters: [
         { text: "Joe", value: "Joe" },
         { text: "Jim", value: "Jim" }
@@ -208,34 +202,255 @@ export default function() {
       onFilter: (value, record) => record.name.includes(value),
       sorter: (a, b) => a.name.length - b.name.length,
       sortOrder:
-        tableOptions.sortedInfo.columnKey === "name" &&
+        tableOptions.sortedInfo.columnKey === "dealerCode" &&
         tableOptions.sortedInfo.order,
       ellipsis: true
     },
     {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
+      title: "Bayi Adı",
+      dataIndex: "dealerName",
+      key: "dealerName",
       sorter: (a, b) => a.age - b.age,
       sortOrder:
-        tableOptions.sortedInfo.columnKey === "age" &&
+        tableOptions.sortedInfo.columnKey === "dealerName" &&
         tableOptions.sortedInfo.order,
       ellipsis: true
     },
     {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode",
       filters: [
         { text: "New York", value: "New York" },
         { text: "London", value: "London" }
       ],
-      filteredValue: tableOptions.filteredInfo.address || null,
-      onFilter: (value, record) => record.address.includes(value),
+      filteredValue: tableOptions.filteredInfo.dealerSubCode || null,
+      onFilter: (value, record) => record.dealerSubCode.includes(value),
 
-      sorter: (a, b) => a.address.length - b.address.length,
+      sorter: (a, b) => a.dealerSubCode.length - b.dealerSubCode.length,
       sortOrder:
-        tableOptions.sortedInfo.columnKey === "address" &&
+        tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.regionCode || null,
+      onFilter: (value, record) => record.regionCode.includes(value),
+
+      sorter: (a, b) => a.regionCode.length - b.regionCode.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "regionCode" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bölge Adı",
+      dataIndex: "regionName",
+      key: "regionName",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.regionName || null,
+      onFilter: (value, record) => record.regionName.includes(value),
+
+      sorter: (a, b) => a.regionName.length - b.regionName.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "regionName" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Alan Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.fieldCode || null,
+      onFilter: (value, record) => record.fieldCode.includes(value),
+
+      sorter: (a, b) => a.fieldCode.length - b.fieldCode.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "fieldCode" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Alan Adı",
+      dataIndex: "fieldName",
+      key: "fieldName",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.fieldName || null,
+      onFilter: (value, record) => record.fieldName.includes(value),
+
+      sorter: (a, b) => a.fieldName.length - b.fieldName.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "fieldName" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bölge Müdürü",
+      dataIndex: "regionManager",
+      key: "regionManager",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.regionManager || null,
+      onFilter: (value, record) => record.regionManager.includes(value),
+
+      sorter: (a, b) => a.regionManager.length - b.regionManager.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "regionManager" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Tarih",
+      dataIndex: "date",
+      key: "date",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.date || null,
+      onFilter: (value, record) => record.date.includes(value),
+
+      sorter: (a, b) => a.date.length - b.date.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "date" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Belge numarası",
+      dataIndex: "documentId",
+      key: "documentId",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.documentId || null,
+      onFilter: (value, record) => record.documentId.includes(value),
+ 
+      sorter: (a, b) => a.documentId.length - b.documentId.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "documentId" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "TR Kod",
+      dataIndex: "trCode",
+      key: "trCode",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.trCode || null,
+      onFilter: (value, record) => record.trCode.includes(value),
+ 
+      sorter: (a, b) => a.trCode.length - b.trCode.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "trCode" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "İşlem Tipi",
+      dataIndex: "transactionType",
+      key: "transactionType",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.transactionType || null,
+      onFilter: (value, record) => record.transactionType.includes(value),
+ 
+      sorter: (a, b) => a.transactionType.length - b.transactionType.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "transactionType" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Açıklama",
+      dataIndex: "description",
+      key: "description",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.description || null,
+      onFilter: (value, record) => record.description.includes(value),
+ 
+      sorter: (a, b) => a.description.length - b.description.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "description" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Borç",
+      dataIndex: "debt",
+      key: "debt",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.debt || null,
+      onFilter: (value, record) => record.debt.includes(value),
+ 
+      sorter: (a, b) => a.debt.length - b.debt.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "debt" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Kredi",
+      dataIndex: "credit",
+      key: "credit",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.credit || null,
+      onFilter: (value, record) => record.credit.includes(value),
+ 
+      sorter: (a, b) => a.credit.length - b.credit.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "credit" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Para Birimi",
+      dataIndex: "currency",
+      key: "currency",
+      filters: [
+        { text: "New York", value: "New York" },
+        { text: "London", value: "London" }
+      ],
+      filteredValue: tableOptions.filteredInfo.currency || null,
+      onFilter: (value, record) => record.currency.includes(value),
+ 
+      sorter: (a, b) => a.currency.length - b.currency.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "credit" &&
         tableOptions.sortedInfo.order,
       ellipsis: true
     }
@@ -299,6 +514,7 @@ export default function() {
       {/* Data list volume */}
       <Box title={<IntlMessages id="page.customerRecordDataList" />}>
         <Table
+          scroll={{ x: true }}
           columns={columns}
           dataSource={selectedKeys}
           onChange={handleChange}
