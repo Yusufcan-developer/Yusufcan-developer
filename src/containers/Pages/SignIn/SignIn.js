@@ -58,7 +58,7 @@ function loginError() {
         password: password })
   };
 
-    fetch("http://localhost:5000/users/authenticate", requestOptions)
+    fetch("http://192.168.0.140/b2b/api/users/authenticate", requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();

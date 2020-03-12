@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Tree from "@iso/components/uielements/tree";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
@@ -10,6 +10,7 @@ import { Table, Row, Col } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
+import { useFetch } from "./fechingData";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -18,6 +19,7 @@ const { RangePicker } = DatePicker;
 const treeData = [
   {
     title: "SAHA - 0",
+    key: "SAHA - 0",
     children: [
       {
         title: "BÖLGE 0",
@@ -57,6 +59,7 @@ const treeData = [
   },
   {
     title: "SAHA - 1",
+    key: "SAHA - 1",
     children: [
       {
         title: "0-1-0-0",
@@ -84,11 +87,19 @@ const formItemLayout = {
   }
 };
 
+const configTreeCheckedKeys = (checkedKeys, treeData) => {
+
+  var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
+  console.log("configTreeCheckedKeys",newTreeData);
+};
+
 export default function() {
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
   const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState(getData(0));
+  const [selectedKeys, setSelectedKeys] = React.useState([]);
+  //const [getData, setGetData] = React.useState(null);
+  const [data, loading] = useFetch("http://192.168.0.140/b2b/api/customers/transactions");
   const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -105,71 +116,25 @@ export default function() {
 
   const onCheck = checkedKeys => {
     console.log("onCheck", checkedKeys);
+  //  configTreeCheckedKeys(checkedKeys, treeData);
     setCheckedKeys(checkedKeys);
   };
 
   const onSelect = (selectedKeys, info) => {
-    console.log("onSelect", info);
+    console.log("onSelect info", info);
+    console.log("onSelect selectedKeys", selectedKeys);
     setSelectedKeys(selectedKeys);
   };
+
   const enterIconLoading = () => {
-    setSelectedKeys(getData(1));
     setIconLoading(true);
   };
 
-  function getData(value) {
-    let dataList = [];
-    if (value === 0) {
-      const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        })
-    };
-  
-      fetch("http://localhost:5000/api/customers/transactions", requestOptions)
-        .then(response => {
-          if (!response.ok) throw Error(response.statusText);
-          return response.json();
-        })
-        .then(data => {
-            dataList=data;
-            console.log("data :",data);
-        
-        })
-        .catch();
-    }
-     else {
-      dataList = [
-        {
-          key: "1",
-          name: "ugur",
-          age: 32,
-          address: "New York No. 1 Lake Park"
-        },
-        {
-          key: "2",
-          name: "Jim Green",
-          age: 42,
-          address: "London No. 1 Lake Park"
-        },
-        {
-          key: "3",
-          name: "Joe Black",
-          age: 32,
-          address: "Sidney No. 1 Lake Park"
-        },
-        {
-          key: "4",
-          name: "Jim Red",
-          age: 32,
-          address: "London No. 2 Lake Park"
-        }
-      ];
-    }
-    console.log("dataList :",dataList);
-    return dataList;
-  }
+// const dataLoading = getData => {
+//   console.log("getData :", getData)
+//   setGetData(getData);
+// };
+
   function onChange(value, dateString) {
     console.log("Selected Time: ", value);
     console.log("Başlanıç Tarihi: ", dateString[0]);
@@ -188,6 +153,8 @@ export default function() {
       ["filteredInfo"]: filters
     });
   }
+
+
 
   const columns = [
     {
@@ -514,9 +481,9 @@ export default function() {
       {/* Data list volume */}
       <Box title={<IntlMessages id="page.customerRecordDataList" />}>
         <Table
-          scroll={{ x: true }}
+          scroll={{ x: true}}
           columns={columns}
-          dataSource={selectedKeys}
+          dataSource={data}
           onChange={handleChange}
         />
       </Box>
