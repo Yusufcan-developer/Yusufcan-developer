@@ -11,6 +11,8 @@ import PageHeader from '@iso/components/utility/pageHeader';
 import { Col, Table, Row} from 'antd';
 import Collapse from '@iso/components/uielements/collapse';
 import { InputGroup } from '@iso/components/uielements/input';
+import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -32,8 +34,9 @@ export default function() {
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
   const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState(getData(0));
+  const [selectedKeys, setSelectedKeys] = React.useState([]);
   const [iconLoading, setIconLoading] = React.useState(false);
+  const [data, loading] = useFetch(`${siteConfig.api.cheques}`,{ });
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
@@ -57,74 +60,9 @@ export default function() {
     setSelectedKeys(selectedKeys);
   };
   const enterIconLoading = () => {
-    setSelectedKeys(getData(1));
     setIconLoading(true);
-
-
   };
 
-  function getData(value)
-  {
-    let dataList=[]
-    if(value===0)
-    {
-     dataList =  [
-      {
-       key: '1',
-       name: 'John Brown',
-       age: 32,
-       address: 'New York No. 1 Lake Park',
-     },
-     {
-       key: '2',
-       name: 'Jim Green',
-       age: 42,
-       address: 'London No. 1 Lake Park',
-     },
-     {
-       key: '3',
-       name: 'Joe Black',
-       age: 32,
-       address: 'Sidney No. 1 Lake Park',
-     },
-     {
-       key: '4',
-       name: 'Jim Red',
-       age: 32,
-       address: 'London No. 2 Lake Park',
-     },
-   ]}
-   else
-   {
-     dataList =  [
-      {
-       key: '1',
-       name: 'ugur',
-       age: 32,
-       address: 'New York No. 1 Lake Park',
-     },
-     {
-       key: '2',
-       name: 'Jim Green',
-       age: 42,
-       address: 'London No. 1 Lake Park',
-     },
-     {
-       key: '3',
-       name: 'Joe Black',
-       age: 32,
-       address: 'Sidney No. 1 Lake Park',
-     },
-     {
-       key: '4',
-       name: 'Jim Red',
-       age: 32,
-       address: 'London No. 2 Lake Park',
-     },
-   ]
-   }
-   return dataList;
-  }
 function onChange(value, dateString) {
   console.log('Selected Time: ', value);
   console.log('Başlanıç Tarihi: ', dateString[0]);
@@ -146,39 +84,151 @@ function handleChange  (pagination, filters, sorter) {
 
 const columns = [
   {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
-    filters: [{ text: "Joe", value: "Joe" }, { text: "Jim", value: "Jim" }],
-    filteredValue: tableOptions.filteredInfo.name || null,
-    onFilter: (value, record) => record.name.includes(value),
-    sorter: (a, b) => a.name.length - b.name.length,
-    sortOrder:tableOptions.sortedInfo.columnKey === "name" && tableOptions.sortedInfo.order,
-    ellipsis: true
-  },
-  {
-    title: "Age",
-    dataIndex: "age",
-    key: "age",
-    sorter: (a, b) => a.age - b.age,
-    sortOrder: tableOptions.sortedInfo.columnKey === "age" && tableOptions.sortedInfo.order,
-    ellipsis: true
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-    key: "address",
-    filters: [
-      { text: "New York", value: "New York" },
-      { text: "London", value: "London" }
-    ],
-    filteredValue: tableOptions.filteredInfo.address || null,
-    onFilter: (value, record) => record.address.includes(value),
-
-    sorter: (a, b) => a.address.length - b.address.length,
-    sortOrder: tableOptions.sortedInfo.columnKey === "address" && tableOptions.sortedInfo.order,
-    ellipsis: true
-  }
+    title: "Tip",
+      dataIndex: "type",
+      key: "type",
+      filters: [
+        { text: "Joe", value: "Joe" },
+        { text: "Jim", value: "Jim" }
+      ],
+      filteredValue: tableOptions.filteredInfo.name || null,
+      onFilter: (value, record) => record.name.includes(value),
+      sorter: (a, b) => a.name.length - b.name.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "type" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bayi Kodu",
+      dataIndex: "dealerCode",
+      key: "dealerCode",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "dealerName" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bayi Adı",
+      dataIndex: "dealerName",
+      key: "dealerName",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "dealerName" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "regionCode" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Bölge Adı",
+      dataIndex: "regionName",
+      key: "regionName",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "regionName" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Alan Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "fieldCode" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Alan Adı",
+      dataIndex: "fieldName",
+      key: "fieldName",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "fieldName" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Tutar",
+      dataIndex: "amount",
+      key: "amount",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "amount" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Veriliş Tarihi",
+      dataIndex: "issueDate",
+      key: "issueDate",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "issueDate" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "İşletme İmzası",
+      dataIndex: "signatureDrawer",
+      key: "signatureDrawer",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "signatureDrawer" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Ödeme Yeri",
+      dataIndex: "placeOfPayment",
+      key: "placeOfPayment",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "placeOfPayment" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Banka",
+      dataIndex: "bank",
+      key: "bank",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "bank" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
+    {
+      title: "Durum",
+      dataIndex: "status",
+      key: "status",
+      sorter: (a, b) => a.age - b.age,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "bank" &&
+        tableOptions.sortedInfo.order,
+      ellipsis: true
+    },
 ];
   return (
     <LayoutWrapper>
@@ -219,7 +269,7 @@ const columns = [
       <Box title={<IntlMessages id="page.checkingReportsDataList" />}>
         <Table
           columns={columns}
-          dataSource={selectedKeys}
+          dataSource={data}
           onChange={handleChange}
         />
       </Box>

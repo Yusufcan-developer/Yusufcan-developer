@@ -3,7 +3,18 @@ export default {
   siteIcon: 'ion-flash',
   footerText: `KaryaSmd @ ${new Date().getFullYear()} , Inc`,
   enableAnimatedRoute: false,
-  apiUrl: 'http://yoursite.com/api/',
+  apiUrl: 'http://192.168.0.140/b2b/api/',
+  localApiUrl: 'http://localhost:5000/api/',
+  api: {
+    products: 'http://192.168.0.140/b2b/api/carts/products',               //Ürünler:: POST
+    orders: 'http://192.168.0.140/b2b/api/customers/orders',               //Sipariş Üst Bilgi: POST
+    distributions: 'http://192.168.0.140/b2b/api/customers/distributions', //Dağıtım: POST
+    deliveries: 'http://192.168.0.140/b2b/api/customers/deliveries',       //Sevkiyat,Cari Hareketler: POST
+    cheques: 'http://192.168.0.140/b2b/api/customers/cheques',             //Çek-Senet: POST
+    letters: 'http://192.168.0.140/b2b/api/customers/letters',             //Teminat Mektupları: POST
+    accounts: 'http://192.168.0.140/b2b/api/customers/accounts',           //Bayi Listesi: POST
+    transactions: 'http://192.168.0.140/b2b/api/customers/transactions',   //Cari Hareketler: POST
+  },
   google: {
     analyticsKey: 'UA-xxxxxxxxx-1',
   },

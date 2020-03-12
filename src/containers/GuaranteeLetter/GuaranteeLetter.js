@@ -10,6 +10,8 @@ import { Table, Row, Col } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
+import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -92,7 +94,8 @@ export default function() {
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
   const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState(getData(0));
+  const [selectedKeys, setSelectedKeys] = React.useState([]);
+  const [data, loading] = useFetch(`${siteConfig.api.transactions}`,{ });
   const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -117,69 +120,9 @@ export default function() {
     setSelectedKeys(selectedKeys);
   };
   const enterIconLoading = () => {
-    setSelectedKeys(getData(1));
     setIconLoading(true);
   };
 
-  function getData(value) {
-    let dataList = [];
-    if (value === 0) {
-      dataList = [
-        {
-          key: "1",
-          name: "John Brown",
-          age: 32,
-          address: "New York No. 1 Lake Park"
-        },
-        {
-          key: "2",
-          name: "Jim Green",
-          age: 42,
-          address: "London No. 1 Lake Park"
-        },
-        {
-          key: "3",
-          name: "Joe Black",
-          age: 32,
-          address: "Sidney No. 1 Lake Park"
-        },
-        {
-          key: "4",
-          name: "Jim Red",
-          age: 32,
-          address: "London No. 2 Lake Park"
-        }
-      ];
-    } else {
-      dataList = [
-        {
-          key: "1",
-          name: "ugur",
-          age: 32,
-          address: "New York No. 1 Lake Park"
-        },
-        {
-          key: "2",
-          name: "Jim Green",
-          age: 42,
-          address: "London No. 1 Lake Park"
-        },
-        {
-          key: "3",
-          name: "Joe Black",
-          age: 32,
-          address: "Sidney No. 1 Lake Park"
-        },
-        {
-          key: "4",
-          name: "Jim Red",
-          age: 32,
-          address: "London No. 2 Lake Park"
-        }
-      ];
-    }
-    return dataList;
-  }
   function onChange(value, dateString) {
     console.log("Selected Time: ", value);
     console.log("Başlanıç Tarihi: ", dateString[0]);
@@ -200,49 +143,137 @@ export default function() {
   }
 
   const columns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      filters: [
-        { text: "Joe", value: "Joe" },
-        { text: "Jim", value: "Jim" }
-      ],
-      filteredValue: tableOptions.filteredInfo.name || null,
-      onFilter: (value, record) => record.name.includes(value),
-      sorter: (a, b) => a.name.length - b.name.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "name" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "age" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.address || null,
-      onFilter: (value, record) => record.address.includes(value),
-
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "address" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
-    }
+    
+      {
+        title: "Bayi Kodu",
+        dataIndex: "dealerCode",
+        key: "dealerCode",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "dealerName" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bayi Adı",
+        dataIndex: "dealerName",
+        key: "dealerName",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "regionCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bayi Alt Kodu",
+        dataIndex: "dealerSubCode",
+        key: "dealerSubCode",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bölge Kodu",
+        dataIndex: "regionCode",
+        key: "regionCode",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "regionCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bölge Adı",
+        dataIndex: "regionName",
+        key: "regionName",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "regionName" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bölge Yöneticisi",
+        dataIndex: "regionManager",
+        key: "regionManager",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "regionManager" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Başlangıç Tarihi",
+        dataIndex: "fromDate",
+        key: "fromDate",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "fromDate" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bitiş Tarihi",
+        dataIndex: "toDate",
+        key: "toDate",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "toDate" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Döküman ID",
+        dataIndex: "documentId",
+        key: "documentId",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "documentId" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "TR Kodu",
+        dataIndex: "trCode",
+        key: "trCode",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "trCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Tutar",
+        dataIndex: "amount",
+        key: "amount",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "amount" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Banka",
+        dataIndex: "bank",
+        key: "bank",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "bank" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Şube",
+        dataIndex: "branch",
+        key: "branch",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "branch" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
   ];
   return (
     <LayoutWrapper>
@@ -304,7 +335,7 @@ export default function() {
       <Box title={<IntlMessages id="page.customerRecordDataList" />}>
         <Table
           columns={columns}
-          dataSource={selectedKeys}
+          dataSource={data}
           onChange={handleChange}
         />
       </Box>

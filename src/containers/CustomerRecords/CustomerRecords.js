@@ -10,7 +10,8 @@ import { Table, Row, Col } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "./fechingData";
+import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -98,8 +99,8 @@ export default function() {
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
   const [checkedKeys, setCheckedKeys] = React.useState();
   const [selectedKeys, setSelectedKeys] = React.useState([]);
-  //const [getData, setGetData] = React.useState(null);
-  const [data, loading] = useFetch("http://192.168.0.140/b2b/api/customers/transactions");
+  
+  const [data, loading] = useFetch(`${siteConfig.api.transactions}`,{"PageIndex": 0, "PageCount" :5});
   const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
