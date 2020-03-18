@@ -6,11 +6,11 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col } from "antd";
+import { Table, Row, Col, Pagination } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -103,22 +103,25 @@ const OrderFlowUp = () =>  {
     filteredInfo: ""
   });
 //******************************************************************************************************************* */
- //const [posts, setPost] = useState();
- //const [loading, setLoading] = useState(true);
- //const [totalDataCount, setTotalDataCount] = useState();
+/*********************************************** CUSTOM HOOKS ************************************************************ */
  const [localCurrentPage, setlocalCurrentPage] = useState(1);
- const [pageSize, setPageSize] = useState(10)
+ const [pageSize, setPageSize] = useState(20)
 
   useEffect(() => {        
-    console.log("rendered!");
-    console.log("currentPage!", currentPage);
-    
-    setCurrentPage(localCurrentPage);
 
+    console.log("currentPage!", localCurrentPage);
+
+    setCurrentPage(localCurrentPage);  
   },[localCurrentPage]);
+  
+  useEffect(() => { 
+    console.log("pageSize!", pageSize);
+    setChangePageSize(pageSize);
+  },[pageSize]);
 
- const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pageCount": 10 });
-
+ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+ useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+/*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
 // const pagingChange = e => {
@@ -156,11 +159,9 @@ const OrderFlowUp = () =>  {
   function onOk(value) {
     console.log("onOk: ", value);
   }
-  function handleChange(pagination, filters, sorter) {
-    console.log("Various parameters :",pagination, filters, sorter);
-    console.log("handleChange", pagination.current);
-    
-    setlocalCurrentPage(pagination.current);
+  
+  function handleChange( filters, sorter) {
+    console.log("Various parameters :", filters, sorter);
 
     setState({
       ...tableOptions,
@@ -168,13 +169,20 @@ const OrderFlowUp = () =>  {
       ["filteredInfo"]: filters
     });
   }
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowSizeChange(current, pageSize) {
+    console.log("pageSize :", pageSize);
+    console.log("current :", current);
+    setPageSize(pageSize);
+    setlocalCurrentPage(current);
+  }
 
-
-
-//   function changePageSize(){
-    
-//     setchangePageSize(20); //PageCount belirler
-//   }
+ /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+function currentPageChange(current){
+  
+  console.log("current :", current);
+  setlocalCurrentPage(current);
+}
 
   const columns = [
     
@@ -305,7 +313,7 @@ const OrderFlowUp = () =>  {
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.GuaranteeLetterTitle.header" />}
+        {<IntlMessages id="page.orderFollowUp.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
@@ -359,13 +367,25 @@ const OrderFlowUp = () =>  {
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.customerRecordDataList" />}>
+      <Box title={<IntlMessages id="page.orderFollowUpDataList" />}>
         <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
-          pagination={{ position: 'bottom', pageSize: 10 ,total: totalDataCount}}
-        />        
+          loading={loading}
+           
+          pagination={{position: 'none', pageSize: pageSize}}
+          // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
+        />  
+        <br></br>     
+        <Pagination 
+          showSizeChanger
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          position = 'bottom'
+          pageSize= {pageSize}
+          total= {totalDataCount}
+        />
       </Box>
     </LayoutWrapper>
   );

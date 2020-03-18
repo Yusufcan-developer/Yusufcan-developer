@@ -6,11 +6,11 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col } from "antd";
+import { Table, Row, Col, Pagination } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -106,59 +106,26 @@ const App = () =>  {
     filteredInfo: ""
   });
 //******************************************************************************************************************* */
- const [posts, setPost] = useState();
- const [loading, setLoading] = useState(true);
- const [totalDataCount, setTotalDataCount] = useState();
- const [currentPage, setCurrentPage] = useState(1);
- const [pageSize, setPageSize] = useState(10)
+/*********************************************** CUSTOM HOOKS ************************************************************ */
+const [localCurrentPage, setlocalCurrentPage] = useState(1);
+const [pageSize, setPageSize] = useState(20)
 
-  useEffect(() => {
+ useEffect(() => {        
 
-    const url = `${siteConfig.api.products}`;
-    const body = {"pageIndex": currentPage - 1 , "pageCount": 10};
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      },
+   console.log("currentPage!", localCurrentPage);
 
-      body: JSON.stringify(body)
-    };
+   setCurrentPage(localCurrentPage);  
+ },[localCurrentPage]);
+ 
+ useEffect(() => { 
+   console.log("pageSize!", pageSize);
+   setChangePageSize(pageSize);
+ },[pageSize]);
 
-    fetch(url, requestOptions)
-    .then(response => {
-      if (!response.ok) throw Error(response.statusText);
-      return response.json();
-    })
-    .then(data => { 
-      const value = data.data;
-      const totalPages = data.totalPages;
-      const dataCount = data.totalDataCount;
-      console.log("Data :", data );
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+/*********************************************** CUSTOM HOOKS ************************************************************ */
 
-      setPost(value);
-      setTotalDataCount(dataCount);
-      setLoading(false);
-    })
-    .catch();
-
-        
-    console.log("rendered!");
-    console.log("currentPage!", currentPage);
-    
-    // setLoading(loading);
-    // setTotalDataCount(totalDataCount);
-    // setcurrentPage(currentPage);
-  },[currentPage]);
-
-//  var [data, loading ,totalPage, totalDataCount] = useFetch(`${siteConfig.api.products}`, { "pageIndex": currentPage , "pageCount": 10 });
-
-
-// const pagingChange = e => {
-//   setCurrentPage(e); 
-//   useFetch(`${siteConfig.api.products}`, { "pageIndex": e , "pageCount": 10 });
-// }
 
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
@@ -190,10 +157,9 @@ const App = () =>  {
   function onOk(value) {
     console.log("onOk: ", value);
   }
-  function handleChange(pagination, filters, sorter) {
-    console.log("Various parameters :",pagination, filters, sorter);
-    console.log("handleChange", pagination.current);
-    setCurrentPage(pagination.current);
+
+  function handleChange( filters, sorter) {
+    console.log("Various parameters :", filters, sorter);
 
     setState({
       ...tableOptions,
@@ -201,13 +167,21 @@ const App = () =>  {
       ["filteredInfo"]: filters
     });
   }
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowSizeChange(current, pageSize) {
+    console.log("pageSize :", pageSize);
+    console.log("current :", current);
+    setPageSize(pageSize);
+    setlocalCurrentPage(current);
+  }
 
+ /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+function currentPageChange(current){
+  
+  console.log("current :", current);
+  setlocalCurrentPage(current);
+}
 
-
-//   function changePageSize(){
-    
-//     setchangePageSize(20); //PageCount belirler
-//   }
 
   const columns = [
     
@@ -395,10 +369,21 @@ const App = () =>  {
       <Box title={<IntlMessages id="page.customerRecordDataList" />}>
         <Table
           columns={columns}
-          dataSource={posts}
+          dataSource={data}
           onChange={handleChange}
-          pagination={{ position: 'bottom', pageSize: 10 ,total: totalDataCount}}
-        />        
+          loading={loading}
+           
+          pagination={{position: 'none', pageSize: pageSize}}
+        /> 
+        <br></br>     
+        <Pagination 
+          showSizeChanger
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          position = 'bottom'
+          pageSize= {pageSize}
+          total= {totalDataCount}
+        />       
       </Box>
     </LayoutWrapper>
   );

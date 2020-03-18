@@ -6,11 +6,11 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col } from "antd";
+import { Table, Row, Col, Pagination } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -99,13 +99,31 @@ export default function() {
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
   const [checkedKeys, setCheckedKeys] = React.useState();
   const [selectedKeys, setSelectedKeys] = React.useState([]);
-  
-  const [data, loading] = useFetch(`${siteConfig.api.transactions}`,{"PageIndex": 0, "PageCount" :5});
   const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
+ /*********************************************** CUSTOM HOOKS ************************************************************ */
+ const [localCurrentPage, setlocalCurrentPage] = useState(1);
+ const [pageSize, setPageSize] = useState(20)
+
+  useEffect(() => {        
+
+    console.log("currentPage!", localCurrentPage);
+
+    setCurrentPage(localCurrentPage);  
+  },[localCurrentPage]);
+  
+  useEffect(() => { 
+    console.log("pageSize!", pageSize);
+    setChangePageSize(pageSize);
+  },[pageSize]);
+
+ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+ useFetch(`${siteConfig.api.transactions}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+/*********************************************** CUSTOM HOOKS ************************************************************ */
+
 
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
@@ -145,15 +163,31 @@ export default function() {
   function onOk(value) {
     console.log("onOk: ", value);
   }
-  function handleChange(pagination, filters, sorter) {
-    console.log("Various parameters", pagination, filters, sorter);
-    console.log("filters", filters);
+
+  function handleChange(filters, sorter) {
+    console.log("Various parameters :", filters, sorter);
+
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
   }
+
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowSizeChange(current, pageSize) {
+    console.log("pageSize :", pageSize);
+    console.log("current :", current);
+    setPageSize(pageSize);
+    setlocalCurrentPage(current);
+  }
+
+  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  function currentPageChange(current) {
+    console.log("current :", current);
+    setlocalCurrentPage(current);
+  }
+
 
 
 
@@ -482,10 +516,21 @@ export default function() {
       {/* Data list volume */}
       <Box title={<IntlMessages id="page.customerRecordDataList" />}>
         <Table
-          scroll={{ x: true}}
           columns={columns}
           dataSource={data}
           onChange={handleChange}
+          loading={loading}
+           
+          pagination={{position: 'none', pageSize: pageSize}}
+        />
+        <br></br>     
+        <Pagination 
+          showSizeChanger
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          position = 'bottom'
+          pageSize= {pageSize}
+          total= {totalDataCount}
         />
       </Box>
     </LayoutWrapper>

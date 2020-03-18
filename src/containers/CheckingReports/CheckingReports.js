@@ -1,4 +1,4 @@
-import React,{ useState }  from 'react';
+import React, {  useState, useEffect } from "react";
 import Tree from '@iso/components/uielements/tree';
 import Form from '@iso/components/uielements/form';
 import Box from '@iso/components/utility/box';
@@ -8,10 +8,10 @@ import DatePicker from '@iso/components/uielements/datePicker';
 import Button from '@iso/components/uielements/button';
 import TableDemoStyle from '../Tables/AntTables/Demo.styles';
 import PageHeader from '@iso/components/utility/pageHeader';
-import { Col, Table, Row} from 'antd';
+import { Table, Row, Col, Pagination } from "antd";
 import Collapse from '@iso/components/uielements/collapse';
 import { InputGroup } from '@iso/components/uielements/input';
-import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -36,12 +36,30 @@ export default function() {
   const [checkedKeys, setCheckedKeys] = React.useState();
   const [selectedKeys, setSelectedKeys] = React.useState([]);
   const [iconLoading, setIconLoading] = React.useState(false);
-  const [data, loading] = useFetch(`${siteConfig.api.cheques}`,{ });
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
   }); 
- 
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
+ const [localCurrentPage, setlocalCurrentPage] = useState(1);
+ const [pageSize, setPageSize] = useState(20)
+
+  useEffect(() => {        
+
+    console.log("currentPage!", localCurrentPage);
+
+    setCurrentPage(localCurrentPage);  
+  },[localCurrentPage]);
+  
+  useEffect(() => { 
+    console.log("pageSize!", pageSize);
+    setChangePageSize(pageSize);
+  },[pageSize]);
+
+  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+  useFetch(`${siteConfig.api.cheques}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
+
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
     // or, you can remove all expanded children keys.
@@ -72,15 +90,31 @@ function onChange(value, dateString) {
 function onOk(value) {
   console.log('onOk: ', value);
 }
-function handleChange  (pagination, filters, sorter) {
-  console.log('Various parameters', pagination, filters, sorter);
-  console.log('filters', filters);
+
+function handleChange( filters, sorter) {
+  console.log("Various parameters :", filters, sorter);
+
   setState({
     ...tableOptions,
-    ['sortedInfo']: sorter,
-    ['filteredInfo']:filters
+    ["sortedInfo"]: sorter,
+    ["filteredInfo"]: filters
   });
-};
+}
+
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowSizeChange(current, pageSize) {
+    console.log("pageSize :", pageSize);
+    console.log("current :", current);
+    setPageSize(pageSize);
+    setlocalCurrentPage(current);
+  }
+
+ /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+function currentPageChange(current){
+  
+  console.log("current :", current);
+  setlocalCurrentPage(current);
+}
 
 const columns = [
   {
@@ -271,6 +305,18 @@ const columns = [
           columns={columns}
           dataSource={data}
           onChange={handleChange}
+          loading={loading}
+           
+          pagination={{position: 'none', pageSize: pageSize}}
+        />
+        <br></br>     
+        <Pagination 
+          showSizeChanger
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          position = 'bottom'
+          pageSize= {pageSize}
+          total= {totalDataCount}
         />
       </Box>
     </LayoutWrapper>

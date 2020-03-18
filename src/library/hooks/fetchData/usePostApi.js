@@ -5,8 +5,8 @@ function useFetch(url, reqBody) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
-  const [changePageSize, setChangePageSize] = useState(10); // Bu ikisi formdan form dan gelicek veye default olacak
-  const [currentPage, setCurrentPage] = useState(1);        // Bu ikisi formdan form dan gelicek veye default olacak
+  const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
+  const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
   const [totalDataCount, setTotalDataCount] = useState();
   
 
@@ -48,6 +48,7 @@ function useFetch(url, reqBody) {
     // setLoading(false);
   }
   useEffect(() => {
+    setLoading(true);
     fetchUrl();
   }, [currentPage, changePageSize]);
   return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount];
