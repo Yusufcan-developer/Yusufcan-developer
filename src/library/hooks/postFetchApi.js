@@ -5,14 +5,14 @@ function useFetch(url, reqBody) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
-  const [changePageSize, setchangePageSize] = useState(10); // Bu ikisi formdan form dan gelicek veye default olucak
-  const [currentPage, setcurrentPage] = useState(1);        //
+  const [changePageSize, setChangePageSize] = useState(10); // Bu ikisi formdan form dan gelicek veye default olacak
+  const [currentPage, setCurrentPage] = useState(1);        // Bu ikisi formdan form dan gelicek veye default olacak
   const [totalDataCount, setTotalDataCount] = useState();
   
 
   async function fetchUrl() {
   
-    //  var reqB = reqBody == null || reqBody==undefined ? { "pageIndex": currentPage - 1,"pageCount": changePageSize  } : reqBody;  // default variable
+    //  const reqB = reqBody == null || reqBody==undefined ? { "pageIndex": currentPage - 1,"pageCount": changePageSize  } : reqBody;  // default variable
 
     const requestOptions = {
       method: "POST",
@@ -49,8 +49,8 @@ function useFetch(url, reqBody) {
   }
   useEffect(() => {
     fetchUrl();
-  }, []);
-  return [data, loading ,totalPage, totalDataCount];
+  }, [currentPage, changePageSize]);
+  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount];
 }
 
 

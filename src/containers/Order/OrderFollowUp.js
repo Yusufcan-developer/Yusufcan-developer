@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {  useState, useEffect } from "react";
 import Tree from "@iso/components/uielements/tree";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
@@ -6,10 +6,12 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col,Tag } from "antd";
+import { Table, Row, Col } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
+import { useFetch } from "@iso/lib/hooks/postFetchApi";
+import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -18,9 +20,11 @@ const { RangePicker } = DatePicker;
 const treeData = [
   {
     title: "SAHA - 0",
+    key: "0",
     children: [
       {
         title: "BÖLGE 0",
+        key:"0-0",
         children: [
           {
             title: "0-0-0-0",
@@ -38,6 +42,7 @@ const treeData = [
       },
       {
         title: "BÖLGE 1",
+        key:"0-1",
         children: [
           {
             title: "0-0-1-0",
@@ -57,6 +62,7 @@ const treeData = [
   },
   {
     title: "SAHA - 1",
+    key:"1",
     children: [
       {
         title: "0-1-0-0",
@@ -84,16 +90,41 @@ const formItemLayout = {
   }
 };
 
-export default function() {
-  const [expandedKeys, setExpandedKeys] = React.useState();
-  const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState(getData(0));
-  const [iconLoading, setIconLoading] = React.useState(false);
+
+const OrderFlowUp = () =>  {
+//******************************************************************************************************************* */
+  const [expandedKeys, setExpandedKeys] = useState(); 
+  const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [checkedKeys, setCheckedKeys] = useState();
+  const [selectedKeys, setSelectedKeys] = useState([]); 
+  const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
+//******************************************************************************************************************* */
+ //const [posts, setPost] = useState();
+ //const [loading, setLoading] = useState(true);
+ //const [totalDataCount, setTotalDataCount] = useState();
+ const [localCurrentPage, setlocalCurrentPage] = useState(1);
+ const [pageSize, setPageSize] = useState(10)
+
+  useEffect(() => {        
+    console.log("rendered!");
+    console.log("currentPage!", currentPage);
+    
+    setCurrentPage(localCurrentPage);
+
+  },[localCurrentPage]);
+
+ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pageCount": 10 });
+
+
+
+// const pagingChange = e => {
+//   setCurrentPage(e); 
+//   useFetch(`${siteConfig.api.products}`, { "pageIndex": e , "pageCount": 10 });
+// }
 
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
@@ -113,77 +144,9 @@ export default function() {
     setSelectedKeys(selectedKeys);
   };
   const enterIconLoading = () => {
-    setSelectedKeys(getData(1));
     setIconLoading(true);
   };
 
-  function getData(value) {
-    let dataList = [];
-    if (value === 0) {
-      dataList = [
-        {
-          key: "1",
-          Status:["nice"],
-          name: "John Brown",
-          age: 32,
-          address: "New York No. 1 Lake Park"
-        },
-        {
-          key: "2",
-          Status:["loser"],
-          name: "Jim Green",
-          age: 42,
-          address: "London No. 1 Lake Park"
-        },
-        {
-          key: "3",
-          Status:["TEACHER"],
-          name: "Joe Black",
-          age: 32,
-          address: "Sidney No. 1 Lake Park"
-        },
-        {
-          key: "4",
-          Status:["TEACHER"],
-          name: "Jim Red",
-          age: 32,
-          address: "London No. 2 Lake Park"
-        }
-      ];
-    } else {
-      dataList = [
-        {
-          key: "1",
-          Status:["nice"],
-          name: "ugur",
-          age: 32,
-          address: "New York No. 1 Lake Park"
-        },
-        {
-          key: "2",
-          Status:["teacher"],
-          name: "Jim Green",
-          age: 42,
-          address: "London No. 1 Lake Park"
-        },
-        {
-          key: "3",
-          Status:["nice"],
-          name: "Joe Black",
-          age: 32,
-          address: "Sidney No. 1 Lake Park"
-        },
-        {
-          key: "4",
-          Status:["nice"],
-          name: "Jim Red",
-          age: 32,
-          address: "London No. 2 Lake Park"
-        }
-      ];
-    }
-    return dataList;
-  }
   function onChange(value, dateString) {
     console.log("Selected Time: ", value);
     console.log("Başlanıç Tarihi: ", dateString[0]);
@@ -194,8 +157,11 @@ export default function() {
     console.log("onOk: ", value);
   }
   function handleChange(pagination, filters, sorter) {
-    console.log("Various parameters", pagination, filters, sorter);
-    console.log("filters", filters);
+    console.log("Various parameters :",pagination, filters, sorter);
+    console.log("handleChange", pagination.current);
+    
+    setlocalCurrentPage(pagination.current);
+
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
@@ -203,75 +169,143 @@ export default function() {
     });
   }
 
-  const columns = [
-    {
-      title: "Status",
-      key: "Status",
-      dataIndex: "Status",
-      render: Status => (
-        <span>
-          {Status.map(tag => {
-            let color = tag.length > 5 ? "geekblue" : "green";
-            if (tag === "loser") {
-              color = "volcano";
-            }
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </span>
-      )
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      filters: [
-        { text: "Joe", value: "Joe" },
-        { text: "Jim", value: "Jim" }
-      ],
-      filteredValue: tableOptions.filteredInfo.name || null,
-      onFilter: (value, record) => record.name.includes(value),
-      sorter: (a, b) => a.name.length - b.name.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "name" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "age" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.address || null,
-      onFilter: (value, record) => record.address.includes(value),
 
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "address" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
-    }
+
+//   function changePageSize(){
+    
+//     setchangePageSize(20); //PageCount belirler
+//   }
+
+  const columns = [
+    
+      {
+        title: "Bayi",
+        dataIndex: "itemCode",
+        key: "itemCode",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "itemCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bayi Adı",
+        dataIndex: "description",
+        key: "description",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "description" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bayi Alt Kodu",
+        dataIndex: "listPrice",
+        key: "listPrice",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "listPrice" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bölge Kodu",
+        dataIndex: "category",
+        key: "category",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "category" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bölge Adı",
+        dataIndex: "type",
+        key: "type",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "type" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bölge Yöneticisi",
+        dataIndex: "series",
+        key: "series",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "series" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Başlangıç Tarihi",
+        dataIndex: "dimension",
+        key: "dimension",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "dimension" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Bitiş Tarihi",
+        dataIndex: "color",
+        key: "color",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "color" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Döküman ID",
+        dataIndex: "surface",
+        key: "surface",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "surface" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "TR Kodu",
+        dataIndex: "productionStatus",
+        key: "productionStatus",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "productionStatus" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Tutar",
+        dataIndex: "rectifying",
+        key: "rectifying",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "rectifying" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Banka",
+        dataIndex: "brand",
+        key: "brand",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "brand" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      }
   ];
+
+
+  
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.orderFollowUpTitle.header" />}
+        {<IntlMessages id="page.GuaranteeLetterTitle.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
@@ -325,13 +359,16 @@ export default function() {
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.orderFollowUpDataList" />}>
+      <Box title={<IntlMessages id="page.customerRecordDataList" />}>
         <Table
           columns={columns}
-          dataSource={selectedKeys}
+          dataSource={data}
           onChange={handleChange}
-        />
+          pagination={{ position: 'bottom', pageSize: 10 ,total: totalDataCount}}
+        />        
       </Box>
     </LayoutWrapper>
   );
 }
+
+export default OrderFlowUp;

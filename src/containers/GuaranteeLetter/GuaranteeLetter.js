@@ -101,9 +101,9 @@ export default function() {
     filteredInfo: ""
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [LcurrentPage, setLCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [data, loading ,totalPage, totalDataCount] = useFetch(`${siteConfig.api.letters}`, { "pageIndex": currentPage - 1 , "pageCount": pageSize });
+  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`${siteConfig.api.letters}`, { "pageIndex": LcurrentPage - 1 , "pageCount": 20 });
 
 
   useEffect(() => {
@@ -144,8 +144,9 @@ export default function() {
   function handleChange(pagination, filters, sorter) {
     console.log("Various parameters",pagination, filters, sorter);
     console.log("filters", filters);
-    
+    setLCurrentPage(pagination.current);
     setCurrentPage(pagination.current);
+    //setChangePageSize()
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
@@ -154,10 +155,10 @@ export default function() {
   }
 
 
-  function changePageSize(){
+  // function changePageSize(){
     
-    setPageSize(10); 
-  }
+  //   setPageSize(10); 
+  // }
 
   const columns = [
     
@@ -357,7 +358,7 @@ export default function() {
           columns={columns}
           dataSource={data}
           onChange={handleChange}
-          pagination={{ position: 'bottom', pageSize: 10 ,total: totalDataCount}}
+          pagination={{ position: 'bottom', pageSize: changePageSize ,total: totalDataCount}}
 
         />        
       </Box>
