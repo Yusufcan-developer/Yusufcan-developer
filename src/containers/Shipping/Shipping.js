@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {  useState, useEffect } from "react";
 import Tree from "@iso/components/uielements/tree";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
@@ -90,26 +90,75 @@ const formItemLayout = {
   }
 };
 
-export default function() {
-  const [expandedKeys, setExpandedKeys] = React.useState();
-  const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState([]);
-  const [iconLoading, setIconLoading] = React.useState(false);
+ function loadData(body){
+ 
+}
+
+const App = () =>  {
+//******************************************************************************************************************* */
+  const [expandedKeys, setExpandedKeys] = useState(); 
+  const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [checkedKeys, setCheckedKeys] = useState();
+  const [selectedKeys, setSelectedKeys] = useState([]); 
+  const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-  const [data, loading ,totalPage, totalDataCount] = useFetch(`${siteConfig.api.letters}`, { "pageIndex": currentPage - 1 , "pageCount": pageSize });
-
+//******************************************************************************************************************* */
+ const [posts, setPost] = useState();
+ const [loading, setLoading] = useState(true);
+ const [totalDataCount, setTotalDataCount] = useState();
+ const [currentPage, setCurrentPage] = useState(1);
+ const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
+
+    const url = `${siteConfig.api.products}`;
+    const body = {"pageIndex": currentPage - 1 , "pageCount": 10};
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+
+      body: JSON.stringify(body)
+    };
+
+    fetch(url, requestOptions)
+    .then(response => {
+      if (!response.ok) throw Error(response.statusText);
+      return response.json();
+    })
+    .then(data => { 
+      const value = data.data;
+      const totalPages = data.totalPages;
+      const dataCount = data.totalDataCount;
+      console.log("Data :", data );
+
+      setPost(value);
+      setTotalDataCount(dataCount);
+      setLoading(false);
+    })
+    .catch();
+
+        
     console.log("rendered!");
     console.log("currentPage!", currentPage);
-  },[]);
+    
+    // setLoading(loading);
+    // setTotalDataCount(totalDataCount);
+    // setcurrentPage(currentPage);
+  },[currentPage]);
+
+//  var [data, loading ,totalPage, totalDataCount] = useFetch(`${siteConfig.api.products}`, { "pageIndex": currentPage , "pageCount": 10 });
+
+
+// const pagingChange = e => {
+//   setCurrentPage(e); 
+//   useFetch(`${siteConfig.api.products}`, { "pageIndex": e , "pageCount": 10 });
+// }
 
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
@@ -142,10 +191,10 @@ export default function() {
     console.log("onOk: ", value);
   }
   function handleChange(pagination, filters, sorter) {
-    console.log("Various parameters",pagination, filters, sorter);
-    console.log("filters", filters);
-    
+    console.log("Various parameters :",pagination, filters, sorter);
+    console.log("handleChange", pagination.current);
     setCurrentPage(pagination.current);
+
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
@@ -154,143 +203,134 @@ export default function() {
   }
 
 
-  function changePageSize(){
+
+//   function changePageSize(){
     
-    setPageSize(10); 
-  }
+//     setchangePageSize(20); //PageCount belirler
+//   }
 
   const columns = [
     
       {
-        title: "Bayi Kodu",
-        dataIndex: "dealerCode",
-        key: "dealerCode",
+        title: "Bayi",
+        dataIndex: "itemCode",
+        key: "itemCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "dealerName" &&
+          tableOptions.sortedInfo.columnKey === "itemCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bayi Adı",
-        dataIndex: "dealerName",
-        key: "dealerName",
+        dataIndex: "description",
+        key: "description",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionCode" &&
+          tableOptions.sortedInfo.columnKey === "description" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bayi Alt Kodu",
-        dataIndex: "dealerSubCode",
-        key: "dealerSubCode",
+        dataIndex: "listPrice",
+        key: "listPrice",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
+          tableOptions.sortedInfo.columnKey === "listPrice" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Kodu",
-        dataIndex: "regionCode",
-        key: "regionCode",
+        dataIndex: "category",
+        key: "category",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionCode" &&
+          tableOptions.sortedInfo.columnKey === "category" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Adı",
-        dataIndex: "regionName",
-        key: "regionName",
+        dataIndex: "type",
+        key: "type",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionName" &&
+          tableOptions.sortedInfo.columnKey === "type" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Yöneticisi",
-        dataIndex: "regionManager",
-        key: "regionManager",
+        dataIndex: "series",
+        key: "series",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionManager" &&
+          tableOptions.sortedInfo.columnKey === "series" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Başlangıç Tarihi",
-        dataIndex: "fromDate",
-        key: "fromDate",
+        dataIndex: "dimension",
+        key: "dimension",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "fromDate" &&
+          tableOptions.sortedInfo.columnKey === "dimension" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bitiş Tarihi",
-        dataIndex: "toDate",
-        key: "toDate",
+        dataIndex: "color",
+        key: "color",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "toDate" &&
+          tableOptions.sortedInfo.columnKey === "color" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Döküman ID",
-        dataIndex: "documentId",
-        key: "documentId",
+        dataIndex: "surface",
+        key: "surface",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "documentId" &&
+          tableOptions.sortedInfo.columnKey === "surface" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "TR Kodu",
-        dataIndex: "trCode",
-        key: "trCode",
+        dataIndex: "productionStatus",
+        key: "productionStatus",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "trCode" &&
+          tableOptions.sortedInfo.columnKey === "productionStatus" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Tutar",
-        dataIndex: "amount",
-        key: "amount",
+        dataIndex: "rectifying",
+        key: "rectifying",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "amount" &&
+          tableOptions.sortedInfo.columnKey === "rectifying" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Banka",
-        dataIndex: "bank",
-        key: "bank",
+        dataIndex: "brand",
+        key: "brand",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "bank" &&
+          tableOptions.sortedInfo.columnKey === "brand" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
-      },
-      {
-        title: "Şube",
-        dataIndex: "branch",
-        key: "branch",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "branch" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
-      },
+      }
   ];
 
 
@@ -355,12 +395,13 @@ export default function() {
       <Box title={<IntlMessages id="page.customerRecordDataList" />}>
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={posts}
           onChange={handleChange}
           pagination={{ position: 'bottom', pageSize: 10 ,total: totalDataCount}}
-
         />        
       </Box>
     </LayoutWrapper>
   );
 }
+
+export default App;

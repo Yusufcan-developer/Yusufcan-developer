@@ -345,6 +345,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/CheckingReports/CheckingReports')),
   },
   {
+    path: 'shipping',
+    component: lazy(() => import('@iso/containers/Shipping/Shipping')),
+  },
+  {
     path: 'lettersOfGuarantee',
     component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
   },
