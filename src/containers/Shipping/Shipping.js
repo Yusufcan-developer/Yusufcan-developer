@@ -90,11 +90,8 @@ const formItemLayout = {
   }
 };
 
- function loadData(body){
- 
-}
 
-const App = () =>  {
+const Shipping = () =>  {
 //******************************************************************************************************************* */
   const [expandedKeys, setExpandedKeys] = useState(); 
   const [autoExpandParent, setAutoExpandParent] = useState(true);
@@ -107,8 +104,15 @@ const App = () =>  {
   });
 //******************************************************************************************************************* */
 /*********************************************** CUSTOM HOOKS ************************************************************ */
+const obj= [{"dealerCode": "deneme01", "dealerName": "narje adf","dealerSubCode":"","category":"", "type":"" ,"series":"", "dimension":"", "color":"", }];
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
+const [data, setData] = useState(obj);
+const [loading, setLoading] = useState(false);
+const [totalPage, setTotalPage] = useState(1);
+const [totalDataCount, setTotalDataCount] = useState(1);
+const [currentPage, setCurrentPage] = useState();
+const [changePageSize, setChangePageSize] = useState(); 
 
  useEffect(() => {        
 
@@ -122,8 +126,8 @@ const [pageSize, setPageSize] = useState(20)
    setChangePageSize(pageSize);
  },[pageSize]);
 
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
-useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+// const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+// useFetch(`${siteConfig.api.deliveries}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -159,8 +163,9 @@ useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pa
   }
 
   function handleChange( filters, sorter) {
-    console.log("Various parameters :", filters, sorter);
-
+   // console.log("Various parameters :", filters, sorter);
+   console.log("sorter :", sorter);
+    
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
@@ -186,32 +191,32 @@ function currentPageChange(current){
   const columns = [
     
       {
-        title: "Bayi",
-        dataIndex: "itemCode",
-        key: "itemCode",
+        title: "Satıcı Kodu",
+        dataIndex: "dealerCode",
+        key: "dealerCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "itemCode" &&
+          tableOptions.sortedInfo.columnKey === "dealerCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Bayi Adı",
-        dataIndex: "description",
-        key: "description",
+        title: "Satıcı Adı",
+        dataIndex: "dealerName",
+        key: "dealerName",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "description" &&
+          tableOptions.sortedInfo.columnKey === "dealerName" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Bayi Alt Kodu",
-        dataIndex: "listPrice",
-        key: "listPrice",
+        title: "Satıcı Alt Kodu",
+        dataIndex: "dealerSubCode",
+        key: "dealerSubCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "listPrice" &&
+          tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
@@ -374,6 +379,8 @@ function currentPageChange(current){
           loading={loading}
            
           pagination={{position: 'none', pageSize: pageSize}}
+
+          scroll={{ x: 'calc(700px + 50%)'}}
         /> 
         <br></br>     
         <Pagination 
@@ -389,4 +396,4 @@ function currentPageChange(current){
   );
 }
 
-export default App;
+export default Shipping;
