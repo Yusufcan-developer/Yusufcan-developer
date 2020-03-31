@@ -12,6 +12,7 @@ import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
+import moment from 'moment';
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -106,6 +107,8 @@ const OrderFlowUp = () =>  {
 /*********************************************** CUSTOM HOOKS ************************************************************ */
  const [localCurrentPage, setlocalCurrentPage] = useState(1);
  const [pageSize, setPageSize] = useState(20)
+ const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
+ const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
 
   useEffect(() => {        
 
@@ -118,6 +121,14 @@ const OrderFlowUp = () =>  {
     console.log("pageSize!", pageSize);
     setChangePageSize(pageSize);
   },[pageSize]);
+
+  useEffect(() => {
+    setFromDate(fromDate);
+  }, [fromDate]);
+
+  useEffect(() => {
+    setToDate(toDate);
+  }, [toDate]);
 
  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
  useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
@@ -146,18 +157,18 @@ const OrderFlowUp = () =>  {
     console.log("onSelect", info);
     setSelectedKeys(selectedKeys);
   };
-  const enterIconLoading = () => {
-    setIconLoading(true);
+  const searchButton = () => {
+    // setIconLoading(true);
   };
 
   function onChange(value, dateString) {
-    console.log("Selected Time: ", value);
-    console.log("Başlanıç Tarihi: ", dateString[0]);
-    console.log("Bitiş Tarihi: ", dateString[1]);
+
+    setFromDate(dateString[0]);
+    setToDate(dateString[1]);
   }
 
   function onOk(value) {
-    console.log("onOk: ", value);
+    console.log("xxxx onOk: ", value);
   }
   
   function handleChange( filters, sorter) {
@@ -344,8 +355,9 @@ function currentPageChange(current){
                 <Col xs={{span:24}} sm={{span:14}} md={{span:18}}>
                   <Col xs={{ span: 24}} sm={{span:10}} md={{span:10}}>
                     <RangePicker
-                      format="DD-MM-YYYY"
+                      format={siteConfig.dateFormat}
                       onChange={onChange}
+                      defaultValue={[moment(moment().toDate().getMonth()-1 , siteConfig.dateFormat), moment(moment().toDate(), siteConfig.dateFormat)]}
                       onOk={onOk}
                     />
                   </Col>
@@ -355,7 +367,7 @@ function currentPageChange(current){
                       type="primary"
                       icon="poweroff"
                       loading={iconLoading}
-                      onClick={enterIconLoading}
+                      onClick={searchButton}
                     >
                       {<IntlMessages id="forms.button.label_Search" />}
                     </Button>

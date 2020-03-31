@@ -15,6 +15,7 @@ export default {
     accounts: 'http://192.168.0.140/b2b/api/customers/accounts',           //Bayi Listesi: POST
     transactions: 'http://192.168.0.140/b2b/api/customers/transactions',   //Cari Hareketler: POST
   },
+  dateFormat:'DD-MM-YYYY',
   google: {
     analyticsKey: 'UA-xxxxxxxxx-1',
   },
