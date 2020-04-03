@@ -10,7 +10,8 @@ import { Table, Row, Col, Pagination } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 
@@ -122,16 +123,17 @@ const OrderFlowUp = () =>  {
     setChangePageSize(pageSize);
   },[pageSize]);
 
-  useEffect(() => {
-    setFromDate(fromDate);
-  }, [fromDate]);
+  // useEffect(() => {
+  //   setFromDate(fromDate);
+  // }, [fromDate]);
 
-  useEffect(() => {
-    setToDate(toDate);
-  }, [toDate]);
+  // useEffect(() => {
+  //   setToDate(toDate);
+  // }, [toDate]);
 
- const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
- useFetch(`${siteConfig.api.products}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+//  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+//  useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch('http://localhost:3000/orders');
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -199,58 +201,58 @@ function currentPageChange(current){
     
       {
         title: "Bayi",
-        dataIndex: "itemCode",
-        key: "itemCode",
+        dataIndex: "dealerCode",
+        key: "dealerCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "itemCode" &&
+          tableOptions.sortedInfo.columnKey === "dealerCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bayi Adı",
-        dataIndex: "description",
-        key: "description",
+        dataIndex: "dealerName",
+        key: "dealerName",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "description" &&
+          tableOptions.sortedInfo.columnKey === "dealerName" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bayi Alt Kodu",
-        dataIndex: "listPrice",
-        key: "listPrice",
+        dataIndex: "dealerSubCode",
+        key: "dealerSubCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "listPrice" &&
+          tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Kodu",
-        dataIndex: "category",
-        key: "category",
+        dataIndex: "regionCode",
+        key: "regionCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "category" &&
+          tableOptions.sortedInfo.columnKey === "regionCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Adı",
-        dataIndex: "type",
-        key: "type",
+        dataIndex: "regionName",
+        key: "regionName",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "type" &&
+          tableOptions.sortedInfo.columnKey === "regionName" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Yöneticisi",
-        dataIndex: "series",
-        key: "series",
+        dataIndex: "regionManager",
+        key: "regionManager",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "series" &&
@@ -258,65 +260,155 @@ function currentPageChange(current){
         ellipsis: true
       },
       {
-        title: "Başlangıç Tarihi",
-        dataIndex: "dimension",
-        key: "dimension",
+        title: "Alan Kodu",
+        dataIndex: "fieldCode",
+        key: "fieldCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "dimension" &&
+          tableOptions.sortedInfo.columnKey === "fieldCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Bitiş Tarihi",
-        dataIndex: "color",
-        key: "color",
+        title: "Alan Adı",
+        dataIndex: "fieldName",
+        key: "fieldName",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "color" &&
+          tableOptions.sortedInfo.columnKey === "fieldName" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Döküman ID",
-        dataIndex: "surface",
-        key: "surface",
+        title: "fieldManager",
+        dataIndex: "fieldManager",
+        key: "fieldManager",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "surface" &&
+          tableOptions.sortedInfo.columnKey === "fieldManager" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "TR Kodu",
-        dataIndex: "productionStatus",
-        key: "productionStatus",
+        title: "Sipariş No",
+        dataIndex: "orderNo",
+        key: "orderNo",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "productionStatus" &&
+          tableOptions.sortedInfo.columnKey === "orderNo" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Tutar",
-        dataIndex: "rectifying",
-        key: "rectifying",
+        title: "Sipariş Tarihi",
+        dataIndex: "orderDate",
+        key: "orderDate",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "rectifying" &&
+          tableOptions.sortedInfo.columnKey === "orderDate" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Banka",
-        dataIndex: "brand",
-        key: "brand",
+        title: "Doküman Id",
+        dataIndex: "documentId",
+        key: "documentId",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "brand" &&
+          tableOptions.sortedInfo.columnKey === "documentId" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
-      }
+      },
+      {
+        title: "Ödeme",
+        dataIndex: "payment",
+        key: "payment",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "payment" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Adres Kodu",
+        dataIndex: "addressCode",
+        key: "addressCode",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "addressCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Teslimat Adresi",
+        dataIndex: "deliveryAddress",
+        key: "deliveryAddress",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "addressCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Açıklama 1",
+        dataIndex: "description1",
+        key: "description1",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "addressCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Açıklama 2",
+        dataIndex: "description2",
+        key: "description2",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "description2" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Açıklama 3",
+        dataIndex: "description3",
+        key: "description3",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "description3" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Açıklama 4",
+        dataIndex: "description4",
+        key: "description4",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "description4" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Total",
+        dataIndex: "total",
+        key: "total",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "total" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Durum",
+        dataIndex: "status",
+        key: "status",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "status" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
   ];
 
 

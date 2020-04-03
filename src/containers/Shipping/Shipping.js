@@ -10,7 +10,8 @@ import { Table, Row, Col, Pagination } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import {useFetch} from "@iso/lib/hooks/fetchData/useFakePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -104,15 +105,10 @@ const Shipping = () =>  {
   });
 //******************************************************************************************************************* */
 /*********************************************** CUSTOM HOOKS ************************************************************ */
-const obj= [{"dealerCode": "deneme01", "dealerName": "narje adf","dealerSubCode":"","category":"", "type":"" ,"series":"", "dimension":"", "color":"", }];
+//const obj= [{"dealerCode": "deneme01", "dealerName": "narje adf","dealerSubCode":"","category":"", "type":"" ,"series":"", "dimension":"", "color":"", }];
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
-const [data, setData] = useState(obj);
-const [loading, setLoading] = useState(false);
-const [totalPage, setTotalPage] = useState(1);
-const [totalDataCount, setTotalDataCount] = useState(1);
-const [currentPage, setCurrentPage] = useState();
-const [changePageSize, setChangePageSize] = useState(); 
+//const [data, setData] = useState(obj);
 
  useEffect(() => {        
 
@@ -126,8 +122,7 @@ const [changePageSize, setChangePageSize] = useState();
    setChangePageSize(pageSize);
  },[pageSize]);
 
-// const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
-// useFetch(`${siteConfig.api.deliveries}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch();
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 

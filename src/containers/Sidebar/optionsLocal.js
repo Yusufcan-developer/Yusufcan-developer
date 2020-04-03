@@ -39,11 +39,6 @@ const options = [
       label: 'sidebar.chat',
       leftIcon: 'ion-chatbubbles',
     },
-    // {
-    //   key: 'quiz',
-    //   label: 'sidebar.quiz',
-    //   leftIcon: 'ion-chatbubbles',
-    // },
     {
       key: 'ecommerce',
       label: 'sidebar.ecommerce',

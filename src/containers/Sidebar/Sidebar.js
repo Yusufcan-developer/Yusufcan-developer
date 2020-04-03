@@ -20,7 +20,7 @@ const {
 
 export default function Sidebar() {
   const dispatch = useDispatch();
-  var url = window.location.href.toString().slice(0,22);
+  var url = window.location.href.toString().slice(0,16);
   const {
     view,
     openKeys,
@@ -91,7 +91,7 @@ export default function Sidebar() {
   const submenuColor = {
     color: customizedTheme.textColor,
   };
-  if (url === 'http://localhost:3000/') {  //Local
+  if (url === 'http://localhost') {  //Local
   console.log("location.href : ",url)
   return (
     <SidebarWrapper>
