@@ -11,7 +11,8 @@ import PageHeader from '@iso/components/utility/pageHeader';
 import { Table, Row, Col, Pagination } from "antd";
 import Collapse from '@iso/components/uielements/collapse';
 import { InputGroup } from '@iso/components/uielements/input';
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -56,8 +57,9 @@ export default function() {
     setChangePageSize(pageSize);
   },[pageSize]);
 
-  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
-  useFetch(`${siteConfig.api.cheques}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+  // const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+  // useFetch(`${siteConfig.api.cheques}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/cheques`);
   /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const onExpand = expandedKeys => {
@@ -121,12 +123,7 @@ const columns = [
     title: "Tip",
       dataIndex: "type",
       key: "type",
-      filters: [
-        { text: "Joe", value: "Joe" },
-        { text: "Jim", value: "Jim" }
-      ],
-      filteredValue: tableOptions.filteredInfo.name || null,
-      onFilter: (value, record) => record.name.includes(value),
+
       sorter: (a, b) => a.name.length - b.name.length,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "type" &&
@@ -137,6 +134,7 @@ const columns = [
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "dealerName" &&
@@ -147,6 +145,7 @@ const columns = [
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "dealerName" &&
@@ -157,6 +156,7 @@ const columns = [
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
       key: "dealerSubCode",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
@@ -167,6 +167,7 @@ const columns = [
       title: "Bölge Kodu",
       dataIndex: "regionCode",
       key: "regionCode",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "regionCode" &&
@@ -177,6 +178,7 @@ const columns = [
       title: "Bölge Adı",
       dataIndex: "regionName",
       key: "regionName",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "regionName" &&
@@ -187,6 +189,7 @@ const columns = [
       title: "Alan Kodu",
       dataIndex: "fieldCode",
       key: "fieldCode",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "fieldCode" &&
@@ -197,6 +200,7 @@ const columns = [
       title: "Alan Adı",
       dataIndex: "fieldName",
       key: "fieldName",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "fieldName" &&
@@ -207,6 +211,7 @@ const columns = [
       title: "Tutar",
       dataIndex: "amount",
       key: "amount",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "amount" &&
@@ -217,6 +222,7 @@ const columns = [
       title: "Veriliş Tarihi",
       dataIndex: "issueDate",
       key: "issueDate",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "issueDate" &&
@@ -227,6 +233,7 @@ const columns = [
       title: "İşletme İmzası",
       dataIndex: "signatureDrawer",
       key: "signatureDrawer",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "signatureDrawer" &&
@@ -237,6 +244,7 @@ const columns = [
       title: "Ödeme Yeri",
       dataIndex: "placeOfPayment",
       key: "placeOfPayment",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "placeOfPayment" &&
@@ -247,6 +255,7 @@ const columns = [
       title: "Banka",
       dataIndex: "bank",
       key: "bank",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "bank" &&
@@ -257,6 +266,7 @@ const columns = [
       title: "Durum",
       dataIndex: "status",
       key: "status",
+
       sorter: (a, b) => a.age - b.age,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "bank" &&
@@ -308,6 +318,7 @@ const columns = [
           loading={loading}
            
           pagination={{position: 'none', pageSize: pageSize}}
+          scroll={{ x: 'calc(700px + 75%)'}}
         />
         <br></br>     
         <Pagination 

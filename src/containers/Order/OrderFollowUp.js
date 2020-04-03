@@ -133,7 +133,7 @@ const OrderFlowUp = () =>  {
 
 //  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
 //  useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch('http://localhost:3000/orders');
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/orders`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -280,7 +280,7 @@ function currentPageChange(current){
         ellipsis: true
       },
       {
-        title: "fieldManager",
+        title: "Alan Yöneticisi",
         dataIndex: "fieldManager",
         key: "fieldManager",
         sorter: (a, b) => a.age - b.age,
@@ -479,6 +479,7 @@ function currentPageChange(current){
           loading={loading}
            
           pagination={{position: 'none', pageSize: pageSize}}
+          scroll={{ x: 'calc(700px + 100%)'}}
           // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
         />  
         <br></br>     

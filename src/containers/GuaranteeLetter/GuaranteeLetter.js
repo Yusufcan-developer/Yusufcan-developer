@@ -10,7 +10,8 @@ import { Table, Row, Col, Pagination } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -116,8 +117,9 @@ const [pageSize, setPageSize] = useState(20)
    setChangePageSize(pageSize);
  },[pageSize]);
 
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
-useFetch(`${siteConfig.api.letters}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+// const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+// useFetch(`${siteConfig.api.letters}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/letters`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const onExpand = expandedKeys => {
@@ -181,6 +183,7 @@ function currentPageChange(current){
         title: "Bayi Kodu",
         dataIndex: "dealerCode",
         key: "dealerCode",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "dealerName" &&
@@ -191,6 +194,7 @@ function currentPageChange(current){
         title: "Bayi Adı",
         dataIndex: "dealerName",
         key: "dealerName",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "regionCode" &&
@@ -201,6 +205,7 @@ function currentPageChange(current){
         title: "Bayi Alt Kodu",
         dataIndex: "dealerSubCode",
         key: "dealerSubCode",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
@@ -211,6 +216,7 @@ function currentPageChange(current){
         title: "Bölge Kodu",
         dataIndex: "regionCode",
         key: "regionCode",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "regionCode" &&
@@ -221,6 +227,7 @@ function currentPageChange(current){
         title: "Bölge Adı",
         dataIndex: "regionName",
         key: "regionName",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "regionName" &&
@@ -231,6 +238,7 @@ function currentPageChange(current){
         title: "Bölge Yöneticisi",
         dataIndex: "regionManager",
         key: "regionManager",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "regionManager" &&
@@ -241,6 +249,7 @@ function currentPageChange(current){
         title: "Başlangıç Tarihi",
         dataIndex: "fromDate",
         key: "fromDate",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "fromDate" &&
@@ -251,6 +260,7 @@ function currentPageChange(current){
         title: "Bitiş Tarihi",
         dataIndex: "toDate",
         key: "toDate",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "toDate" &&
@@ -261,6 +271,7 @@ function currentPageChange(current){
         title: "Döküman ID",
         dataIndex: "documentId",
         key: "documentId",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "documentId" &&
@@ -271,6 +282,7 @@ function currentPageChange(current){
         title: "TR Kodu",
         dataIndex: "trCode",
         key: "trCode",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "trCode" &&
@@ -281,6 +293,7 @@ function currentPageChange(current){
         title: "Tutar",
         dataIndex: "amount",
         key: "amount",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "amount" &&
@@ -291,6 +304,7 @@ function currentPageChange(current){
         title: "Banka",
         dataIndex: "bank",
         key: "bank",
+
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "bank" &&
@@ -301,6 +315,7 @@ function currentPageChange(current){
         title: "Şube",
         dataIndex: "branch",
         key: "branch",
+        
         sorter: (a, b) => a.age - b.age,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "branch" &&
@@ -368,7 +383,7 @@ function currentPageChange(current){
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.customerRecordDataList" />}>
+      <Box title={<IntlMessages id="page.GuaranteeLetterDataList" />}>
         <Table
           columns={columns}
           dataSource={data}
@@ -376,6 +391,7 @@ function currentPageChange(current){
           loading={loading}
            
           pagination={{position: 'none', pageSize: pageSize}}
+          scroll={{ x: 'calc(700px + 50%)'}}
         /> 
         <br></br>     
         <Pagination 

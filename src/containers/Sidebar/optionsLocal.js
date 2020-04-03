@@ -5,30 +5,37 @@ const options = [
       leftIcon: 'ion-clipboard',
     },
     {
-      key: 'orderFollowUp',
-      label: 'sidebar.orderFollowUp',
-      leftIcon: 'ion-android-mail',
-    },
-    {
-      key: 'shipping',
-      label: 'sidebar.shipping',
-      leftIcon: 'ion-android-mail',
-    },
-    {
-      key: 'customerRecords',
-      label: 'sidebar.customerRecords',
-      leftIcon: 'ion-android-mail',
-    },
-    {
-      key: 'checkingReports',
-      label: 'sidebar.checkingReports',
-      leftIcon: 'ion-android-mail',
-    },
-    {
-      key: 'lettersOfGuarantee',
-      label: 'sidebar.lettersOfGuarantee',
-      leftIcon: 'ion-android-mail',
-    },
+      key: "reportTable",
+      label: "sidebar.reportTable",
+      leftIcon: "ion-clipboard",
+      children: [
+        {
+          key: 'orderFollowUp',
+          label: 'sidebar.orderFollowUp',
+          leftIcon: 'ion-android-mail',
+        },
+        {
+          key: 'shipping',
+          label: 'sidebar.shipping',
+          leftIcon: 'ion-android-mail',
+        },
+        {
+          key: 'customerRecords',
+          label: 'sidebar.customerRecords',
+          leftIcon: 'ion-android-mail',
+        },
+        {
+          key: 'checkingReports',
+          label: 'sidebar.checkingReports',
+          leftIcon: 'ion-android-mail',
+        },
+        {
+          key: 'lettersOfGuarantee',
+          label: 'sidebar.lettersOfGuarantee',
+          leftIcon: 'ion-android-mail',
+        },
+      ],
+    },    
     {
       key: 'mailbox',
       label: 'sidebar.email',

@@ -105,10 +105,8 @@ const Shipping = () =>  {
   });
 //******************************************************************************************************************* */
 /*********************************************** CUSTOM HOOKS ************************************************************ */
-//const obj= [{"dealerCode": "deneme01", "dealerName": "narje adf","dealerSubCode":"","category":"", "type":"" ,"series":"", "dimension":"", "color":"", }];
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
-//const [data, setData] = useState(obj);
 
  useEffect(() => {        
 
@@ -122,7 +120,7 @@ const [pageSize, setPageSize] = useState(20)
    setChangePageSize(pageSize);
  },[pageSize]);
 
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch();
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/deliveries`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -217,91 +215,161 @@ function currentPageChange(current){
       },
       {
         title: "Bölge Kodu",
-        dataIndex: "category",
-        key: "category",
+        dataIndex: "regionCode",
+        key: "regionCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "category" &&
+          tableOptions.sortedInfo.columnKey === "regionCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Adı",
-        dataIndex: "type",
-        key: "type",
+        dataIndex: "regionName",
+        key: "regionName",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "type" &&
+          tableOptions.sortedInfo.columnKey === "regionName" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
         title: "Bölge Yöneticisi",
-        dataIndex: "series",
-        key: "series",
+        dataIndex: "regionManager",
+        key: "regionManager",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "series" &&
+          tableOptions.sortedInfo.columnKey === "regionManager" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Başlangıç Tarihi",
-        dataIndex: "dimension",
-        key: "dimension",
+        title: "Alan Kodu",
+        dataIndex: "fieldCode",
+        key: "fieldCode",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "dimension" &&
+          tableOptions.sortedInfo.columnKey === "fieldCode" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Bitiş Tarihi",
-        dataIndex: "color",
-        key: "color",
+        title: "Alan Adı",
+        dataIndex: "fieldName",
+        key: "fieldName",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "color" &&
+          tableOptions.sortedInfo.columnKey === "fieldName" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Döküman ID",
-        dataIndex: "surface",
-        key: "surface",
+        title: "Alan Yöneticisi",
+        dataIndex: "fieldManager",
+        key: "fieldManager",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "surface" &&
+          tableOptions.sortedInfo.columnKey === "fieldManager" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "TR Kodu",
-        dataIndex: "productionStatus",
-        key: "productionStatus",
+        title: "İrsaliye Kimliği",
+        dataIndex: "waybillId",
+        key: "waybillId",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "productionStatus" &&
+          tableOptions.sortedInfo.columnKey === "waybillId" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Tutar",
-        dataIndex: "rectifying",
-        key: "rectifying",
+        title: "Teslimat Tarihi",
+        dataIndex: "deliveryDate",
+        key: "deliveryDate",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "rectifying" &&
+          tableOptions.sortedInfo.columnKey === "deliveryDate" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       },
       {
-        title: "Banka",
-        dataIndex: "brand",
-        key: "brand",
+        title: "Teslimat Adresi",
+        dataIndex: "deliveryAddress",
+        key: "deliveryAddress",
         sorter: (a, b) => a.age - b.age,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "brand" &&
+          tableOptions.sortedInfo.columnKey === "deliveryAddress" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Sipariş No",
+        dataIndex: "orderNo",
+        key: "orderNo",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "orderNo" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Ürün Kodu",
+        dataIndex: "itemCode",
+        key: "itemCode",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "itemCode" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Ürün Açıklaması ",
+        dataIndex: "itemDescription",
+        key: "itemDescription",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "itemDescription" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Miktar",
+        dataIndex: "amount",
+        key: "amount",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "amount" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Birim",
+        dataIndex: "unit",
+        key: "unit",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "unit" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Palet No",
+        dataIndex: "plateNo",
+        key: "plateNo",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "plateNo" &&
+          tableOptions.sortedInfo.order,
+        ellipsis: true
+      },
+      {
+        title: "Tonaj",
+        dataIndex: "tonnage",
+        key: "tonnage",
+        sorter: (a, b) => a.age - b.age,
+        sortOrder:
+          tableOptions.sortedInfo.columnKey === "tonnage" &&
           tableOptions.sortedInfo.order,
         ellipsis: true
       }
@@ -312,7 +380,7 @@ function currentPageChange(current){
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.GuaranteeLetterTitle.header" />}
+        {<IntlMessages id="page.shippingReportsTitle.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
@@ -366,7 +434,7 @@ function currentPageChange(current){
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.customerRecordDataList" />}>
+      <Box title={<IntlMessages id="page.ShippingDataList" />}>
         <Table
           columns={columns}
           dataSource={data}

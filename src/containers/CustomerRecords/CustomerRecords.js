@@ -10,7 +10,8 @@ import { Table, Row, Col, Pagination } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
 import siteConfig from "@iso/config/site.config";
 
 const { Panel } = Collapse;
@@ -120,8 +121,9 @@ export default function() {
     setChangePageSize(pageSize);
   },[pageSize]);
 
- const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
- useFetch(`${siteConfig.api.transactions}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+//  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
+//  useFetch(`${siteConfig.api.transactions}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/transactions`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -196,12 +198,6 @@ export default function() {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode",
-      filters: [
-        { text: "Joe", value: "Joe" },
-        { text: "Jim", value: "Jim" }
-      ],
-      filteredValue: tableOptions.filteredInfo.name || null,
-      onFilter: (value, record) => record.name.includes(value),
       sorter: (a, b) => a.name.length - b.name.length,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "dealerCode" &&
@@ -222,12 +218,6 @@ export default function() {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
       key: "dealerSubCode",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.dealerSubCode || null,
-      onFilter: (value, record) => record.dealerSubCode.includes(value),
 
       sorter: (a, b) => a.dealerSubCode.length - b.dealerSubCode.length,
       sortOrder:
@@ -239,12 +229,6 @@ export default function() {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
       key: "regionCode",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.regionCode || null,
-      onFilter: (value, record) => record.regionCode.includes(value),
 
       sorter: (a, b) => a.regionCode.length - b.regionCode.length,
       sortOrder:
@@ -256,12 +240,6 @@ export default function() {
       title: "Bölge Adı",
       dataIndex: "regionName",
       key: "regionName",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.regionName || null,
-      onFilter: (value, record) => record.regionName.includes(value),
 
       sorter: (a, b) => a.regionName.length - b.regionName.length,
       sortOrder:
@@ -273,12 +251,6 @@ export default function() {
       title: "Alan Kodu",
       dataIndex: "fieldCode",
       key: "fieldCode",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.fieldCode || null,
-      onFilter: (value, record) => record.fieldCode.includes(value),
 
       sorter: (a, b) => a.fieldCode.length - b.fieldCode.length,
       sortOrder:
@@ -290,12 +262,6 @@ export default function() {
       title: "Alan Adı",
       dataIndex: "fieldName",
       key: "fieldName",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.fieldName || null,
-      onFilter: (value, record) => record.fieldName.includes(value),
 
       sorter: (a, b) => a.fieldName.length - b.fieldName.length,
       sortOrder:
@@ -307,12 +273,6 @@ export default function() {
       title: "Bölge Müdürü",
       dataIndex: "regionManager",
       key: "regionManager",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.regionManager || null,
-      onFilter: (value, record) => record.regionManager.includes(value),
 
       sorter: (a, b) => a.regionManager.length - b.regionManager.length,
       sortOrder:
@@ -324,12 +284,6 @@ export default function() {
       title: "Tarih",
       dataIndex: "date",
       key: "date",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.date || null,
-      onFilter: (value, record) => record.date.includes(value),
 
       sorter: (a, b) => a.date.length - b.date.length,
       sortOrder:
@@ -341,12 +295,6 @@ export default function() {
       title: "Belge numarası",
       dataIndex: "documentId",
       key: "documentId",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.documentId || null,
-      onFilter: (value, record) => record.documentId.includes(value),
  
       sorter: (a, b) => a.documentId.length - b.documentId.length,
       sortOrder:
@@ -358,12 +306,6 @@ export default function() {
       title: "TR Kod",
       dataIndex: "trCode",
       key: "trCode",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.trCode || null,
-      onFilter: (value, record) => record.trCode.includes(value),
  
       sorter: (a, b) => a.trCode.length - b.trCode.length,
       sortOrder:
@@ -375,12 +317,6 @@ export default function() {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
       key: "transactionType",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.transactionType || null,
-      onFilter: (value, record) => record.transactionType.includes(value),
  
       sorter: (a, b) => a.transactionType.length - b.transactionType.length,
       sortOrder:
@@ -392,12 +328,6 @@ export default function() {
       title: "Açıklama",
       dataIndex: "description",
       key: "description",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.description || null,
-      onFilter: (value, record) => record.description.includes(value),
  
       sorter: (a, b) => a.description.length - b.description.length,
       sortOrder:
@@ -409,12 +339,6 @@ export default function() {
       title: "Borç",
       dataIndex: "debt",
       key: "debt",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.debt || null,
-      onFilter: (value, record) => record.debt.includes(value),
  
       sorter: (a, b) => a.debt.length - b.debt.length,
       sortOrder:
@@ -426,12 +350,6 @@ export default function() {
       title: "Kredi",
       dataIndex: "credit",
       key: "credit",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.credit || null,
-      onFilter: (value, record) => record.credit.includes(value),
  
       sorter: (a, b) => a.credit.length - b.credit.length,
       sortOrder:
@@ -443,12 +361,6 @@ export default function() {
       title: "Para Birimi",
       dataIndex: "currency",
       key: "currency",
-      filters: [
-        { text: "New York", value: "New York" },
-        { text: "London", value: "London" }
-      ],
-      filteredValue: tableOptions.filteredInfo.currency || null,
-      onFilter: (value, record) => record.currency.includes(value),
  
       sorter: (a, b) => a.currency.length - b.currency.length,
       sortOrder:
@@ -522,6 +434,7 @@ export default function() {
           loading={loading}
            
           pagination={{position: 'none', pageSize: pageSize}}
+          scroll={{ x: 'calc(700px + 50%)'}}
         />
         <br></br>     
         <Pagination 
