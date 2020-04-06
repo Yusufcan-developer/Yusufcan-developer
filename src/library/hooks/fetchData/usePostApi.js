@@ -8,7 +8,7 @@ function useFetch(url, reqBody) {
   const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
   const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
   const [totalDataCount, setTotalDataCount] = useState();
-  
+  const [onChange, setOnChange] = useState(false);
 
   async function fetchUrl() {
   
@@ -39,6 +39,7 @@ function useFetch(url, reqBody) {
         setTotalPage(totalPages);
         setData(value);
         setLoading(false); 
+        setOnChange(false); 
       })
       .catch();
 

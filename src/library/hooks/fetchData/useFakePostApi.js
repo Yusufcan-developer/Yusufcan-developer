@@ -9,10 +9,20 @@ function useFetch(url) {
   const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
   const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
   const [totalDataCount, setTotalDataCount] = useState();
-  
+  const [onChange, setOnChange] = useState(false);
 
   async function fetchUrl() {
+    
+    //Fake olduğu için kullanılmıyor. Taslak...
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
 
+      body: JSON.stringify(reqBody)
+    };
 
     await fetch(url)
       .then(response => {
@@ -30,7 +40,8 @@ function useFetch(url) {
         setTotalDataCount(dataCount);
         setTotalPage(totalPages);
         setData(value);
-        setLoading(false); 
+        setLoading(false);
+        setOnChange(false); 
       })
       .catch();
 
@@ -43,7 +54,7 @@ function useFetch(url) {
     setLoading(true);
     fetchUrl();
   }, [currentPage, changePageSize]);
-  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount];
+  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
 }
 
 

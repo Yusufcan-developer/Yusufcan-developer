@@ -123,9 +123,11 @@ const OrderFlowUp = () =>  {
     setChangePageSize(pageSize);
   },[pageSize]);
 
-  // useEffect(() => {
-  //   setFromDate(fromDate);
-  // }, [fromDate]);
+  useEffect(() => {
+    setFromDate(fromDate);
+    setToDate(toDate);
+    setOnChange(true);
+  }, [fromDate, toDate]);
 
   // useEffect(() => {
   //   setToDate(toDate);
@@ -133,7 +135,8 @@ const OrderFlowUp = () =>  {
 
 //  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
 //  useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/orders`);
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
+useFetch(`http://localhost:3000/orders`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -163,7 +166,7 @@ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePage
     // setIconLoading(true);
   };
 
-  function onChange(value, dateString) {
+  function changeTimePicker(value, dateString) {
 
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
@@ -448,7 +451,7 @@ function currentPageChange(current){
                   <Col xs={{ span: 24}} sm={{span:10}} md={{span:10}}>
                     <RangePicker
                       format={siteConfig.dateFormat}
-                      onChange={onChange}
+                      onChange={changeTimePicker}
                       defaultValue={[moment(moment().toDate().getMonth()-1 , siteConfig.dateFormat), moment(moment().toDate(), siteConfig.dateFormat)]}
                       onOk={onOk}
                     />
