@@ -6,7 +6,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination } from "antd";
+import { Table, Row, Col, Pagination, Dropdown, Menu } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
@@ -14,6 +14,14 @@ import { InputGroup } from "@iso/components/uielements/input";
 import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
+import { DownOutlined } from '@ant-design/icons';
+
+const menu = (
+  <Menu>
+    <Menu.Item>Action 1</Menu.Item>
+    <Menu.Item>Action 2</Menu.Item>
+  </Menu>
+);
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -126,12 +134,8 @@ const OrderFlowUp = () =>  {
   useEffect(() => {
     setFromDate(fromDate);
     setToDate(toDate);
-    setOnChange(true);
   }, [fromDate, toDate]);
 
-  // useEffect(() => {
-  //   setToDate(toDate);
-  // }, [toDate]);
 
 //  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
 //  useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
@@ -198,6 +202,42 @@ function currentPageChange(current){
   
   console.log("current :", current);
   setlocalCurrentPage(current);
+}
+
+const expandedRowRender = () => {
+  const columns = [
+    { title: "Date", dataIndex: "date", key: "date" },
+    { title: "Name", dataIndex: "name", key: "name" },
+
+    { title: "Upgrade Status", dataIndex: "upgradeNum", key: "upgradeNum" },
+    {
+      title: "Action",
+      dataIndex: "operation",
+      key: "operation",
+      render: () => (
+        <span className="table-operation">
+          <a>Pause</a>
+          <a>Stop</a>
+          <Dropdown overlay={menu}>
+            <a>
+              More <DownOutlined />
+            </a>
+          </Dropdown>
+        </span>
+      )
+    }
+  ];
+
+  const data = [];
+  for (let i = 0; i < 3; ++i) {
+    data.push({
+      key: i,
+      date: "2014-12-24 23:12:00",
+      name: "This is production name",
+      upgradeNum: "Upgraded: 56"
+    });
+  }
+  return <Table columns={columns} dataSource={data} pagination={false} />;
 }
 
   const columns = [
@@ -480,7 +520,8 @@ function currentPageChange(current){
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-           
+          expandable={{ expandedRowRender }}
+
           pagination={{position: 'none', pageSize: pageSize}}
           scroll={{ x: 'calc(700px + 100%)'}}
           // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}

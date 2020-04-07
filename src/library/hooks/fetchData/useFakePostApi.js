@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 //import { orders } from "./dummyData/jsn";
 
-function useFetch(url) {
+function useFetch(url, reqBody) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);

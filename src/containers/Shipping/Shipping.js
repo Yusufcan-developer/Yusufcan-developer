@@ -13,6 +13,7 @@ import { InputGroup } from "@iso/components/uielements/input";
 //import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import {useFetch} from "@iso/lib/hooks/fetchData/useFakePostApi";
 import siteConfig from "@iso/config/site.config";
+import moment from 'moment';
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -107,6 +108,8 @@ const Shipping = () =>  {
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
+const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat));
+const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat));
 
  useEffect(() => {        
 
@@ -120,7 +123,9 @@ const [pageSize, setPageSize] = useState(20)
    setChangePageSize(pageSize);
  },[pageSize]);
 
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/deliveries`);
+
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
+useFetch(`http://localhost:3000/deliveries`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -145,10 +150,9 @@ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePage
     setIconLoading(true);
   };
 
-  function onChange(value, dateString) {
-    console.log("Selected Time: ", value);
-    console.log("Başlanıç Tarihi: ", dateString[0]);
-    console.log("Bitiş Tarihi: ", dateString[1]);
+  function changeTimePicker(value, dateString) {
+    setFromDate(dateString[0]);
+    setToDate(dateString[1]);
   }
 
   function onOk(value) {
@@ -411,8 +415,9 @@ function currentPageChange(current){
                 <Col xs={{span:24}} sm={{span:14}} md={{span:18}}>
                   <Col xs={{ span: 24}} sm={{span:10}} md={{span:10}}>
                     <RangePicker
-                      format="DD-MM-YYYY"
-                      onChange={onChange}
+                      format={siteConfig.dateFormat}
+                      onChange={changeTimePicker}
+                      defaultValue={[moment(moment().toDate().getMonth()-1 , siteConfig.dateFormat), moment(moment().toDate(), siteConfig.dateFormat)]}
                       onOk={onOk}
                     />
                   </Col>
