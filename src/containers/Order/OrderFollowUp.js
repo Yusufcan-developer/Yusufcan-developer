@@ -16,11 +16,7 @@ import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
 import { useGetApi } from "@iso/lib/hooks/fetchData/useFakeGetApi";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
-import NestedTab from "@iso/components/NestedTable/NestedTable";
 
-
-
-const {NestedTable} = NestedTab;
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
@@ -98,147 +94,6 @@ const formItemLayout = {
   }
 };
 
-const NstdTable = () => {
-  // const[data, loading , setOnChange] = useGetApi(`http://localhost:3000/orders`);
-
-  // const columns = [
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "orderNo",
-  //     key: "orderNo",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "orderDate",
-  //     key: "orderDate",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "type",
-  //     key: "type",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "itemCode",
-  //     key: "itemCode",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "itemCode",
-  //     key: "itemCode",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "itemDescription",
-  //     key: "itemDescription",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "description",
-  //     key: "description",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "unit",
-  //     key: "unit",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "amount",
-  //     key: "amount",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "remainingAmount",
-  //     key: "remainingAmount",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "unitPrice",
-  //     key: "unitPrice",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "vat",
-  //     key: "vat",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "distributionSuggestedAmount",
-  //     key: "distributionSuggestedAmount",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "distributionActualAmount",
-  //     key: "distributionActualAmount",
-  //     ellipsis: true
-  //   },
-  //   {
-  //     title: "Bayi",
-  //     dataIndex: "deliveryAmount",
-  //     key: "deliveryAmount",
-  //     ellipsis: true
-  //   },
-
-  // ];
-
-
-    const menu = (
-    <Menu>
-      <Menu.Item>Action 1</Menu.Item>
-      <Menu.Item>Action 2</Menu.Item>
-    </Menu>
-  );
-
-
-  const columns = [
-    { title: "Date", dataIndex: "date", key: "date" },
-    { title: "Name", dataIndex: "name", key: "name" },
-
-    { title: "Upgrade Status", dataIndex: "upgradeNum", key: "upgradeNum" },
-    {
-      title: "Action",
-      dataIndex: "operation",
-      key: "operation",
-      render: () => (
-        <span className="table-operation">
-          <a>Pause</a>
-          <a>Stop</a>
-          <Dropdown overlay={menu}>
-            <a>
-              More <DownOutlined />
-            </a>
-          </Dropdown>
-        </span>
-      )
-    }
-  ];
-
-  const data = [];
-  for (let i = 0; i < 3; ++i) {
-    data.push({
-      key: i,
-      date: "2014-12-24 23:12:00",
-      name: "This is production name",
-      upgradeNum: "Upgraded: 56"
-    });
-  }
-
-  return <Table columns={columns} dataSource={data} pagination={false} />;
-}
 
 const OrderFlowUp = () =>  {
 //******************************************************************************************************************* */
@@ -257,6 +112,7 @@ const OrderFlowUp = () =>  {
  const [pageSize, setPageSize] = useState(20)
  const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+ const [localOrderId,setLocalOrederId] = useState("");
 
 
  useEffect(() => {        
@@ -276,13 +132,16 @@ const OrderFlowUp = () =>  {
     setToDate(toDate);
   }, [fromDate, toDate]);
 
+  useEffect(() => {
+    
+  },[]);
 
 //  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
 //  useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
 useFetch(`http://localhost:3000/orders`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
 
-const [dataGetApi, loadingGetApi , setOnChangeGetApi, orderId, setOrderId] = useGetApi(`http://localhost:3000/orderNo`);
+const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetApi(`http://localhost:3000/orderNo_${localOrderId}`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -349,96 +208,90 @@ function currentPageChange(current){
 
 const expandedRowRender = (row) => {
   
-  setOrderId(row.orderNo);
+  setLocalOrederId(row.orderNo);
   console.log("order No :", row.orderNo);
 
       const columns = [
       {
-        title: "Bayi",
+        title: "Sipariş No",
         dataIndex: "orderNo",
         key: "orderNo",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Sipariş Tarihi",
         dataIndex: "orderDate",
         key: "orderDate",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Tip",
         dataIndex: "type",
         key: "type",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Ürün Kodu",
         dataIndex: "itemCode",
         key: "itemCode",
         ellipsis: true
       },
       {
-        title: "Bayi",
-        dataIndex: "itemCode",
-        key: "itemCode",
-        ellipsis: true
-      },
-      {
-        title: "Bayi",
+        title: "Ürün Açıklaması",
         dataIndex: "itemDescription",
         key: "itemDescription",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Açıklama",
         dataIndex: "description",
         key: "description",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Birim",
         dataIndex: "unit",
         key: "unit",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Miktar",
         dataIndex: "amount",
         key: "amount",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Kalan miktar",
         dataIndex: "remainingAmount",
         key: "remainingAmount",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Birim fiyat",
         dataIndex: "unitPrice",
         key: "unitPrice",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "KDV",
         dataIndex: "vat",
         key: "vat",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Dağıtım Önerilen Miktar",
         dataIndex: "distributionSuggestedAmount",
         key: "distributionSuggestedAmount",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Dağıtım Gerçek Tutar",
         dataIndex: "distributionActualAmount",
         key: "distributionActualAmount",
         ellipsis: true
       },
       {
-        title: "Bayi",
+        title: "Teslimat Tutarı",
         dataIndex: "deliveryAmount",
         key: "deliveryAmount",
         ellipsis: true
@@ -447,7 +300,7 @@ const expandedRowRender = (row) => {
     ];
 
 
-    return <Table columns={columns} dataSource={dataGetApi} pagination={false} />;
+    return <Table columns={columns} dataSource={dataGetApi}  loading={loadingGetApi} pagination={false} />;
 }
 
   const columns = [

@@ -27,7 +27,15 @@ function useGetApi(url) {
     setLoading(true);
     fetchUrl();
   }, [orderId]);
-  return [data, loading , setOnChange, orderId, setOrderId];
+
+  useEffect(() => {
+    if(orderId == null || orderId==undefined) {
+      setLoading(true);
+    }else
+    fetchUrl();
+  });
+
+  return [data, loading , setOnChange, setOrderId];
 }
 
 
