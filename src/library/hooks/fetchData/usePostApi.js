@@ -52,7 +52,7 @@ function useFetch(url, reqBody) {
     setLoading(true);
     fetchUrl();
   }, [currentPage, changePageSize]);
-  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount];
+  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
 }
 
 

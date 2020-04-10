@@ -1,6 +1,5 @@
 // hooks.js
 import { useState, useEffect } from "react";
-//import { orders } from "./dummyData/jsn";
 
 function useFetch(url, reqBody) {
   const [data, setData] = useState([]);
@@ -30,12 +29,16 @@ function useFetch(url, reqBody) {
         return response.json();
       })
       .then(data => {        
-        const value = data.data;
+        const value = data.data.slice();
+        value.forEach((item, index) => {          
+          // console.log("item =", item, index);
+          item.key = index;
+        });
         const totalPages = data.totalPages;
         const dataCount = data.totalDataCount;
-        //console.log("Data :", data );
-        console.log("data :", data );
-        console.log("value :", value );
+
+        // console.log("data :", data );
+        console.log("data :", value );
 
         setTotalDataCount(dataCount);
         setTotalPage(totalPages);
