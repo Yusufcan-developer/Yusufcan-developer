@@ -1,7 +1,7 @@
 // hooks.js
 import { useState, useEffect } from "react";
 
-function useGetApi(url) {
+function useGetApi() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [onChange, setOnChange] = useState(false);
@@ -9,13 +9,13 @@ function useGetApi(url) {
 
   async function fetchUrl() {
     
-    await fetch(url)
+    await fetch(`http://localhost:3000/orderNo_${orderId}`)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
       .then(data => {        
-
+        
         console.log("useGetApi Data :", data );
 
         setData(data);
@@ -25,15 +25,10 @@ function useGetApi(url) {
   }
   useEffect(() => {
     setLoading(true);
-    fetchUrl();
+    if(orderId != null || orderId != undefined)
+      fetchUrl();
   }, [orderId]);
 
-  useEffect(() => {
-    if(orderId == null || orderId==undefined) {
-      setLoading(true);
-    }else
-    fetchUrl();
-  });
 
   return [data, loading , setOnChange, setOrderId];
 }

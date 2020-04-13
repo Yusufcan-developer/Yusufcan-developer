@@ -112,7 +112,6 @@ const OrderFlowUp = () =>  {
  const [pageSize, setPageSize] = useState(20)
  const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
- const [localOrderId,setLocalOrederId] = useState("");
 
 
  useEffect(() => {        
@@ -132,16 +131,13 @@ const OrderFlowUp = () =>  {
     setToDate(toDate);
   }, [fromDate, toDate]);
 
-  useEffect(() => {
-    
-  },[]);
 
 //  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
 //  useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
 useFetch(`http://localhost:3000/orders`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
 
-const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetApi(`http://localhost:3000/orderNo_${localOrderId}`);
+const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetApi();
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -208,100 +204,110 @@ function currentPageChange(current){
 
 const expandedRowRender = (row) => {
   
-  setLocalOrederId(row.orderNo);
   console.log("order No :", row.orderNo);
+  setOrderId(row.orderNo);
 
-      const columns = [
-      {
-        title: "Sipariş No",
-        dataIndex: "orderNo",
-        key: "orderNo",
-        ellipsis: true
-      },
-      {
-        title: "Sipariş Tarihi",
-        dataIndex: "orderDate",
-        key: "orderDate",
-        ellipsis: true
-      },
-      {
-        title: "Tip",
-        dataIndex: "type",
-        key: "type",
-        ellipsis: true
-      },
-      {
-        title: "Ürün Kodu",
-        dataIndex: "itemCode",
-        key: "itemCode",
-        ellipsis: true
-      },
-      {
-        title: "Ürün Açıklaması",
-        dataIndex: "itemDescription",
-        key: "itemDescription",
-        ellipsis: true
-      },
-      {
-        title: "Açıklama",
-        dataIndex: "description",
-        key: "description",
-        ellipsis: true
-      },
-      {
-        title: "Birim",
-        dataIndex: "unit",
-        key: "unit",
-        ellipsis: true
-      },
-      {
-        title: "Miktar",
-        dataIndex: "amount",
-        key: "amount",
-        ellipsis: true
-      },
-      {
-        title: "Kalan miktar",
-        dataIndex: "remainingAmount",
-        key: "remainingAmount",
-        ellipsis: true
-      },
-      {
-        title: "Birim fiyat",
-        dataIndex: "unitPrice",
-        key: "unitPrice",
-        ellipsis: true
-      },
-      {
-        title: "KDV",
-        dataIndex: "vat",
-        key: "vat",
-        ellipsis: true
-      },
-      {
-        title: "Dağıtım Önerilen Miktar",
-        dataIndex: "distributionSuggestedAmount",
-        key: "distributionSuggestedAmount",
-        ellipsis: true
-      },
-      {
-        title: "Dağıtım Gerçek Tutar",
-        dataIndex: "distributionActualAmount",
-        key: "distributionActualAmount",
-        ellipsis: true
-      },
-      {
-        title: "Teslimat Tutarı",
-        dataIndex: "deliveryAmount",
-        key: "deliveryAmount",
-        ellipsis: true
-      },
-  
-    ];
+  const columns = [
+    {
+      title: "Sipariş No",
+      dataIndex: "orderNo",
+      key: "orderNo",
+      ellipsis: true
+    },
+    {
+      title: "Sipariş Tarihi",
+      dataIndex: "orderDate",
+      key: "orderDate",
+      ellipsis: true
+    },
+    {
+      title: "Tip",
+      dataIndex: "type",
+      key: "type",
+      ellipsis: true
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+      ellipsis: true
+    },
+    {
+      title: "Ürün Açıklaması",
+      dataIndex: "itemDescription",
+      key: "itemDescription",
+      ellipsis: true
+    },
+    {
+      title: "Açıklama",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true
+    },
+    {
+      title: "Birim",
+      dataIndex: "unit",
+      key: "unit",
+      ellipsis: true
+    },
+    {
+      title: "Miktar",
+      dataIndex: "amount",
+      key: "amount",
+      ellipsis: true
+    },
+    {
+      title: "Kalan miktar",
+      dataIndex: "remainingAmount",
+      key: "remainingAmount",
+      ellipsis: true
+    },
+    {
+      title: "Birim fiyat",
+      dataIndex: "unitPrice",
+      key: "unitPrice",
+      ellipsis: true
+    },
+    {
+      title: "KDV",
+      dataIndex: "vat",
+      key: "vat",
+      ellipsis: true
+    },
+    {
+      title: "Dağıtım Önerilen Miktar",
+      dataIndex: "distributionSuggestedAmount",
+      key: "distributionSuggestedAmount",
+      ellipsis: true
+    },
+    {
+      title: "Dağıtım Gerçek Tutar",
+      dataIndex: "distributionActualAmount",
+      key: "distributionActualAmount",
+      ellipsis: true
+    },
+    {
+      title: "Teslimat Tutarı",
+      dataIndex: "deliveryAmount",
+      key: "deliveryAmount",
+      ellipsis: true
+    },
+
+  ];
+
+  // fetch("http://localhost:3000/orderNo_003100001")
+  // .then(response => {
+  //    return response.json();  
+  // }).then(data => {
+  //   console.log("expandedData :",data)
+  //   return <Table columns={columns} dataSource={data}  loading={false} pagination={false} />;
+  // })
 
 
-    return <Table columns={columns} dataSource={dataGetApi}  loading={loadingGetApi} pagination={false} />;
+  return <Table columns={columns} dataSource={dataGetApi}  loading={loadingGetApi} pagination={false} />;
 }
+
+
 
   const columns = [
     
