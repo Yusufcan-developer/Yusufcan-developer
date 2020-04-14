@@ -1,22 +1,29 @@
 // hooks.js
 import { useState, useEffect } from "react";
 
-function useGetApi() {
+function useGetTreeData(url) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [onChange, setOnChange] = useState(false);
-  const [orderId, setOrderId] = useState();
 
   async function fetchUrl() {
+
+    const requestOptions = {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+        }
+      };
     
-    await fetch(`http://localhost:3000/orderNo_${orderId}`)
+    await fetch(`${url}`,requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
       .then(data => {        
         
-        console.log("useGetApi Data :", data );
+        console.log("useGetTree Data :", data );
 
         setData(data);
         setLoading(false);
@@ -24,14 +31,13 @@ function useGetApi() {
       .catch();
   }
   useEffect(() => {
-    setLoading(true);
-    if(orderId != null || orderId != undefined)
-      fetchUrl();
-  }, [orderId]);
+    setLoading(true);   
+    fetchUrl();
+  }, []);
 
 
-  return [data, loading , setOnChange, setOrderId];
+  return [data, loading , setOnChange];
 }
 
 
-export { useGetApi };
+export { useGetTreeData };

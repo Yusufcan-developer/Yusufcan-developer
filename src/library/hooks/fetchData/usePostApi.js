@@ -30,7 +30,10 @@ function useFetch(url, reqBody) {
         return response.json();
       })
       .then(data => {        
-        const value = data.data;
+        const value = data.data.slice();
+        value.forEach((item, index) => {          
+          item.key = index;
+        });
         const totalPages = data.totalPages;
         const dataCount = data.totalDataCount;
         console.log("Data :", data );

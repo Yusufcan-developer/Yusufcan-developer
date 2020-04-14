@@ -7,7 +7,7 @@ export default {
   localApiUrl: 'http://localhost:5000/api/',
   api: {
     products: 'http://192.168.0.140/b2b/api/carts/products',               //Ürünler:: POST
-    orders: 'http://192.168.0.140/b2b/api/customers/orders',               //Sipariş Üst Bilgi: POST
+    orders: 'http://192.168.0.140/b2b/api/Customers/orders',               //Sipariş Üst Bilgi: POST
     distributions: 'http://192.168.0.140/b2b/api/customers/distributions', //Dağıtım: POST
     deliveries: ' http://192.168.0.140/b2b/api/Customers/deliveries',       //Sevkiyat
     cheques: 'http://192.168.0.140/b2b/api/customers/cheques',             //Çek-Senet: POST

@@ -6,14 +6,16 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, Dropdown, Menu, Badge } from "antd";
+import { Table, Row, Col, Pagination, Dropdown, Menu, Badge, TreeSelect } from "antd";
 import { DownOutlined , PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { InputGroup } from "@iso/components/uielements/input";
-//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
-import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
-import { useGetApi } from "@iso/lib/hooks/fetchData/useFakeGetApi";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useGetOrderItems } from "@iso/lib/hooks/fetchData/useGetOrderItems";
+import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+//import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
+//import { useGetOrderItems } from "@iso/lib/hooks/fetchData/useFakeGetOrderItems";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 
@@ -21,68 +23,6 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
-const treeData = [
-  {
-    title: "SAHA - 0",
-    key: "0",
-    children: [
-      {
-        title: "BÖLGE 0",
-        key:"0-0",
-        children: [
-          {
-            title: "0-0-0-0",
-            key: "0-0-0-0"
-          },
-          {
-            title: "0-0-0-1",
-            key: "0-0-0-1"
-          },
-          {
-            title: "0-0-0-2",
-            key: "0-0-0-2"
-          }
-        ]
-      },
-      {
-        title: "BÖLGE 1",
-        key:"0-1",
-        children: [
-          {
-            title: "0-0-1-0",
-            key: "0-0-1-0"
-          },
-          {
-            title: "0-0-1-1",
-            key: "0-0-1-1"
-          },
-          {
-            title: "0-0-1-2",
-            key: "0-0-1-2"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    title: "SAHA - 1",
-    key:"1",
-    children: [
-      {
-        title: "0-1-0-0",
-        key: "0-1-0-0"
-      },
-      {
-        title: "0-1-0-1",
-        key: "0-1-0-1"
-      },
-      {
-        title: "0-1-0-2",
-        key: "0-1-0-2"
-      }
-    ]
-  }
-];
 const formItemLayout = {
   labelCol: {
     xs: { span: 4 },
@@ -132,12 +72,14 @@ const OrderFlowUp = () =>  {
   }, [fromDate, toDate]);
 
 
-//  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
-//  useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
-useFetch(`http://localhost:3000/orders`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
+ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
+ useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+// const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
+// useFetch(`http://localhost:3000/orders`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
 
-const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetApi();
+const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`http://192.168.0.140/b2b/api/Customers/orders/`);
+
+const [treeData, loadingTree , setOnChangeTree] = useGetTreeData("http://192.168.0.140/b2b/api/Customers/accounts-tree");
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -541,16 +483,12 @@ const expandedRowRender = (row) => {
                       //{...formItemLayout}
                       label={<IntlMessages id="page.dealerCodeTitle" />}
                     >
-                      <Tree
-                        checkable
-                        onExpand={onExpand}
-                        expandedKeys={expandedKeys}
-                        autoExpandParent={autoExpandParent}
-                        onCheck={onCheck}
-                        checkedKeys={checkedKeys}
-                        onSelect={onSelect}
-                        selectedKeys={selectedKeys}
+                      <TreeSelect                      
                         treeData={treeData}
+                        treeCheckable={true}
+                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}      
+                        placeholder={"Please select"}
+                        showSearch={true}
                       />
                     </FormItem>
                   </Form>
