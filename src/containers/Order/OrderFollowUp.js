@@ -1,21 +1,20 @@
 import React, {  useState, useEffect } from "react";
-import Tree from "@iso/components/uielements/tree";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, Dropdown, Menu, Badge, TreeSelect } from "antd";
-import { DownOutlined , PoweroffOutlined } from '@ant-design/icons';
+import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import { InputGroup } from "@iso/components/uielements/input";
+import Input, {
+  InputGroup,
+} from '@iso/components/uielements/input';
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetOrderItems } from "@iso/lib/hooks/fetchData/useGetOrderItems";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
-//import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
-//import { useGetOrderItems } from "@iso/lib/hooks/fetchData/useFakeGetOrderItems";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 
@@ -37,6 +36,7 @@ const formItemLayout = {
 
 const OrderFlowUp = () =>  {
 //******************************************************************************************************************* */
+  const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState(); 
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [checkedKeys, setCheckedKeys] = useState();
@@ -52,17 +52,14 @@ const OrderFlowUp = () =>  {
  const [pageSize, setPageSize] = useState(20)
  const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+ const [dealerCode,setDealerCode]=useState()
 
 
- useEffect(() => {        
-
-    console.log("currentPage!", localCurrentPage);
-
+ useEffect(() => {
     setCurrentPage(localCurrentPage);  
   },[localCurrentPage]);
   
   useEffect(() => { 
-    console.log("pageSize!", pageSize);
     setChangePageSize(pageSize);
   },[pageSize]);
 
@@ -73,13 +70,11 @@ const OrderFlowUp = () =>  {
 
 
  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
- useFetch(`${siteConfig.api.orders}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
-// const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
-// useFetch(`http://localhost:3000/orders`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
+ useFetch(`${siteConfig.api.orders}`, {"dealerCode":dealerCode, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });//, "from": fromDate , "to": toDate eklenecek...
 
-const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`http://192.168.0.140/b2b/api/Customers/orders/`);
+const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
 
-const [treeData, loadingTree , setOnChangeTree] = useGetTreeData("http://192.168.0.140/b2b/api/Customers/accounts-tree");
+const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -106,10 +101,13 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData("http://192.168
     setSelectedKeys(selectedKeys);
   };
   const searchButton = () => {
-    // setIconLoading(true);
     setOnChange(true);
   };
-
+  
+  function onChangeDealerCode(value) {
+    console.log('xxxx',value);
+    setDealerCode(value);
+  };
   function changeTimePicker(value, dateString) {
 
     setFromDate(dateString[0]);
@@ -138,17 +136,16 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData("http://192.168
   }
 
  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-function currentPageChange(current){
-  
+function currentPageChange(current){  
   console.log("current :", current);
   setlocalCurrentPage(current);
 }
 
-const expandedRowRender = (row) => {
-  
+const expandedRowRender = (row) => {  
   console.log("order No :", row.orderNo);
   setOrderId(row.orderNo);
-
+  
+  //Order Detail Columns
   const columns = [
     {
       title: "Sipariş No",
@@ -236,21 +233,11 @@ const expandedRowRender = (row) => {
     },
 
   ];
-
-  // fetch("http://localhost:3000/orderNo_003100001")
-  // .then(response => {
-  //    return response.json();  
-  // }).then(data => {
-  //   console.log("expandedData :",data)
-  //   return <Table columns={columns} dataSource={data}  loading={false} pagination={false} />;
-  // })
-
-
+  
   return <Table columns={columns} dataSource={dataGetApi}  loading={loadingGetApi} pagination={false} />;
 }
 
-
-
+  //Order Columns
   const columns = [
     
       {
@@ -465,8 +452,6 @@ const expandedRowRender = (row) => {
       },
   ];
 
-
-  
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -485,9 +470,10 @@ const expandedRowRender = (row) => {
                     >
                       <TreeSelect                      
                         treeData={treeData}
+                        onChange={onChangeDealerCode}
                         treeCheckable={true}
-                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}      
-                        placeholder={"Please select"}
+                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
+                        placeholder={"Bayi Kodu Seçiniz"}
                         showSearch={true}
                       />
                     </FormItem>
@@ -499,7 +485,7 @@ const expandedRowRender = (row) => {
                     <RangePicker
                       format={siteConfig.dateFormat}
                       onChange={changeTimePicker}
-                      defaultValue={[moment(moment().toDate().getMonth()-1 , siteConfig.dateFormat), moment(moment().toDate(), siteConfig.dateFormat)]}
+                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
                       onOk={onOk}
                     />
                   </Col>
@@ -514,6 +500,13 @@ const expandedRowRender = (row) => {
                       {<IntlMessages id="forms.button.label_Search" />}
                     </Button>
                   </Col>
+                  <Col span={4}>
+                    <Input size="small"
+                      placeholder="Ara"
+                      style={{ marginBottom: '15px' }}
+                      onChange={event => setSearchKey(event.target.value)}
+                    />
+                </Col>
                 </Col>
               </Row>
             </InputGroup>
@@ -521,14 +514,13 @@ const expandedRowRender = (row) => {
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.orderFollowUpDataList" />}>
+      <Box >
         <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
           expandable={{expandedRowRender}}
-
           pagination={false}
           scroll={{ x: 'calc(700px + 100%)'}}
           // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}

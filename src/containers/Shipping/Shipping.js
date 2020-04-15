@@ -1,18 +1,19 @@
 import React, {  useState, useEffect } from "react";
-import Tree from "@iso/components/uielements/tree";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, Dropdown, Menu, Badge } from "antd";
+import { Table, Row, Col, Pagination,  TreeSelect } from "antd";
 import { DownOutlined , PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import { InputGroup } from "@iso/components/uielements/input";
-//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
-import {useFetch} from "@iso/lib/hooks/fetchData/useFakePostApi";
+import Input, {
+  InputGroup,
+} from '@iso/components/uielements/input';
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 
@@ -20,68 +21,7 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
-const treeData = [
-  {
-    title: "SAHA - 0",
-    key: "0",
-    children: [
-      {
-        title: "BÖLGE 0",
-        key:"0-0",
-        children: [
-          {
-            title: "0-0-0-0",
-            key: "0-0-0-0"
-          },
-          {
-            title: "0-0-0-1",
-            key: "0-0-0-1"
-          },
-          {
-            title: "0-0-0-2",
-            key: "0-0-0-2"
-          }
-        ]
-      },
-      {
-        title: "BÖLGE 1",
-        key:"0-1",
-        children: [
-          {
-            title: "0-0-1-0",
-            key: "0-0-1-0"
-          },
-          {
-            title: "0-0-1-1",
-            key: "0-0-1-1"
-          },
-          {
-            title: "0-0-1-2",
-            key: "0-0-1-2"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    title: "SAHA - 1",
-    key:"1",
-    children: [
-      {
-        title: "0-1-0-0",
-        key: "0-1-0-0"
-      },
-      {
-        title: "0-1-0-1",
-        key: "0-1-0-1"
-      },
-      {
-        title: "0-1-0-2",
-        key: "0-1-0-2"
-      }
-    ]
-  }
-];
+
 const formItemLayout = {
   labelCol: {
     xs: { span: 4 },
@@ -96,6 +36,7 @@ const formItemLayout = {
 
 const Shipping = () =>  {
 //******************************************************************************************************************* */
+  const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState(); 
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [checkedKeys, setCheckedKeys] = useState();
@@ -105,12 +46,15 @@ const Shipping = () =>  {
     sortedInfo: "",
     filteredInfo: ""
   });
+
+  const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 //******************************************************************************************************************* */
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
-const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat));
+const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
 const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat));
+const [dealerCode,setDealerCode]=useState()
 
  useEffect(() => {        
 
@@ -126,7 +70,7 @@ const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFo
 
 
 const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
-useFetch(`http://localhost:3000/deliveries`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize , "from": fromDate , "to": toDate });
+useFetch(`${siteConfig.api.deliveries}`, { });
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -147,10 +91,12 @@ useFetch(`http://localhost:3000/deliveries`, { "pageIndex": localCurrentPage - 1
     console.log("onSelect", info);
     setSelectedKeys(selectedKeys);
   };
-  const enterIconLoading = () => {
-    setIconLoading(true);
+  const searchButton = () => {
+    setOnChange(true);
   };
-
+  function onChangeDealerCode(value) {
+    setDealerCode(value);
+  };
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
@@ -398,16 +344,13 @@ function currentPageChange(current){
                       //{...formItemLayout}
                       label={<IntlMessages id="page.dealerCodeTitle" />}
                     >
-                      <Tree
-                        checkable
-                        onExpand={onExpand}
-                        expandedKeys={expandedKeys}
-                        autoExpandParent={autoExpandParent}
-                        onCheck={onCheck}
-                        checkedKeys={checkedKeys}
-                        onSelect={onSelect}
-                        selectedKeys={selectedKeys}
+                      <TreeSelect                      
                         treeData={treeData}
+                        onChange={onChangeDealerCode}
+                        treeCheckable={true}
+                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
+                        placeholder={"Bayi Kodu Seçiniz"}
+                        showSearch={true}
                       />
                     </FormItem>
                   </Form>
@@ -418,21 +361,28 @@ function currentPageChange(current){
                     <RangePicker
                       format={siteConfig.dateFormat}
                       onChange={changeTimePicker}
-                      defaultValue={[moment(moment().toDate().getMonth()-1 , siteConfig.dateFormat), moment(moment().toDate(), siteConfig.dateFormat)]}
+                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
                       onOk={onOk}
                     />
                   </Col>
 
                   <Col xs={{ span: 24}} sm={{span:4}} md={{span:8 }}>
-                    <Button
+                  <Button
                       type="primary"
-                      icon="poweroff"
+                      icon={<PoweroffOutlined />}
                       loading={iconLoading}
-                      onClick={enterIconLoading}
+                      onClick={searchButton}
                     >
                       {<IntlMessages id="forms.button.label_Search" />}
                     </Button>
                   </Col>
+                  <Col span={4}>
+                    <Input size="small"
+                      placeholder="Ara"
+                      style={{ marginBottom: '15px' }}
+                      onChange={event => setSearchKey(event.target.value)}
+                    />
+                </Col>
                 </Col>
               </Row>
             </InputGroup>
@@ -440,7 +390,7 @@ function currentPageChange(current){
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.ShippingDataList" />}>
+      <Box>
         <Table
           columns={columns}
           dataSource={data}

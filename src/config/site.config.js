@@ -8,12 +8,14 @@ export default {
   api: {
     products: 'http://192.168.0.140/b2b/api/carts/products',               //Ürünler:: POST
     orders: 'http://192.168.0.140/b2b/api/Customers/orders',               //Sipariş Üst Bilgi: POST
+    orderDetail: 'http://192.168.0.140/b2b/api/Customers/orders/',               //Sipariş Kalem Bilgi: POST
     distributions: 'http://192.168.0.140/b2b/api/customers/distributions', //Dağıtım: POST
     deliveries: ' http://192.168.0.140/b2b/api/Customers/deliveries',       //Sevkiyat
     cheques: 'http://192.168.0.140/b2b/api/customers/cheques',             //Çek-Senet: POST
     letters: 'http://192.168.0.140/b2b/api/customers/letters',             //Teminat Mektupları: POST
     accounts: 'http://192.168.0.140/b2b/api/customers/accounts',           //Bayi Listesi: POST
     transactions: 'http://192.168.0.140/b2b/api/customers/transactions',   //Cari Hareketler: POST
+    accountsTree:'http://192.168.0.140/b2b/api/Customers/accounts-tree',   //Bayi kodları(Tree) listesi :GET
   },
   dateFormat:'DD-MM-YYYY',
   google: {

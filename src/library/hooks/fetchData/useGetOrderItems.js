@@ -17,7 +17,7 @@ function useGetOrderItems(url) {
         }
       };
     
-    await fetch(`${url}${orderId}`,requestOptions)
+    await fetch(url+orderId,requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();

@@ -6,80 +6,22 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import { InputGroup } from "@iso/components/uielements/input";
-//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
-import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
+import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import Input, {
+  InputGroup,
+} from '@iso/components/uielements/input';
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
+import moment from 'moment';
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
-const treeData = [
-  {
-    title: "SAHA - 0",
-    key: "0",
-    children: [
-      {
-        title: "BÖLGE 0",
-        key:"0-0",
-        children: [
-          {
-            title: "0-0-0-0",
-            key: "0-0-0-0"
-          },
-          {
-            title: "0-0-0-1",
-            key: "0-0-0-1"
-          },
-          {
-            title: "0-0-0-2",
-            key: "0-0-0-2"
-          }
-        ]
-      },
-      {
-        title: "BÖLGE 1",
-        key:"0-1",
-        children: [
-          {
-            title: "0-0-1-0",
-            key: "0-0-1-0"
-          },
-          {
-            title: "0-0-1-1",
-            key: "0-0-1-1"
-          },
-          {
-            title: "0-0-1-2",
-            key: "0-0-1-2"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    title: "SAHA - 1",
-    key:"1",
-    children: [
-      {
-        title: "0-1-0-0",
-        key: "0-1-0-0"
-      },
-      {
-        title: "0-1-0-1",
-        key: "0-1-0-1"
-      },
-      {
-        title: "0-1-0-2",
-        key: "0-1-0-2"
-      }
-    ]
-  }
-];
 const formItemLayout = {
   labelCol: {
     xs: { span: 4 },
@@ -92,6 +34,7 @@ const formItemLayout = {
 };
 
 export default function() {
+  const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
   const [checkedKeys, setCheckedKeys] = React.useState();
@@ -104,11 +47,12 @@ export default function() {
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
+const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
+const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+const [dealerCode,setDealerCode]=useState()
 
- useEffect(() => {        
-
+ useEffect(() => {
    console.log("currentPage!", localCurrentPage);
-
    setCurrentPage(localCurrentPage);  
  },[localCurrentPage]);
  
@@ -117,9 +61,14 @@ const [pageSize, setPageSize] = useState(20)
    setChangePageSize(pageSize);
  },[pageSize]);
 
-// const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
-// useFetch(`${siteConfig.api.letters}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/letters`);
+ useEffect(() => {
+  setFromDate(fromDate);
+  setToDate(toDate);
+}, [fromDate, toDate]);
+
+ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount,setOnChange] = 
+ useFetch(`${siteConfig.api.letters}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const onExpand = expandedKeys => {
@@ -130,24 +79,6 @@ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePage
     setAutoExpandParent(false);
   };
 
-  const onCheck = checkedKeys => {
-    console.log("onCheck", checkedKeys);
-    setCheckedKeys(checkedKeys);
-  };
-
-  const onSelect = (selectedKeys, info) => {
-    console.log("onSelect", info);
-    setSelectedKeys(selectedKeys);
-  };
-  const enterIconLoading = () => {
-    setIconLoading(true);
-  };
-
-  function onChange(value, dateString) {
-    console.log("Selected Time: ", value);
-    console.log("Başlanıç Tarihi: ", dateString[0]);
-    console.log("Bitiş Tarihi: ", dateString[1]);
-  }
 
   function onOk(value) {
     console.log("onOk: ", value);
@@ -169,7 +100,19 @@ const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePage
     setPageSize(pageSize);
     setlocalCurrentPage(current);
   }
+  const searchButton = () => {
+    setOnChange(true);
+  };
+  
+  function onChangeDealerCode(value) {
+    console.log('xxxx',value);
+    setDealerCode(value);
+  };
+  function changeTimePicker(value, dateString) {
 
+    setFromDate(dateString[0]);
+    setToDate(dateString[1]);
+  }
  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
 function currentPageChange(current){
   
@@ -342,16 +285,13 @@ function currentPageChange(current){
                       //{...formItemLayout}
                       label={<IntlMessages id="page.dealerCodeTitle" />}
                     >
-                      <Tree
-                        checkable
-                        onExpand={onExpand}
-                        expandedKeys={expandedKeys}
-                        autoExpandParent={autoExpandParent}
-                        onCheck={onCheck}
-                        checkedKeys={checkedKeys}
-                        onSelect={onSelect}
-                        selectedKeys={selectedKeys}
+                      <TreeSelect                      
                         treeData={treeData}
+                        onChange={onChangeDealerCode}
+                        treeCheckable={true}
+                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
+                        placeholder={"Bayi Kodu Seçiniz"}
+                        showSearch={true}
                       />
                     </FormItem>
                   </Form>
@@ -359,23 +299,31 @@ function currentPageChange(current){
 
                 <Col xs={{span:24}} sm={{span:14}} md={{span:18}}>
                   <Col xs={{ span: 24}} sm={{span:10}} md={{span:10}}>
-                    <RangePicker
-                      format="DD-MM-YYYY"
-                      onChange={onChange}
+                  <RangePicker
+                      format={siteConfig.dateFormat}
+                      onChange={changeTimePicker}
+                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
                       onOk={onOk}
                     />
                   </Col>
 
                   <Col xs={{ span: 24}} sm={{span:4}} md={{span:8 }}>
-                    <Button
+                  <Button
                       type="primary"
-                      icon="poweroff"
+                      icon={<PoweroffOutlined />}
                       loading={iconLoading}
-                      onClick={enterIconLoading}
+                      onClick={searchButton}
                     >
                       {<IntlMessages id="forms.button.label_Search" />}
                     </Button>
                   </Col>
+                  <Col span={4}>
+                    <Input size="small"
+                      placeholder="Ara"
+                      style={{ marginBottom: '15px' }}
+                      onChange={event => setSearchKey(event.target.value)}
+                    />
+                </Col>
                 </Col>
               </Row>
             </InputGroup>

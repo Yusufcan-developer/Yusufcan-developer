@@ -1,14 +1,15 @@
 const options = [
   {
+    key: "orderCreate",
+    label: "sidebar.orderCreate",
+    leftIcon: "ion-clipboard"
+  },
+  {
     key: "reportTable",
-    label: "sidebar.ecommerce",
-    leftIcon: "ion-clipboard",
+    label: "sidebar.reportTable",
+    leftIcon: "ion-ios-paper",
     children: [
-      {
-        key: "orderCreate",
-        label: "sidebar.orderCreate",
-        leftIcon: "ion-clipboard"
-      },
+     
       {
         key: "orderFollowUp",
         label: "sidebar.orderFollowUp",

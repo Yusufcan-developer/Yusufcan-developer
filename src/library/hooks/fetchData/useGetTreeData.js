@@ -16,7 +16,7 @@ function useGetTreeData(url) {
         }
       };
     
-    await fetch(`${url}`,requestOptions)
+    await fetch(url,requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();

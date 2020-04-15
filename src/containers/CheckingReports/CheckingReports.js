@@ -1,19 +1,21 @@
 import React, {  useState, useEffect } from "react";
-import Tree from '@iso/components/uielements/tree';
-import Form from '@iso/components/uielements/form';
-import Box from '@iso/components/utility/box';
-import LayoutWrapper from '@iso/components/utility/layoutWrapper.js';
-import IntlMessages from '@iso/components/utility/intlMessages';
-import DatePicker from '@iso/components/uielements/datePicker';
-import Button from '@iso/components/uielements/button';
-import TableDemoStyle from '../Tables/AntTables/Demo.styles';
-import PageHeader from '@iso/components/utility/pageHeader';
-import { Table, Row, Col, Pagination } from "antd";
-import Collapse from '@iso/components/uielements/collapse';
-import { InputGroup } from '@iso/components/uielements/input';
-//import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
-import { useFetch } from "@iso/lib/hooks/fetchData/useFakePostApi";
+import Form from "@iso/components/uielements/form";
+import Box from "@iso/components/utility/box";
+import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
+import IntlMessages from "@iso/components/utility/intlMessages";
+import DatePicker from "@iso/components/uielements/datePicker";
+import Button from "@iso/components/uielements/button";
+import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { PoweroffOutlined } from '@ant-design/icons';
+import PageHeader from "@iso/components/utility/pageHeader";
+import Collapse from "@iso/components/uielements/collapse";
+import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import Input, {
+  InputGroup,
+} from '@iso/components/uielements/input';
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
+import moment from 'moment';
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -22,72 +24,62 @@ const { RangePicker } = DatePicker;
 const formItemLayout = {
   labelCol: {
     xs: { span: 4 },
-    sm: { span: 2 },
+    sm: { span: 2 }
   },
   wrapperCol: {
-    xs: { span: 12 },
-    sm: { span: 5 },
-  },
+    xs: { span: 16 },
+    sm: { span: 8 }
+  }
 };
 
-export default function() {
+const CheckingReports = () =>  {
 
-  const [expandedKeys, setExpandedKeys] = React.useState();
-  const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState([]);
   const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
   }); 
   /*********************************************** CUSTOM HOOKS ************************************************************ */
- const [localCurrentPage, setlocalCurrentPage] = useState(1);
- const [pageSize, setPageSize] = useState(20)
+  const [searchKey, setSearchKey] = useState('');
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20)
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
+  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+  const [dealerCode, setDealerCode] = useState()
 
-  useEffect(() => {        
-
-    console.log("currentPage!", localCurrentPage);
-
+  useEffect(() => {
     setCurrentPage(localCurrentPage);  
   },[localCurrentPage]);
   
-  useEffect(() => { 
-    console.log("pageSize!", pageSize);
+  useEffect(() => {
     setChangePageSize(pageSize);
   },[pageSize]);
 
-  // const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = 
-  // useFetch(`${siteConfig.api.cheques}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
-  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount] = useFetch(`http://localhost:3000/cheques`);
+  useEffect(() => {
+    setFromDate(fromDate);
+    setToDate(toDate);
+  }, [fromDate, toDate]);
+
+   const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount,setOnChange] = 
+   useFetch(`${siteConfig.api.cheques}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+
+   const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
   /*********************************************** CUSTOM HOOKS ************************************************************ */
 
-  const onExpand = expandedKeys => {
-    console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
-    // or, you can remove all expanded children keys.
-
-    setExpandedKeys(expandedKeys);
-    setAutoExpandParent(false);
+  const searchButton = () => {
+    setOnChange(true);
   };
-
-  const onCheck = checkedKeys => {
-    console.log("onCheck", checkedKeys);
-    setCheckedKeys(checkedKeys);
+  
+  function onChangeDealerCode(value) {
+    console.log('xxxx',value);
+    setDealerCode(value);
   };
+  function changeTimePicker(value, dateString) {
 
-  const onSelect = (selectedKeys, info) => {
-    console.log("onSelect", info);
-    setSelectedKeys(selectedKeys);
-  };
-  const enterIconLoading = () => {
-    setIconLoading(true);
-  };
+    setFromDate(dateString[0]);
+    setToDate(dateString[1]);
+  }
 
-function onChange(value, dateString) {
-  console.log('Selected Time: ', value);
-  console.log('Başlanıç Tarihi: ', dateString[0]);
-  console.log('Bitiş Tarihi: ', dateString[1]);
-}
 
 function onOk(value) {
   console.log('onOk: ', value);
@@ -284,25 +276,51 @@ const columns = [
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <InputGroup>
               <Row justify="start" align="middle" gutter={24}>
-                <Col xs={{ span: 24 }} sm={{ span: 8 }} md={{ span: 10 }}>
-                  <RangePicker
-                    format="DD-MM-YYYY"
-                    onChange={onChange}
-                    onOk={onOk}
-                  />
-
-                  
+                <Col xs={{span:24}} sm={{span:8}} md={{span:6}}>
+                  <Form>
+                    <FormItem
+                      //{...formItemLayout}
+                      label={<IntlMessages id="page.dealerCodeTitle" />}
+                    >
+                      <TreeSelect                      
+                        treeData={treeData}
+                        onChange={onChangeDealerCode}
+                        treeCheckable={true}
+                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
+                        placeholder={"Bayi Kodu Seçiniz"}
+                        showSearch={true}
+                      />
+                    </FormItem>
+                  </Form>
                 </Col>
 
-                <Col xs={{ span: 24 }} sm={{ span: 16 }} md={{ span: 14 }}>
-                <Button
-                    type="primary"
-                    icon="poweroff"
-                    loading={iconLoading}
-                    onClick={enterIconLoading}
-                  >
-                    {<IntlMessages id="forms.button.label_Search" />}
-                  </Button>
+                <Col xs={{span:24}} sm={{span:14}} md={{span:18}}>
+                  <Col xs={{ span: 24}} sm={{span:10}} md={{span:10}}>
+                    <RangePicker
+                      format={siteConfig.dateFormat}
+                      onChange={changeTimePicker}
+                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
+                      onOk={onOk}
+                    />
+                  </Col>
+
+                  <Col xs={{ span: 24}} sm={{span:4}} md={{span:8 }}>
+                    <Button
+                      type="primary"
+                      icon={<PoweroffOutlined />}
+                      loading={iconLoading}
+                      onClick={searchButton}
+                    >
+                      {<IntlMessages id="forms.button.label_Search" />}
+                    </Button>
+                  </Col>
+                  <Col span={4}>
+                    <Input size="small"
+                      placeholder="Ara"
+                      style={{ marginBottom: '15px' }}
+                      onChange={event => setSearchKey(event.target.value)}
+                    />
+                </Col>
                 </Col>
               </Row>
             </InputGroup>
@@ -311,15 +329,16 @@ const columns = [
       </Box>
       {/* Data list volume */}
       <Box title={<IntlMessages id="page.checkingReportsDataList" />}>
-        <Table
+      <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-           
-          pagination={{position: 'none', pageSize: pageSize}}
-          scroll={{ x: 'calc(700px + 75%)'}}
-        />
+
+          pagination={false}
+          scroll={{ x: 'calc(700px + 100%)'}}
+          // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
+        />  
         <br></br>     
         <Pagination 
           showSizeChanger
@@ -333,3 +352,4 @@ const columns = [
     </LayoutWrapper>
   );
 }
+export default CheckingReports;

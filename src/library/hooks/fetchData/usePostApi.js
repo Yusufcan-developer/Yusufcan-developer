@@ -54,7 +54,7 @@ function useFetch(url, reqBody) {
   useEffect(() => {
     setLoading(true);
     fetchUrl();
-  }, [currentPage, changePageSize]);
+  }, [currentPage, changePageSize,onChange]);
   return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
 }
 
