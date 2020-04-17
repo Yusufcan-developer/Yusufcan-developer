@@ -277,12 +277,10 @@ function currentPageChange(current){
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-            <InputGroup>
               <Row justify="start" align="middle" gutter={24}>
-                <Col xs={{span:24}} sm={{span:8}} md={{span:6}}>
+                <Col xs={{span:24}} sm={{span:8}}>
                   <Form>
                     <FormItem
-                      //{...formItemLayout}
                       label={<IntlMessages id="page.dealerCodeTitle" />}
                     >
                       <TreeSelect                      
@@ -292,23 +290,22 @@ function currentPageChange(current){
                         showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
                         placeholder={"Bayi Kodu Seçiniz"}
                         showSearch={true}
-                      />
-                    </FormItem>
-                  </Form>
-                </Col>
+                        style={{ marginBottom: '8px' }}
+                      />             
 
-                <Col xs={{span:24}} sm={{span:14}} md={{span:18}}>
-                  <Col xs={{ span: 24}} sm={{span:10}} md={{span:10}}>
-                  <RangePicker
+                    <RangePicker
                       format={siteConfig.dateFormat}
                       onChange={changeTimePicker}
                       defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
                       onOk={onOk}
+                      style={{ marginBottom: '8px' }}
                     />
-                  </Col>
-
-                  <Col xs={{ span: 24}} sm={{span:4}} md={{span:8 }}>
-                  <Button
+                     <Input size="small"
+                      placeholder="Ara"
+                      style={{ marginBottom: '8px' }}
+                      onChange={event => setSearchKey(event.target.value)}
+                    />
+                     <Button
                       type="primary"
                       icon={<PoweroffOutlined />}
                       loading={iconLoading}
@@ -316,17 +313,10 @@ function currentPageChange(current){
                     >
                       {<IntlMessages id="forms.button.label_Search" />}
                     </Button>
-                  </Col>
-                  <Col span={4}>
-                    <Input size="small"
-                      placeholder="Ara"
-                      style={{ marginBottom: '15px' }}
-                      onChange={event => setSearchKey(event.target.value)}
-                    />
-                </Col>
-                </Col>
+                    </FormItem>
+                  </Form> 
+</Col>       
               </Row>
-            </InputGroup>
           </Panel>
         </Collapse>
       </Box>
