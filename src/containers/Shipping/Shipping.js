@@ -47,7 +47,7 @@ const Shipping = () =>  {
     filteredInfo: ""
   });
 
-  const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+
 //******************************************************************************************************************* */
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
@@ -68,9 +68,11 @@ const [dealerCode,setDealerCode]=useState()
    setChangePageSize(pageSize);
  },[pageSize]);
 
+const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+
 
 const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
-useFetch(`${siteConfig.api.deliveries}`, { });
+useFetch(`${siteConfig.api.deliveries}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 

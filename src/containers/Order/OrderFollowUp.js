@@ -9,10 +9,8 @@ import { Table, Row, Col, Pagination, TreeSelect } from "antd";
 import { PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import Input, {
-  InputGroup,
-} from '@iso/components/uielements/input';
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import Input, { InputGroup } from '@iso/components/uielements/input';
+import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
 import { useGetOrderItems } from "@iso/lib/hooks/fetchData/useGetOrderItems";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import siteConfig from "@iso/config/site.config";
@@ -69,19 +67,13 @@ const OrderFlowUp = () =>  {
   }, [fromDate, toDate]);
 
 
- const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
- useFetch(`${siteConfig.api.orders}`, {"dealerCode":dealerCode, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });//, "from": fromDate , "to": toDate eklenecek...
+const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] = 
+useOrderFollowData(`${siteConfig.api.orders}`, {"dealerCode":dealerCode, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });//, "from": fromDate , "to": toDate eklenecek...
 
 const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
 
 const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
-
-
-// const pagingChange = e => {
-//   setCurrentPage(e); 
-//   useFetch(`${siteConfig.api.products}`, { "pageIndex": e , "pageCount": 10 });
-// }
 
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
@@ -141,101 +133,105 @@ function currentPageChange(current){
   setlocalCurrentPage(current);
 }
 
-const expandedRowRender = (row) => {  
-  console.log("order No :", row.orderNo);
-  setOrderId(row.orderNo);
-  
-  //Order Detail Columns
-  const columns = [
-    {
-      title: "Sipariş No",
-      dataIndex: "orderNo",
-      key: "orderNo",
-      ellipsis: true
-    },
-    {
-      title: "Sipariş Tarihi",
-      dataIndex: "orderDate",
-      key: "orderDate",
-      ellipsis: true
-    },
-    {
-      title: "Tip",
-      dataIndex: "type",
-      key: "type",
-      ellipsis: true
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-      ellipsis: true
-    },
-    {
-      title: "Ürün Açıklaması",
-      dataIndex: "itemDescription",
-      key: "itemDescription",
-      ellipsis: true
-    },
-    {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description",
-      ellipsis: true
-    },
-    {
-      title: "Birim",
-      dataIndex: "unit",
-      key: "unit",
-      ellipsis: true
-    },
-    {
-      title: "Miktar",
-      dataIndex: "amount",
-      key: "amount",
-      ellipsis: true
-    },
-    {
-      title: "Kalan miktar",
-      dataIndex: "remainingAmount",
-      key: "remainingAmount",
-      ellipsis: true
-    },
-    {
-      title: "Birim fiyat",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
-      ellipsis: true
-    },
-    {
-      title: "KDV",
-      dataIndex: "vat",
-      key: "vat",
-      ellipsis: true
-    },
-    {
-      title: "Dağıtım Önerilen Miktar",
-      dataIndex: "distributionSuggestedAmount",
-      key: "distributionSuggestedAmount",
-      ellipsis: true
-    },
-    {
-      title: "Dağıtım Gerçek Tutar",
-      dataIndex: "distributionActualAmount",
-      key: "distributionActualAmount",
-      ellipsis: true
-    },
-    {
-      title: "Teslimat Tutarı",
-      dataIndex: "deliveryAmount",
-      key: "deliveryAmount",
-      ellipsis: true
-    },
 
-  ];
-  
-  return <Table columns={columns} dataSource={dataGetApi}  loading={loadingGetApi} pagination={false} />;
-}
+const expandedRow = (row, index) => {
+
+  setOrderId(orderIdArray);
+
+console.log("orderIdArray :", orderIdArray);
+console.log("dataGetApi", dataGetApi);
+
+return (  <Table columns={OrderDetailcolumns} dataSource={dataGetApi[index]} loading={loadingGetApi} pagination={false} />  );
+};
+
+//Order Detail Columns
+const OrderDetailcolumns = [
+  {
+    title: "Sipariş No",
+    dataIndex: "orderNo",
+    key: "orderNo",
+    ellipsis: true
+  },
+  {
+    title: "Sipariş Tarihi",
+    dataIndex: "orderDate",
+    key: "orderDate",
+    ellipsis: true
+  },
+  {
+    title: "Tip",
+    dataIndex: "type",
+    key: "type",
+    ellipsis: true
+  },
+  {
+    title: "Ürün Kodu",
+    dataIndex: "itemCode",
+    key: "itemCode",
+    ellipsis: true
+  },
+  {
+    title: "Ürün Açıklaması",
+    dataIndex: "itemDescription",
+    key: "itemDescription",
+    ellipsis: true
+  },
+  {
+    title: "Açıklama",
+    dataIndex: "description",
+    key: "description",
+    ellipsis: true
+  },
+  {
+    title: "Birim",
+    dataIndex: "unit",
+    key: "unit",
+    ellipsis: true
+  },
+  {
+    title: "Miktar",
+    dataIndex: "amount",
+    key: "amount",
+    ellipsis: true
+  },
+  {
+    title: "Kalan miktar",
+    dataIndex: "remainingAmount",
+    key: "remainingAmount",
+    ellipsis: true
+  },
+  {
+    title: "Birim fiyat",
+    dataIndex: "unitPrice",
+    key: "unitPrice",
+    ellipsis: true
+  },
+  {
+    title: "KDV",
+    dataIndex: "vat",
+    key: "vat",
+    ellipsis: true
+  },
+  {
+    title: "Dağıtım Önerilen Miktar",
+    dataIndex: "distributionSuggestedAmount",
+    key: "distributionSuggestedAmount",
+    ellipsis: true
+  },
+  {
+    title: "Dağıtım Gerçek Tutar",
+    dataIndex: "distributionActualAmount",
+    key: "distributionActualAmount",
+    ellipsis: true
+  },
+  {
+    title: "Teslimat Tutarı",
+    dataIndex: "deliveryAmount",
+    key: "deliveryAmount",
+    ellipsis: true
+  },
+
+];
 
   //Order Columns
   const columns = [
@@ -510,7 +506,8 @@ const expandedRowRender = (row) => {
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-          expandable={{expandedRowRender}}
+          //expandable={{expandedRowRender}}
+          expandedRowRender={expandedRow}
           pagination={false}
           scroll={{ x: 'calc(700px + 100%)'}}
           // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
