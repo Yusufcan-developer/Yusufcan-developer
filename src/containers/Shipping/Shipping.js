@@ -16,6 +16,8 @@ import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
+import _ from 'underscore';
+import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -134,7 +136,7 @@ function currentPageChange(current){
 }
 
 
-  const columns = [
+  let columns = [
     
       {
         title: "Satıcı Kodu",
@@ -327,7 +329,16 @@ function currentPageChange(current){
         ellipsis: true
       }
   ];
-
+  //Hide shipping table columns
+  const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
 
   
   return (
@@ -383,17 +394,17 @@ function currentPageChange(current){
       </Box>
       {/* Data list volume */}
       <Box>
-        <Table
+      <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-           
-          pagination={{position: 'none', pageSize: pageSize}}
-
-          scroll={{ x: 'calc(700px + 50%)'}}
-        /> 
-        <br></br>     
+          //expandable={{expandedRowRender}}
+          pagination={false}
+          scroll={{ x: 'calc(700px + 100%)'}}
+          // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
+        />  
+        <br></br>   
         <Pagination 
           showSizeChanger
           onShowSizeChange={onShowSizeChange}

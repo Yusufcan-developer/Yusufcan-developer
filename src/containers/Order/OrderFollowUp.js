@@ -14,7 +14,10 @@ import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFoll
 import { useGetOrderItems } from "@iso/lib/hooks/fetchData/useGetOrderItems";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import siteConfig from "@iso/config/site.config";
+import columnConfig from "@iso/config/ColumnOptions.config";
 import moment from 'moment';
+import _ from 'underscore';
+import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -234,7 +237,7 @@ const OrderDetailcolumns = [
 ];
 
   //Order Columns
-  const columns = [
+  let columns = [
     
       {
         title: "Bayi",
@@ -448,6 +451,16 @@ const OrderDetailcolumns = [
       },
   ];
 
+  //Hide order table columns
+  const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer
+  if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+      dataIndex: getHideColumns[index].dataIndex
+      }
+      ))}
+  }
+    
   return (
     <LayoutWrapper>
       <PageHeader>

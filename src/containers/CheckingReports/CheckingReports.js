@@ -16,6 +16,8 @@ import Input, {
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
+import _ from 'underscore';
+import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -110,7 +112,7 @@ function currentPageChange(current){
   setlocalCurrentPage(current);
 }
 
-const columns = [
+let columns = [
   {
     title: "Tip",
       dataIndex: "type",
@@ -266,6 +268,16 @@ const columns = [
       ellipsis: true
     },
 ];
+
+//Hide checking report table columns
+const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Dealer
+if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+    columns = _.without(columns, _.findWhere(columns, {
+    dataIndex: getHideColumns[index].dataIndex
+    }
+    ))}
+}
   return (
     <LayoutWrapper>
       <PageHeader>
