@@ -337,8 +337,32 @@ const routes = [
     component: lazy(() => import('@iso/containers/GithubSearch/GithubSearch')),
   },
   {
+    path: 'CustomerRecords',
+    component: lazy(() => import('@iso/containers/CustomerRecords/CustomerRecords')),
+  },
+  {
+    path: 'CheckingReports',
+    component: lazy(() => import('@iso/containers/CheckingReports/CheckingReports')),
+  },
+  {
+    path: 'shipping',
+    component: lazy(() => import('@iso/containers/Shipping/Shipping')),
+  },
+  {
+    path: 'lettersOfGuarantee',
+    component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
+  },
+  {
+    path: 'OrderFollowUp',
+    component: lazy(() => import('@iso/containers/Order/OrderFollowUp')),
+  },
+  {
     path: 'blank_page',
     component: lazy(() => import('@iso/containers/BlankPage')),
+  },
+  {
+    path: 'productsList',
+    component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
   },
 ];
 

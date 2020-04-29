@@ -8,9 +8,12 @@ import IntlMessages from '@iso/components/utility/intlMessages';
 import authAction from '@iso/redux/auth/actions';
 import appAction from '@iso/redux/app/actions';
 import SignInStyleWrapper from './SignIn.styles';
+import Modals from '@iso/components/Feedback/Modal';
+import Form from '@iso/components/uielements/form';
 
 const { login } = authAction;
 const { clearMenu } = appAction;
+const FormItem = Form.Item;
 
 export default function SignIn() {
   let history = useHistory();
@@ -22,7 +25,7 @@ export default function SignIn() {
 
   //States
   const [userName, setUsername] = useState('');
-  const [password, setPassword] = useState('')
+  const [password, setPassword] = useState('');
 
   React.useEffect(() => {
     if (isLoggedIn) {
@@ -31,30 +34,44 @@ export default function SignIn() {
   }, [isLoggedIn]);
 
   //Events
-  function handleLogin(e, token = false) {
+
+function loginError() {
+  Modals.error({
+    title: 'Kullanıcı Girişi',
+    content:
+      'Kullanıcı adı veya şifrenizi kontrol ediniz',
+    okText: 'OK',
+    cancelText: 'Cancel',
+  });
+}
+  function handleLogin(e) {
     e.preventDefault();
-    fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
+    
+    if(!userName|| !password)
+    {return loginError()}
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userName: userName,
-        password: password
-      })
-    })
+        password: password })
+  };
+
+    fetch("http://192.168.0.140/b2b/api/users/authenticate", requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
       .then(data => {
-        if (token) {
-          dispatch(login(token));
-        } else {
-          dispatch(login());
-        }
+          console.log("Token :",data.token);
+          dispatch(login(data.token));
+        
         dispatch(clearMenu());
         window.sessionStorage.setItem("nameAndSurname",userName);
         history.push('/dashboard');
       })
-      .catch(error => console.log(error));
+      .catch(error => loginError());
   }
 
   let { from } = location.state || { from: { pathname: '/dashboard' } };
@@ -74,6 +91,7 @@ export default function SignIn() {
           <div className="isoSignInForm">
             <form>
               <div className="isoInputWrapper">
+              
                 <Input
                   controlId="userName"
                   size="large"

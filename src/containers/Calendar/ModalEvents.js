@@ -11,7 +11,7 @@ const RangePicker = DateRangepicker;
 const localeDatePicker = {
   lang: {
     placeholder: 'Select date',
-    rangePlaceholder: ['Start date', 'End date'],
+    rangePlaceholder: ['Başlanıç tarihi', 'Bitiş tarihi'],
     today: 'Today',
     now: 'Now',
     backToToday: 'Back to today',

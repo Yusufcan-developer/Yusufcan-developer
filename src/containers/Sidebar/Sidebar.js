@@ -1,7 +1,8 @@
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector } from 'react-redux';
 import { Layout } from 'antd';
 import options from './options';
+import optionsLocal from './optionsLocal';
 import Scrollbars from '@iso/components/utility/customScrollBar';
 import Menu from '@iso/components/uielements/menu';
 import appActions from '@iso/redux/app/actions';
@@ -19,6 +20,7 @@ const {
 
 export default function Sidebar() {
   const dispatch = useDispatch();
+  var url = window.location.href.toString().slice(0,16);
   const {
     view,
     openKeys,
@@ -89,7 +91,46 @@ export default function Sidebar() {
   const submenuColor = {
     color: customizedTheme.textColor,
   };
+  if (url === 'http://localhost') {  //Local
+  console.log("location.href : ",url)
   return (
+    <SidebarWrapper>
+      <Sider
+        trigger={null}
+        collapsible={true}
+        collapsed={isCollapsed}
+        width={240}
+        className="isomorphicSidebar"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        style={styling}
+      >
+        <Logo collapsed={isCollapsed} />
+        <Scrollbars style={{ height: height - 70 }}>
+          <Menu
+            onClick={handleClick}
+            theme="dark"
+            className="isoDashboardMenu"
+            mode={mode}
+            openKeys={isCollapsed ? [] : openKeys}
+            selectedKeys={current}
+            onOpenChange={onOpenChange}
+          >
+            {optionsLocal.map(singleOption => (
+              <SidebarMenu
+                key={singleOption.key}
+                submenuStyle={submenuStyle}
+                submenuColor={submenuColor}
+                singleOption={singleOption}
+              />
+            ))}           
+          </Menu>
+        </Scrollbars>
+      </Sider>
+    </SidebarWrapper>
+  );
+}else 
+ { return (
     <SidebarWrapper>
       <Sider
         trigger={null}
@@ -124,5 +165,5 @@ export default function Sidebar() {
         </Scrollbars>
       </Sider>
     </SidebarWrapper>
-  );
+  );}
 }

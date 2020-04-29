@@ -76,4 +76,7 @@ export const PRIVATE_ROUTE = {
   CHAT: '/chat',
   PROFILE: '/my-profile',
   SWIPER_SLIDER: '/swiperslider',
+  CUSTOMERREPORT:'/customerRecords',
+  CHECKINGREPORT:'/checkingReports',
+  ORDERFOLLOWUP:'/orderFollowUp'
 };
