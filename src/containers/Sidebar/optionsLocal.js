@@ -35,6 +35,11 @@ const options = [
           leftIcon: 'ion-android-mail',
         },
       ],
+    },  
+    {
+      key: "productsList",
+      label: "sidebar.productsList",
+      leftIcon: "ion-bag"
     },    
     {
       key: 'mailbox',

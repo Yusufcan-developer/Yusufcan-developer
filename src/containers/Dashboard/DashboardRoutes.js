@@ -360,6 +360,10 @@ const routes = [
     path: 'blank_page',
     component: lazy(() => import('@iso/containers/BlankPage')),
   },
+  {
+    path: 'productsList',
+    component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
+  },
 ];
 
 export default function AppRouter() {
