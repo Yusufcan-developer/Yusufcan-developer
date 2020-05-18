@@ -14,8 +14,8 @@ export default {
     deliveries:   apiUrl+'Customers/deliveries',       //Sevkiyat
     cheques:      apiUrl+'customers/cheques',             //Çek-Senet: POST
     letters:      apiUrl+'customers/letters',             //Teminat Mektupları: POST
-    accounts:     apiUrl+'customers/accounts',           //Bayi Listesi: POST
-    transactions: apiUrl+'customers/transactions',   //Cari Hareketler: POST
+    accounts:     apiUrl+'customers/accounts',           //Cari Listesi: POST
+    transactions: apiUrl+'customers/transactions',   //Cari Hareketler: POSTs
     accountsTree: apiUrl+'Customers/accounts-tree',   //Bayi kodları(Tree) listesi :GET
   },
   dateFormat:'DD-MM-YYYY',

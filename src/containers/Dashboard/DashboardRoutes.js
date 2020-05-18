@@ -357,6 +357,14 @@ const routes = [
     component: lazy(() => import('@iso/containers/Order/OrderFollowUp')),
   },
   {
+    path: 'customerList',
+    component: lazy(() => import('@iso/containers/CustomerList/CustomerList')),
+  },
+  {
+    path: 'distributions',
+    component: lazy(() => import('@iso/containers/Distribution/Distributions')),
+  },
+  {
     path: 'blank_page',
     component: lazy(() => import('@iso/containers/BlankPage')),
   },

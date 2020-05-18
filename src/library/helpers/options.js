@@ -30,6 +30,16 @@ const options = [
     leftIcon: 'ion-android-mail',
   },
   {
+    key: 'customerList',
+    label: 'sidebar.customerList',
+    leftIcon: 'ion-android-mail',
+  },
+  {
+    key: 'distributions',
+    label: 'sidebar.distributions',
+    leftIcon: 'ion-android-mail',
+  },
+  {
     key: 'mailbox',
     label: 'sidebar.email',
     leftIcon: 'ion-android-mail',
