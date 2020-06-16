@@ -87,15 +87,14 @@ const [dealerCode,setDealerCode]=useState()
     console.log("onOk: ", value);
   }
 
-  function handleChange( filters, sorter) {
-    console.log("Various parameters :", filters, sorter);
-
+  const handleChange = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter);
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-  }
+  };
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     console.log("pageSize :", pageSize);
@@ -124,148 +123,91 @@ function currentPageChange(current){
 }
 
   let columns = [    
-      {
-        title: "Bayi Kodu",
-        dataIndex: "dealerCode",
-        key: "dealerCode",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "dealerName" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
-      },
+    {
+      title: "Bayi Kodu",
+      dataIndex: "dealerCode",
+      key: "dealerCode"
+    },
       {
         title: "Bayi Adı",
         dataIndex: "dealerName",
-        key: "dealerName",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "dealerName"
       },
       {
         title: "Bayi Alt Kodu",
         dataIndex: "dealerSubCode",
-        key: "dealerSubCode",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "dealerSubCode"
       },
       {
         title: "Bölge Kodu",
         dataIndex: "regionCode",
-        key: "regionCode",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "regionCode"
       },
       {
         title: "Bölge Adı",
         dataIndex: "regionName",
-        key: "regionName",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionName" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "regionName"
       },
       {
         title: "Bölge Yöneticisi",
         dataIndex: "regionManager",
-        key: "regionManager",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionManager" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "regionManager"
       },
       {
         title: "Başlangıç Tarihi",
         dataIndex: "fromDate",
         key: "fromDate",
-
-        sorter: (a, b) => a.age - b.age,
+        render:(fromDate)=>moment(fromDate).format(siteConfig.dateFormat),
+        sorter: (a, b) => a.fromDate - b.fromDate,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "fromDate" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+          tableOptions.sortedInfo.order
       },
       {
         title: "Bitiş Tarihi",
         dataIndex: "toDate",
         key: "toDate",
-
-        sorter: (a, b) => a.age - b.age,
+        render:(toDate)=>moment(toDate).format(siteConfig.dateFormat),
+        sorter: (a, b) => a.toDate - b.toDate,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "toDate" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+          tableOptions.sortedInfo.order
       },
       {
         title: "Döküman ID",
         dataIndex: "documentId",
         key: "documentId",
-
-        sorter: (a, b) => a.age - b.age,
+        sorter: (a, b) => a.documentId - b.documentId,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "documentId" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+          tableOptions.sortedInfo.order
       },
       {
         title: "TR Kodu",
         dataIndex: "trCode",
         key: "trCode",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "trCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        align:"center"
       },
       {
         title: "Tutar",
         dataIndex: "amount",
         key: "amount",
-
-        sorter: (a, b) => a.age - b.age,
+        align:"right",
+        render:(amount)=>amount.toFixed(2),
+        sorter: (a, b) => a.amount - b.amount,
         sortOrder:
           tableOptions.sortedInfo.columnKey === "amount" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+          tableOptions.sortedInfo.order
       },
       {
         title: "Banka",
         dataIndex: "bank",
-        key: "bank",
-
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "bank" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "bank"
       },
       {
         title: "Şube",
         dataIndex: "branch",
-        key: "branch",
-        
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "branch" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "branch"
       },
   ];
   //Hide guaranteeLetter table columns
@@ -287,58 +229,76 @@ function currentPageChange(current){
       </PageHeader>
       <Box>
         <Collapse accordion>
-          <Panel header={<IntlMessages id="page.filtered" />} key="0">
-              <Row justify="start" align="middle" gutter={24}>
-                <Col xs={{span:24}} sm={{span:8}}>
-                  <Form>
-                    <FormItem
-                      label={<IntlMessages id="page.dealerCodeTitle" />}
-                    >
-                      <TreeSelect                      
-                        treeData={treeData}
-                        onChange={onChangeDealerCode}
-                        treeCheckable={true}
-                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
-                        placeholder={"Bayi Kodu Seçiniz"}
-                        showSearch={true}
-                        style={{ marginBottom: '8px' }}
-                      />             
+        <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dealerCodeTitle" />}
+            >            
+            </FormItem>
+            </Col> 
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dateRangeTitle" />}
+            >
+            </FormItem>
+            </Col>
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.keywordTitle" />}
+            >
+            </FormItem>
+            </Col>
+            </Row>
+            <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <TreeSelect
+                  treeData={treeData}
+                  onChange={onChangeDealerCode}
+                  treeCheckable={true}
+                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                  placeholder={"Bayi Kodu Seçiniz"}
+                  showSearch={true}
+                  style={{ marginBottom: '8px', width: '250px' }}
 
-                    <RangePicker
-                      format={siteConfig.dateFormat}
-                      onChange={changeTimePicker}
-                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
-                      onOk={onOk}
-                      style={{ marginBottom: '8px' }}
-                    />
-                     <Input size="small"
-                      placeholder="Ara"
-                      style={{ marginBottom: '8px' }}
-                      onChange={event => setSearchKey(event.target.value)}
-                    />
-                     <Button
-                      type="primary"
-                      icon={<PoweroffOutlined />}
-                      loading={iconLoading}
-                      onClick={searchButton}
-                    >
-                      {<IntlMessages id="forms.button.label_Search" />}
-                    </Button>
-                    </FormItem>
-                  </Form> 
-</Col>       
-              </Row>
+                />
+              </Col>             
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <RangePicker
+                  format={siteConfig.dateFormat}
+                  onChange={changeTimePicker}
+                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                  onOk={onOk}
+                  style={{ marginBottom: '8px', width: '250px' }}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+                <Input size="small"
+                  placeholder="Anahtar kelime"
+                  onChange={event => setSearchKey(event.target.value)}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+              <Button
+                  type="primary"
+                  loading={iconLoading}
+                  onClick={searchButton}
+                  >
+                  {<IntlMessages id="forms.button.label_Search" />}
+                </Button>
+              </Col>
+            </Row>             
           </Panel>
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.GuaranteeLetterDataList" />}>
+      <Box >
         <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-           
+          bordered={true}
           pagination={{position: 'none', pageSize: pageSize}}
           scroll={{ x: 'calc(700px + 50%)'}}
         /> 

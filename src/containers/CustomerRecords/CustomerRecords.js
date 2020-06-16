@@ -99,15 +99,14 @@ export default function() {
     console.log("onOk: ", value);
   }
 
-  function handleChange(filters, sorter) {
-    console.log("Various parameters :", filters, sorter);
-
+  const handleChange = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter);
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-  }
+  };
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
@@ -127,176 +126,105 @@ export default function() {
     {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
-      key: "dealerCode",
-      sorter: (a, b) => a.name.length - b.name.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "dealerCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "dealerCode"
     },
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
-      key: "dealerName",
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "dealerName" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "dealerName"
     },
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
-      key: "dealerSubCode",
-
-      sorter: (a, b) => a.dealerSubCode.length - b.dealerSubCode.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "dealerSubCode"
     },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
-      key: "regionCode",
-
-      sorter: (a, b) => a.regionCode.length - b.regionCode.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "regionCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "regionCode"
     },
     {
       title: "Bölge Adı",
       dataIndex: "regionName",
-      key: "regionName",
-
-      sorter: (a, b) => a.regionName.length - b.regionName.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "regionName" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "regionName"
     },
     {
       title: "Alan Kodu",
       dataIndex: "fieldCode",
-      key: "fieldCode",
-
-      sorter: (a, b) => a.fieldCode.length - b.fieldCode.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "fieldCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "fieldCode"
     },
     {
       title: "Alan Adı",
       dataIndex: "fieldName",
-      key: "fieldName",
-
-      sorter: (a, b) => a.fieldName.length - b.fieldName.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "fieldName" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "fieldName"
     },
     {
       title: "Bölge Müdürü",
       dataIndex: "regionManager",
-      key: "regionManager",
-
-      sorter: (a, b) => a.regionManager.length - b.regionManager.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "regionManager" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "regionManager"
     },
     {
       title: "Tarih",
       dataIndex: "date",
       key: "date",
-
-      sorter: (a, b) => a.date.length - b.date.length,
+      render:(date)=>moment(date).format(siteConfig.dateFormat),
+      sorter: (a, b) => a.date - b.date,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "date" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+        tableOptions.sortedInfo.order
     },
     {
       title: "Belge numarası",
       dataIndex: "documentId",
-      key: "documentId",
- 
+      key: "documentId", 
       sorter: (a, b) => a.documentId.length - b.documentId.length,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+        tableOptions.sortedInfo.order
     },
     {
       title: "TR Kod",
       dataIndex: "trCode",
       key: "trCode",
- 
-      sorter: (a, b) => a.trCode.length - b.trCode.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "trCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      align:"center"
     },
     {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
-      key: "transactionType",
- 
-      sorter: (a, b) => a.transactionType.length - b.transactionType.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "transactionType" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "transactionType"
     },
     {
       title: "Açıklama",
       dataIndex: "description",
-      key: "description",
- 
-      sorter: (a, b) => a.description.length - b.description.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "description" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "description"
     },
     {
       title: "Borç",
       dataIndex: "debt",
       key: "debt",
- 
-      sorter: (a, b) => a.debt.length - b.debt.length,
+      align:"right",
+      sorter: (a, b) => a.debt - b.debt,
+      render:(debt)=>debt.toFixed(2),
       sortOrder:
         tableOptions.sortedInfo.columnKey === "debt" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+        tableOptions.sortedInfo.order
     },
     {
       title: "Kredi",
       dataIndex: "credit",
       key: "credit",
- 
-      sorter: (a, b) => a.credit.length - b.credit.length,
+      align:"right",
+      render:(credit)=>credit.toFixed(2),
+      sorter: (a, b) => a.credit - b.credit,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "credit" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+        tableOptions.sortedInfo.order
     },
     {
       title: "Para Birimi",
       dataIndex: "currency",
       key: "currency",
- 
-      sorter: (a, b) => a.currency.length - b.currency.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "credit" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      align:"center"
     }
   ];
   
@@ -316,58 +244,76 @@ export default function() {
       </PageHeader>
       <Box>
         <Collapse accordion>
-          <Panel header={<IntlMessages id="page.filtered" />} key="0">
-              <Row justify="start" align="middle" gutter={24}>
-                <Col xs={{span:24}} sm={{span:8}}>
-                  <Form>
-                    <FormItem
-                      label={<IntlMessages id="page.dealerCodeTitle" />}
-                    >
-                      <TreeSelect                      
-                        treeData={treeData}
-                        onChange={onChangeDealerCode}
-                        treeCheckable={true}
-                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
-                        placeholder={"Bayi Kodu Seçiniz"}
-                        showSearch={true}
-                        style={{ marginBottom: '8px' }}
-                      />             
+        <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dealerCodeTitle" />}
+            >            
+            </FormItem>
+            </Col> 
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dateRangeTitle" />}
+            >
+            </FormItem>
+            </Col>
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.keywordTitle" />}
+            >
+            </FormItem>
+            </Col>
+            </Row>
+            <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <TreeSelect
+                  treeData={treeData}
+                  onChange={onChangeDealerCode}
+                  treeCheckable={true}
+                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                  placeholder={"Bayi Kodu Seçiniz"}
+                  showSearch={true}
+                  style={{ marginBottom: '8px', width: '250px' }}
 
-                    <RangePicker
-                      format={siteConfig.dateFormat}
-                      onChange={changeTimePicker}
-                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
-                      onOk={onOk}
-                      style={{ marginBottom: '8px' }}
-                    />
-                     <Input size="small"
-                      placeholder="Ara"
-                      style={{ marginBottom: '8px' }}
-                      onChange={event => setSearchKey(event.target.value)}
-                    />
-                     <Button
-                      type="primary"
-                      icon={<PoweroffOutlined />}
-                      loading={iconLoading}
-                      onClick={searchButton}
-                    >
-                      {<IntlMessages id="forms.button.label_Search" />}
-                    </Button>
-                    </FormItem>
-                  </Form> 
-</Col>       
-              </Row>
+                />
+              </Col>             
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <RangePicker
+                  format={siteConfig.dateFormat}
+                  onChange={changeTimePicker}
+                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                  onOk={onOk}
+                  style={{ marginBottom: '8px', width: '250px' }}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+                <Input size="small"
+                  placeholder="Anahtar kelime"
+                  onChange={event => setSearchKey(event.target.value)}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+              <Button
+                  type="primary"
+                  loading={iconLoading}
+                  onClick={searchButton}
+                  >
+                  {<IntlMessages id="forms.button.label_Search" />}
+                </Button>
+              </Col>
+            </Row>             
           </Panel>
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.customerRecordDataList" />}>
+      <Box>
         <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
-          loading={loading}
-           
+          loading={loading}    
+          bordered={true}       
           pagination={{position: 'none', pageSize: pageSize}}
           scroll={{ x: 'calc(700px + 50%)'}}
         />
