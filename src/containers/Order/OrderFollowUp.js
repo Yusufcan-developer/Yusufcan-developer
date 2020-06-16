@@ -112,16 +112,15 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
   function onOk(value) {
     console.log("xxxx onOk: ", value);
   }
-  
-  function handleChange( filters, sorter) {
-    console.log("Various parameters :", filters, sorter);
-
+  const handleChange = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter);
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-  }
+  };
+
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     console.log("pageSize :", pageSize);
@@ -152,86 +151,88 @@ const OrderDetailcolumns = [
   {
     title: "Sipariş No",
     dataIndex: "orderNo",
-    key: "orderNo",
-    ellipsis: true
+    key: "orderNo"
   },
   {
     title: "Sipariş Tarihi",
     dataIndex: "orderDate",
     key: "orderDate",
-    ellipsis: true
+    render:(text)=>moment(text).format(siteConfig.dateFormat)
   },
   {
     title: "Tip",
     dataIndex: "type",
     key: "type",
-    ellipsis: true
   },
   {
     title: "Ürün Kodu",
     dataIndex: "itemCode",
     key: "itemCode",
-    ellipsis: true
   },
   {
     title: "Ürün Açıklaması",
     dataIndex: "itemDescription",
-    key: "itemDescription",
-    ellipsis: true
+    key: "itemDescription"
   },
   {
     title: "Açıklama",
     dataIndex: "description",
-    key: "description",
-    ellipsis: true
+    key: "description"
   },
   {
     title: "Birim",
     dataIndex: "unit",
     key: "unit",
-    ellipsis: true
+    align:"center"
   },
   {
     title: "Miktar",
     dataIndex: "amount",
     key: "amount",
-    ellipsis: true
+    align: "center",
+    render:(amount)=>amount.toFixed(2)
   },
   {
     title: "Kalan miktar",
     dataIndex: "remainingAmount",
     key: "remainingAmount",
-    ellipsis: true
+    align: "center",
+    render:(remainingAmount)=>remainingAmount.toFixed(2)
   },
   {
     title: "Birim fiyat",
     dataIndex: "unitPrice",
     key: "unitPrice",
-    ellipsis: true
+    align: "right",
+    render:(unitPrice)=>unitPrice.toFixed(2)
   },
   {
     title: "KDV",
     dataIndex: "vat",
     key: "vat",
-    ellipsis: true
+    align: "center",
+    render:(vat)=>vat.toFixed(2)
   },
   {
     title: "Dağıtım Önerilen Miktar",
     dataIndex: "distributionSuggestedAmount",
     key: "distributionSuggestedAmount",
-    ellipsis: true
+    align: "right",
+    render:(distributionSuggestedAmount)=>distributionSuggestedAmount.toFixed(2)
   },
   {
     title: "Dağıtım Gerçek Tutar",
     dataIndex: "distributionActualAmount",
     key: "distributionActualAmount",
-    ellipsis: true
+    align: "right",
+    render:(distributionActualAmount)=>distributionActualAmount.toFixed(2)
   },
   {
     title: "Teslimat Tutarı",
     dataIndex: "deliveryAmount",
     key: "deliveryAmount",
-    ellipsis: true
+    align: "right",
+    render:(deliveryAmount)=>deliveryAmount.toFixed(2)
   },
 
 ];
@@ -242,212 +243,130 @@ const OrderDetailcolumns = [
       {
         title: "Bayi",
         dataIndex: "dealerCode",
-        key: "dealerCode",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "dealerCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        key: "dealerCode",        
       },
       {
         title: "Bayi Adı",
         dataIndex: "dealerName",
         key: "dealerName",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "dealerName" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Bayi Alt Kodu",
         dataIndex: "dealerSubCode",
         key: "dealerSubCode",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Bölge Kodu",
         dataIndex: "regionCode",
         key: "regionCode",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Bölge Adı",
         dataIndex: "regionName",
         key: "regionName",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "regionName" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Bölge Yöneticisi",
         dataIndex: "regionManager",
         key: "regionManager",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "series" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Alan Kodu",
         dataIndex: "fieldCode",
         key: "fieldCode",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "fieldCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Alan Adı",
         dataIndex: "fieldName",
         key: "fieldName",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "fieldName" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Alan Yöneticisi",
         dataIndex: "fieldManager",
         key: "fieldManager",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "fieldManager" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Sipariş No",
         dataIndex: "orderNo",
         key: "orderNo",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "orderNo" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        defaultSortOrder: 'descend',
+        sorter: (a, b) => a.orderNo - b.orderNo,
+        sortOrder:tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+        sortDirections: ['descend', 'ascend'],
       },
       {
         title: "Sipariş Tarihi",
         dataIndex: "orderDate",
         key: "orderDate",
-        sorter: (a, b) => a.age - b.age,
+        sorter: (a, b) => a.orderDate - b.orderDate,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "orderDate" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        tableOptions.sortedInfo.columnKey === "orderDate" &&
+        tableOptions.sortedInfo.order,
+        render:(orderDate)=>moment(orderDate).format(siteConfig.dateFormat)
       },
       {
-        title: "Doküman Id",
+        title: "Belge Numarası",
         dataIndex: "documentId",
         key: "documentId",
-        sorter: (a, b) => a.age - b.age,
+        sorter: (a, b) => a.documentId - b.documentId,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "documentId" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        tableOptions.sortedInfo.columnKey === "documentId" &&
+        tableOptions.sortedInfo.order
       },
       {
         title: "Ödeme",
         dataIndex: "payment",
         key: "payment",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "payment" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Adres Kodu",
         dataIndex: "addressCode",
         key: "addressCode",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "addressCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Teslimat Adresi",
         dataIndex: "deliveryAddress",
         key: "deliveryAddress",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "addressCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Açıklama 1",
         dataIndex: "description1",
         key: "description1",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "addressCode" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Açıklama 2",
         dataIndex: "description2",
         key: "description2",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "description2" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Açıklama 3",
         dataIndex: "description3",
         key: "description3",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "description3" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
         title: "Açıklama 4",
         dataIndex: "description4",
         key: "description4",
-        sorter: (a, b) => a.age - b.age,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "description4" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
       },
       {
-        title: "Total",
+        title: "Toplam",
         dataIndex: "total",
         key: "total",
-        sorter: (a, b) => a.age - b.age,
+        align: "right",
+        sorter: (a, b) => a.total - b.total,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "total" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        tableOptions.sortedInfo.columnKey === "total" &&
+        tableOptions.sortedInfo.order,
+        render:(total)=>total.toFixed(2)
       },
       {
         title: "Durum",
         dataIndex: "status",
         key: "status",
-        sorter: (a, b) => a.age - b.age,
+        sorter: (a, b) => a.status - b.status,
         sortOrder:
-          tableOptions.sortedInfo.columnKey === "status" &&
-          tableOptions.sortedInfo.order,
-        ellipsis: true
+        tableOptions.sortedInfo.columnKey === "status" &&
+        tableOptions.sortedInfo.order
       },
   ];
 
@@ -469,46 +388,64 @@ const OrderDetailcolumns = [
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-              <Row justify="start" align="middle" gutter={24}>
-                <Col xs={{span:24}} sm={{span:8}}>
-                  <Form>
-                    <FormItem
-                      label={<IntlMessages id="page.dealerCodeTitle" />}
-                    >
-                      <TreeSelect                      
-                        treeData={treeData}
-                        onChange={onChangeDealerCode}
-                        treeCheckable={true}
-                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
-                        placeholder={"Bayi Kodu Seçiniz"}
-                        showSearch={true}
-                        style={{ marginBottom: '8px' }}
-                      />             
+          <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dealerCodeTitle" />}
+            >            
+            </FormItem>
+            </Col> 
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dateRangeTitle" />}
+            >
+            </FormItem>
+            </Col>
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.keywordTitle" />}
+            >
+            </FormItem>
+            </Col>
+            </Row>
+            <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <TreeSelect
+                  treeData={treeData}
+                  onChange={onChangeDealerCode}
+                  treeCheckable={true}
+                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                  placeholder={"Bayi Kodu Seçiniz"}
+                  showSearch={true}
+                  style={{ marginBottom: '8px', width: '250px' }}
 
-                    <RangePicker
-                      format={siteConfig.dateFormat}
-                      onChange={changeTimePicker}
-                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
-                      onOk={onOk}
-                      style={{ marginBottom: '8px' }}
-                    />
-                     <Input size="small"
-                      placeholder="Ara"
-                      style={{ marginBottom: '8px' }}
-                      onChange={event => setSearchKey(event.target.value)}
-                    />
-                     <Button
-                      type="primary"
-                      icon={<PoweroffOutlined />}
-                      loading={iconLoading}
-                      onClick={searchButton}
-                    >
-                      {<IntlMessages id="forms.button.label_Search" />}
-                    </Button>
-                    </FormItem>
-                  </Form> 
-</Col>       
-              </Row>
+                />
+              </Col>             
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <RangePicker
+                  format={siteConfig.dateFormat}
+                  onChange={changeTimePicker}
+                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                  onOk={onOk}
+                  style={{ marginBottom: '8px', width: '250px' }}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+                <Input size="small"
+                  placeholder="Anahtar kelime"
+                  onChange={event => setSearchKey(event.target.value)}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+              <Button
+                  type="primary"
+                  loading={iconLoading}
+                  onClick={searchButton}
+                  >
+                  {<IntlMessages id="forms.button.label_Search" />}
+                </Button>
+              </Col>
+            </Row>             
           </Panel>
         </Collapse>
       </Box>
@@ -523,6 +460,7 @@ const OrderDetailcolumns = [
           expandedRowRender={expandedRow}
           pagination={false}
           scroll={{ x: 'calc(700px + 100%)'}}
+          bordered={true}
           // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
         />  
         <br></br>     

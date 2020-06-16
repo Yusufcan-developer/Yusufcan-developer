@@ -87,15 +87,14 @@ function onOk(value) {
   console.log('onOk: ', value);
 }
 
-function handleChange( filters, sorter) {
-  console.log("Various parameters :", filters, sorter);
-
+const handleChange = (pagination, filters, sorter) => {
+  console.log('Various parameters', pagination, filters, sorter);
   setState({
     ...tableOptions,
     ["sortedInfo"]: sorter,
     ["filteredInfo"]: filters
   });
-}
+};
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
@@ -116,156 +115,87 @@ let columns = [
   {
     title: "Tip",
       dataIndex: "type",
-      key: "type",
-
-      sorter: (a, b) => a.name.length - b.name.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "type" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "type"
     },
     {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
-      key: "dealerCode",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "dealerName" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "dealerCode"
     },
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
-      key: "dealerName",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "dealerName" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "dealerName"
     },
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
-      key: "dealerSubCode",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "dealerSubCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "dealerSubCode"
     },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
-      key: "regionCode",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "regionCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "regionCode"
     },
     {
       title: "Bölge Adı",
       dataIndex: "regionName",
-      key: "regionName",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "regionName" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "regionName"
     },
     {
       title: "Alan Kodu",
       dataIndex: "fieldCode",
-      key: "fieldCode",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "fieldCode" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "fieldCode"
     },
     {
       title: "Alan Adı",
       dataIndex: "fieldName",
-      key: "fieldName",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "fieldName" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "fieldName"
     },
     {
       title: "Tutar",
       dataIndex: "amount",
       key: "amount",
-
-      sorter: (a, b) => a.age - b.age,
+      render:(amount)=>amount.toFixed(2),
+      align:"right",
+      sorter: (a, b) => a.amount - b.amount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "amount" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+        tableOptions.sortedInfo.order
     },
     {
       title: "Veriliş Tarihi",
       dataIndex: "issueDate",
       key: "issueDate",
-
-      sorter: (a, b) => a.age - b.age,
+      render:(issueDate)=>moment(issueDate).format(siteConfig.dateFormat),
+      sorter: (a, b) => a.issueDate - b.issueDate,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "issueDate" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+        tableOptions.sortedInfo.order
     },
     {
       title: "İşletme İmzası",
       dataIndex: "signatureDrawer",
-      key: "signatureDrawer",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "signatureDrawer" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "signatureDrawer"
     },
     {
       title: "Ödeme Yeri",
       dataIndex: "placeOfPayment",
-      key: "placeOfPayment",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "placeOfPayment" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "placeOfPayment"
     },
     {
       title: "Banka",
       dataIndex: "bank",
-      key: "bank",
-
-      sorter: (a, b) => a.age - b.age,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "bank" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+      key: "bank"
     },
     {
       title: "Durum",
       dataIndex: "status",
       key: "status",
-
-      sorter: (a, b) => a.age - b.age,
+      sorter: (a, b) => a.status - b.status,
       sortOrder:
-        tableOptions.sortedInfo.columnKey === "bank" &&
-        tableOptions.sortedInfo.order,
-      ellipsis: true
+        tableOptions.sortedInfo.columnKey === "status" &&
+        tableOptions.sortedInfo.order
     },
 ];
 
@@ -285,58 +215,76 @@ if (getHideColumns.length > 0) {
       </PageHeader>
       <Box>
         <Collapse accordion>
-          <Panel header={<IntlMessages id="page.filtered" />} key="0">
-              <Row justify="start" align="middle" gutter={24}>
-                <Col xs={{span:24}} sm={{span:8}}>
-                  <Form>
-                    <FormItem
-                      label={<IntlMessages id="page.dealerCodeTitle" />}
-                    >
-                      <TreeSelect                      
-                        treeData={treeData}
-                        onChange={onChangeDealerCode}
-                        treeCheckable={true}
-                        showCheckedStrategy= {TreeSelect.SHOW_PARENT}   
-                        placeholder={"Bayi Kodu Seçiniz"}
-                        showSearch={true}
-                        style={{ marginBottom: '8px' }}
-                      />             
+        <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dealerCodeTitle" />}
+            >            
+            </FormItem>
+            </Col> 
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.dateRangeTitle" />}
+            >
+            </FormItem>
+            </Col>
+            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+            <FormItem
+              label={<IntlMessages id="page.keywordTitle" />}
+            >
+            </FormItem>
+            </Col>
+            </Row>
+            <Row>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <TreeSelect
+                  treeData={treeData}
+                  onChange={onChangeDealerCode}
+                  treeCheckable={true}
+                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                  placeholder={"Bayi Kodu Seçiniz"}
+                  showSearch={true}
+                  style={{ marginBottom: '8px', width: '250px' }}
 
-                    <RangePicker
-                      format={siteConfig.dateFormat}
-                      onChange={changeTimePicker}
-                      defaultValue={[moment(fromDate,siteConfig.dateFormat), moment(toDate,siteConfig.dateFormat)]}
-                      onOk={onOk}
-                      style={{ marginBottom: '8px' }}
-                    />
-                     <Input size="small"
-                      placeholder="Ara"
-                      style={{ marginBottom: '8px' }}
-                      onChange={event => setSearchKey(event.target.value)}
-                    />
-                     <Button
-                      type="primary"
-                      icon={<PoweroffOutlined />}
-                      loading={iconLoading}
-                      onClick={searchButton}
-                    >
-                      {<IntlMessages id="forms.button.label_Search" />}
-                    </Button>
-                    </FormItem>
-                  </Form> 
-</Col>       
-              </Row>
+                />
+              </Col>             
+              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+                <RangePicker
+                  format={siteConfig.dateFormat}
+                  onChange={changeTimePicker}
+                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                  onOk={onOk}
+                  style={{ marginBottom: '8px', width: '250px' }}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+                <Input size="small"
+                  placeholder="Anahtar kelime"
+                  onChange={event => setSearchKey(event.target.value)}
+                />
+              </Col>
+              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
+              <Button
+                  type="primary"
+                  loading={iconLoading}
+                  onClick={searchButton}
+                  >
+                  {<IntlMessages id="forms.button.label_Search" />}
+                </Button>
+              </Col>
+            </Row>             
           </Panel>
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box title={<IntlMessages id="page.checkingReportsDataList" />}>
+      <Box >
       <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-
+          bordered={true}
           pagination={false}
           scroll={{ x: 'calc(700px + 100%)'}}
           // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
