@@ -14,9 +14,8 @@ export default function(props) {
   return (
     <InputSearch
       id="InputTopbarSearch"
-      size="large"
-      placeholder="Enter search text"
-      onBlur={props.onBlur}
+      size="small"
+      placeholder="Ara"
     />
   );
 }

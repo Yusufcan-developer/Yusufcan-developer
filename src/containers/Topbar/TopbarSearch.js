@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import Searchbar from '@iso/components/Topbar/SearchBox';
 import TopbarSearchModal from './TopbarSearchModal.styles';
-
+import basicStyle from '@iso/assets/styles/constants';
 export default function TopbarSearch() {
   const [visible, setVisiblity] = React.useState(false);
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);

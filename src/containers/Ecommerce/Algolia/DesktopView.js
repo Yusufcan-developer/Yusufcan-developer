@@ -21,7 +21,7 @@ export default function(props) {
   };
   const searchInfo = {
     ...AlgoliaSearchConfig,
-    indexName: 'default_search',
+    indexName: 'test',
     searchState: searchState,
     urlSync: true,
     onSearchStateChange: searchState => {
