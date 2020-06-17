@@ -47,7 +47,7 @@ const options = [
       ],
     },  
     {
-      key: "productsList",
+      key: "productGroupList",
       label: "sidebar.productsList",
       leftIcon: "ion-bag"
     },    

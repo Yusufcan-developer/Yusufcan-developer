@@ -369,8 +369,8 @@ const routes = [
     component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
   },
    {
-     path: 'productsList',
-     component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
+     path: 'productGroupList',
+     component: lazy(() => import('@iso/containers/ProductGroups/ProductGroupList')),
    },
 ];
 
