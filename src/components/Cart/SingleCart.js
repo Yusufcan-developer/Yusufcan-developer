@@ -10,18 +10,25 @@ export default function({
   cancelQuantity,
   changeQuantity,
   _highlightResult,
+  productItem,
+  products,
 }) {
   const onChange = value => {
+    console.log('xxxx change value',value)
+    console.log('xxxx quantity value',quantity)
     if (!isNaN(value)) {
       if (value !== quantity) {
-        changeQuantity(objectID, value);
+        console.log('xxxx değisecek',productItem.itemCode);
+        changeQuantity(productItem.itemCode, value);
       }
     } else {
       notification('error', 'Please give valid number');
     }
   };
-
-  const totalPrice = (price * quantity).toFixed(2);
+  console.log('xxxx productItem asda ',productItem);
+  const totalPrice = (productItem.listPrice * quantity).toFixed(2);
+  console.log('xxxx dasdasd ',price);
+  console.log('xxxx asdasdasdad',price)
   return (
     <tr>
       <td
@@ -35,15 +42,15 @@ export default function({
         </a>
       </td>
       <td className="isoItemImage">
-        <img alt="#" src={image} />
+        <img alt="#" src={productItem.imageUrl} />
       </td>
       <td className="isoItemName">
-        <h3>{_highlightResult.name.value}</h3>
-        <p>{_highlightResult.description.value}</p>
+        <h3>{productItem.description}</h3>
+        <p>{productItem.type}</p>
       </td>
       <td className="isoItemPrice">
-        <span className="itemPricePrefix">$</span>
-        {price.toFixed(2)}
+        {/* <span className="itemPricePrefix">$</span> */}
+        {productItem.listPrice.toFixed(2)} {"TL"}
       </td>
       <td className="isoItemQuantity">
         <InputNumber
@@ -54,7 +61,7 @@ export default function({
           onChange={onChange}
         />
       </td>
-      <td className="isoItemPriceTotal">${totalPrice}</td>
+      <td className="isoItemPriceTotal">{totalPrice} TL</td>
     </tr>
   );
 }

@@ -11,12 +11,13 @@ export default function OrderInfo() {
   function renderProducts() {
     totalPrice = 0;
     return productQuantity.map(product => {
-      totalPrice += product.quantity * products[product.objectID].price;
+      totalPrice += product.quantity * products[product.itemCode].listPrice;
       return (
         <SingleOrderInfo
           key={product.objectID}
           quantity={product.quantity}
-          {...products[product.objectID]}
+          productItem={products[product.itemCode]}
+          {...products[product.itemCode]}
         />
       );
     });
@@ -26,18 +27,18 @@ export default function OrderInfo() {
     <OrderTable className="isoOrderInfo">
       <div className="isoOrderTable">
         <div className="isoOrderTableHead">
-          <span className="tableHead">Product</span>
-          <span className="tableHead">Total</span>
+          <span className="tableHead">Ürün</span>
+          <span className="tableHead">Toplam</span>
         </div>
 
         <div className="isoOrderTableBody">{renderProducts()}</div>
         <div className="isoOrderTableFooter">
-          <span>Total</span>
-          <span>${totalPrice.toFixed(2)}</span>
+          <span>Toplam</span>
+          <span>{totalPrice.toFixed(2)} TL</span>
         </div>
 
         <Button type="primary" className="isoOrderBtn">
-          Place Order
+          Sipariş Oluştur
         </Button>
       </div>
     </OrderTable>

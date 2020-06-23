@@ -104,6 +104,7 @@ export default function Sidebar() {
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         style={styling}
+        sidebarOpen={true}
       >
         <Logo collapsed={isCollapsed} />
         <Scrollbars style={{ height: height - 70 }}>

@@ -55,7 +55,7 @@ export default function Dashboard() {
             <Footer style={styles.footer}>{siteConfig.footerText}</Footer>
           </Layout>
         </Layout>
-        <ThemeSwitcher />
+        {/* <ThemeSwitcher /> */}
       </Layout>
     </DashboardContainer>
   );

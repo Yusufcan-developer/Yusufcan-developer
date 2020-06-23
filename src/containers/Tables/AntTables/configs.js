@@ -99,35 +99,12 @@ const CustomerRecordsTableInfo = [
   }
 ];
 const tableinfos = [
+  
   {
-    title: 'Simple Table',
-    value: 'simple',
-    columns: clone(smallColumns),
-  },
-  {
-    title: 'Sortable Table',
-    value: 'sortView',
-    columns: clone(sortColumns),
-  },
-  {
-    title: 'Search Text',
-    value: 'filterView',
-    columns: clone(smallColumns),
-  },
-  {
-    title: 'Editable View',
+    title: 'Kullanıcılar',
     value: 'editView',
     columns: clone(editColumns),
   },
-  {
-    title: 'Grouping View',
-    value: 'groupView',
-    columns: clone(groupColumns),
-  },
-  {
-    title: 'Customized View',
-    value: 'customizedView',
-    columns: clone(columns),
-  },
+ 
 ];
 export { columns, tableinfos,CustomerRecordsTableInfo };

@@ -7,14 +7,20 @@ function useOrderFollowData(url, reqBody) {
   const [totalPage, setTotalPage] = useState(1);
   const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
   const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
+  const [dealerCodes, setDealerCodes] = useState();
+  const [regionCodes, setRegionCodes] = useState();
+  const [fieldCodes, setFieldCodes] = useState();
+  const [from, setFrom] = useState();
+  const [to, setTo] = useState();
+  const [searchkey,setSearchKey]=useState();
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [orderIdArray, setOrderIdArray] = useState();
 
   async function fetchUrl() {
   
-    //  const reqB = reqBody == null || reqBody==undefined ? { "pageIndex": currentPage - 1,"pageCount": changePageSize  } : reqBody;  // default variable
-
+    const reqB = reqBody == null || reqBody==undefined ? {"DealerCodes":dealerCodes,"Regioncodes":regionCodes,"FieldCodes":fieldCodes,"from":from,"to":to,"keyword":searchkey, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
+   
     const requestOptions = {
       method: "POST",
       headers: {
@@ -24,7 +30,7 @@ function useOrderFollowData(url, reqBody) {
 
       body: JSON.stringify(reqBody)
     };
-
+    console.log('xxxx productWeb',reqBody)
     await fetch(url, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
@@ -51,7 +57,7 @@ function useOrderFollowData(url, reqBody) {
         setOnChange(false); 
 
       })
-      .catch();
+      .catch(console.log('xxxx hata'));
 
     // const response = await fetch(url);
     // const json = await response.json();

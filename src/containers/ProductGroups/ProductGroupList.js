@@ -48,10 +48,14 @@ const ProductGroupList = () => {
   const history = useHistory();
   const [loading, setloading] = useState(false);
  
-  function selectedProductGroup (index) {
-    console.log('xxxx product Id',index);
+  function selectedProductGroup (productGroupId) {
+    console.log('xxxx product Id',productGroupId);
     
-    history.push('/dashboard/producstList');
+    //history.push('/dashboard/productList');
+    history.push({
+      pathname: '/dashboard/productList',
+      productGroupId: productGroupId,
+    });
     }
   return (
     <LayoutWrapper>

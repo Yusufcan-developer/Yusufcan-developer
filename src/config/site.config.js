@@ -4,7 +4,7 @@ const localApiUrl= 'http://localhost:5000/api/';
 export default {
   siteName: 'SERAMİKSAN B2B',
   siteIcon: 'ion-flash',
-  footerText: `KaryaSmd @ ${new Date().getFullYear()} , Inc`,
+  footerText: `Karya SMD © ${new Date().getFullYear()}`,
   enableAnimatedRoute: false,
   api: {
     products:     apiUrl+'carts/products',               //Ürünler:: POST

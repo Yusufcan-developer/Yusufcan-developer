@@ -53,11 +53,13 @@ export default function() {
     filteredInfo: ""
   });
  /*********************************************** CUSTOM HOOKS ************************************************************ */
- const [localCurrentPage, setlocalCurrentPage] = useState(1);
- const [pageSize, setPageSize] = useState(20)
- const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
- const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
- const [dealerCode,setDealerCode]=useState()
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20)
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
+  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+  const [dealerCodes, setDealerCodes] = useState()
+  const [regionCodes, setRegionCodes] = useState()
+  const [fieldCodes, setFieldCodes] = useState()
 
   useEffect(() => {        
 
@@ -72,7 +74,7 @@ export default function() {
   },[pageSize]);
 
   const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount,setOnChange] = 
-  useFetch(`${siteConfig.api.accounts}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+  useFetch(`${siteConfig.api.accounts}`,{"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 
   const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
@@ -87,7 +89,19 @@ export default function() {
     setToDate(dateString[1]);
   }
   function onChangeDealerCode(value) {
-    setDealerCode(value);
+    let fieldArrObj = [];
+    let regionArrObj= [];
+    let dealerArrObj= [];
+    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    _.filter(value, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+      }
+    });
   };
   function onChange(value, dateString) {
     console.log("Selected Time: ", value);
@@ -267,6 +281,7 @@ export default function() {
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
+                  dropdownMatchSelectWidth	={500}
 
                 />
               </Col>             

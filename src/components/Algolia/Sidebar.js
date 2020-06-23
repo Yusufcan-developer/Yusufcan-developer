@@ -21,6 +21,7 @@ import RangeSlider from './RangeSlider';
 import VoiceRecognition from './VoiceRecognition';
 import { SidebarWrapper } from './AlgoliaComponent.style';
 import basicStyle from '@iso/assets/styles/constants';
+
 const plainOptions = ['Modern', 'Klasik','Otantik'];
 const yuzeyDokusu=['Mat','Parlak'];
 const uygulamaAlani=['Duvar-Taban','Taban','Duvar'];
@@ -32,13 +33,14 @@ const radioStyle = {
 const { rowStyle, colStyle, gutter } = basicStyle;
 
 const defaultCheckedList = ['Modern', 'Klasik','Otantik'];
-// const onChange = checkedList => {
-//     setCheckedList(checkedList);
-//     setIndeterminate(
-//       !!checkedList.length && checkedList.length < plainOptions.length
-//     );
-//     setCheckAll(checkedList.length === plainOptions.length);
-//   };
+const onChange = checkedList => {
+  //setCheckedList(checkedList);
+  // setIndeterminate(
+  //   !!checkedList.length && checkedList.length < plainOptions.length
+  // );
+  // setCheckAll(checkedList.length === plainOptions.length);
+  console.log('xxxx checkedList.length',checkedList)
+};
 // const onCheckAllChange = e => {
 //   setCheckedList(e.target.checked ? plainOptions : []);
 //   setIndeterminate(false);
@@ -48,6 +50,23 @@ export default ({ setVoice }) => (
   <SidebarWrapper className="isoAlgoliaSidebar">
   <div className="isoAlgoliaSidebarItem">    
         <InputSearch placeholder="Ara" />
+    </div>
+    <div className="isoAlgoliaSidebarItem">
+      <h3 className="isoAlgoliaSidebarTitle">Ürün Grubu</h3>
+      <RadioGroup>
+                <Radio style={radioStyle} value={1}>
+                  Vitrifiye
+                </Radio>
+                <Radio style={radioStyle} value={2}>
+                  Karo
+                </Radio>
+                <Radio style={radioStyle} value={3}>
+                  Yapı Kimyasalları
+                </Radio>
+                <Radio style={radioStyle} value={4}>
+                  Banyo Mobilyası
+                </Radio>               
+              </RadioGroup>
     </div>
     <div className="isoAlgoliaSidebarItem">
       <h3 className="isoAlgoliaSidebarTitle">Fiyat</h3>
@@ -61,13 +80,13 @@ export default ({ setVoice }) => (
                 <Radio style={radioStyle} value={3}>
                   200 TL - 400 TL
                 </Radio>
-                <Radio style={radioStyle} value={3}>
+                <Radio style={radioStyle} value={4}>
                   400 TL - 650 TL
                 </Radio>
-                <Radio style={radioStyle} value={3}>
+                <Radio style={radioStyle} value={5}>
                   650 TL - 1000 TL
                 </Radio>
-                <Radio style={radioStyle} value={3}>
+                <Radio style={radioStyle} value={6}>
                   1000 TL ve üzeri
                 </Radio>
               </RadioGroup>
@@ -86,8 +105,8 @@ export default ({ setVoice }) => (
                 >
                    <CheckboxGroup
                   options={plainOptions}
-                 // value={checkedList}
-                  // onChange={onChange}
+                  //value={checkedList}
+                   onChange={onChange}
                 />
                  
                 </div>

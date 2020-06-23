@@ -53,7 +53,9 @@ const OrderFlowUp = () =>  {
  const [pageSize, setPageSize] = useState(20)
  const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
- const [dealerCode,setDealerCode]=useState()
+ const [dealerCodes,setDealerCodes]=useState()
+ const [regionCodes,setRegionCodes]=useState()
+ const [fieldCodes,setFieldCodes]=useState()
 
 
  useEffect(() => {
@@ -71,7 +73,7 @@ const OrderFlowUp = () =>  {
 
 
 const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] = 
-useOrderFollowData(`${siteConfig.api.orders}`, {"dealerCode":dealerCode, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });//, "from": fromDate , "to": toDate eklenecek...
+useOrderFollowData(`${siteConfig.api.orders}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 
 const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
 
@@ -96,15 +98,28 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
     setSelectedKeys(selectedKeys);
   };
   const searchButton = () => {
+    //Saha , Bölge , Bayi kodları çözümleme
     setOnChange(true);
   };
   
   function onChangeDealerCode(value) {
-    console.log('xxxx',value);
-    setDealerCode(value);
+    
+    let fieldArrObj = [];
+    let regionArrObj= [];
+    let dealerArrObj= [];
+
+    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    _.filter(value, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+      }
+    });
   };
   function changeTimePicker(value, dateString) {
-
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
@@ -418,6 +433,7 @@ const OrderDetailcolumns = [
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
+                  dropdownMatchSelectWidth	={500}
 
                 />
               </Col>             

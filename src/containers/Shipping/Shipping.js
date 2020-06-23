@@ -55,8 +55,10 @@ const Shipping = () =>  {
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
 const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
-const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat));
-const [dealerCode,setDealerCode]=useState()
+const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+const [dealerCodes,setDealerCodes]=useState()
+const [regionCodes,setRegionCodes]=useState()
+const [fieldCodes,setFieldCodes]=useState()
 
  useEffect(() => {        
 
@@ -74,7 +76,7 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
 
 
 const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
-useFetch(`${siteConfig.api.deliveries}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+useFetch(`${siteConfig.api.deliveries}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -99,7 +101,20 @@ useFetch(`${siteConfig.api.deliveries}`, { "pageIndex": localCurrentPage - 1 , "
     setOnChange(true);
   };
   function onChangeDealerCode(value) {
-    setDealerCode(value);
+    let fieldArrObj = [];
+    let regionArrObj= [];
+    let dealerArrObj= [];
+    
+    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    _.filter(value, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+      }
+    });
   };
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
@@ -304,6 +319,7 @@ function currentPageChange(current){
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
+                  dropdownMatchSelectWidth	={500}
 
                 />
               </Col>             

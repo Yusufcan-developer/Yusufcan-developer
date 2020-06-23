@@ -2,14 +2,14 @@ import React from 'react';
 import Input from '@iso/components/uielements/input';
 import { InputBoxWrapper } from './Checkout.styles';
 
-export default function({ label, placeholder, important }) {
+export default function({ label, placeholder, important,defaultValue }) {
   return (
     <InputBoxWrapper className="isoInputBox">
       <label>
         {label}
         {important ? <span className="asterisk">*</span> : null}
       </label>
-      <Input size="large" placeholder={placeholder} />
+      <Input size="large" placeholder={placeholder} defaultValue={defaultValue} />
     </InputBoxWrapper>
   );
 }

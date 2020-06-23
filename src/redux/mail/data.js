@@ -2,7 +2,7 @@ export default JSON.parse(
   `[{
   "id": 30,
   "key": 30,
-  "name": "Friedrich Mitchell",
+  "name": "ugur caöm",
   "cc": "Devon90@hotmail.com",
   "email": "Giovanny12@hotmail.com",
   "body": "Doloribus voluptas itaque blanditiis repudiandae. Est libero in. Id enim et vero velit enim nostrum cum aut libero. Dignissimos non et. Qui inventore ducimus debitis qui perspiciatis iure. Eligendi omnis eos et iste iusto ipsa iste dolor. Porro consequatur iste. Incidunt rerum mollitia dolore sit. Officia maxime doloremque esse eaque ad. Architecto animi at qui deserunt.",
@@ -48,7 +48,7 @@ export default JSON.parse(
 }, {
   "id": 60,
   "key": 60,
-  "name": "Marjorie Runolfsdottir",
+  "name": "ugur Runolfsdottir",
   "cc": "Dock_Murazik93@yahoo.com",
   "email": "Reynold76@hotmail.com",
   "img": "https://s3.amazonaws.com/uifaces/faces/twitter/ernestsemerda/128.jpg",

@@ -1,6 +1,7 @@
 import React, { useState }  from 'react';
 import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+// import jwtDecode from 'jwt-decode';
 import Input from '@iso/components/uielements/input';
 import Checkbox from '@iso/components/uielements/checkbox';
 import Button from '@iso/components/uielements/button';
@@ -10,6 +11,9 @@ import appAction from '@iso/redux/app/actions';
 import SignInStyleWrapper from './SignIn.styles';
 import Modals from '@iso/components/Feedback/Modal';
 import Form from '@iso/components/uielements/form';
+
+
+
 
 const { login } = authAction;
 const { clearMenu } = appAction;
@@ -66,15 +70,17 @@ function loginError() {
       .then(data => {
           console.log("Token :",data.token);
           dispatch(login(data.token));
-        
+          // const profile = jwtDecode(data.token);
+
+          // console.log('xxxx profie bilgisi',profile);
         dispatch(clearMenu());
         window.sessionStorage.setItem("nameAndSurname",userName);
-        history.push('/dashboard');
+        history.push('/dashboard/productsList');
       })
       .catch(error => loginError());
   }
 
-  let { from } = location.state || { from: { pathname: '/dashboard' } };
+  let { from } = location.state || { from: { pathname: '/dashboard/productsList' } };
 
   if (redirectToReferrer) {
     return <Redirect to={from} />;
