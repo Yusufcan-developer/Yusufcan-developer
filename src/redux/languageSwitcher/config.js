@@ -7,17 +7,17 @@ const config = {
   defaultLanguage: language,
   options: [
     {
-      languageId: 'english',
-      locale: 'en',
-      text: 'English',
-      icon: englishLang,
-    },
-    {
       languageId: 'turkish',
       locale: 'tr',
       text: 'Turkish',
       icon: turkishLang,
     },
+    {
+      languageId: 'english',
+      locale: 'en',
+      text: 'English',
+      icon: englishLang,
+    }
   ],
 };
 

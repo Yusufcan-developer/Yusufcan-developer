@@ -35,13 +35,13 @@ const formItemLayout = {
 };
 
 
-const OrderFlowUp = () =>  {
-//******************************************************************************************************************* */
+const OrderFollowUp = () => {
+  //******************************************************************************************************************* */
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = useState(); 
+  const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [checkedKeys, setCheckedKeys] = useState();
-  const [selectedKeys, setSelectedKeys] = useState([]); 
+  const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -49,22 +49,22 @@ const OrderFlowUp = () =>  {
   });
 //******************************************************************************************************************* */
 /*********************************************** CUSTOM HOOKS ************************************************************ */
- const [localCurrentPage, setlocalCurrentPage] = useState(1);
- const [pageSize, setPageSize] = useState(20)
- const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
- const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
- const [dealerCodes,setDealerCodes]=useState()
- const [regionCodes,setRegionCodes]=useState()
- const [fieldCodes,setFieldCodes]=useState()
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20)
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
+  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+  const [dealerCodes, setDealerCodes] = useState()
+  const [regionCodes, setRegionCodes] = useState()
+  const [fieldCodes, setFieldCodes] = useState()
 
 
- useEffect(() => {
-    setCurrentPage(localCurrentPage);  
-  },[localCurrentPage]);
-  
-  useEffect(() => { 
+  useEffect(() => {
+    setCurrentPage(localCurrentPage);
+  }, [localCurrentPage]);
+
+  useEffect(() => {
     setChangePageSize(pageSize);
-  },[pageSize]);
+  }, [pageSize]);
 
   useEffect(() => {
     setFromDate(fromDate);
@@ -72,8 +72,8 @@ const OrderFlowUp = () =>  {
   }, [fromDate, toDate]);
 
 
-const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] = 
-useOrderFollowData(`${siteConfig.api.orders}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
+    useOrderFollowData(`${siteConfig.api.orders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
 const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
 
@@ -163,17 +163,17 @@ return (  <Table columns={OrderDetailcolumns} dataSource={dataGetApi[index]} loa
 
 //Order Detail Columns
 const OrderDetailcolumns = [
-  {
-    title: "Sipariş No",
-    dataIndex: "orderNo",
-    key: "orderNo"
-  },
-  {
-    title: "Sipariş Tarihi",
-    dataIndex: "orderDate",
-    key: "orderDate",
-    render:(text)=>moment(text).format(siteConfig.dateFormat)
-  },
+  // {
+  //   title: "Sipariş No",
+  //   dataIndex: "orderNo",
+  //   key: "orderNo"
+  // },
+  // {
+  //   title: "Sipariş Tarihi",
+  //   dataIndex: "orderDate",
+  //   key: "orderDate",
+  //   render:(text)=>moment(text).format(siteConfig.dateFormat)
+  // },
   {
     title: "Tip",
     dataIndex: "type",
@@ -402,29 +402,22 @@ const OrderDetailcolumns = [
       </PageHeader>
       <Box>
         <Collapse accordion>
-          <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dealerCodeTitle" />}
-            >            
-            </FormItem>
-            </Col> 
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dateRangeTitle" />}
-            >
-            </FormItem>
-            </Col>
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.keywordTitle" />}
-            >
-            </FormItem>
-            </Col>
+        <Panel header={<IntlMessages id="page.filtered" />} key="0">
+            <Row>
+              <Col span={6}>
+                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+              </Col>
+              <Col span={5} offset={1}>
+              </Col>
             </Row>
             <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -433,11 +426,10 @@ const OrderDetailcolumns = [
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth	={500}
-
+                  dropdownMatchSelectWidth={500}
                 />
-              </Col>             
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              </Col>
+              <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -446,22 +438,15 @@ const OrderDetailcolumns = [
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-                <Input size="small"
-                  placeholder="Anahtar kelime"
-                  onChange={event => setSearchKey(event.target.value)}
-                />
+              <Col span={6}>
+                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-              <Button
-                  type="primary"
-                  loading={iconLoading}
-                  onClick={searchButton}
-                  >
+              <Col span={5} offset={1}>
+                <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row>             
+            </Row>
           </Panel>
         </Collapse>
       </Box>
@@ -493,4 +478,4 @@ const OrderDetailcolumns = [
   );
 }
 
-export default OrderFlowUp;
+export default OrderFollowUp;

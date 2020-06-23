@@ -1,12 +1,12 @@
-import React, {  useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination,  TreeSelect } from "antd";
-import { DownOutlined , PoweroffOutlined } from '@ant-design/icons';
+import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { DownOutlined, PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input, {
@@ -36,13 +36,13 @@ const formItemLayout = {
 };
 
 
-const UserList = () =>  {
-//******************************************************************************************************************* */
+const UserList = () => {
+  //******************************************************************************************************************* */
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = useState(); 
+  const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [checkedKeys, setCheckedKeys] = useState();
-  const [selectedKeys, setSelectedKeys] = useState([]); 
+  const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -50,34 +50,34 @@ const UserList = () =>  {
   });
 
 
-//******************************************************************************************************************* */
-/*********************************************** CUSTOM HOOKS ************************************************************ */
-const [localCurrentPage, setlocalCurrentPage] = useState(1);
-const [pageSize, setPageSize] = useState(20)
-const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
-const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
-const [dealerCodes,setDealerCodes]=useState()
-const [regionCodes,setRegionCodes]=useState()
-const [fieldCodes,setFieldCodes]=useState()
+  //******************************************************************************************************************* */
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20)
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
+  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+  const [dealerCodes, setDealerCodes] = useState()
+  const [regionCodes, setRegionCodes] = useState()
+  const [fieldCodes, setFieldCodes] = useState()
 
- useEffect(() => {        
+  useEffect(() => {
 
-   console.log("currentPage!", localCurrentPage);
+    console.log("currentPage!", localCurrentPage);
 
-   setCurrentPage(localCurrentPage);  
- },[localCurrentPage]);
- 
- useEffect(() => { 
-   console.log("pageSize!", pageSize);
-   setChangePageSize(pageSize);
- },[pageSize]);
+    setCurrentPage(localCurrentPage);
+  }, [localCurrentPage]);
 
-const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+  useEffect(() => {
+    console.log("pageSize!", pageSize);
+    setChangePageSize(pageSize);
+  }, [pageSize]);
+
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 
 
- const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
- useFetch(`${siteConfig.api.deliveries}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
-/*********************************************** CUSTOM HOOKS ************************************************************ */
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.users}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
   const onExpand = expandedKeys => {
@@ -102,10 +102,10 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
   };
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
-    let regionArrObj= [];
-    let dealerArrObj= [];
-    
-    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    let regionArrObj = [];
+    let dealerArrObj = [];
+
+    if (value.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
     _.filter(value, function (item) {
       if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
       else if (item.split("|").length === 2) {
@@ -142,65 +142,54 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
     setlocalCurrentPage(current);
   }
 
- /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-function currentPageChange(current){
-  
-  console.log("current :", current);
-  setlocalCurrentPage(current);
-}
+  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  function currentPageChange(current) {
 
-const tableData = JSON.parse(
-    `[{
-    "id": "3",
-    "firstName": "Uğur",
-    "lastName": "Çamoğlu",
-    "userName": "ugurcamoglu",
-    "role": "Sistem Yöneticisi",
-    "email": "ugur.camoglu@karyasmd.com",
-    "key": null,
-    "slug": "rock-solid-react-js-foundations-a-beginners-guide-c45c93f5a923"
-  }, {
-    "id": "4",
-    "firstName": "Utku",
-    "userName": "utkuozturk ",
-    "lastName": "Öztürk",
-    "role": "Sistem Yöneticisi",
-    "email": "utku.ozturk@karyasmd.com",
-    "deleted_at": null,
-    "status": "publish",
-    "key": null,
-    "slug": "rock-solid-react-js-foundations-a-beginners-guide-c45c93f5a923"
-  }]`
-  );
+    console.log("current :", current);
+    setlocalCurrentPage(current);
+  }
+
   let columns = [
-    
-      {
-        title: "Adı",
-        dataIndex: "firstName",
-        key: "firstName"
-      },
-      {
-        title: "Soyadı",
-        dataIndex: "lastName",
-        key: "lastName"
-      },
-      {
-        title: "Kullanıcı Adı",
-        dataIndex: "userName",
-        key: "userName"
-      },
-      {
-        title: "email",
-        dataIndex: "email",
-        key: "email"
-      },
-      {
-        title: "Rol",
-        dataIndex: "role",
-        key: "role"
-      }
-      
-      
+    {
+      title: "Adı",
+      dataIndex: "firstName",
+      key: "firstName"
+    },
+    {
+      title: "Soyadı",
+      dataIndex: "lastName",
+      key: "lastName"
+    },
+    {
+      title: "Kullanıcı Adı",
+      dataIndex: "username",
+      key: "username"
+    },
+    {
+      title: "E-posta",
+      dataIndex: "email",
+      key: "email"
+    },
+    {
+      title: "Rol",
+      dataIndex: "role",
+      key: "role"
+    },
+    {
+      title: "Bayi Kodu",
+      dataIndex: "dealerCode",
+      key: "dealerCode"
+    },
+    {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode"
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode"
+    }
   ];
   //Hide shipping table columns
   const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer
@@ -213,37 +202,30 @@ const tableData = JSON.parse(
     }
   }
 
-  
+
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.shippingReportsTitle.header" />}
+        {<IntlMessages id="page.usersTitle.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
-        <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dealerCodeTitle" />}
-            >            
-            </FormItem>
-            </Col> 
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dateRangeTitle" />}
-            >
-            </FormItem>
-            </Col>
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.keywordTitle" />}
-            >
-            </FormItem>
-            </Col>
+          <Panel header={<IntlMessages id="page.filtered" />} key="0">
+            <Row>
+              <Col span={6}>
+                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+              </Col>
+              <Col span={5} offset={1}>
+              </Col>
             </Row>
             <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -252,11 +234,10 @@ const tableData = JSON.parse(
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth	={500}
-
+                  dropdownMatchSelectWidth={500}
                 />
-              </Col>             
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              </Col>
+              <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -265,47 +246,40 @@ const tableData = JSON.parse(
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-                <Input size="small"
-                  placeholder="Anahtar kelime"
-                  onChange={event => setSearchKey(event.target.value)}
-                />
+              <Col span={6}>
+                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-              <Button
-                  type="primary"
-                  loading={iconLoading}
-                  onClick={searchButton}
-                  >
+              <Col span={5} offset={1}>
+                <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row>             
+            </Row>
           </Panel>
         </Collapse>
       </Box>
       {/* Data list volume */}
       <Box>
-      <Table
+        <Table
           columns={columns}
-          dataSource={tableData}
+          dataSource={data}
           onChange={handleChange}
           loading={loading}
           //expandable={{expandedRowRender}}
           pagination={false}
-          scroll={{ x: 'calc(700px + 100%)'}}
+          scroll={{ x: 'calc(700px + 100%)' }}
           bordered={true}
-          // pagination={{ position: 'bottom', pageSize: pageSize ,total: totalDataCount}}
-        />  
-        <br></br>   
-        <Pagination 
+          pagination={{ position: 'none', pageSize: pageSize }}
+        />
+        <br></br>
+        <Pagination
           showSizeChanger
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
-          position = 'bottom'
-          pageSize= {pageSize}
-          total= {totalDataCount}
-        />       
+          position='bottom'
+          pageSize={pageSize}
+          total={totalDataCount}
+        />
       </Box>
     </LayoutWrapper>
   );

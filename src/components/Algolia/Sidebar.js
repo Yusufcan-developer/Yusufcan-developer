@@ -58,7 +58,7 @@ export default ({ setVoice }) => (
                   Vitrifiye
                 </Radio>
                 <Radio style={radioStyle} value={2}>
-                  Karo
+                  Seramik
                 </Radio>
                 <Radio style={radioStyle} value={3}>
                   Yapı Kimyasalları
@@ -69,25 +69,25 @@ export default ({ setVoice }) => (
               </RadioGroup>
     </div>
     <div className="isoAlgoliaSidebarItem">
-      <h3 className="isoAlgoliaSidebarTitle">Fiyat</h3>
+      <h3 className="isoAlgoliaSidebarTitle">Birim Fiyat</h3>
       <RadioGroup>
                 <Radio style={radioStyle} value={1}>
-                  0 TL - 50 TL
+                  50 TL/m<sup>2</sup> ve altı
                 </Radio>
                 <Radio style={radioStyle} value={2}>
-                  50 TL - 200 TL
+                  50 TL/m<sup>2</sup> - 200 TL/m<sup>2</sup>
                 </Radio>
                 <Radio style={radioStyle} value={3}>
-                  200 TL - 400 TL
+                  200 TL/m<sup>2</sup> - 400 TL/m<sup>2</sup>
                 </Radio>
                 <Radio style={radioStyle} value={4}>
-                  400 TL - 650 TL
+                  400 TL/m<sup>2</sup> - 650 TL/m<sup>2</sup>
                 </Radio>
                 <Radio style={radioStyle} value={5}>
-                  650 TL - 1000 TL
+                  650 TL/m<sup>2</sup> - 1000 TL/m<sup>2</sup>
                 </Radio>
                 <Radio style={radioStyle} value={6}>
-                  1000 TL ve üzeri
+                  1000 TL/m<sup>2</sup> ve üstü
                 </Radio>
               </RadioGroup>
     </div>

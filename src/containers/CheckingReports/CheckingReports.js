@@ -45,7 +45,7 @@ const CheckingReports = () =>  {
   const [searchKey, setSearchKey] = useState('');
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20)
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes,setDealerCodes]=useState()
   const [regionCodes,setRegionCodes]=useState()
@@ -229,28 +229,21 @@ if (getHideColumns.length > 0) {
       <Box>
         <Collapse accordion>
         <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dealerCodeTitle" />}
-            >            
-            </FormItem>
-            </Col> 
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dateRangeTitle" />}
-            >
-            </FormItem>
-            </Col>
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.keywordTitle" />}
-            >
-            </FormItem>
-            </Col>
+            <Row>
+              <Col span={6}>
+                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+              </Col>
+              <Col span={5} offset={1}>
+              </Col>
             </Row>
             <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -259,11 +252,10 @@ if (getHideColumns.length > 0) {
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth	={500}
-
+                  dropdownMatchSelectWidth={500}
                 />
-              </Col>             
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              </Col>
+              <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -272,22 +264,15 @@ if (getHideColumns.length > 0) {
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-                <Input size="small"
-                  placeholder="Anahtar kelime"
-                  onChange={event => setSearchKey(event.target.value)}
-                />
+              <Col span={6}>
+                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-              <Button
-                  type="primary"
-                  loading={iconLoading}
-                  onClick={searchButton}
-                  >
+              <Col span={5} offset={1}>
+                <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row>             
+            </Row>
           </Panel>
         </Collapse>
       </Box>

@@ -35,7 +35,7 @@ const formItemLayout = {
   }
 };
 
-export default function() {
+export default function () {
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
@@ -46,35 +46,35 @@ export default function() {
     sortedInfo: "",
     filteredInfo: ""
   });
-/*********************************************** CUSTOM HOOKS ************************************************************ */
-const [localCurrentPage, setlocalCurrentPage] = useState(1);
-const [pageSize, setPageSize] = useState(20)
-const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
-const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
-const [dealerCodes,setDealerCodes]=useState()
-const [regionCodes,setRegionCodes]=useState()
-const [fieldCodes,setFieldCodes]=useState()
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20)
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
+  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+  const [dealerCodes, setDealerCodes] = useState()
+  const [regionCodes, setRegionCodes] = useState()
+  const [fieldCodes, setFieldCodes] = useState()
 
- useEffect(() => {
-   console.log("currentPage!", localCurrentPage);
-   setCurrentPage(localCurrentPage);  
- },[localCurrentPage]);
- 
- useEffect(() => { 
-   console.log("pageSize!", pageSize);
-   setChangePageSize(pageSize);
- },[pageSize]);
+  useEffect(() => {
+    console.log("currentPage!", localCurrentPage);
+    setCurrentPage(localCurrentPage);
+  }, [localCurrentPage]);
 
- useEffect(() => {
-  setFromDate(fromDate);
-  setToDate(toDate);
-}, [fromDate, toDate]);
+  useEffect(() => {
+    console.log("pageSize!", pageSize);
+    setChangePageSize(pageSize);
+  }, [pageSize]);
 
- const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount,setOnChange] = 
- useFetch(`${siteConfig.api.letters}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
- 
- const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-/*********************************************** CUSTOM HOOKS ************************************************************ */
+  useEffect(() => {
+    setFromDate(fromDate);
+    setToDate(toDate);
+  }, [fromDate, toDate]);
+
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.letters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const onExpand = expandedKeys => {
     console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
@@ -107,12 +107,12 @@ const [fieldCodes,setFieldCodes]=useState()
   const searchButton = () => {
     setOnChange(true);
   };
-  
+
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
-    let regionArrObj= [];
-    let dealerArrObj= [];
-    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    let regionArrObj = [];
+    let dealerArrObj = [];
+    if (value.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
     _.filter(value, function (item) {
       if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
       else if (item.split("|").length === 2) {
@@ -128,100 +128,100 @@ const [fieldCodes,setFieldCodes]=useState()
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
- /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-function currentPageChange(current){
-  
-  console.log("current :", current);
-  setlocalCurrentPage(current);
-}
+  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  function currentPageChange(current) {
 
-  let columns = [    
+    console.log("current :", current);
+    setlocalCurrentPage(current);
+  }
+
+  let columns = [
     {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode"
     },
-      {
-        title: "Bayi Adı",
-        dataIndex: "dealerName",
-        key: "dealerName"
-      },
-      {
-        title: "Bayi Alt Kodu",
-        dataIndex: "dealerSubCode",
-        key: "dealerSubCode"
-      },
-      {
-        title: "Bölge Kodu",
-        dataIndex: "regionCode",
-        key: "regionCode"
-      },
-      {
-        title: "Bölge Adı",
-        dataIndex: "regionName",
-        key: "regionName"
-      },
-      {
-        title: "Bölge Yöneticisi",
-        dataIndex: "regionManager",
-        key: "regionManager"
-      },
-      {
-        title: "Başlangıç Tarihi",
-        dataIndex: "fromDate",
-        key: "fromDate",
-        render:(fromDate)=>moment(fromDate).format(siteConfig.dateFormat),
-        sorter: (a, b) => a.fromDate - b.fromDate,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "fromDate" &&
-          tableOptions.sortedInfo.order
-      },
-      {
-        title: "Bitiş Tarihi",
-        dataIndex: "toDate",
-        key: "toDate",
-        render:(toDate)=>moment(toDate).format(siteConfig.dateFormat),
-        sorter: (a, b) => a.toDate - b.toDate,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "toDate" &&
-          tableOptions.sortedInfo.order
-      },
-      {
-        title: "Döküman ID",
-        dataIndex: "documentId",
-        key: "documentId",
-        sorter: (a, b) => a.documentId - b.documentId,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "documentId" &&
-          tableOptions.sortedInfo.order
-      },
-      {
-        title: "TR Kodu",
-        dataIndex: "trCode",
-        key: "trCode",
-        align:"center"
-      },
-      {
-        title: "Tutar",
-        dataIndex: "amount",
-        key: "amount",
-        align:"right",
-        render:(amount)=>amount.toFixed(2),
-        sorter: (a, b) => a.amount - b.amount,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "amount" &&
-          tableOptions.sortedInfo.order
-      },
-      {
-        title: "Banka",
-        dataIndex: "bank",
-        key: "bank"
-      },
-      {
-        title: "Şube",
-        dataIndex: "branch",
-        key: "branch"
-      },
+    {
+      title: "Bayi Adı",
+      dataIndex: "dealerName",
+      key: "dealerName"
+    },
+    {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode"
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode"
+    },
+    {
+      title: "Bölge Adı",
+      dataIndex: "regionName",
+      key: "regionName"
+    },
+    {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager"
+    },
+    {
+      title: "Başlangıç Tarihi",
+      dataIndex: "fromDate",
+      key: "fromDate",
+      render: (fromDate) => moment(fromDate).format(siteConfig.dateFormat),
+      sorter: (a, b) => a.fromDate - b.fromDate,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "fromDate" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Bitiş Tarihi",
+      dataIndex: "toDate",
+      key: "toDate",
+      render: (toDate) => moment(toDate).format(siteConfig.dateFormat),
+      sorter: (a, b) => a.toDate - b.toDate,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "toDate" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Döküman ID",
+      dataIndex: "documentId",
+      key: "documentId",
+      sorter: (a, b) => a.documentId - b.documentId,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "documentId" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "TR Kodu",
+      dataIndex: "trCode",
+      key: "trCode",
+      align: "center"
+    },
+    {
+      title: "Tutar",
+      dataIndex: "amount",
+      key: "amount",
+      align: "right",
+      render: (amount) => amount.toFixed(2),
+      sorter: (a, b) => a.amount - b.amount,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "amount" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Banka",
+      dataIndex: "bank",
+      key: "bank"
+    },
+    {
+      title: "Şube",
+      dataIndex: "branch",
+      key: "branch"
+    },
   ];
   //Hide guaranteeLetter table columns
   const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Dealer
@@ -234,7 +234,7 @@ function currentPageChange(current){
     }
   }
 
-  
+
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -242,29 +242,22 @@ function currentPageChange(current){
       </PageHeader>
       <Box>
         <Collapse accordion>
-        <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dealerCodeTitle" />}
-            >            
-            </FormItem>
-            </Col> 
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dateRangeTitle" />}
-            >
-            </FormItem>
-            </Col>
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.keywordTitle" />}
-            >
-            </FormItem>
-            </Col>
+          <Panel header={<IntlMessages id="page.filtered" />} key="0">
+            <Row>
+              <Col span={6}>
+                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+              </Col>
+              <Col span={5} offset={1}>
+              </Col>
             </Row>
             <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -273,11 +266,10 @@ function currentPageChange(current){
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth	={500}
-
+                  dropdownMatchSelectWidth={500}
                 />
-              </Col>             
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              </Col>
+              <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -286,22 +278,15 @@ function currentPageChange(current){
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-                <Input size="small"
-                  placeholder="Anahtar kelime"
-                  onChange={event => setSearchKey(event.target.value)}
-                />
+              <Col span={6}>
+                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-              <Button
-                  type="primary"
-                  loading={iconLoading}
-                  onClick={searchButton}
-                  >
+              <Col span={5} offset={1}>
+                <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row>             
+            </Row>
           </Panel>
         </Collapse>
       </Box>
@@ -313,18 +298,18 @@ function currentPageChange(current){
           onChange={handleChange}
           loading={loading}
           bordered={true}
-          pagination={{position: 'none', pageSize: pageSize}}
-          scroll={{ x: 'calc(700px + 50%)'}}
-        /> 
-        <br></br>     
-        <Pagination 
+          pagination={{ position: 'none', pageSize: pageSize }}
+          scroll={{ x: 'calc(700px + 50%)' }}
+        />
+        <br></br>
+        <Pagination
           showSizeChanger
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
-          position = 'bottom'
-          pageSize= {pageSize}
-          total= {totalDataCount}
-        />       
+          position='bottom'
+          pageSize={pageSize}
+          total={totalDataCount}
+        />
       </Box>
     </LayoutWrapper>
   );

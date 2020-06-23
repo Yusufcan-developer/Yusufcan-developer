@@ -5,6 +5,11 @@ const options = [
     leftIcon: "ion-clipboard"
   },
   {
+    key: "productGroupList",
+    label: "sidebar.productsList",
+    leftIcon: "ion-bag"
+  },
+  {
     key: "reportTable",
     label: "sidebar.reportTable",
     leftIcon: "ion-ios-paper",
@@ -48,24 +53,18 @@ const options = [
     ]
   },
   {
-    key: "productGroupList",
-    label: "sidebar.productsList",
-    leftIcon: "ion-bag"
-  },
-  {
     key: 'systemAdministrator',
     label: 'sidebar.administrator',
     leftIcon: 'ion-document-text',
     children: [  
       {
-        key: 'uppy',
-        label: 'sidebar.uploadingPhotos',
-      },  
-      {
         key: 'userList',
         label: 'sidebar.userList',
       },    
-      
+      {
+        key: 'uppy',
+        label: 'sidebar.uploadingPhotos',
+      },
       {
         key: 'signup',
         label: 'sidebar.signUp',
@@ -75,7 +74,7 @@ const options = [
       {
         key: 'resetpassword',
         label: 'sidebar.resetPw',
-        withoutDashboard: true,
+        withoutDashboard: false,
       },
     ],
   },   

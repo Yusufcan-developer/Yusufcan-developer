@@ -7,16 +7,17 @@ export default {
   footerText: `Karya SMD © ${new Date().getFullYear()}`,
   enableAnimatedRoute: false,
   api: {
-    products:     apiUrl+'carts/products',               //Ürünler:: POST
-    orders:       apiUrl+'Customers/orders',               //Sipariş Üst Bilgi: POST
-    orderDetail:  apiUrl+'Customers/orders/',               //Sipariş Kalem Bilgi: POST
-    distributions:apiUrl+'customers/distributions', //Dağıtım: POST
-    deliveries:   apiUrl+'Customers/deliveries',       //Sevkiyat
-    cheques:      apiUrl+'customers/cheques',             //Çek-Senet: POST
-    letters:      apiUrl+'customers/letters',             //Teminat Mektupları: POST
-    accounts:     apiUrl+'customers/accounts',           //Cari Listesi: POST
-    transactions: apiUrl+'customers/transactions',   //Cari Hareketler: POSTs
-    accountsTree: apiUrl+'Customers/accounts-tree',   //Bayi kodları(Tree) listesi :GET
+    products: apiUrl + 'carts/products',               //Ürünler:: POST
+    orders: apiUrl + 'Customers/orders',               //Sipariş Üst Bilgi: POST
+    orderDetail: apiUrl + 'Customers/orders/',         //Sipariş Kalem Bilgi: POST
+    distributions: apiUrl + 'customers/distributions', //Dağıtım: POST
+    deliveries: apiUrl + 'Customers/deliveries',       //Sevkiyat
+    cheques: apiUrl + 'customers/cheques',             //Çek-Senet: POST
+    letters: apiUrl + 'customers/letters',             //Teminat Mektupları: POST
+    accounts: apiUrl + 'customers/accounts',           //Cari Listesi: POST
+    transactions: apiUrl + 'customers/transactions',   //Cari Hareketler: POST
+    accountsTree: apiUrl + 'Customers/accounts-tree',  //Bayi kodları(Tree) listesi: GET
+    users: apiUrl + 'Users/users',                     //Kullanıcılar: POST
   },
   dateFormat:'DD-MM-YYYY',
   google: {

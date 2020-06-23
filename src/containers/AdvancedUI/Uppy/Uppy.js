@@ -1,9 +1,10 @@
 import React from 'react';
+import _ from 'underscore';
 import PageHeader from '@iso/components/utility/pageHeader';
 import Box from '@iso/components/utility/box';
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import ContentHolder from '@iso/components/utility/contentHolder';
-import { Table, Row, Col, Pagination,  TreeSelect } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect } from "antd";
 import '@uppy/core/dist/style.css';
 import '@uppy/dashboard/dist/style.css';
 
@@ -16,45 +17,48 @@ import Instagram from '@uppy/instagram';
 import { Dashboard } from '@uppy/react';
 import { locale } from 'moment';
 
+import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
+import siteConfig from "@iso/config/site.config";
+
 const UppyDashboard = () => {
   const uppy = Uppy({
     debug: true,
     autoProceed: false,
-    locale:{
+    locale: {
       strings: {
 
         // Text to show on the droppable area.
         // `%{browse}` is replaced with a link that opens the system file selection dialog.
-        
+
         // Used as the label for the link that opens the system file selection dialog.
-        addingMoreFiles: 'Daha fazla fotoğraf ekle',
-        back:'geri',
-        done:'tamam',
+        addingMoreFiles: 'Daha Fazla Fotoğraf Ekle',
+        back: 'Geri',
+        done: 'Bitti',
         complete: 'Başarılı',
         saveChanges: 'Değişiklikleri Kaydet',
         editFile: 'Düzenle',
-  editing: 'Düzenle %{file}',
+        editing: 'Düzenle %{file}',
         uploadXFiles: {
-          '0': 'Yükle %{smart_count} Fotoğraf',
-          '1': 'Yükle %{smart_count} Fotoğraf'
+          '0': '%{smart_count} Fotoğraf Yükle',
+          '1': '%{smart_count} Fotoğraf Yükle'
         },
         uploadingXFiles: {
-    '0': 'Yükleniyor %{smart_count} fotoğraf',
-    '1': 'Yükleniyor %{smart_count} fotoğraf'
-  },
+          '0': '%{smart_count} Fotoğraf Yükleniyor',
+          '1': '%{smart_count} Fotoğraf Yükleniyor'
+        },
 
         xFilesSelected: {
-          '0': '%{smart_count} fotoğraf seçildi',
-          '1': '%{smart_count} fotoğraf seçildi'
+          '0': '%{smart_count} Fotoğraf Seçildi',
+          '1': '%{smart_count} Fotoğraf Seçildi'
         },
-      
+
         addMore: 'Ekle',
         addMoreFiles: 'Fotoğraf Ekle',
         cancel: 'İptal',
         cancelUpload: 'Yükleme iptal',
-        browse: 'Dosya Aç',
-        dropPaste: 'Fotoğraflarınızı buraya bırakın, yapıştırın veya %{browse}',
-        dropPasteImport:'Dosyaları buraya bırakın, yapıştırın veya %{browse}'
+        browse: 'Dosya Seçin',
+        dropPaste: 'Fotoğraf dosyasını bu alana sürükleyin ya da  %{browse}',
+        dropPasteImport: 'Dosyaları buraya bırakın, yapıştırın veya %{browse}'
       }
     },
     // locale: Russian,
@@ -79,6 +83,11 @@ const UppyDashboard = () => {
     console.log('successful files:', result.successful);
     console.log('failed files:', result.failed);
   });
+
+  //ProductListHook
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
+    useProductData(`${siteConfig.api.products}`, {});
+
   const treeData = [
     {
       title: 'Node1',
@@ -117,19 +126,19 @@ const UppyDashboard = () => {
   ];
   return (
     <LayoutWrapper>
-      <PageHeader>Fotograf Yükleme</PageHeader>
+      <PageHeader>Ürün Fotoğrafı Yükleme</PageHeader>
       <TreeSelect
-                   treeData={treeData}
-                  // onChange={onChangeDealerCode}
-                  // treeCheckable={true}
-                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  placeholder={"ürün seçiniz"}
-                  showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth	={500}
-                  height={600}
+        treeData={_.map(data, (item) => { return { 'title': item.description, 'value': item.itemRef }; })}
+        // onChange={onChangeDealerCode}
+        // treeCheckable={true}
+        showCheckedStrategy={TreeSelect.SHOW_PARENT}
+        placeholder={"Listeden Ürün Seçiniz"}
+        showSearch={true}
+        style={{ marginBottom: '8px', width: '100%' }}
+        dropdownMatchSelectWidth={500}
+        height={600}
 
-                />
+      />
       <Box>
         <ContentHolder>
           <Dashboard
@@ -140,7 +149,7 @@ const UppyDashboard = () => {
             target=".DashboardContainer"
             replaceTargetContent={true}
             showProgressDetails={true}
-            note="Resim dosyaları, boyutu en fazla 1 MB olmalıdır"
+            note="Fotoğraf dosyalarının boyutu en fazla 4 MB olmalıdır"
             height={470}
             width="100%"
             metaFields={[

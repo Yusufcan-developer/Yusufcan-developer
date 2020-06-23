@@ -18,25 +18,25 @@ const reqJson = [
   {
     "Id"   :1,
     "title": "Vitrifiye",
-    "description": "(Vitrifiye ürün grubu)",
+    "description": "Lavabo, Klozet, Bide, Pisuvar, Helataşı, Bedensel Engelli Ürünler",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/ardesia_final_35159.jpg",
   },
   {
     "Id"   :2,
-    "title": "Karo",
-    "description": "(Karo ürün grubu)",
+    "title": "Seramik",
+    "description": "Banyo, Mutfak, İç ve Dış Mekanlar, Ticari Mekan",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/alves_final_14c24.jpg",
   },
   {
     "Id"   :3,
     "title": "Yapı Kimyasalları",
-    "description": "Yapı Kimyasalları ürün grubu)",
+    "description": "Cerafix, Cerabond, Ceraflex, Cerafill, Çimento Esaslı Yapıştırma Harçları",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/aqua3_3f712.jpg",
   },
   {
     "Id"   :4,
-    "title": "Banyo mobilyası",
-    "description": "(Banyo mobilyası ürün grubu)",
+    "title": "Banyo Mobilyası",
+    "description": "Banyo Mobilyası Ürün Grubu (Lorem ipsum dolor sit amet, consectetur)",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/betonmekan_0856e.jpg",
   },
 
@@ -59,7 +59,7 @@ const ProductGroupList = () => {
     }
   return (
     <LayoutWrapper>
-      <PageHeader>Ürün Grubu</PageHeader>
+      <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>
 
       <Box>
       {/**Model Json */}
@@ -77,6 +77,7 @@ const ProductGroupList = () => {
                 <img
                   alt="example"
                   src= {item.imageUrl}
+                  style= {{height: '180px'}}
                 />
               }
             >
