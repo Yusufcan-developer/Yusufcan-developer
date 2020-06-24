@@ -16,26 +16,26 @@ import Item from "antd/lib/list/Item";
 
 const reqJson = [
   {
-    "Id"   :1,
+    "Id"   :"VİTRİFİYE (SSG)",
     "title": "Vitrifiye",
     "description": "Lavabo, Klozet, Bide, Pisuvar, Helataşı, Bedensel Engelli Ürünler",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/ardesia_final_35159.jpg",
   },
   {
-    "Id"   :2,
-    "title": "Seramik",
+    "Id"   :"KARO",
+    "title": "Karo",
     "description": "Banyo, Mutfak, İç ve Dış Mekanlar, Ticari Mekan",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/alves_final_14c24.jpg",
   },
   {
-    "Id"   :3,
+    "Id"   :"YAPI KİMYASALLARI",
     "title": "Yapı Kimyasalları",
     "description": "Cerafix, Cerabond, Ceraflex, Cerafill, Çimento Esaslı Yapıştırma Harçları",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/aqua3_3f712.jpg",
   },
   {
-    "Id"   :4,
-    "title": "Banyo Mobilyası",
+    "Id"   :"BANYO MOBİLYASI",
+    "title": "YAPI KİMYASALLARI",
     "description": "Banyo Mobilyası Ürün Grubu (Lorem ipsum dolor sit amet, consectetur)",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/betonmekan_0856e.jpg",
   },

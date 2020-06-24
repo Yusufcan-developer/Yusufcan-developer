@@ -10,6 +10,12 @@ function useProductData(url, reqBody) {
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
+  const [productGroup,setProductGroup]=useState();
+  const [dimension,setDimension]=useState([])
+  const [color,setColor]=useState([])
+  const [surface,setSurface]=useState([])
+  const [productionStatus,setProductionStatus]=useState([])
+  const [keyword,setKeyword]=useState()
   const [from, setFrom] = useState();
   const [to, setTo] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
@@ -18,8 +24,9 @@ function useProductData(url, reqBody) {
 
   async function fetchUrl() {
   
-    const reqB = reqBody == "{}"; //null || reqBody==undefined ? {"DealerCodes":dealerCodes,"Regioncodes":regionCodes,"FieldCodes":fieldCodes,"from":from,"to":to, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody;  // default variable
+    const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"productionStatus":productionStatus,"surfaces":surface, "colors":color, "dimensions":dimension, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
    
+   console.log('xxxx req',reqB)
     const requestOptions = {
       method: "POST",
       headers: {
@@ -29,7 +36,7 @@ function useProductData(url, reqBody) {
 
       body: JSON.stringify(reqBody)
     };
-    console.log('xxxx req',requestOptions);
+    console.log('xxxx req',requestOptions)
     await fetch(url, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);

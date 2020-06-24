@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import Box from "@iso/components/utility/box";
 import { SingleCardWrapper } from './Shuffle.styles';
-import {Col,Card, Row,Button,Breadcrumb } from "antd";
+import {Col,Card, Row,Button,Breadcrumb,Pagination } from "antd";
 import siteConfig from "@iso/config/site.config";
 import Modals from '@iso/components/Feedback/Modal';
 import ModalStyle, { ModalContent } from './Modal.styles';
@@ -30,6 +30,7 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 import data from "../../redux/mail/data";
 import fake from './fake';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
+import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 
 const margin = {
     margin: direction === 'rtl' ? '0 0 8px 8px' : '0 8px 8px 0',
@@ -39,40 +40,114 @@ const { Meta } = Card;
 // const { productQuantity, products } = useSelector(state => state.Ecommerce);
 const ProductsList = () => {
   
-  // console.log('xxxx ürünleri getirdim products',products)
   const history = useHistory();
-  
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8)
+
+  const [productGroup,setProductGroup]=useState([history.location.productGroupId])  
+  const [dimension,setDimension]=useState([])
+  const [color,setColor]=useState([])
+  const [surface,setSurface]=useState([])
+  const [productionStatus,setProductionStatus]=useState([])
+  const [keyword,setKeyword]=useState()
+
+  useEffect(() => {
+    setCurrentPage(localCurrentPage);
+  }, [localCurrentPage]);
+
+  useEffect(() => {
+    setChangePageSize(pageSize);
+  }, [pageSize]);
+
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart,changeProductQuantity } = ecommerceActions;
   const dispatch = useDispatch();
-  console.log('xxxx ürünler',products);
 
   //ProductListHook
   const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] = 
-  useProductData(`${siteConfig.api.products}`, { });//, "from": fromDate , "to": toDate eklenecek...
+  useProductData(`${siteConfig.api.products}`, {"keyword":keyword ,"productionStatus":productionStatus,"surfaces":surface, "colors":color,"dimensions":dimension,"categories":productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
+  //Ürün Grubu 
+  const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
+
+  //Boyutlar
+  const [dimensionData] = useFilterData(`${siteConfig.api.dimensions}`);
+
+  //Renkler
+  const [colorData] = useFilterData(`${siteConfig.api.colors}`);
+    
+  //Yüzeyler
+  const [surfaceData] = useFilterData(`${siteConfig.api.surfaces}`);
+
+  //Durumlar
+  const [productionStatusData] = useFilterData(`${siteConfig.api.productionStatusData}`);
+
+  //Ürün grubu adı getirme
   console.log('xxxx geliyorum',history.location.productGroupId)
-  console.log('xxxx side',Sidebar)
+
+
   const listClass = `isoSingleCard card grid`;
   const style = { zIndex: 100 -90 };
   
-  //Siderbar component data
-  const plainOptions = ['Modern', 'Klasik', 'Otantik'];
-  const yuzeyDokusu = ['Mat', 'Parlak'];
-  const uygulamaAlani = ['Duvar-Taban', 'Taban', 'Duvar'];
+
   const radioStyle = {
     display: 'block',
     height: '30px',
     lineHeight: '30px',
   };
-  const { rowStyle, colStyle, gutter } = basicStyle;
-
-  const defaultCheckedList = ['Modern', 'Klasik', 'Otantik'];
 
   //InputSearch Filter Event
   const onchangeInputSearch = e => {
-    console.log('xxxx inputSearcten geliyorum', e.target.value);
+    setKeyword(e.target.value);
+  }
+  
+  const keyPress = e => {
+    if (e.keyCode == 13) {
+      return setOnChange(true);
+    }
+  }
+  ///
+  const onSearch= e => {
+    console.log('xxxx inputSearcten geliyorum', keyword);
+    return setOnChange(true);
+  }
+
+  function onchangePagination(page, pageSize) {
+    setPageSize(pageSize);
+    setlocalCurrentPage(page);
+  }; 
+
+  //Product Group Filter Event
+  function onChangeProductGroup(checkedProductGroupValue) {
+    setProductGroup(checkedProductGroupValue)
+    if(productGroup.length>0){return setOnChange(true);}    
+  };
+   //Dimension Filter Event
+   function onChangeDimension(checkedDimensionValue) {
+    setDimension(checkedDimensionValue)
+    return setOnChange(true);  
+  };
+
+  //Color Filter Event
+  function onChangeColor(checkedColorValue)
+  {
+    setColor(checkedColorValue)
+    return setOnChange(true);
+  }
+
+  //Surface Filter Event
+  function onChangeSurface(checkedSurfaceValue)
+  {
+    setSurface(checkedSurfaceValue)
+    return setOnChange(true);
+  }
+
+  //productionStatus Filter Event
+  function onChangeProductionStatus(checkedProductionStatusValue)
+  {
+    setProductionStatus(checkedProductionStatusValue)
+    return setOnChange(true);
   }
   function selectedProductId (product) {
     console.log('xxxx product Id',product);
@@ -81,18 +156,6 @@ const ProductsList = () => {
     //   productGroupId: productGroupId,
     // });
     }
-  const onSearch = value => {
-    console.log('xxxx istenilen değer ile search yapıyorum', value);
-  };
-
-
-  //Product Group Filter Event
-  const onChangeProductGroup=e => {
-    dispatch(e.target.value);
-    console.log('xxxx secilen ürün grubu', e.target.value);
-    const data=fake;
-      
-  };
   function onAddBox (product) {    
     if(productQuantity.length===0){dispatch(addToCart(product));} //Sepete
     else{
@@ -116,9 +179,6 @@ const ProductsList = () => {
       });
       dispatch(changeProductQuantity(newProductQuantity));
 
-     
-      // });
-      // dispatch(changeProductQuantity(newProductQuantity));
     }
       };    
     Modals.success({
@@ -148,100 +208,56 @@ const ProductsList = () => {
           <div className="isoAlgoliaSidebarItem">
             <InputSearch placeholder="Ara" // value={search}
           onChange={onchangeInputSearch}
-          onSearch={onSearch} />
+          onSearch={onSearch}
+          onKeyDown={keyPress} />
           </div>
           <div className="isoAlgoliaSidebarItem">
             <h3 className="isoAlgoliaSidebarTitle">Ürün Grubu</h3>
-            <RadioGroup  onChange={onChangeProductGroup}>
-              <Radio style={radioStyle} value={1}>
-                Vitrifiye
-                </Radio>
-              <Radio style={radioStyle} value={2}>
-                Seramik
-                </Radio>
-              <Radio style={radioStyle} value={3}>
-                Yapı Kimyasalları
-                </Radio>
-              <Radio style={radioStyle} value={4}>
-                Banyo Mobilyası
-                </Radio>
-            </RadioGroup>
-          </div>
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Birim Fiyat</h3>
-            <RadioGroup>
-              <Radio style={radioStyle} value={1}>
-                50 TL/m<sup>2</sup> ve altı
-                </Radio>
-              <Radio style={radioStyle} value={2}>
-                50 TL/m<sup>2</sup> - 200 TL/m<sup>2</sup>
-                </Radio>
-              <Radio style={radioStyle} value={3}>
-                200 TL/m<sup>2</sup> - 400 TL/m<sup>2</sup>
-                </Radio>
-              <Radio style={radioStyle} value={4}>
-                400 TL/m<sup>2</sup> - 650 TL/m<sup>2</sup>
-                </Radio>
-              <Radio style={radioStyle} value={5}>
-                650 TL/m<sup>2</sup> - 1000 TL/m<sup>2</sup>
-                </Radio>
-              <Radio style={radioStyle} value={6}>
-                1000 TL/m<sup>2</sup> ve üstü
-                </Radio>
-            </RadioGroup>
-          </div>
-
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle" style={{ marginBottom: 10 }}>
-              Stil
-      </h3>
-            <div>
-              <div
-                style={{
-                  borderBottom: '1px solid #E9E9E9',
-                  paddingBottom: '15px',
-                }}
-              >
-                <CheckboxGroup
-                  options={plainOptions}
-                  //value={checkedList}
-                  onChange={onChange}
-                />
-
-              </div>
-              <br />
-              <Checkbox
-              //indeterminate={indeterminate}
-              // onChange={onCheckAllChange}
-              // checked={checkAll}
-              >
-                Tümünü Seç
-                  </Checkbox>
-            </div>
-            {/* <RangeSlider attributeName="price" /> */}
-          </div>
-
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Yüzey Dokusu</h3>
             <CheckboxGroup
-              options={yuzeyDokusu}
-            // value={checkedList}
-            // onChange={onChange}
-            />
-            {/* <RefinementList attributeName="categories" /> */}
+              options={productGroupData}
+              value={productGroup}
+              onChange={onChangeProductGroup}
+              style={{display: 'flex', flexDirection: 'column'}}
+            />           
           </div>
-
           <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Uygulama Alanı</h3>
+            <h3 className="isoAlgoliaSidebarTitle">Boyut</h3>
             <CheckboxGroup
-              options={uygulamaAlani}
-            // value={checkedList}
-            // onChange={onChange}
-            />
-            {/* <RefinementList attributeName="categories" /> */}
-            {/* <RefinementList attributeName="brand" withSearchBox /> */}
-          </div>        
-
+              options={
+                dimensionData.map(e => e === null ? 'Yok' : e)}
+                onChange={onChangeDimension}
+              style={{display: 'flex', flexDirection: 'column'}}
+            />   
+          </div>
+          <div className="isoAlgoliaSidebarItem">
+            <h3 className="isoAlgoliaSidebarTitle">Renkler</h3>
+            <CheckboxGroup
+              options={
+              colorData.map(e => e === null ? 'Yok' : e)}
+              onChange={onChangeColor}
+              style={{display: 'flex', flexDirection: 'column'}}
+            />   
+          </div>
+          <div className="isoAlgoliaSidebarItem">
+            <h3 className="isoAlgoliaSidebarTitle">Yüzeyler</h3>
+            <CheckboxGroup
+              options={
+                surfaceData.map(e => e === null ? 'Yok' : e)}
+                onChange={onChangeSurface}
+              style={{display: 'flex', flexDirection: 'column'}}
+            />   
+          </div>
+         
+          <div className="isoAlgoliaSidebarItem">
+            <h3 className="isoAlgoliaSidebarTitle">Üretim Durumu</h3>
+            <CheckboxGroup
+              options={
+                productionStatusData.map(e => e === null ? 'Yok' : e)}
+                onChange={onChangeProductionStatus}
+              style={{display: 'flex', flexDirection: 'column'}}
+            />   
+          </div>
+          
           {/* <ClearAll /> */}
         </SidebarWrapper>
 
@@ -261,9 +277,7 @@ const ProductsList = () => {
                   <div className="isoCardImage">
                     <img alt="#" src={item.imageUrl} />
                   </div>
-                  <div className="isoCardContent">
-                    {/* <h3 className="isoCardTitle">{item.title}</h3><h3 className="isoCardDate">{item.title}</h3>
-                     */}
+                  <div className="isoCardContent">                    
                     <Row>
                       <Col span={ 6 } >
                         <h3 className="isoCardTitle">{item.series}</h3>
@@ -286,13 +300,10 @@ const ProductsList = () => {
                     >  {<IntlMessages id="Sepete Ekle" />}
                     </Button>
                   </div>
-                  {/* <button className="isoDeleteBtn" onClick={this.props.clickHandler}>
-            <Icon type="close" />
-          </button> */}
-
                 </SingleCardWrapper>
+                
               ))}
-
+          <Pagination defaultCurrent={0} total={totalDataCount} pageSize={8} onChange={onchangePagination} />
             </Row>
           </Box>
         </ContentHolder>
