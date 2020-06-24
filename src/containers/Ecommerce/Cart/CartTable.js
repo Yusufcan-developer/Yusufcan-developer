@@ -68,6 +68,7 @@ export default function CartTable({ style }) {
             <th className="isoItemImage" />
             <th className="isoItemName">Ürün Adı</th>
             <th className="isoItemPrice">Birim Fiyat</th>
+            <th className="isoItemPalet">Palet</th>
             <th className="isoItemQuantity">Miktar (m2)</th>
             <th className="isoItemPriceTotal">Toplam</th>
           </tr>
@@ -80,6 +81,7 @@ export default function CartTable({ style }) {
             <td className="isoItemImage" />
             <td className="isoItemName" />
             <td className="isoItemPrice" />
+            <td className="isoItemPalet" />
             <td className="isoItemQuantity">Toplam Tutar</td>
             <td className="isoItemPriceTotal">{totalPrice.toFixed(2)} TL</td>
           </tr>

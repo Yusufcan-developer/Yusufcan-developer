@@ -52,7 +52,7 @@ export default function({
         {/* <span className="itemPricePrefix">$</span> */}
         {productItem.listPrice.toFixed(2)} {"TL"}
       </td>
-      <td className="isoItemQuantity">
+      <td className="isoItemPalet">
         <InputNumber
           min={1}
           max={1000}
@@ -60,6 +60,10 @@ export default function({
           step={1}
           onChange={onChange}
         />
+      </td>
+      <td className="isoItemQuantity">
+        {/* <span className="itemPricePrefix">$</span> */}
+        {quantity*96}
       </td>
       <td className="isoItemPriceTotal">{totalPrice} TL</td>
     </tr>
