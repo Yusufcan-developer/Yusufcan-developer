@@ -386,14 +386,14 @@ const OrderDetailcolumns = [
   ];
 
   //Hide order table columns
-  const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer
-  if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-      columns = _.without(columns, _.findWhere(columns, {
-      dataIndex: getHideColumns[index].dataIndex
-      }
-      ))}
-  }
+  // const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer
+  // if (getHideColumns.length > 0) {
+  //     for (let index = 0; index < getHideColumns.length; index++) {
+  //     columns = _.without(columns, _.findWhere(columns, {
+  //     dataIndex: getHideColumns[index].dataIndex
+  //     }
+  //     ))}
+  // }
     
   return (
     <LayoutWrapper>

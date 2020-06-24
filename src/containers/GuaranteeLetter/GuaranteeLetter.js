@@ -224,15 +224,15 @@ export default function () {
     },
   ];
   //Hide guaranteeLetter table columns
-  const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Dealer
-  if (getHideColumns.length > 0) {
-    for (let index = 0; index < getHideColumns.length; index++) {
-      columns = _.without(columns, _.findWhere(columns, {
-        dataIndex: getHideColumns[index].dataIndex
-      }
-      ))
-    }
-  }
+  // const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Dealer
+  // if (getHideColumns.length > 0) {
+  //   for (let index = 0; index < getHideColumns.length; index++) {
+  //     columns = _.without(columns, _.findWhere(columns, {
+  //       dataIndex: getHideColumns[index].dataIndex
+  //     }
+  //     ))
+  //   }
+  // }
 
 
   return (
