@@ -18,39 +18,41 @@ export default function CartTable({ style }) {
   function renderItems() {
     totalPrice = 0;
     if (!productQuantity || productQuantity.length === 0) {
-      return <tr className="isoNoItemMsg">No item found</tr>;
+      return <tr className="isoNoItemMsg">Ürün Bulunamadı</tr>;
     }
     return productQuantity.map(product => {
-      totalPrice += product.quantity * products[product.objectID].price;
+      totalPrice += product.quantity * products[product.itemCode].listPrice;
       return (
         <SingleCart
-          key={product.objectID}
+          key={product.itemCode}
           quantity={product.quantity}
           changeQuantity={changeQuantity}
-          cancelQuantity={cancelQuantity}
-          {...products[product.objectID]}
+          cancelQuantity={event => cancelQuantity(product)}
+          productItem={products[product.itemCode]}
+          {...products[product.itemCode]}
         />
       );
     });
   }
-  function changeQuantity(objectID, quantity) {
+  function changeQuantity(itemCode, quantity) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
-      if (product.objectID !== objectID) {
+      if (product.itemCode !== itemCode) {
+        
         newProductQuantity.push(product);
       } else {
         newProductQuantity.push({
-          objectID,
+          itemCode,
           quantity,
         });
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
   }
-  function cancelQuantity(objectID) {
+  function cancelQuantity(productItem) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
-      if (product.objectID !== objectID) {
+      if (product.itemCode !== productItem.itemCode) {
         newProductQuantity.push(product);
       }
     });
@@ -64,10 +66,11 @@ export default function CartTable({ style }) {
           <tr>
             <th className="isoItemRemove" />
             <th className="isoItemImage" />
-            <th className="isoItemName">Name</th>
-            <th className="isoItemPrice">Price</th>
-            <th className="isoItemQuantity">Quantity</th>
-            <th className="isoItemPriceTotal">Total</th>
+            <th className="isoItemName">Ürün Adı</th>
+            <th className="isoItemPrice">Birim Fiyat</th>
+            <th className="isoItemPalet">Palet</th>
+            <th className="isoItemQuantity">Miktar (m2)</th>
+            <th className="isoItemPriceTotal">Toplam</th>
           </tr>
         </thead>
 
@@ -78,8 +81,9 @@ export default function CartTable({ style }) {
             <td className="isoItemImage" />
             <td className="isoItemName" />
             <td className="isoItemPrice" />
-            <td className="isoItemQuantity">Total</td>
-            <td className="isoItemPriceTotal">${totalPrice.toFixed(2)}</td>
+            <td className="isoItemPalet" />
+            <td className="isoItemQuantity">Toplam Tutar</td>
+            <td className="isoItemPriceTotal">{totalPrice.toFixed(2)} TL</td>
           </tr>
         </tbody>
 
@@ -87,12 +91,13 @@ export default function CartTable({ style }) {
           <tr>
             <td
               style={{
+                border:'1px',
                 width: '100%',
                 paddingRight: `${direction === 'rtl' ? '0' : '25px'}`,
                 paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
               }}
             >
-              <Input size="large" placeholder="Discount Coupon" />
+              <Input size="large" placeholder="Kampanya Kodu" />
             </td>
             <td
               style={{
@@ -100,11 +105,11 @@ export default function CartTable({ style }) {
                 paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
               }}
             >
-              <Button>Apply</Button>
+              <Button>Uygula</Button>
             </td>
             <td>
               <Button type="primary">
-                <Link to={'/dashboard/checkout'}>Checkout</Link>
+                <Link to={'/dashboard/checkout'}>Sipariş Oluştur</Link>
               </Button>
             </td>
           </tr>

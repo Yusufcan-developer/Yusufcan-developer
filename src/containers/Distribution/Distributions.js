@@ -38,10 +38,10 @@ const formItemLayout = {
 const configTreeCheckedKeys = (checkedKeys, treeData) => {
 
   var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
-  console.log("configTreeCheckedKeys",newTreeData);
+  console.log("configTreeCheckedKeys", newTreeData);
 };
 
-export default function() {
+export default function () {
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
@@ -52,30 +52,33 @@ export default function() {
     sortedInfo: "",
     filteredInfo: ""
   });
- /*********************************************** CUSTOM HOOKS ************************************************************ */
- const [localCurrentPage, setlocalCurrentPage] = useState(1);
- const [pageSize, setPageSize] = useState(20)
- const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
- const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
- const [dealerCode,setDealerCode]=useState()
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20)
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
+  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+  const [dealerCodes, setDealerCodes] = useState()
+  const [regionCodes, setRegionCodes] = useState()
+  const [fieldCodes, setFieldCodes] = useState()
 
-  useEffect(() => {        
+  useEffect(() => {
 
     console.log("currentPage!", localCurrentPage);
 
-    setCurrentPage(localCurrentPage);  
-  },[localCurrentPage]);
-  
-  useEffect(() => { 
+    setCurrentPage(localCurrentPage);
+  }, [localCurrentPage]);
+
+  useEffect(() => {
     console.log("pageSize!", pageSize);
     setChangePageSize(pageSize);
-  },[pageSize]);
+  }, [pageSize]);
 
-  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount,setOnChange] = 
-  useFetch(`${siteConfig.api.distributions}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.distributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
-  const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-/*********************************************** CUSTOM HOOKS ************************************************************ */
+
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const searchButton = () => {
     setOnChange(true);
@@ -87,7 +90,19 @@ export default function() {
     setToDate(dateString[1]);
   }
   function onChangeDealerCode(value) {
-    setDealerCode(value);
+    let fieldArrObj = [];
+    let regionArrObj = [];
+    let dealerArrObj = [];
+    if (value.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
+    _.filter(value, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+      }
+    });
   };
   function onChange(value, dateString) {
     console.log("Selected Time: ", value);
@@ -175,7 +190,7 @@ export default function() {
     {
       title: "Dağıtım Id",
       dataIndex: "distributionId",
-      key: "distributionId", 
+      key: "distributionId",
       sorter: (a, b) => a.distributionId - b.distributionId,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "distributionId" &&
@@ -184,8 +199,8 @@ export default function() {
     {
       title: "Dağıtım Sipariş Tarihi",
       dataIndex: "distributionOrderDate",
-      key: "distributionOrderDate", 
-      render:(distributionOrderDate)=>moment(distributionOrderDate).format(siteConfig.dateFormat),
+      key: "distributionOrderDate",
+      render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
       sorter: (a, b) => a.distributionOrderDate - b.distributionOrderDate,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "distributionOrderDate" &&
@@ -204,7 +219,7 @@ export default function() {
     {
       title: "Sipariş Numarası",
       dataIndex: "orderNo",
-      key: "orderNo", 
+      key: "orderNo",
       sorter: (a, b) => a.orderNo - b.orderNo,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "orderNo" &&
@@ -213,7 +228,7 @@ export default function() {
     {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
-      key: "itemCode", 
+      key: "itemCode",
       sorter: (a, b) => a.itemCode.length - b.itemCode.length,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "itemCode" &&
@@ -225,53 +240,54 @@ export default function() {
       key: "itemDescription"
     },
     {
-        title: "Birim",
-        dataIndex: "unit",
-        key: "unit"
-      },
-      {
-        title: "Ağırlık Birimi",
-        dataIndex: "unitWeight",
-        key: "unitWeight"
-      },
-      {
-        title: "Planlanan Miktar",
-        dataIndex: "plannedAmount",
-        key: "plannedAmount",   
-        sorter: (a, b) => a.plannedAmount - b.plannedAmount,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "plannedAmount" &&
-          tableOptions.sortedInfo.order
-      },
-      {
-        title: "Dağıtılan  Miktar",
-        dataIndex: "distributedAmount",
-        key: "distributedAmount",   
-        sorter: (a, b) => a.distributedAmount - b.distributedAmount,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "distributedAmount" &&
-          tableOptions.sortedInfo.order
-      },
-      {
-        title: "Kalan  Miktar",
-        dataIndex: "remainingAmount",
-        key: "remainingAmount",   
-        sorter: (a, b) => a.remainingAmount - b.remainingAmount,
-        sortOrder:
-          tableOptions.sortedInfo.columnKey === "remainingAmount" &&
-          tableOptions.sortedInfo.order
-      }
+      title: "Birim",
+      dataIndex: "unit",
+      key: "unit"
+    },
+    {
+      title: "Ağırlık Birimi",
+      dataIndex: "unitWeight",
+      key: "unitWeight"
+    },
+    {
+      title: "Planlanan Miktar",
+      dataIndex: "plannedAmount",
+      key: "plannedAmount",
+      sorter: (a, b) => a.plannedAmount - b.plannedAmount,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "plannedAmount" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Dağıtılan  Miktar",
+      dataIndex: "distributedAmount",
+      key: "distributedAmount",
+      sorter: (a, b) => a.distributedAmount - b.distributedAmount,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "distributedAmount" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Kalan  Miktar",
+      dataIndex: "remainingAmount",
+      key: "remainingAmount",
+      sorter: (a, b) => a.remainingAmount - b.remainingAmount,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "remainingAmount" &&
+        tableOptions.sortedInfo.order
+    }
   ];
-  
+
   //Hide customer record table columns
-  const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer
-  if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-      columns = _.without(columns, _.findWhere(columns, {
-      dataIndex: getHideColumns[index].dataIndex
-      }
-      ))}
-  }
+  // const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer
+  // if (getHideColumns.length > 0) {
+  //   for (let index = 0; index < getHideColumns.length; index++) {
+  //     columns = _.without(columns, _.findWhere(columns, {
+  //       dataIndex: getHideColumns[index].dataIndex
+  //     }
+  //     ))
+  //   }
+  // }
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -279,29 +295,22 @@ export default function() {
       </PageHeader>
       <Box>
         <Collapse accordion>
-        <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dealerCodeTitle" />}
-            >            
-            </FormItem>
-            </Col> 
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dateRangeTitle" />}
-            >
-            </FormItem>
-            </Col>
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.keywordTitle" />}
-            >
-            </FormItem>
-            </Col>
+          <Panel header={<IntlMessages id="page.filtered" />} key="0">
+            <Row>
+              <Col span={6}>
+                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+              </Col>
+              <Col span={5} offset={1}>
+              </Col>
             </Row>
             <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -310,10 +319,10 @@ export default function() {
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
-
+                  dropdownMatchSelectWidth={500}
                 />
-              </Col>             
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              </Col>
+              <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -322,22 +331,15 @@ export default function() {
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-                <Input size="small"
-                  placeholder="Anahtar kelime"
-                  onChange={event => setSearchKey(event.target.value)}
-                />
+              <Col span={6}>
+                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-              <Button
-                  type="primary"
-                  loading={iconLoading}
-                  onClick={searchButton}
-                  >
+              <Col span={5} offset={1}>
+                <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row>             
+            </Row>
           </Panel>
         </Collapse>
       </Box>
@@ -349,17 +351,17 @@ export default function() {
           onChange={handleChange}
           loading={loading}
           bordered={true}
-          pagination={{position: 'none', pageSize: pageSize}}
-          scroll={{ x: 'calc(700px + 50%)'}}
+          pagination={{ position: 'none', pageSize: pageSize }}
+          scroll={{ x: 'calc(700px + 50%)' }}
         />
-        <br></br>     
-        <Pagination 
+        <br></br>
+        <Pagination
           showSizeChanger
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
-          position = 'bottom'
-          pageSize= {pageSize}
-          total= {totalDataCount}
+          position='bottom'
+          pageSize={pageSize}
+          total={totalDataCount}
         />
       </Box>
     </LayoutWrapper>

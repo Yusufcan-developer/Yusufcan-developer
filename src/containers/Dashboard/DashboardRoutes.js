@@ -302,6 +302,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/AdvancedUI/Uppy/Uppy')),
   },
   {
+    path: 'userList',
+    component: lazy(() => import('@iso/containers/User/UserList')),
+  },
+  {
     path: 'dropzone',
     component: lazy(() =>
       import('@iso/containers/AdvancedUI/Dropzone/Dropzone')
@@ -368,9 +372,17 @@ const routes = [
     path: 'blank_page',
     component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
   },
+  {
+    path: 'productList',
+    component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
+  },
+  {
+    path: 'productDetail',
+    component: lazy(() => import('@iso/containers/ProductDetail/ProductDetail')),
+  },
    {
-     path: 'productsList',
-     component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
+     path: 'productGroupList',
+     component: lazy(() => import('@iso/containers/ProductGroups/ProductGroupList')),
    },
 ];
 

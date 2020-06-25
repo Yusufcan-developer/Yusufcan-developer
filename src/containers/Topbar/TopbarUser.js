@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import Popover from '@iso/components/uielements/popover';
 import IntlMessages from '@iso/components/utility/intlMessages';
-import userpic from '@iso/assets/images/user1.png';
+import userpic from '@iso/assets/images/UserLogin.png';
 import authAction from '@iso/redux/auth/actions';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
 

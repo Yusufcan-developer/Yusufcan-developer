@@ -1,8 +1,13 @@
 const options = [
   {
-    key: "orderCreate",
-    label: "sidebar.orderCreate",
+    key: "dashboard",
+    label: "sidebar.dashboard",
     leftIcon: "ion-clipboard"
+  },
+  {
+    key: "productGroupList",
+    label: "sidebar.productsList",
+    leftIcon: "ion-bag"
   },
   {
     key: "reportTable",
@@ -48,9 +53,30 @@ const options = [
     ]
   },
   {
-    key: "productsList",
-    label: "sidebar.productsList",
-    leftIcon: "ion-bag"
-  }
+    key: 'systemAdministrator',
+    label: 'sidebar.administrator',
+    leftIcon: 'ion-document-text',
+    children: [  
+      {
+        key: 'userList',
+        label: 'sidebar.userList',
+      },    
+      {
+        key: 'uppy',
+        label: 'sidebar.uploadingPhotos',
+      },
+      {
+        key: 'signup',
+        label: 'sidebar.signUp',
+        withoutDashboard: true,
+      },
+      
+      {
+        key: 'resetpassword',
+        label: 'sidebar.resetPw',
+        withoutDashboard: false,
+      },
+    ],
+  },   
 ];
 export default options;

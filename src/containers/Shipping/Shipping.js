@@ -54,9 +54,11 @@ const Shipping = () =>  {
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 const [localCurrentPage, setlocalCurrentPage] = useState(1);
 const [pageSize, setPageSize] = useState(20)
-const [fromDate, setFromDate] = useState(moment(moment().subtract(30, 'days').toDate()).format(siteConfig.dateFormat))
-const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat));
-const [dealerCode,setDealerCode]=useState()
+const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
+const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+const [dealerCodes,setDealerCodes]=useState()
+const [regionCodes,setRegionCodes]=useState()
+const [fieldCodes,setFieldCodes]=useState()
 
  useEffect(() => {        
 
@@ -74,7 +76,7 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
 
 
 const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] = 
-useFetch(`${siteConfig.api.deliveries}`, { "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+useFetch(`${siteConfig.api.deliveries}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
@@ -99,7 +101,20 @@ useFetch(`${siteConfig.api.deliveries}`, { "pageIndex": localCurrentPage - 1 , "
     setOnChange(true);
   };
   function onChangeDealerCode(value) {
-    setDealerCode(value);
+    let fieldArrObj = [];
+    let regionArrObj= [];
+    let dealerArrObj= [];
+    
+    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    _.filter(value, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+      }
+    });
   };
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
@@ -255,15 +270,15 @@ function currentPageChange(current){
       }
   ];
   //Hide shipping table columns
-  const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer
-  if (getHideColumns.length > 0) {
-    for (let index = 0; index < getHideColumns.length; index++) {
-      columns = _.without(columns, _.findWhere(columns, {
-        dataIndex: getHideColumns[index].dataIndex
-      }
-      ))
-    }
-  }
+  // const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer
+  // if (getHideColumns.length > 0) {
+  //   for (let index = 0; index < getHideColumns.length; index++) {
+  //     columns = _.without(columns, _.findWhere(columns, {
+  //       dataIndex: getHideColumns[index].dataIndex
+  //     }
+  //     ))
+  //   }
+  // }
 
   
   return (
@@ -274,28 +289,21 @@ function currentPageChange(current){
       <Box>
         <Collapse accordion>
         <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dealerCodeTitle" />}
-            >            
-            </FormItem>
-            </Col> 
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.dateRangeTitle" />}
-            >
-            </FormItem>
-            </Col>
-            <Col xs={{ span: 48 }} sm={{ span: 4 }} >
-            <FormItem
-              label={<IntlMessages id="page.keywordTitle" />}
-            >
-            </FormItem>
-            </Col>
+            <Row>
+              <Col span={6}>
+                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+              </Col>
+              <Col span={6} >
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+              </Col>
+              <Col span={5} offset={1}>
+              </Col>
             </Row>
             <Row>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -304,10 +312,10 @@ function currentPageChange(current){
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
-
+                  dropdownMatchSelectWidth={500}
                 />
-              </Col>             
-              <Col xs={{ span: 48 }} sm={{ span: 4 }} >
+              </Col>
+              <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -316,22 +324,15 @@ function currentPageChange(current){
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-                <Input size="small"
-                  placeholder="Anahtar kelime"
-                  onChange={event => setSearchKey(event.target.value)}
-                />
+              <Col span={6}>
+                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col xs={{ span: 48 }} sm={{ span: 4 }}>
-              <Button
-                  type="primary"
-                  loading={iconLoading}
-                  onClick={searchButton}
-                  >
+              <Col span={5} offset={1}>
+                <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row>             
+            </Row>
           </Panel>
         </Collapse>
       </Box>

@@ -11,7 +11,7 @@ export default function() {
       <LayoutWrapper className="isoCheckoutPage">
         <Box>
           <div className="isoBillingAddressWrapper">
-            <h3 className="isoSectionTitle">Billing details</h3>
+            <h3 className="isoSectionTitle">Sipariş Detayı</h3>
             <div className="isoBillingSection">
               <BillingForm />
               <OrderInfo />

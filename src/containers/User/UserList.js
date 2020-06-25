@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import Tree from "@iso/components/uielements/tree";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { PoweroffOutlined } from '@ant-design/icons';
 import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { DownOutlined, PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input, {
@@ -24,6 +23,7 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
+
 const formItemLayout = {
   labelCol: {
     xs: { span: 4 },
@@ -35,23 +35,22 @@ const formItemLayout = {
   }
 };
 
-const configTreeCheckedKeys = (checkedKeys, treeData) => {
 
-  var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
-  console.log("configTreeCheckedKeys", newTreeData);
-};
-
-export default function () {
+const UserList = () => {
+  //******************************************************************************************************************* */
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = React.useState();
-  const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState([]);
-  const [iconLoading, setIconLoading] = React.useState(false);
+  const [expandedKeys, setExpandedKeys] = useState();
+  const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [checkedKeys, setCheckedKeys] = useState();
+  const [selectedKeys, setSelectedKeys] = useState([]);
+  const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
+
+
+  //******************************************************************************************************************* */
   /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20)
@@ -73,26 +72,39 @@ export default function () {
     setChangePageSize(pageSize);
   }, [pageSize]);
 
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.transactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
-
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+
+
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.users}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
   /*********************************************** CUSTOM HOOKS ************************************************************ */
 
+
+  const onExpand = expandedKeys => {
+    console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
+    // or, you can remove all expanded children keys.
+
+    setExpandedKeys(expandedKeys);
+    setAutoExpandParent(false);
+  };
+
+  const onCheck = checkedKeys => {
+    console.log("onCheck", checkedKeys);
+    setCheckedKeys(checkedKeys);
+  };
+
+  const onSelect = (selectedKeys, info) => {
+    console.log("onSelect", info);
+    setSelectedKeys(selectedKeys);
+  };
   const searchButton = () => {
     setOnChange(true);
   };
-
-  function changeTimePicker(value, dateString) {
-
-    setFromDate(dateString[0]);
-    setToDate(dateString[1]);
-  }
   function onChangeDealerCode(value) {
-
     let fieldArrObj = [];
     let regionArrObj = [];
     let dealerArrObj = [];
+
     if (value.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
     _.filter(value, function (item) {
       if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
@@ -104,10 +116,9 @@ export default function () {
       }
     });
   };
-  function onChange(value, dateString) {
-    console.log("Selected Time: ", value);
-    console.log("Başlanıç Tarihi: ", dateString[0]);
-    console.log("Bitiş Tarihi: ", dateString[1]);
+  function changeTimePicker(value, dateString) {
+    setFromDate(dateString[0]);
+    setToDate(dateString[1]);
   }
 
   function onOk(value) {
@@ -133,118 +144,55 @@ export default function () {
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
+
     console.log("current :", current);
     setlocalCurrentPage(current);
   }
 
   let columns = [
     {
+      title: "Adı",
+      dataIndex: "firstName",
+      key: "firstName"
+    },
+    {
+      title: "Soyadı",
+      dataIndex: "lastName",
+      key: "lastName"
+    },
+    {
+      title: "Kullanıcı Adı",
+      dataIndex: "username",
+      key: "username"
+    },
+    {
+      title: "E-posta",
+      dataIndex: "email",
+      key: "email"
+    },
+    {
+      title: "Rol",
+      dataIndex: "role",
+      key: "role"
+    },
+    {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode"
     },
     {
-      title: "Bayi Adı",
-      dataIndex: "dealerName",
-      key: "dealerName"
-    },
-    {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode"
     },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
       key: "regionCode"
-    },
-    {
-      title: "Bölge Adı",
-      dataIndex: "regionName",
-      key: "regionName"
-    },
-    {
-      title: "Alan Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
-    },
-    {
-      title: "Alan Adı",
-      dataIndex: "fieldName",
-      key: "fieldName"
-    },
-    {
-      title: "Bölge Müdürü",
-      dataIndex: "regionManager",
-      key: "regionManager"
-    },
-    {
-      title: "Tarih",
-      dataIndex: "date",
-      key: "date",
-      render: (date) => moment(date).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.date - b.date,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "date" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "Belge numarası",
-      dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => a.documentId.length - b.documentId.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "TR Kod",
-      dataIndex: "trCode",
-      key: "trCode",
-      align: "center"
-    },
-    {
-      title: "İşlem Tipi",
-      dataIndex: "transactionType",
-      key: "transactionType"
-    },
-    {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description"
-    },
-    {
-      title: "Borç",
-      dataIndex: "debt",
-      key: "debt",
-      align: "right",
-      sorter: (a, b) => a.debt - b.debt,
-      render: (debt) => debt.toFixed(2),
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "debt" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "Kredi",
-      dataIndex: "credit",
-      key: "credit",
-      align: "right",
-      render: (credit) => credit.toFixed(2),
-      sorter: (a, b) => a.credit - b.credit,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "credit" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "Para Birimi",
-      dataIndex: "currency",
-      key: "currency",
-      align: "center"
     }
   ];
-
-  //Hide customer record table columns
-  // const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer
+  //Hide shipping table columns
+  // const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer
   // if (getHideColumns.length > 0) {
   //   for (let index = 0; index < getHideColumns.length; index++) {
   //     columns = _.without(columns, _.findWhere(columns, {
@@ -253,10 +201,12 @@ export default function () {
   //     ))
   //   }
   // }
+
+
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.customerRecordTitle.header" />}
+        {<IntlMessages id="page.usersTitle.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
@@ -315,9 +265,11 @@ export default function () {
           dataSource={data}
           onChange={handleChange}
           loading={loading}
+          //expandable={{expandedRowRender}}
+          pagination={false}
+          scroll={{ x: 'calc(700px + 100%)' }}
           bordered={true}
           pagination={{ position: 'none', pageSize: pageSize }}
-          scroll={{ x: 'calc(700px + 50%)' }}
         />
         <br></br>
         <Pagination
@@ -332,3 +284,5 @@ export default function () {
     </LayoutWrapper>
   );
 }
+
+export default UserList;

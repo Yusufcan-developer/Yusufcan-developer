@@ -27,14 +27,14 @@ export default function() {
 
           <div className="isoResetPassForm">
             <div className="isoInputWrapper">
-              <Input size="large" type="password" placeholder="New Password" />
+              <Input size="large" type="password" placeholder="Yeni Şifre" />
             </div>
 
             <div className="isoInputWrapper">
               <Input
                 size="large"
                 type="password"
-                placeholder="Confirm Password"
+                placeholder="Şifreyi Onayla"
               />
             </div>
 

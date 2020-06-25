@@ -40,12 +40,12 @@ export default function SignUp() {
 
           <div className="isoSignUpForm">
             <div className="isoInputWrapper isoLeftRightComponent">
-              <Input size="large" placeholder="First name" />
-              <Input size="large" placeholder="Last name" />
+              <Input size="large" placeholder="Adı" />
+              <Input size="large" placeholder="Soyadı" />
             </div>
 
             <div className="isoInputWrapper">
-              <Input size="large" placeholder="Username" />
+              <Input size="large" placeholder="Kullanıcı Adı" />
             </div>
 
             <div className="isoInputWrapper">
@@ -53,14 +53,14 @@ export default function SignUp() {
             </div>
 
             <div className="isoInputWrapper">
-              <Input size="large" type="password" placeholder="Password" />
+              <Input size="large" type="password" placeholder="Şifre" />
             </div>
 
             <div className="isoInputWrapper">
               <Input
                 size="large"
                 type="password"
-                placeholder="Confirm Password"
+                placeholder="Şifreyi Onayla"
               />
             </div>
 
@@ -74,43 +74,8 @@ export default function SignUp() {
               <Button type="primary">
                 <IntlMessages id="page.signUpButton" />
               </Button>
-            </div>
-            <div className="isoInputWrapper isoOtherLogin">
-              <Button
-                onClick={handleLogin}
-                type="primary"
-                className="btnFacebook"
-              >
-                <IntlMessages id="page.signUpFacebook" />
-              </Button>
-              <Button
-                onClick={handleLogin}
-                type="primary"
-                className="btnGooglePlus"
-              >
-                <IntlMessages id="page.signUpGooglePlus" />
-              </Button>
-              <Button
-                onClick={() => {
-                  Auth0.login();
-                }}
-                type="primary"
-                className="btnAuthZero"
-              >
-                <IntlMessages id="page.signUpAuth0" />
-              </Button>
-
-              <FirebaseSignUpForm
-                signup={true}
-                history={history}
-                login={() => dispatch(login())}
-              />
-            </div>
-            <div className="isoInputWrapper isoCenterComponent isoHelperWrapper">
-              <Link to="/signin">
-                <IntlMessages id="page.signUpAlreadyAccount" />
-              </Link>
-            </div>
+            </div>          
+          
           </div>
         </div>
       </div>

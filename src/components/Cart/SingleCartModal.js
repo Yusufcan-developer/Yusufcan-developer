@@ -7,20 +7,21 @@ export default function({
   image,
   objectID,
   cancelQuantity,
+  name,
+  productItem,
   _highlightResult,
 }) {
   return (
     <TopbarCartWrapper className="isoCartItems">
       <div className="isoItemImage">
-        <img alt="#" src={image} />
+        <img alt="#" src={productItem.imageUrl} />
       </div>
       <div className="isoCartDetails">
         <h3>
-          <a href="#!">{_highlightResult.name.value}</a>
+          <a href="#!">{productItem.description}</a>
         </h3>
-        <p className="isoItemPriceQuantity">
-          <span>$</span>
-          <span>{price.toFixed(2)}</span>
+        <p className="isoItemPriceQuantity">          
+          <span>{productItem.listPrice} TL</span>
           <span className="itemMultiplier">X</span>
           <span className="isoItemQuantity">{quantity}</span>
         </p>

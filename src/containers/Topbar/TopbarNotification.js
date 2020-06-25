@@ -7,27 +7,15 @@ import TopbarDropdownWrapper from './TopbarDropdown.styles';
 const demoNotifications = [
   {
     id: 1,
-    name: 'David Doe',
+    name: 'Uğur Çamoğlu',
     notification:
-      'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner',
+      'Bilgilendirme amaçlı yapılmıştır.Notification sistemi kontrol ediliyor',
   },
   {
     id: 2,
-    name: 'Navis Doe',
+    name: 'Utku Öztürk',
     notification:
-      'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner',
-  },
-  {
-    id: 3,
-    name: 'Emanual Doe',
-    notification:
-      'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner',
-  },
-  {
-    id: 4,
-    name: 'Dowain Doe',
-    notification:
-      'A National Book Award Finalist An Edgar Award Finalist A California Book Award Gold Medal Winner',
+    'Bilgilendirme amaçlı yapılmıştır.Notification sistemi kontrol ediliyor',
   },
 ];
 

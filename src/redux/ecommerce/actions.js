@@ -19,6 +19,8 @@ const actions = {
   changeProductQuantity: productQuantity => {
     return (dispatch, getState) => {
       const { products } = getState().Ecommerce;
+      console.log('xxxx aktarım',products)
+      console.log('xxxx m',productQuantity)
       dispatch({
         type: actions.UPDATE_DATA_SAGA,
         products,
@@ -29,9 +31,9 @@ const actions = {
   addToCart: product => {
     return (dispatch, getState) => {
       const { products, productQuantity } = getState().Ecommerce;
-      const objectID = product.objectID;
-      productQuantity.push({ objectID, quantity: 1 });
-      products[objectID] = product;
+      const itemCode = product.itemCode;
+      productQuantity.push({ itemCode, quantity: 1 });
+      products[itemCode] = product;
       dispatch({
         type: actions.UPDATE_DATA_SAGA,
         products,

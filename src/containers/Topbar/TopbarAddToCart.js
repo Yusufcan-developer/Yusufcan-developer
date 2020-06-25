@@ -42,19 +42,21 @@ export default function TopbarAddtoCart() {
     if (!productQuantity || productQuantity.length === 0) {
       return (
         <div className="isoNoItemMsg">
-          <span>No item found</span>
+          <span>Sepetiniz Boş</span>
         </div>
       );
     }
     return productQuantity.map(product => {
-      totalPrice += product.quantity * products[product.objectID].price;
+      totalPrice += product.quantity * products[product.itemCode].listPrice;
       return (
         <SingleCart
-          key={product.objectID}
+          key={product.itemCode}
           quantity={product.quantity}
-          changeQuantity={changeQuantity}
-          cancelQuantity={cancelQuantity}
-          {...products[product.objectID]}
+          name={'testler'}
+          changeQuantity={changeQuantity} 
+          cancelQuantity={event => cancelQuantity(product)}
+          productItem={products[product.itemCode]}
+          {...products[product.itemCode]}
         />
       );
     });
@@ -62,7 +64,7 @@ export default function TopbarAddtoCart() {
   function changeQuantity(objectID, quantity) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
-      if (product.objectID !== objectID) {
+      if (product.itemCode !== objectID) {
         newProductQuantity.push(product);
       } else {
         newProductQuantity.push({
@@ -73,10 +75,10 @@ export default function TopbarAddtoCart() {
     });
     dispatch(changeProductQuantity(newProductQuantity));
   }
-  function cancelQuantity(objectID) {
+  function cancelQuantity(productItem) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
-      if (product.objectID !== objectID) {
+      if (product.itemCode !== productItem.itemCode) {
         newProductQuantity.push(product);
       }
     });
@@ -100,7 +102,7 @@ export default function TopbarAddtoCart() {
 
         <h3>
           <IntlMessages id="topbar.totalPrice" />:{' '}
-          <span>${totalPrice.toFixed(2)}</span>
+          <span>{totalPrice.toFixed(2)}  TL</span>
         </h3>
       </div>
     </TopbarDropdownWrapper>

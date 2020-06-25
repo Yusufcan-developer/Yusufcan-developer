@@ -1,7 +1,7 @@
 const options = [
   {
-    key: 'orderCreate',
-    label: 'sidebar.orderCreate',
+    key: 'dashboard',
+    label: 'sidebar.dashboard',
     leftIcon: 'ion-clipboard',
   },
   {

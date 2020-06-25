@@ -16,10 +16,12 @@ export default function() {
       <div className="isoInputFieldset">
         <InputBox
           label={<IntlMessages id="checkout.billingform.firstname" />}
+          defaultValue="Uğur" 
           important
         />
         <InputBox
           label={<IntlMessages id="checkout.billingform.lastname" />}
+          defaultValue="Çamoğlu"
           important
         />
       </div>
@@ -30,7 +32,8 @@ export default function() {
 
       <div className="isoInputFieldset">
         <InputBox
-          label={<IntlMessages id="checkout.billingform.email" />}
+          label={<IntlMessages id="checkout.billingform.email"  />}
+          defaultValue="ugur.camoglu@karyasmd.com"
           important
         />
         <InputBox label={<IntlMessages id="checkout.billingform.mobile" />} />
@@ -39,7 +42,8 @@ export default function() {
       <div className="isoInputFieldset">
         <InputBoxWrapper className="isoInputBox">
           <label>{<IntlMessages id="checkout.billingform.country" />}</label>
-          <Select size="large" defaultValue="unitedstate">
+          <Select size="large" defaultValue="turkey" disabled={true}>
+          <Option value="turkey">Türkiye</Option>
             <Option value="argentina">Argentina</Option>
             <Option value="australia">Australia</Option>
             <Option value="brazil">Brazil</Option>
@@ -58,18 +62,14 @@ export default function() {
       <div className="isoInputFieldset vertical">
         <InputBox
           label={<IntlMessages id="checkout.billingform.address" />}
+          defaultValue="Ege Teknopark Karya SMD "
           placeholder="Address"
-        />
-        <Input
-          size="large"
-          placeholder="Apartment, suite, unit etc. (optional)"
-          style={{ marginTop: '35px' }}
-        />
+        />       
       </div>
 
-      <Checkbox onChange={handleOnChange}>
+      {/* <Checkbox onChange={handleOnChange}>
         <IntlMessages id="checkout.billingform.checkbox" />
-      </Checkbox>
+      </Checkbox> */}
     </BillingFormWrapper>
   );
 }
