@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import IntlMessages from "@iso/components/utility/intlMessages";
+import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import { SingleCardWrapper } from './Shuffle.styles';
-import {Col,Card, Row,Button,Breadcrumb,Pagination } from "antd";
+import {Col,Card, Row,Button,Breadcrumb,Pagination,Collapse,Spin } from "antd";
 import siteConfig from "@iso/config/site.config";
 import Modals from '@iso/components/Feedback/Modal';
 import ModalStyle, { ModalContent } from './Modal.styles';
@@ -35,6 +36,8 @@ import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 const margin = {
     margin: direction === 'rtl' ? '0 0 8px 8px' : '0 8px 8px 0',
   };
+  const { Panel } = Collapse;
+  const FormItem = Form.Item;
 
 const { Meta } = Card;
 // const { productQuantity, products } = useSelector(state => state.Ecommerce);
@@ -89,7 +92,7 @@ const ProductsList = () => {
 
   const listClass = `isoSingleCard card grid`;
   const style = { zIndex: 100 -90 };
-  
+  const expandIconPosition="left";
 
   const radioStyle = {
     display: 'block',
@@ -199,10 +202,10 @@ const ProductsList = () => {
     console.log('xxxx product içerisindeyim checkedList.length',checkedList)
   };
 
-  return (
+  return (    
     <AlgoliaSearchPageWrapper className="isoAlgoliaSearchPage">
       <PageHeader>Ürünler Listesi</PageHeader>
-
+      
       <div className="isoAlgoliaMainWrapper">
         <SidebarWrapper className="isoAlgoliaSidebar">
           <div className="isoAlgoliaSidebarItem">
@@ -211,65 +214,83 @@ const ProductsList = () => {
           onSearch={onSearch}
           onKeyDown={keyPress} />
           </div>
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Ürün Grubu</h3>
-            <CheckboxGroup
-              options={productGroupData}
-              value={productGroup}
-              onChange={onChangeProductGroup}
-              style={{display: 'flex', flexDirection: 'column'}}
-            />           
+          <div >
+            <Collapse accordion expandIconPosition={expandIconPosition}>
+              <Panel header={<IntlMessages id="Ürün Grubu" />} key="0">
+                <CheckboxGroup
+                  options={productGroupData}
+                  value={productGroup}
+                  onChange={onChangeProductGroup}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+                </Panel></Collapse>
           </div>
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Boyut</h3>
+          <div>
+          <Collapse accordion expandIconPosition={expandIconPosition}>
+              <Panel header={<IntlMessages id="Boyut" />} key="1">
             <CheckboxGroup
               options={
                 dimensionData.map(e => e === null ? 'Yok' : e)}
                 onChange={onChangeDimension}
               style={{display: 'flex', flexDirection: 'column'}}
             />   
+            </Panel></Collapse>
           </div>
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Renkler</h3>
+          <div >
+            <Collapse accordion expandIconPosition={expandIconPosition}>
+              <Panel header={<IntlMessages id="Renkler" />} key="2">
             <CheckboxGroup
               options={
               colorData.map(e => e === null ? 'Yok' : e)}
               onChange={onChangeColor}
               style={{display: 'flex', flexDirection: 'column'}}
             />   
+            </Panel></Collapse>
           </div>
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Yüzeyler</h3>
+          <div >
+          <Collapse accordion expandIconPosition={expandIconPosition}>
+              <Panel header={<IntlMessages id="Yüzeyler" />} key="3">
             <CheckboxGroup
               options={
                 surfaceData.map(e => e === null ? 'Yok' : e)}
                 onChange={onChangeSurface}
               style={{display: 'flex', flexDirection: 'column'}}
             />   
+             </Panel></Collapse>
           </div>
-         
-          <div className="isoAlgoliaSidebarItem">
-            <h3 className="isoAlgoliaSidebarTitle">Üretim Durumu</h3>
+          <div>
+          <Collapse accordion expandIconPosition={expandIconPosition}>
+              <Panel header={<IntlMessages id="Üretim Durumu" />} key="4">
             <CheckboxGroup
               options={
                 productionStatusData.map(e => e === null ? 'Yok' : e)}
                 onChange={onChangeProductionStatus}
               style={{display: 'flex', flexDirection: 'column'}}
             />   
+              </Panel></Collapse>
           </div>
           
           {/* <ClearAll /> */}
         </SidebarWrapper>
-
-        <ContentHolder>
-          <Breadcrumb>
-            <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <a href="/Dashboard/productGroupList">Ürün Grubu</a>
-            </Breadcrumb.Item>
-            <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
-          </Breadcrumb>
+        <ContentHolder>   
+         
+          <Row>
+            <Col span={8}> <Breadcrumb>
+              <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
+              <Breadcrumb.Item>
+                <a href="/Dashboard/productGroupList">Ürün Grubu</a>
+              </Breadcrumb.Item>
+              <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
+            </Breadcrumb></Col>
+            <Col span={8} offset={8} align="right" >
+              {totalDataCount > 0 &&
+                <h4>
+                  {totalDataCount} adet sonuç bulundu
+        </h4>}
+          </Col>
+          </Row>
           <Box>
+            <Spin spinning={loading}>
             <Row gutter={[24, 16]}>
 
               {data.map((item) => (
@@ -305,12 +326,13 @@ const ProductsList = () => {
               ))}
           <Pagination defaultCurrent={0} total={totalDataCount} pageSize={8} onChange={onchangePagination} />
             </Row>
+            </Spin>
           </Box>
         </ContentHolder>
       </div>
       {/* <Footer /> */}
-
     </AlgoliaSearchPageWrapper>
+    
   );
 };
 
