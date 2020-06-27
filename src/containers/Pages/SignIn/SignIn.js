@@ -11,9 +11,7 @@ import appAction from '@iso/redux/app/actions';
 import SignInStyleWrapper from './SignIn.styles';
 import Modals from '@iso/components/Feedback/Modal';
 import Form from '@iso/components/uielements/form';
-
-
-
+import siteConfig from '@iso/config/site.config';
 
 const { login } = authAction;
 const { clearMenu } = appAction;
@@ -50,9 +48,8 @@ function loginError() {
 }
   function handleLogin(e) {
     e.preventDefault();
-    
-    if(!userName|| !password)
-    {return loginError()}
+
+    if (!userName || !password) { return loginError() }
 
     const requestOptions = {
       method: 'POST',
@@ -62,19 +59,17 @@ function loginError() {
         password: password })
   };
 
-    fetch("http://192.168.0.140/b2b/api/users/authenticate", requestOptions)
+    fetch(siteConfig.api.authenticate, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
       .then(data => {
-          console.log("Token :",data.token);
-          dispatch(login(data.token));
-          // const profile = jwtDecode(data.token);
+        console.log("Token :", data.token);
+        dispatch(login(data.token));
 
-          // console.log('xxxx profie bilgisi',profile);
         dispatch(clearMenu());
-        window.sessionStorage.setItem("nameAndSurname",userName);
+        window.sessionStorage.setItem("nameAndSurname", userName);
         history.push('/dashboard/productsList');
       })
       .catch(error => loginError());
