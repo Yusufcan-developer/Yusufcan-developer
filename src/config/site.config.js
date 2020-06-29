@@ -7,14 +7,18 @@ export default {
   footerText: `Karya SMD © ${new Date().getFullYear()}`,
   enableAnimatedRoute: false,
   api: {
+    //CART
     products: apiUrl + 'carts/products',                  //Ürünler:: POST
+    productDetail: apiUrl + 'carts/products/',            //Ürün detay bilgisi: GET
     productGroup: apiUrl+'carts/lookup/product-categories',//Ürün Gruplerı :POST
     dimensions:apiUrl+'carts/lookup/product-dimensions',     //Boyutar       :POST
     colors:apiUrl+'carts/lookup/product-colors',      //Renkler       
     surfaces:apiUrl+'carts/lookup/product-surfaces',      //Yüzeyler  
     productionStatusData:apiUrl+'carts/lookup/product-production-status',      //Üretim Durumları   
+    
+    //Customers
     orders: apiUrl + 'Customers/orders',                  //Sipariş Üst Bilgi: POST
-    orderDetail: apiUrl + 'Customers/orders/',            //Sipariş Kalem Bilgi: POST
+    orderDetail: apiUrl + 'Customers/orders/',            //Sipariş Kalem Bilgi: GET
     distributions: apiUrl + 'customers/distributions',    //Dağıtım: POST
     deliveries: apiUrl + 'Customers/deliveries',         //Sevkiyat
     cheques: apiUrl + 'customers/cheques',               //Çek-Senet: POST
@@ -22,6 +26,8 @@ export default {
     accounts: apiUrl + 'customers/accounts',            //Cari Listesi: POST
     transactions: apiUrl + 'customers/transactions',    //Cari Hareketler: POST
     accountsTree: apiUrl + 'Customers/accounts-tree',   //Bayi kodları(Tree) listesi: GET
+
+    //Users
     users: apiUrl + 'Users/users',                     //Kullanıcılar: POST
   },
   dateFormat:'DD-MM-YYYY',

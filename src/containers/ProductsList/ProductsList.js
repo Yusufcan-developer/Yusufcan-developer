@@ -2,10 +2,13 @@ import React, { useState, useEffect } from "react";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
+import Modal from '@iso/ui/Antd/Modal/Modal';
 import { SingleCardWrapper } from './Shuffle.styles';
-import {Col,Card, Row,Button,Breadcrumb,Pagination,Collapse,Spin } from "antd";
+import {Col,Card, Row,Button,Breadcrumb,Pagination,Collapse,Spin,Badge } from "antd";
 import siteConfig from "@iso/config/site.config";
 import Modals from '@iso/components/Feedback/Modal';
+import Followers from '../../containers/Profile/Followers/Followers';
+import Following from '../../containers/Profile/Following/Following';
 import ModalStyle, { ModalContent } from './Modal.styles';
 import { PropTypes } from 'prop-types';
 import { Link, useHistory } from 'react-router-dom';
@@ -152,12 +155,12 @@ const ProductsList = () => {
     setProductionStatus(checkedProductionStatusValue)
     return setOnChange(true);
   }
-  function selectedProductId (product) {
-    console.log('xxxx product Id',product);
-    // history.push({
-    //   pathname: '/dashboard/productList',
-    //   productGroupId: productGroupId,
-    // });
+  function selectedProductId (productId) {
+    console.log('xxxx product Id',productId);
+    history.push({
+      pathname: '/dashboard/productDetail',
+      productId: productId,
+    });
     }
   function onAddBox (product) {    
     if(productQuantity.length===0){dispatch(addToCart(product));} //Sepete
@@ -294,10 +297,13 @@ const ProductsList = () => {
             <Row gutter={[24, 16]}>
 
               {data.map((item) => (
-                <SingleCardWrapper className={listClass} style={style} onClick={event => selectedProductId(item.imageUrl)}>
+                <SingleCardWrapper className={listClass} style={style} >
                   <div className="isoCardImage">
-                    <img alt="#" src={item.imageUrl} />
+                 
+                    <img alt="#" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)}  />
+                   
                   </div>
+                  
                   <div className="isoCardContent">                    
                     <Row>
                       <Col span={ 6 } >
