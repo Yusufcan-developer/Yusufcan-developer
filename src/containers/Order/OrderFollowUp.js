@@ -78,6 +78,7 @@ const OrderFollowUp = () => {
 const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
 
 const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+console.log('xxxx tr',treeData)
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const onExpand = expandedKeys => {
