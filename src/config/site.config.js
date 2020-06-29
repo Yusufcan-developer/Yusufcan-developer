@@ -8,6 +8,7 @@ export default {
   enableAnimatedRoute: false,
   api: {
     products: apiUrl + 'carts/products',                                      //Ürünler:POST
+    productDetail: apiUrl + 'carts/products/',                                //Ürün detay bilgisi: GET
     productGroup: apiUrl + 'carts/lookup/product-categories',                 //Ürün Gruplerı:GET
     dimensions: apiUrl + 'carts/lookup/product-dimensions',                   //Boyutar:GET
     colors: apiUrl + 'carts/lookup/product-colors',                           //Renkler:GET

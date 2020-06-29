@@ -28,11 +28,11 @@ const actions = {
       });
     };
   },
-  addToCart: product => {
+  addToCart: (product,quantity) => {
     return (dispatch, getState) => {
       const { products, productQuantity } = getState().Ecommerce;
       const itemCode = product.itemCode;
-      productQuantity.push({ itemCode, quantity: 1 });
+      productQuantity.push({ itemCode, quantity: quantity });
       products[itemCode] = product;
       dispatch({
         type: actions.UPDATE_DATA_SAGA,
