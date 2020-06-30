@@ -55,8 +55,8 @@ const ProductDetail = () => {
 
   //Ürün ID getirme
   console.log('xxxx geliyorum', history.location.productId)
-
   const productId = history.location.productId;
+
   //Product Detail Hook
   const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productData, type, rectifying, listPrice] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
   const onChange = value => {
@@ -84,11 +84,13 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-
       }
     };
   };
+
+  //Add product basket
   function onAddBox(product) {
+    inputNumberShowOrHide()
     if (productQuantity.length === 0) { dispatch(addToCart(product,quantity)); } //Sepete
     else {
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
@@ -120,6 +122,44 @@ const ProductDetail = () => {
       okText: 'Tamam',
       cancelText: 'Cancel',
     });
+  };
+  function inputNumberShowOrHide()
+  {
+    var selectedProduct = productQuantity.find(item => item.itemCode == productId);
+    if (selectedProduct === undefined) {
+      return false;
+    }
+    else { return true; }
+  }
+  function inputNumberQuantityValue()
+  { 
+    var selectedProduct = productQuantity.find(item => item.itemCode == productId);
+    if (selectedProduct === undefined) {
+      return 1
+    }
+    else {
+      return selectedProduct.quantity;
+    }   
+  }
+  //Redux product quantity change event
+  function onChangeQuantity(event,productData) {
+    const product = productData;
+    var selectedProduct = productQuantity.find(item => item.itemCode == productId);
+    const newProductQuantity = [];
+    setQuantity(event)
+    productQuantity.forEach(productItem => {
+      if (productItem.itemCode !== selectedProduct.itemCode) {
+        newProductQuantity.push(productItem);
+      } else {
+        const itemCode = productItem.itemCode
+        const quantity = event;
+        newProductQuantity.push({
+          itemCode,
+          quantity,
+        });
+      }
+    });
+    dispatch(changeProductQuantity(newProductQuantity));
   };
   return (
     <LayoutWrapper>
@@ -178,22 +218,25 @@ const ProductDetail = () => {
               <Col span={8}>
                 <Descriptions.Item style={{ color: 'red' }} >{listPrice} {"TL"}</Descriptions.Item>
               </Col>
-              <Col span={12}> <h4> Adet    {<InputNumber
-                min={1}
-                max={1000}
-                value={quantity}
-                step={1}
-                // onClick={}
-                onChange={onChange}
-              />}
-              </h4></Col>
-
-            </Row>
-            <Button
-              type="primary"
-               onClick={event => onAddBox(productData)}
-            >  {<IntlMessages id="Sepete Ekle" />}
-            </Button>
+              <Col span={12}>    
+                {!inputNumberShowOrHide(productData) ? (
+                  <Button
+                    type="primary"
+                    onClick={event => onAddBox(productData)}
+                  >  {<IntlMessages id="Sepete Ekle" />}
+                  </Button>
+                ) : (
+                    <InputNumber
+                      min={1}
+                      max={1000}
+                      defaultValue={1}
+                      value={inputNumberQuantityValue()}
+                      step={1}
+                      onChange={event => onChangeQuantity(event, productData)}
+                    />
+                  )}              
+              </Col>
+            </Row>     
 
           </Box>
         </Col>
@@ -201,7 +244,6 @@ const ProductDetail = () => {
       <Row style={rowStyle} gutter={gutter} justify="start">
         <Col span={24} style={colStyle}>
           <Box
-
           >
             <Row>
 

@@ -7,10 +7,7 @@ import { SingleCardWrapper } from './Shuffle.styles';
 import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge } from "antd";
 import siteConfig from "@iso/config/site.config";
 import Modals from '@iso/components/Feedback/Modal';
-import Followers from '../../containers/Profile/Followers/Followers';
-import Following from '../../containers/Profile/Following/Following';
-import ModalStyle, { ModalContent } from './Modal.styles';
-import { PropTypes } from 'prop-types';
+import InputNumber from '@iso/components/uielements/InputNumber';
 import { Link, useHistory } from 'react-router-dom';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import PageHeader from "@iso/components/utility/pageHeader";
@@ -43,13 +40,14 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 
 const { Meta } = Card;
-// const { productQuantity, products } = useSelector(state => state.Ecommerce);
-const ProductsList = () => {
 
+const ProductsList = () => {
+  const [inputNumberShow, setInputNumberShow] = React.useState(false);
+  const [addCartLoading, setAddCartLoading] = React.useState(false);
   const history = useHistory();
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8)
-
+  const [quantity, setQuantity] = useState(1)
   const [productGroup, setProductGroup] = useState([history.location.productGroupId])
   const [dimension, setDimension] = useState([])
   const [color, setColor] = useState([])
@@ -159,12 +157,23 @@ const ProductsList = () => {
       productId: productId,
     });
   }
+  function inputNumberShowOrHide(value)
+  {
+    var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
+    if (selectedProduct === undefined) {
+      return false;
+    }
+    else { return true; }
+  }
   function onAddBox(product) {
-    if (productQuantity.length === 0) { dispatch(addToCart(product)); } //Sepete
+    inputNumberShowOrHide(product)
+    setAddCartLoading(true);
+
+    if (productQuantity.length === 0) { dispatch(addToCart(product, 1)); } //Sepete
     else {
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
       if (selectedProduct === undefined) {
-        dispatch(addToCart(product));
+        dispatch(addToCart(product, 1));
       }
       else {
         const newProductQuantity = [];
@@ -181,7 +190,6 @@ const ProductsList = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-
       }
     };
     Modals.success({
@@ -191,7 +199,38 @@ const ProductsList = () => {
       cancelText: 'Cancel',
     });
   };
+  //Input Number return quantity value
+  function inputNumberQuantityValue(product)
+  { 
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    if (selectedProduct === undefined) {
+      return 1
+    }
+    else {
+      return selectedProduct.quantity;
+    }   
+  }
 
+  //Redux product quantity change event
+  function onChangeQuantity(event,productData) {
+    const product = productData;
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    const newProductQuantity = [];
+    setQuantity(event)
+    productQuantity.forEach(productItem => {
+      if (productItem.itemCode !== selectedProduct.itemCode) {
+        newProductQuantity.push(productItem);
+      } else {
+        const itemCode = productItem.itemCode
+        const quantity = event;
+        newProductQuantity.push({
+          itemCode,
+          quantity,
+        });
+      }
+    });
+    dispatch(changeProductQuantity(newProductQuantity));
+  };
   //
   const onChange = checkedList => {
     //setCheckedList(checkedList);
@@ -201,7 +240,8 @@ const ProductsList = () => {
     // setCheckAll(checkedList.length === plainOptions.length);
     console.log('xxxx product içerisindeyim checkedList.length', checkedList)
   };
-
+ 
+  //Return desing
   return (
     <React.Fragment>
       <Breadcrumb>
@@ -296,7 +336,7 @@ const ProductsList = () => {
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} >
                       <div className="isoCardImage">
-                        <img alt="#" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)} />
+                        <img  alt="example" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)} />
                       </div>
                       <div className="isoCardContent">
                         <Row>
@@ -314,11 +354,24 @@ const ProductsList = () => {
                           {item.color} - {item.surface}
                         </span>
                         <h3 align="center" className="isoCardTitle">{item.listPrice} {"TL"}</h3>
-                        <Button
+                        {!inputNumberShowOrHide(item) ? (                          
+                           <Button
                           type="primary"
                           onClick={event => onAddBox(item)}
                         >  {<IntlMessages id="Sepete Ekle" />}
                         </Button>
+                        ) : (
+                          <InputNumber
+                          min={1}
+                          max={1000}
+                          defaultValue={1}
+                          value={inputNumberQuantityValue(item)}
+                          step={1}
+                          // onClick={}
+                          onChange={event => onChangeQuantity(event,item)}
+                        />
+                          )}
+                       
                       </div>
                     </SingleCardWrapper>
 
