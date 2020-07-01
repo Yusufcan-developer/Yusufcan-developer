@@ -151,20 +151,41 @@ const ProductsList = () => {
     return setOnChange(true);
   }
   function selectedProductId(productId) {
-    console.log('xxxx product Id', productId);
+    console.log('info selected productId', productId);
     history.push({
       pathname: '/dashboard/productDetail',
       productId: productId,
     });
   }
-  function inputNumberShowOrHide(value)
-  {
+  function inputNumberShowOrHide(value) {
     var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
     if (selectedProduct === undefined) {
       return false;
     }
     else { return true; }
   }
+  function onRemoveBox(product) {
+    inputNumberShowOrHide(product)
+    setAddCartLoading(true);
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      if(selectedProduct.quantity!==1)
+      {
+        const newProductQuantity = [];
+        productQuantity.forEach(productItem => {
+          if (productItem.itemCode !== selectedProduct.itemCode) {
+            newProductQuantity.push(productItem);
+          } else {
+            const itemCode = productItem.itemCode
+            const quantity = productItem.quantity - 1;
+            newProductQuantity.push({
+              itemCode,
+              quantity,
+            });
+          }
+        });
+        dispatch(changeProductQuantity(newProductQuantity));
+      }
+  };
   function onAddBox(product) {
     inputNumberShowOrHide(product)
     setAddCartLoading(true);
@@ -192,27 +213,27 @@ const ProductsList = () => {
         dispatch(changeProductQuantity(newProductQuantity));
       }
     };
-    Modals.success({
-      content:
-        'Ürün sepete başarılı bir şekilde eklenmiştir.',
-      okText: 'Tamam',
-      cancelText: 'Cancel',
-    });
+    // Modals.success({
+    //   content:
+    //     'Ürün sepete başarılı bir şekilde eklenmiştir.',
+    //   okText: 'Tamam',
+    //   cancelText: 'Cancel',
+    // });
   };
+
   //Input Number return quantity value
-  function inputNumberQuantityValue(product)
-  { 
+  function inputNumberQuantityValue(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     if (selectedProduct === undefined) {
       return 1
     }
     else {
       return selectedProduct.quantity;
-    }   
+    }
   }
 
   //Redux product quantity change event
-  function onChangeQuantity(event,productData) {
+  function onChangeQuantity(event, productData) {
     const product = productData;
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
@@ -238,9 +259,8 @@ const ProductsList = () => {
     //   !!checkedList.length && checkedList.length < plainOptions.length
     // );
     // setCheckAll(checkedList.length === plainOptions.length);
-    console.log('xxxx product içerisindeyim checkedList.length', checkedList)
   };
- 
+
   //Return desing
   return (
     <React.Fragment>
@@ -336,7 +356,7 @@ const ProductsList = () => {
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} >
                       <div className="isoCardImage">
-                        <img  alt="example" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)} />
+                        <img alt="example" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)} />
                       </div>
                       <div className="isoCardContent">
                         <Row>
@@ -354,24 +374,37 @@ const ProductsList = () => {
                           {item.color} - {item.surface}
                         </span>
                         <h3 align="center" className="isoCardTitle">{item.listPrice} {"TL"}</h3>
-                        {!inputNumberShowOrHide(item) ? (                          
-                           <Button
-                          type="primary"
-                          onClick={event => onAddBox(item)}
-                        >  {<IntlMessages id="Sepete Ekle" />}
-                        </Button>
+                        {!inputNumberShowOrHide(item) ? (
+                          <Button
+                            type="primary"
+                            onClick={event => onAddBox(item)}
+                          >  {<IntlMessages id="Sepete Ekle" />}
+                          </Button>
                         ) : (
-                          <InputNumber
-                          min={1}
-                          max={1000}
-                          defaultValue={1}
-                          value={inputNumberQuantityValue(item)}
-                          step={1}
-                          // onClick={}
-                          onChange={event => onChangeQuantity(event,item)}
-                        />
+                            <Row justify="center"  align="middle">
+                              <Col span={4} style={{ width: '100%' }}>  <Button
+                                type="primary"
+                                onClick={event => onRemoveBox(item)}
+                              >  {<IntlMessages id="-" />}
+                              </Button></Col>
+                              <Col span={8}>  <InputNumber
+                                min={1}
+                                max={1000}
+                                defaultValue={1}
+                                value={inputNumberQuantityValue(item)}
+                                step={1}
+                                // onClick={}
+                                onChange={event => onChangeQuantity(event, item)}
+                              /></Col>
+                              <Col span={4} style={{ width: '100%' }}>  <Button
+                                type="primary"
+                                onClick={event => onAddBox(item)}
+                              >  {<IntlMessages id="+" />}
+                              </Button></Col>
+                            </Row>
+
                           )}
-                       
+
                       </div>
                     </SingleCardWrapper>
 

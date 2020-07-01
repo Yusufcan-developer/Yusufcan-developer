@@ -1,6 +1,8 @@
 import React from 'react';
 import InputNumber from '../uielements/InputNumber';
 import { notification } from '../index';
+import { Col,  Row, Button } from "antd";
+import IntlMessages from "@iso/components/utility/intlMessages";
 
 export default function({
   price,
@@ -14,21 +16,25 @@ export default function({
   products,
 }) {
   const onChange = value => {
-    console.log('xxxx change value',value)
-    console.log('xxxx quantity value',quantity)
     if (!isNaN(value)) {
       if (value !== quantity) {
-        console.log('xxxx değisecek',productItem.itemCode);
         changeQuantity(productItem.itemCode, value);
       }
     } else {
       notification('error', 'Please give valid number');
     }
   };
-  console.log('xxxx productItem asda ',productItem);
   const totalPrice = (productItem.listPrice * quantity).toFixed(2);
-  console.log('xxxx dasdasd ',price);
-  console.log('xxxx asdasdasdad',price)
+
+  function onRemoveBox(product) {
+    if(quantity!==1)
+    {
+    changeQuantity(productItem.itemCode, quantity-1);
+    }
+  };
+  function onAddBox(product) {
+    changeQuantity(productItem.itemCode, quantity+1);
+  };
   return (
     <tr>
       <td
@@ -49,21 +55,33 @@ export default function({
         <p>{productItem.type}</p>
       </td>
       <td className="isoItemPrice">
-        {/* <span className="itemPricePrefix">$</span> */}
         {productItem.listPrice.toFixed(2)} {"TL"}
       </td>
-      <td className="isoItemPalet">
-        <InputNumber
-          min={1}
-          max={1000}
-          value={quantity}
-          step={1}
-          onChange={onChange}
-        />
+      <td className="isoItemPalet">  
+      <Row justify="center"  align="middle">
+      <Col span={8} style={{ width: '100%' }}>
+      <Button
+                                type="primary"
+                                onClick={event => onRemoveBox(productItem)}
+                              > {<IntlMessages id="-" />}
+                              </Button></Col> <Col span={8}> <InputNumber
+                                min={1}
+                                max={1000}
+                                defaultValue={1}
+                                value={quantity}
+                                step={1}
+                                onChange={onChange}
+                              /></Col>  <Col span={8} style={{ width: '100%' }}> <Button
+                                type="primary"
+                                onClick={event => onAddBox(productItem)}
+                              >  {<IntlMessages id="+" />}
+                              </Button>
+                              </Col>
+                              </Row>
+     
       </td>
       <td className="isoItemQuantity">
-        {/* <span className="itemPricePrefix">$</span> */}
-        {quantity*96}
+        {quantity*productItem.m2Pallet}
       </td>
       <td className="isoItemPriceTotal">{totalPrice} TL</td>
     </tr>

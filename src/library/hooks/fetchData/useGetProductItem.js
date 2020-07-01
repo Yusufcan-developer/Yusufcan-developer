@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 
 function useGetProductItem(url) {
-  const [productData,setProductData]=useState()
+  const [productItem,setProductItem]=useState()
   const [loading, setLoading] = useState(true);
   const [onChange, setOnChange] = useState(false);
   const [description, setDescription] = useState();
@@ -41,7 +41,7 @@ function useGetProductItem(url) {
         setSurface(data.surface);
         setColor(data.color);
         setDimension(data.dimension);
-        setProductData(data);
+        setProductItem(data);
         setType(data.type);
         setRectifying(data.rectifying);
         setListPrice(data.listPrice);
@@ -57,7 +57,7 @@ function useGetProductItem(url) {
     setLoading(true);
     fetchUrl();
   }, [ onChange]);
-  return [ loading , description,itemCode,series,productionStatus,surface,color,dimension,productData,type,rectifying,listPrice, setOnChange];
+  return [ loading , description,itemCode,series,productionStatus,surface,color,dimension,productItem,type,rectifying,listPrice, setOnChange];
 }
 
 

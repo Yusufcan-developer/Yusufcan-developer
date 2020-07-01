@@ -54,14 +54,14 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
 
   //Ürün ID getirme
-  console.log('xxxx geliyorum', history.location.productId)
+  console.log('info productId', history.location.productId)
   const productId = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productData, type, rectifying, listPrice] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
   const onChange = value => {
     setQuantity(value);
-    const product=productData;
+    const product=productItem;
     if (productQuantity.length === 0) { dispatch(addToCart(product,value)); } //Sepete
     else {
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
@@ -87,15 +87,35 @@ const ProductDetail = () => {
       }
     };
   };
-
+  function onRemoveBox(product) {
+    inputNumberShowOrHide(product)
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      if(selectedProduct.quantity!==1)
+      {
+        const newProductQuantity = [];
+        productQuantity.forEach(productItem => {
+          if (productItem.itemCode !== selectedProduct.itemCode) {
+            newProductQuantity.push(productItem);
+          } else {
+            const itemCode = productItem.itemCode
+            const quantity = productItem.quantity - 1;
+            newProductQuantity.push({
+              itemCode,
+              quantity,
+            });
+          }
+        });
+        dispatch(changeProductQuantity(newProductQuantity));
+      }
+  };
   //Add product basket
   function onAddBox(product) {
     inputNumberShowOrHide()
-    if (productQuantity.length === 0) { dispatch(addToCart(product,quantity)); } //Sepete
+    if (productQuantity.length === 0) { dispatch(addToCart(product,1)); } //Sepete
     else {
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
       if (selectedProduct === undefined) {
-        dispatch(addToCart(product));
+        dispatch(addToCart(product, 1));
       }
       else {
         const newProductQuantity = [];
@@ -105,7 +125,7 @@ const ProductDetail = () => {
             newProductQuantity.push(productItem);
           } else {
             const itemCode = productItem.itemCode
-            const quantity = selectedQuantity;
+            const quantity = productItem.quantity + 1;
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -115,13 +135,7 @@ const ProductDetail = () => {
         dispatch(changeProductQuantity(newProductQuantity));
 
       }
-    };
-    Modals.success({
-      content:
-        'Ürün sepete başarılı bir şekilde eklenmiştir.',
-      okText: 'Tamam',
-      cancelText: 'Cancel',
-    });
+    };   
   };
   function inputNumberShowOrHide()
   {
@@ -142,8 +156,8 @@ const ProductDetail = () => {
     }   
   }
   //Redux product quantity change event
-  function onChangeQuantity(event,productData) {
-    const product = productData;
+  function onChangeQuantity(event,productItem) {
+    const product = productItem;
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
     const newProductQuantity = [];
     setQuantity(event)
@@ -177,7 +191,6 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
 
           <Box >
-
             <SwiperWithCustomNav prevButtonText={"geri"}>
               {customNavSlider.map(item => (
                 <img
@@ -191,8 +204,6 @@ const ProductDetail = () => {
         </Col>
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box
-          // title={<IntlMessages id={"description"} description={description}/>}
-
           >
             <Row>
               {<Col span={8}> <Descriptions>
@@ -218,26 +229,41 @@ const ProductDetail = () => {
               <Col span={8}>
                 <Descriptions.Item style={{ color: 'red' }} >{listPrice} {"TL"}</Descriptions.Item>
               </Col>
-              <Col span={12}>    
-                {!inputNumberShowOrHide(productData) ? (
-                  <Button
-                    type="primary"
-                    onClick={event => onAddBox(productData)}
-                  >  {<IntlMessages id="Sepete Ekle" />}
-                  </Button>
-                ) : (
-                    <InputNumber
-                      min={1}
-                      max={1000}
-                      defaultValue={1}
-                      value={inputNumberQuantityValue()}
-                      step={1}
-                      onChange={event => onChangeQuantity(event, productData)}
-                    />
-                  )}              
-              </Col>
-            </Row>     
+              </Row>
+              <Row>
+              <Col span={8}>    
+              {!inputNumberShowOrHide(productItem) ? (
+                          <Button
+                            type="primary"
+                            onClick={event => onAddBox(productItem)}
+                          >  {<IntlMessages id="Sepete Ekle" />}
+                          </Button>
+                        ) : (
+                            <Row justify="center"  align="middle">
+                              <Col span={4} style={{ width: '100%' }}>  <Button
+                                type="primary"
+                                onClick={event => onRemoveBox(productItem)}
+                              >  {<IntlMessages id="-" />}
+                              </Button></Col>
+                              <Col span={8}>  <InputNumber
+                                min={1}
+                                max={1000}
+                                defaultValue={1}
+                                value={inputNumberQuantityValue(productItem)}
+                                step={1}
+                                // onClick={}
+                                onChange={event => onChangeQuantity(event, productItem)}
+                              /></Col>
+                              <Col span={4} style={{ width: '100%' }}>  <Button
+                                type="primary"
+                                onClick={event => onAddBox(productItem)}
+                              >  {<IntlMessages id="+" />}
+                              </Button></Col>
+                            </Row>
 
+                          )}              
+              </Col>    
+              </Row>
           </Box>
         </Col>
       </Row>
@@ -249,7 +275,7 @@ const ProductDetail = () => {
 
               <Tabs defaultActiveKey="1" type="card" size={"small"}>
                 <TabPane tab="Ürün Açıklaması" key="1">
-                  Content of card tab 1
+                  Ürün Açıklaması
           </TabPane>
                 <TabPane tab="Teknik Özellik" key="2">
                   <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
