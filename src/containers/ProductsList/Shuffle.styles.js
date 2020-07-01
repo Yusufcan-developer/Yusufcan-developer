@@ -19,6 +19,7 @@ const WDSingleCardWrapper = styled.li`
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
     background-color: ${palette('grayscale', 6)};
 
     img {
@@ -71,6 +72,7 @@ const WDSingleCardWrapper = styled.li`
     align-items: center;
 
     .isoCardImage {
+      cursor: pointer;
       width: 35px;
       height: 35px;
       display: -webkit-inline-flex;
@@ -107,7 +109,7 @@ const WDSingleCardWrapper = styled.li`
       width: 100%;
       height: 260px;
       display: flex;
-
+      cursor: pointer;
       @media only screen and (min-width: 960px) {
         height: 330px;
       }

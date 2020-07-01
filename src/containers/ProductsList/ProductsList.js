@@ -356,7 +356,7 @@ const ProductsList = () => {
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} >
                       <div className="isoCardImage">
-                        <img alt="example" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)} />
+                        <img alt="example" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)}  onMouseOver={e => console.log(e)} />                
                       </div>
                       <div className="isoCardContent">
                         <Row>

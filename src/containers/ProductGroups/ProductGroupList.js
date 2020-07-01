@@ -49,9 +49,9 @@ const ProductGroupList = () => {
   const [loading, setloading] = useState(false);
  
   function selectedProductGroup (productGroupId) {
-    console.log('xxxx product Id',productGroupId);
-    
-    //history.push('/dashboard/productList');
+    //Product Group Id
+    console.log('info productGroupId',productGroupId);
+
     history.push({
       pathname: '/dashboard/productList',
       productGroupId: productGroupId,
@@ -65,8 +65,8 @@ const ProductGroupList = () => {
       {/**Model Json */}
       <Row gutter={[24, 16]}>
 
-        {reqJson.map((item) => (
-          
+        {reqJson.map((item) => (      
+              
           <Col xs={{ span: 24 }} sm={{ span: 6 }}>
             <Card
               hoverable
