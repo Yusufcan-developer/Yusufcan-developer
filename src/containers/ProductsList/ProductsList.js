@@ -265,9 +265,9 @@ const ProductsList = () => {
   return (
     <React.Fragment>
       <Breadcrumb>
-        <Breadcrumb.Item>Dashboard</Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <a href="/Dashboard/productGroupList">Ürün Grubu</a>
+        <Breadcrumb.Item>  <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
+        <Breadcrumb.Item >
+        <Link to="/dashboard/productGroupList">Ürün Grubu</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
       </Breadcrumb>
