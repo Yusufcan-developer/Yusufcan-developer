@@ -28,6 +28,7 @@ import basicStyle from '@iso/assets/styles/constants';
 
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
+import filterActions from '@iso/redux/filter/actions';
 import data from "../../redux/mail/data";
 import fake from './fake';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
@@ -65,7 +66,11 @@ const ProductsList = () => {
 
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
+  const { filters } = useSelector(state => state.Filters);
+  if(filters.length>0){console.log('xxxx fils',filters)}
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
+  const { addToFilter, changeFilter } = filterActions;
+
   const dispatch = useDispatch();
 
   //ProductListHook
@@ -88,7 +93,7 @@ const ProductsList = () => {
   const [productionStatusData] = useFilterData(`${siteConfig.api.productionStatusData}`);
 
   //Ürün grubu adı getirme
-  console.log('xxxx geliyorum', history.location.productGroupId)
+  console.log('info product GroupId', history.location.productGroupId)
 
 
   const listClass = `isoSingleCard card grid`;
@@ -125,6 +130,7 @@ const ProductsList = () => {
   //Product Group Filter Event
   function onChangeProductGroup(checkedProductGroupValue) {
     setProductGroup(checkedProductGroupValue)
+    onAddFilterRedux(checkedProductGroupValue)
     if (productGroup.length > 0) { return setOnChange(true); }
   };
   //Dimension Filter Event
@@ -185,6 +191,15 @@ const ProductsList = () => {
         });
         dispatch(changeProductQuantity(newProductQuantity));
       }
+  };
+  function onAddFilterRedux(checkedProductGroupValue) {
+   
+// const filterType="ProductGroup"
+// if(filters.length===0){dispatch(addToFilter(filterType,checkedProductGroupValue));}
+// else{
+//   dispatch(changeFilter(filterType,checkedProductGroupValue));
+// }
+
   };
   function onAddBox(product) {
     inputNumberShowOrHide(product)
@@ -297,7 +312,7 @@ const ProductsList = () => {
                 <Panel header={<IntlMessages id="Boyut" />} key="1">
                   <CheckboxGroup
                     options={
-                      dimensionData.map(e => e === null ? 'Yok' : e)}
+                    dimensionData.map(e => e === null ? 'Yok' : e)}
                     onChange={onChangeDimension}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />

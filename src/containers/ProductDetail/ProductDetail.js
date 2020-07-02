@@ -58,7 +58,7 @@ const ProductDetail = () => {
   const productId = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice,imageUrl] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
   const onChange = value => {
     setQuantity(value);
     const product=productItem;
@@ -192,14 +192,20 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
 
           <Box >
-            <SwiperWithCustomNav prevButtonText={"geri"}>
-              {customNavSlider.map(item => (
+            <SwiperWithCustomNav prevButtonText={"geri"} 
+                   >
+              {/* {imageUrl.map(item => (
                 <img
-                  key={`customnav-slider--key${item.id}`}
+                  key={`customnav-slider--key${item}`}
                   src={item.thumb_url}
                   alt={item.title}
                 />
-              ))}
+              ))} */}
+               <img
+                  key={`customnav-slider--key${imageUrl}`}
+                  src={imageUrl}
+                  height="500px"
+                />
             </SwiperWithCustomNav>
           </Box>
         </Col>

@@ -70,12 +70,12 @@ function loginError() {
 
         dispatch(clearMenu());
         window.sessionStorage.setItem("nameAndSurname", userName);
-        history.push('/dashboard/productsList');
+        history.push('/dashboard/productGroupList');
       })
       .catch(error => loginError());
   }
 
-  let { from } = location.state || { from: { pathname: '/dashboard/productsList' } };
+  let { from } = location.state || { from: { pathname: '/dashboard/productGroupList' } };
 
   if (redirectToReferrer) {
     return <Redirect to={from} />;
