@@ -83,3 +83,10 @@ export function stringToPosetiveInt(value, defValue = 0) {
   const val = stringToInt(value, defValue);
   return val > -1 ? val : defValue;
 }
+
+export function stripTrailingSlash(str) {
+  if (str.substr(-1) === '/') {
+    return str.substr(0, str.length - 1);
+  }
+  return str;
+};

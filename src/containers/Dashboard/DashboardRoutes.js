@@ -1,13 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Route, useRouteMatch, Switch } from 'react-router-dom';
 import Loader from '@iso/components/utility/loader';
-
-const stripTrailingSlash = str => {
-  if (str.substr(-1) === '/') {
-    return str.substr(0, str.length - 1);
-  }
-  return str;
-};
+import { stripTrailingSlash } from '@iso/lib/helpers/utility';
 
 const routes = [
   {

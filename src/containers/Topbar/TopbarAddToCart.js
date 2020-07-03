@@ -6,6 +6,7 @@ import Scrollbar from '@iso/components/utility/customScrollBar';
 import Popover from '@iso/components/uielements/popover';
 import SingleCart from '@iso/components/Cart/SingleCartModal';
 import ecommerceAction from '@iso/redux/ecommerce/actions';
+import { stripTrailingSlash } from '@iso/lib/helpers/utility';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
 
 const {
@@ -16,6 +17,7 @@ const {
 let totalPrice;
 export default function TopbarAddtoCart() {
   let { url } = useRouteMatch();
+  url = stripTrailingSlash(url);
   const dispatch = useDispatch();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const {
