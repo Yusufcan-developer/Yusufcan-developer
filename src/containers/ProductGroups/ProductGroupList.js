@@ -35,7 +35,7 @@ const reqJson = [
   },
   {
     "Id"   :"BANYO MOBİLYASI",
-    "title": "YAPI KİMYASALLARI",
+    "title": "Banyo Mobilyası",
     "description": "Banyo Mobilyası Ürün Grubu (Lorem ipsum dolor sit amet, consectetur)",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/betonmekan_0856e.jpg",
   },

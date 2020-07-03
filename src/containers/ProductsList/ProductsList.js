@@ -3,14 +3,13 @@ import IntlMessages from "@iso/components/utility/intlMessages";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import _ from 'underscore';
-import { notification } from "@iso/components/index";
 import Modal from '@iso/ui/Antd/Modal/Modal';
 import { SingleCardWrapper } from './Shuffle.styles';
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge } from "antd";
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification } from "antd";
 import siteConfig from "@iso/config/site.config";
 import Modals from '@iso/components/Feedback/Modal';
 import InputNumber from '@iso/components/uielements/InputNumber';
-import { Link, useHistory,useRouteMatch } from 'react-router-dom';
+import { Link, useHistory, useRouteMatch } from 'react-router-dom';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import PageHeader from "@iso/components/utility/pageHeader";
 import { direction } from '@iso/lib/helpers/rtl';
@@ -57,31 +56,31 @@ const ProductsList = () => {
   const [surface, setSurface] = useState([])
   const [productionStatus, setProductionStatus] = useState([])
   const [keyword, setKeyword] = useState()
-  const [ locationKeys, setLocationKeys ] = useState([])
+  const [locationKeys, setLocationKeys] = useState([])
 
   const match = useRouteMatch();
   useEffect(() => {
     return history.listen(location => {
       if (history.action === 'PUSH') {
-        setLocationKeys([ location.key ])
+        setLocationKeys([location.key])
         console.log('xxxx ileri gittim')
       }
-  
+
       if (history.action === 'POP') {
         if (locationKeys[1] === location.key) {
-          setLocationKeys(([ _, ...keys ]) => keys)
-  
+          setLocationKeys(([_, ...keys]) => keys)
+
           console.log('xxxx ileri gittim')
-  
+
         } else {
-          setLocationKeys((keys) => [ location.key, ...keys ])
-  
+          setLocationKeys((keys) => [location.key, ...keys])
+
           console.log('xxxx geri gittim')
-  
+
         }
       }
     })
-  }, [ locationKeys, ])
+  }, [locationKeys,])
   useEffect(() => {
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
@@ -93,7 +92,7 @@ const ProductsList = () => {
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
   const { filters } = useSelector(state => state.Filters);
-  if(filters.length>0){console.log('xxxx fils',filters)}
+  if (filters.length > 0) { console.log('xxxx fils', filters) }
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
   const { addToFilter, changeFilter } = filterActions;
 
@@ -155,13 +154,13 @@ const ProductsList = () => {
   //Product Group Filter Event
   function onChangeProductGroup(checkedProductGroupValue) {
     setProductGroup(checkedProductGroupValue)
-    onAddFilterRedux('ProductGroup',checkedProductGroupValue)
+    onAddFilterRedux('ProductGroup', checkedProductGroupValue)
     if (productGroup.length > 0) { return setOnChange(true); }
   };
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
     setDimension(checkedDimensionValue)
-    onAddFilterRedux('Dimension',checkedDimensionValue)
+    onAddFilterRedux('Dimension', checkedDimensionValue)
     return setOnChange(true);
   };
 
@@ -184,10 +183,10 @@ const ProductsList = () => {
   }
   function selectedProductId(productId) {
     console.log('info selected productId', productId);
-    history.push({
-      pathname: '/products/detail',
-      productId: productId,
-    });
+    // history.push({
+    //   pathname: '/products/detail',
+    //   productId: productId,
+    // });
   }
   function inputNumberShowOrHide(value) {
     var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
@@ -199,34 +198,33 @@ const ProductsList = () => {
   function onRemoveBox(product) {
     inputNumberShowOrHide(product)
     setAddCartLoading(true);
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-      if(selectedProduct.quantity!==1)
-      {
-        const newProductQuantity = [];
-        productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode) {
-            newProductQuantity.push(productItem);
-          } else {
-            const itemCode = productItem.itemCode
-            const quantity = productItem.quantity - 1;
-            newProductQuantity.push({
-              itemCode,
-              quantity,
-            });
-          }
-        });
-        dispatch(changeProductQuantity(newProductQuantity));
-      }
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    if (selectedProduct.quantity !== 1) {
+      const newProductQuantity = [];
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode
+          const quantity = productItem.quantity - 1;
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
   };
 
-  function onAddFilterRedux(groupName,checkedProductGroupValue) {
+  function onAddFilterRedux(groupName, checkedProductGroupValue) {
     const filterType = groupName;
     // if (filters.length === 0) { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
     // else {
     //   console.log('xxxx secilen grup',checkedProductGroupValue)
     const tileset = _.find(filters, function (item) { return item.filterType === groupName; });
-    if (tileset) { console.log('xxxx tileSet',tileset.filterValue); dispatch(changeFilter(filterType, checkedProductGroupValue)); }
-   
+    if (tileset) { console.log('xxxx tileSet', tileset.filterValue); dispatch(changeFilter(filterType, checkedProductGroupValue)); }
+
     //Yeni Filter Grubu Ekleme işlemi
     else { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
   };
@@ -235,26 +233,29 @@ const ProductsList = () => {
     inputNumberShowOrHide(product)
     setAddCartLoading(true);
 
-    if ((productQuantity.length === 0)||(productQuantity.find(item => item.itemCode == product.itemCode)===undefined)) { dispatch(addToCart(product, 1)); notification('info', 'Ürün Sepete Eklenmiştir'); } //Sepete
+    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) {
+      dispatch(addToCart(product, 1));
+      notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+    }
     else {
-        const selectedProduct=productQuantity.find(item => item.itemCode == product.itemCode);
-        const newProductQuantity = [];
-        productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode) {
-            newProductQuantity.push(productItem);
-          } else {
-            const itemCode = productItem.itemCode;
-            const quantity = productItem.quantity + 1;
-            newProductQuantity.push({
-              itemCode,
-              quantity,
-            });
-          }
-        });
-        dispatch(changeProductQuantity(newProductQuantity));
-      }
-    };
- 
+      const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      const newProductQuantity = [];
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode;
+          const quantity = productItem.quantity + 1;
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
+  };
+
 
   //Input Number return quantity value
   function inputNumberQuantityValue(product) {
@@ -268,11 +269,11 @@ const ProductsList = () => {
   }
   //Redux product quantity change event
   function onChangeQuantity(event, productData) {
-  
-    const product = productData;    
+
+    const product = productData;
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
-    console.log('xxxx e',event.target.value);
+    console.log('xxxx e', event.target.value);
     setQuantity(parseInt(event.target.value));
     productQuantity.forEach(productItem => {
       if (productItem.itemCode !== selectedProduct.itemCode) {
@@ -287,7 +288,7 @@ const ProductsList = () => {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
-    
+
   };
   //
   const onChange = checkedList => {
@@ -334,7 +335,7 @@ const ProductsList = () => {
                 <Panel header={<IntlMessages id="Boyut" />} key="1">
                   <CheckboxGroup
                     options={
-                    dimensionData.map(e => e === null ? 'Yok' : e)}
+                      dimensionData.map(e => e === null ? 'Yok' : e)}
                     onChange={onChangeDimension}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -393,8 +394,8 @@ const ProductsList = () => {
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} >
                       <div className="isoCardImage">
-                      <Link to={`${'products/detail'}/${item.itemCode}`}>
-                        <img alt="example" src={item.imageUrl}   onMouseOver={e => console.log(e)} />                
+                        <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                          <img alt="example" src={item.imageUrl} onMouseOver={e => console.log(e)} />
                         </Link>{' '}
                       </div>
                       <div className="isoCardContent">
@@ -420,16 +421,16 @@ const ProductsList = () => {
                           >  {<IntlMessages id="Sepete Ekle" />}
                           </Button>
                         ) : (
-                            <Row justify="center"  align="middle">
+                            <Row justify="center" align="middle">
                               <Col span={4} style={{ width: '100%' }}>  <Button
                                 type="primary"
                                 onClick={event => onRemoveBox(item)}
                               >  {<IntlMessages id="-" />}
                               </Button></Col>
-                              <Col span={8}>  
+                              <Col span={8}>
                                 <Input
                                   onChange={event => onChangeQuantity(event, item)}
-                                  style={{ width: 80,textAlign: "right" }}                               
+                                  style={{ width: 80, textAlign: "right" }}
                                   maxLength={25}
                                   defaultValue={1}
                                   step={1}

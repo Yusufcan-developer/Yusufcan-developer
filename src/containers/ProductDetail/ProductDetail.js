@@ -15,7 +15,7 @@ import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import siteConfig from "@iso/config/site.config";
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory,useRouteMatch,useParams } from 'react-router-dom';
 import Modals from '@iso/components/Feedback/Modal';
 import {
   SwiperWithCustomNav,
@@ -26,6 +26,7 @@ import {
   customNavSlider,
 } from './slider.data';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
+
 const reqJson = [
   {
     "productGroupId": 1,
@@ -54,13 +55,14 @@ const ProductDetail = () => {
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
   const dispatch = useDispatch();
+  const match = useRouteMatch();
+  const { productId } = useParams();
 
-  //Ürün ID getirme
-  console.log('info productId', history.location.productId)
-  const productId = history.location.productId;
+  //History özelliği
+  //const productId1 = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice,imageUrl] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice,imageUrl] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
   const onChange = value => {
     setQuantity(value);
     const product=productItem;
