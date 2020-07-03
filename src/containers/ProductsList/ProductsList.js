@@ -184,7 +184,7 @@ const ProductsList = () => {
   function selectedProductId(productId) {
     console.log('info selected productId', productId);
     history.push({
-      pathname: '/productDetail',
+      pathname: '/products/detail',
       productId: productId,
     });
   }
