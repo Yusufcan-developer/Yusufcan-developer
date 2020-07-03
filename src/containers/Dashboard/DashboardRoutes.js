@@ -299,11 +299,11 @@ const routes = [
     ),
   },
   {
-    path: 'uppy',
+    path: 'admin/photos/upload',
     component: lazy(() => import('@iso/containers/AdvancedUI/Uppy/Uppy')),
   },
   {
-    path: 'userList',
+    path: 'admin/users',
     component: lazy(() => import('@iso/containers/User/UserList')),
   },
   {
@@ -350,11 +350,11 @@ const routes = [
     component: lazy(() => import('@iso/containers/CheckingReports/CheckingReports')),
   },
   {
-    path: 'shipping',
+    path: 'reports/deliveries',
     component: lazy(() => import('@iso/containers/Shipping/Shipping')),
   },
   {
-    path: 'lettersOfGuarantee',
+    path: 'reports/letters',
     component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
   },
   {
@@ -366,7 +366,7 @@ const routes = [
     component: lazy(() => import('@iso/containers/CustomerList/CustomerList')),
   },
   {
-    path: 'distributions',
+    path: 'reports/distributions',
     component: lazy(() => import('@iso/containers/Distribution/Distributions')),
   },
   {

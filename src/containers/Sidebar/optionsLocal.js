@@ -15,7 +15,7 @@ const options = [
           leftIcon: 'ion-android-mail',
         },
         {
-          key: 'shipping',
+          key: 'reports/deliveries',
           label: 'sidebar.shipping',
           leftIcon: 'ion-android-mail',
         },
@@ -30,7 +30,7 @@ const options = [
           leftIcon: 'ion-android-mail',
         },
         {
-          key: 'lettersOfGuarantee',
+          key: 'reports/letters',
           label: 'sidebar.lettersOfGuarantee',
           leftIcon: 'ion-android-mail',
         },
@@ -40,7 +40,7 @@ const options = [
           leftIcon: 'ion-android-mail',
         },
         {
-          key: 'distributions',
+          key: 'reports/distributions',
           label: 'sidebar.distributions',
           leftIcon: 'ion-android-mail',
         },

@@ -21,12 +21,12 @@ const options = [
         leftIcon: "ion-android-mail"
       },
       {
-        key: "shipping",
+        key: "reports/deliveries",
         label: "sidebar.shipping",
         leftIcon: "ion-android-mail"
       },
       {
-        key: "customerRecords",
+        key: "reports/accounts/transactions",
         label: "sidebar.customerRecords",
         leftIcon: "ion-android-mail"
       },
@@ -36,17 +36,17 @@ const options = [
         leftIcon: "ion-android-mail"
       },
       {
-        key: "lettersOfGuarantee",
+        key: "reports/letters",
         label: "sidebar.lettersOfGuarantee",
         leftIcon: "ion-android-mail"
       },
       {
-        key: 'customerList',
+        key: 'reports/accounts',
         label: 'sidebar.customerList',
         leftIcon: 'ion-android-mail',
       },
       {
-        key: 'distributions',
+        key: 'reports/distributions',
         label: 'sidebar.distributions',
         leftIcon: 'ion-android-mail',
       },
@@ -58,11 +58,11 @@ const options = [
     leftIcon: 'ion-document-text',
     children: [  
       {
-        key: 'userList',
+        key: 'admin/users',
         label: 'sidebar.userList',
       },    
       {
-        key: 'uppy',
+        key: 'admin/photos/upload',
         label: 'sidebar.uploadingPhotos',
       },
       {
