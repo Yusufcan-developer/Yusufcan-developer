@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
+import _ from 'underscore';
+import { notification } from "@iso/components/index";
 import Modal from '@iso/ui/Antd/Modal/Modal';
 import { SingleCardWrapper } from './Shuffle.styles';
 import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge } from "antd";
@@ -28,6 +30,7 @@ import basicStyle from '@iso/assets/styles/constants';
 
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
+import filterActions from '@iso/redux/filter/actions';
 import data from "../../redux/mail/data";
 import fake from './fake';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
@@ -54,7 +57,30 @@ const ProductsList = () => {
   const [surface, setSurface] = useState([])
   const [productionStatus, setProductionStatus] = useState([])
   const [keyword, setKeyword] = useState()
+  const [ locationKeys, setLocationKeys ] = useState([])
 
+  useEffect(() => {
+    return history.listen(location => {
+      if (history.action === 'PUSH') {
+        setLocationKeys([ location.key ])
+        console.log('xxxx ileri gittim')
+      }
+  
+      if (history.action === 'POP') {
+        if (locationKeys[1] === location.key) {
+          setLocationKeys(([ _, ...keys ]) => keys)
+  
+          console.log('xxxx ileri gittim')
+  
+        } else {
+          setLocationKeys((keys) => [ location.key, ...keys ])
+  
+          console.log('xxxx geri gittim')
+  
+        }
+      }
+    })
+  }, [ locationKeys, ])
   useEffect(() => {
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
@@ -65,7 +91,11 @@ const ProductsList = () => {
 
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
+  const { filters } = useSelector(state => state.Filters);
+  if(filters.length>0){console.log('xxxx fils',filters)}
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
+  const { addToFilter, changeFilter } = filterActions;
+
   const dispatch = useDispatch();
 
   //ProductListHook
@@ -88,8 +118,7 @@ const ProductsList = () => {
   const [productionStatusData] = useFilterData(`${siteConfig.api.productionStatusData}`);
 
   //Ürün grubu adı getirme
-  console.log('xxxx geliyorum', history.location.productGroupId)
-
+  console.log('info product GroupId', history.location.productGroupId)
 
   const listClass = `isoSingleCard card grid`;
   const style = { zIndex: 100 - 90 };
@@ -125,11 +154,13 @@ const ProductsList = () => {
   //Product Group Filter Event
   function onChangeProductGroup(checkedProductGroupValue) {
     setProductGroup(checkedProductGroupValue)
+    onAddFilterRedux('ProductGroup',checkedProductGroupValue)
     if (productGroup.length > 0) { return setOnChange(true); }
   };
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
     setDimension(checkedDimensionValue)
+    onAddFilterRedux('Dimension',checkedDimensionValue)
     return setOnChange(true);
   };
 
@@ -186,23 +217,32 @@ const ProductsList = () => {
         dispatch(changeProductQuantity(newProductQuantity));
       }
   };
+
+  function onAddFilterRedux(groupName,checkedProductGroupValue) {
+    const filterType = groupName;
+    // if (filters.length === 0) { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
+    // else {
+    //   console.log('xxxx secilen grup',checkedProductGroupValue)
+    const tileset = _.find(filters, function (item) { return item.filterType === groupName; });
+    if (tileset) { console.log('xxxx tileSet',tileset.filterValue); dispatch(changeFilter(filterType, checkedProductGroupValue)); }
+   
+    //Yeni Filter Grubu Ekleme işlemi
+    else { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
+  };
+
   function onAddBox(product) {
     inputNumberShowOrHide(product)
     setAddCartLoading(true);
 
-    if (productQuantity.length === 0) { dispatch(addToCart(product, 1)); } //Sepete
+    if ((productQuantity.length === 0)||(productQuantity.find(item => item.itemCode == product.itemCode)===undefined)) { dispatch(addToCart(product, 1)); notification('info', 'Ürün Sepete Eklenmiştir'); } //Sepete
     else {
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-      if (selectedProduct === undefined) {
-        dispatch(addToCart(product, 1));
-      }
-      else {
+        const selectedProduct=productQuantity.find(item => item.itemCode == product.itemCode);
         const newProductQuantity = [];
         productQuantity.forEach(productItem => {
           if (productItem.itemCode !== selectedProduct.itemCode) {
             newProductQuantity.push(productItem);
           } else {
-            const itemCode = productItem.itemCode
+            const itemCode = productItem.itemCode;
             const quantity = productItem.quantity + 1;
             newProductQuantity.push({
               itemCode,
@@ -213,13 +253,7 @@ const ProductsList = () => {
         dispatch(changeProductQuantity(newProductQuantity));
       }
     };
-    // Modals.success({
-    //   content:
-    //     'Ürün sepete başarılı bir şekilde eklenmiştir.',
-    //   okText: 'Tamam',
-    //   cancelText: 'Cancel',
-    // });
-  };
+ 
 
   //Input Number return quantity value
   function inputNumberQuantityValue(product) {
@@ -231,19 +265,20 @@ const ProductsList = () => {
       return selectedProduct.quantity;
     }
   }
-
   //Redux product quantity change event
   function onChangeQuantity(event, productData) {
-    const product = productData;
+  
+    const product = productData;    
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
-    setQuantity(event)
+    console.log('xxxx e',event.target.value);
+    setQuantity(parseInt(event.target.value));
     productQuantity.forEach(productItem => {
       if (productItem.itemCode !== selectedProduct.itemCode) {
         newProductQuantity.push(productItem);
       } else {
         const itemCode = productItem.itemCode
-        const quantity = event;
+        const quantity = parseInt(event.target.value);
         newProductQuantity.push({
           itemCode,
           quantity,
@@ -251,6 +286,7 @@ const ProductsList = () => {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
+    
   };
   //
   const onChange = checkedList => {
@@ -261,7 +297,6 @@ const ProductsList = () => {
     // setCheckAll(checkedList.length === plainOptions.length);
   };
 
-  //Return desing
   return (
     <React.Fragment>
       <Breadcrumb>
@@ -298,7 +333,7 @@ const ProductsList = () => {
                 <Panel header={<IntlMessages id="Boyut" />} key="1">
                   <CheckboxGroup
                     options={
-                      dimensionData.map(e => e === null ? 'Yok' : e)}
+                    dimensionData.map(e => e === null ? 'Yok' : e)}
                     onChange={onChangeDimension}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -388,15 +423,16 @@ const ProductsList = () => {
                                 onClick={event => onRemoveBox(item)}
                               >  {<IntlMessages id="-" />}
                               </Button></Col>
-                              <Col span={8}>  <InputNumber
-                                min={1}
-                                max={1000}
-                                defaultValue={1}
-                                value={inputNumberQuantityValue(item)}
-                                step={1}
-                                // onClick={}
-                                onChange={event => onChangeQuantity(event, item)}
-                              /></Col>
+                              <Col span={8}>  
+                                <Input
+                                  onChange={event => onChangeQuantity(event, item)}
+                                  style={{ width: 80,textAlign: "right" }}                               
+                                  maxLength={25}
+                                  defaultValue={1}
+                                  step={1}
+                                  value={inputNumberQuantityValue(item)}
+                                />
+                              </Col>
                               <Col span={4} style={{ width: '100%' }}>  <Button
                                 type="primary"
                                 onClick={event => onAddBox(item)}

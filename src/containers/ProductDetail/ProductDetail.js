@@ -5,6 +5,7 @@ import Box from '@iso/components/utility/box';
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import IntlMessages from '@iso/components/utility/intlMessages';
+import { notification } from "@iso/components/index";
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
 import Tags from '@iso/components/uielements/tag';
@@ -20,6 +21,7 @@ import {
   SwiperWithCustomNav,
 
 } from '@iso/ui/SwiperSlider';
+import Input from '@iso/components/uielements/input';
 import {
   customNavSlider,
 } from './slider.data';
@@ -58,7 +60,7 @@ const ProductDetail = () => {
   const productId = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice,imageUrl] = useGetProductItem(`${siteConfig.api.productDetail}${history.location.productId}`);
   const onChange = value => {
     setQuantity(value);
     const product=productItem;
@@ -111,13 +113,9 @@ const ProductDetail = () => {
   //Add product basket
   function onAddBox(product) {
     inputNumberShowOrHide()
-    if (productQuantity.length === 0) { dispatch(addToCart(product,1)); } //Sepete
+    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode)===undefined)) { dispatch(addToCart(product, 1)); notification('info', 'Ürün Sepete Eklenmiştir'); } //Sepete
     else {
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-      if (selectedProduct === undefined) {
-        dispatch(addToCart(product, 1));
-      }
-      else {
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);      
         const newProductQuantity = [];
         const selectedQuantity=quantity;
         productQuantity.forEach(productItem => {
@@ -135,8 +133,7 @@ const ProductDetail = () => {
         dispatch(changeProductQuantity(newProductQuantity));
 
       }
-    };   
-  };
+    };
   function inputNumberShowOrHide()
   {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
@@ -193,14 +190,20 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
 
           <Box >
-            <SwiperWithCustomNav prevButtonText={"geri"}>
-              {customNavSlider.map(item => (
+            <SwiperWithCustomNav prevButtonText={"geri"} 
+                   >
+              {/* {imageUrl.map(item => (
                 <img
-                  key={`customnav-slider--key${item.id}`}
+                  key={`customnav-slider--key${item}`}
                   src={item.thumb_url}
                   alt={item.title}
                 />
-              ))}
+              ))} */}
+               <img
+                  key={`customnav-slider--key${imageUrl}`}
+                  src={imageUrl}
+                  height="500px"
+                />
             </SwiperWithCustomNav>
           </Box>
         </Col>
@@ -247,12 +250,13 @@ const ProductDetail = () => {
                                 onClick={event => onRemoveBox(productItem)}
                               >  {<IntlMessages id="-" />}
                               </Button></Col>
-                              <Col span={8}>  <InputNumber
+                              <Col span={8}>  <Input
                                 min={1}
                                 max={1000}
                                 defaultValue={1}
                                 value={inputNumberQuantityValue(productItem)}
                                 step={1}
+                                style={{ width: 80,textAlign: "right" }}  
                                 // onClick={}
                                 onChange={event => onChangeQuantity(event, productItem)}
                               /></Col>

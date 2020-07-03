@@ -19,8 +19,6 @@ const actions = {
   changeProductQuantity: productQuantity => {
     return (dispatch, getState) => {
       const { products } = getState().Ecommerce;
-      console.log('xxxx aktarım',products)
-      console.log('xxxx m',productQuantity)
       dispatch({
         type: actions.UPDATE_DATA_SAGA,
         products,

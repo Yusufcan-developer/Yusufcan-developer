@@ -15,6 +15,7 @@ function useGetProductItem(url) {
   const [type,setType]=useState();
   const [rectifying,setRectifying]=useState();
   const [listPrice,setListPrice]=useState();
+  const [imageUrl,setImageUrl]=useState();
 
   async function fetchUrl() {
 
@@ -45,6 +46,7 @@ function useGetProductItem(url) {
         setType(data.type);
         setRectifying(data.rectifying);
         setListPrice(data.listPrice);
+        setImageUrl(data.imageUrl);
       })
       .catch();
 
@@ -57,7 +59,7 @@ function useGetProductItem(url) {
     setLoading(true);
     fetchUrl();
   }, [ onChange]);
-  return [ loading , description,itemCode,series,productionStatus,surface,color,dimension,productItem,type,rectifying,listPrice, setOnChange];
+  return [ loading , description,itemCode,series,productionStatus,surface,color,dimension,productItem,type,rectifying,listPrice,imageUrl, setOnChange];
 }
 
 

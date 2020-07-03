@@ -38,10 +38,10 @@ export default function SwiperWithCustomNav(props) {
     <Wrapper>
       <Swiper getSwiper={updateSwiper}>{children}</Swiper>
       <Button className="prev" type="primary" onClick={goPrev}>
-        Prev
+        Geri
       </Button>
       <Button className="next" type="primary" onClick={goNext}>
-        Next
+        İleri
       </Button>
     </Wrapper>
   );
