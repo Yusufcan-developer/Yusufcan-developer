@@ -178,12 +178,13 @@ const ProductDetail = () => {
   return (
     <LayoutWrapper>
       <Breadcrumb>
-      <Breadcrumb.Item>  <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
         <Breadcrumb.Item>
-          <a href="/Dashboard/productGroupList">Ürün Grubu</a>
+          <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <a href="/products/categories">Ürün Grubu</a>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-        <Link to="/dashboard/productList">Ürünler listesi</Link></Breadcrumb.Item>
+          <Link to="/products/search">Ürünler listesi</Link></Breadcrumb.Item>
         <Breadcrumb.Item>Ürün Detayı</Breadcrumb.Item>
       </Breadcrumb>
 

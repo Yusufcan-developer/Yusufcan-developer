@@ -127,7 +127,7 @@ const Posts = ({ data, avatar, username }) => {
               <div className="avatar-wrapper">
                 <AvatarCard avatar={avatar} username={username} />
                 <span>•</span>
-                <Link to="/dashboard/my-profile" rel="nofollow">
+                <Link to="/my-profile" rel="nofollow">
                   Follow
                 </Link>
               </div>

@@ -2,6 +2,13 @@ import React, { lazy, Suspense } from 'react';
 import { Route, useRouteMatch, Switch } from 'react-router-dom';
 import Loader from '@iso/components/utility/loader';
 
+const stripTrailingSlash = str => {
+  if (str.substr(-1) === '/') {
+    return str.substr(0, str.length - 1);
+  }
+  return str;
+};
+
 const routes = [
   {
     path: '',
@@ -341,11 +348,11 @@ const routes = [
     component: lazy(() => import('@iso/containers/GithubSearch/GithubSearch')),
   },
   {
-    path: 'CustomerRecords',
+    path: 'reports/accounts/transactions',
     component: lazy(() => import('@iso/containers/CustomerRecords/CustomerRecords')),
   },
   {
-    path: 'CheckingReports',
+    path: 'reports/cheques',
     component: lazy(() => import('@iso/containers/CheckingReports/CheckingReports')),
   },
   {
@@ -357,11 +364,11 @@ const routes = [
     component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
   },
   {
-    path: 'OrderFollowUp',
+    path: 'reports/orders',
     component: lazy(() => import('@iso/containers/Order/OrderFollowUp')),
   },
   {
-    path: 'customerList',
+    path: 'reports/accounts',
     component: lazy(() => import('@iso/containers/CustomerList/CustomerList')),
   },
   {
@@ -373,7 +380,7 @@ const routes = [
     component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
   },
   {
-    path: 'productList',
+    path: 'products/search',
     component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
   },
   {
@@ -381,13 +388,14 @@ const routes = [
     component: lazy(() => import('@iso/containers/ProductDetail/ProductDetail')),
   },
    {
-     path: 'productGroupList',
+     path: 'products/categories',
      component: lazy(() => import('@iso/containers/ProductGroups/ProductGroupList')),
    },
 ];
 
 export default function AppRouter() {
-  const { url } = useRouteMatch();
+  let { url } = useRouteMatch();
+  url = stripTrailingSlash(url);
   return (
     <Suspense fallback={<Loader />}>
       <Switch>

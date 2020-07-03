@@ -21,7 +21,7 @@ function BoardLists({
 
   const handleEdit = board => {
     editBoard(board);
-    history.push(`/dashboard/scrum-board/${board.id}`);
+    history.push(`/scrum-board/${board.id}`);
   };
 
   return (

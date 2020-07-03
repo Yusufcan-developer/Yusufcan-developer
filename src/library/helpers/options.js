@@ -20,7 +20,7 @@ const options = [
     leftIcon: 'ion-android-mail',
   },
   {
-    key: 'checkingReports',
+    key: 'reports/cheques',
     label: 'sidebar.checkingReports',
     leftIcon: 'ion-android-mail',
   },

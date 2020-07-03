@@ -53,7 +53,7 @@ const ProductGroupList = () => {
     console.log('info productGroupId',productGroupId);
 
     history.push({
-      pathname: '/dashboard/productList',
+      pathname: '/products/search',
       productGroupId: productGroupId,
     });
     }

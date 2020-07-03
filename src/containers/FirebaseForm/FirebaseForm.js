@@ -70,7 +70,7 @@ export default function(props) {
     if (user) {
       const token = await user.getIdToken();
       props.login(token);
-      props.history.push('/dashboard');
+      props.history.push('/');
     } else {
       notification('error', message);
       setState({

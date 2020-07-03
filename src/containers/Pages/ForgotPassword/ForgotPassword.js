@@ -11,7 +11,7 @@ export default function() {
       <div className="isoFormContentWrapper">
         <div className="isoFormContent">
           <div className="isoLogoWrapper">
-            <Link to="/dashboard">
+            <Link to="/">
               <IntlMessages id="page.forgetPassTitle" />
             </Link>
           </div>

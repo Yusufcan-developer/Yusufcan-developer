@@ -57,7 +57,7 @@ const BoardLayout = ({
 
       {Object.values(boards).map(board => (
         <Menu.Item key={board.id}>
-          <Link to={`/dashboard/scrum-board/project/${board.id}`}>
+          <Link to={`/scrum-board/project/${board.id}`}>
             <ProjectInfoCard>
               <Avatar src={AvatarIcon} />
               <InfoWrapper>
@@ -71,12 +71,12 @@ const BoardLayout = ({
 
       <Menu.Item>
         <ViewAll>
-          <Link to="/dashboard/scrum-board">View All Projects</Link>
+          <Link to="/scrum-board">View All Projects</Link>
         </ViewAll>
       </Menu.Item>
       <Menu.Item>
         <CreateProject>
-          <Link to="/dashboard/scrum-board/new">Create New Project</Link>
+          <Link to="/scrum-board/new">Create New Project</Link>
         </CreateProject>
       </Menu.Item>
     </Menu>

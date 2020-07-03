@@ -5,7 +5,7 @@ const options = [
     leftIcon: "ion-clipboard"
   },
   {
-    key: "productGroupList",
+    key: "products/categories",
     label: "sidebar.productsList",
     leftIcon: "ion-bag"
   },
@@ -16,7 +16,7 @@ const options = [
     children: [
      
       {
-        key: "orderFollowUp",
+        key: "reports/orders",
         label: "sidebar.orderFollowUp",
         leftIcon: "ion-android-mail"
       },
@@ -31,7 +31,7 @@ const options = [
         leftIcon: "ion-android-mail"
       },
       {
-        key: "checkingReports",
+        key: "reports/cheques",
         label: "sidebar.checkingReports",
         leftIcon: "ion-android-mail"
       },

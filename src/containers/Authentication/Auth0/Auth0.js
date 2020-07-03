@@ -33,8 +33,8 @@ class Auth0 extends EventEmitter {
     localStorage.setItem('access_token', authResult.accessToken);
     localStorage.setItem('id_token', authResult.idToken);
     localStorage.setItem('expires_at', expiresAt);
-    // navigate to the dashboard route
-    history.replace('/dashboard');
+    // navigate to the root route
+    history.replace('/');
   };
   logout = () => {
     // Clear access token and ID token from local storage

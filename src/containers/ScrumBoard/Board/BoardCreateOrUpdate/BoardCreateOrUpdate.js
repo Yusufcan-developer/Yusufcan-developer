@@ -44,7 +44,7 @@ const CreateOrUpdateBoard = props => {
       values.id = uuidV4();
     }
     props.createOrUpdateBoardWatcher(values);
-    props.history.push(`/dashboard/scrum-board/project/${values.id}`);
+    props.history.push(`/scrum-board/project/${values.id}`);
   };
 
   return (
@@ -63,7 +63,7 @@ const CreateOrUpdateBoard = props => {
           border="none"
           padding={'0'}
           alt="Close Icon"
-          onClick={() => props.history.push(`/dashboard/scrum-board`)}
+          onClick={() => props.history.push(`/scrum-board`)}
         />
       </TopBar>
       <FormWrapper>

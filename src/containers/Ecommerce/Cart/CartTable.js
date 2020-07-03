@@ -109,7 +109,7 @@ export default function CartTable({ style }) {
             </td>
             <td>
               <Button type="primary">
-                <Link to={'/dashboard/checkout'}>Sipariş Oluştur</Link>
+                <Link to={'/checkout'}>Sipariş Oluştur</Link>
               </Button>
             </td>
           </tr>

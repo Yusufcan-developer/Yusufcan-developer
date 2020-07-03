@@ -17,7 +17,7 @@ export default function() {
         <p>
           <IntlMessages id="page500.description" />
         </p>
-        <Link to="/dashboard">
+        <Link to="/">
           <button type="button">
             <IntlMessages id="page500.backButton" />
           </button>

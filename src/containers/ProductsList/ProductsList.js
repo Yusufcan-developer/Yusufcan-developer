@@ -153,7 +153,7 @@ const ProductsList = () => {
   function selectedProductId(productId) {
     console.log('info selected productId', productId);
     history.push({
-      pathname: '/dashboard/productDetail',
+      pathname: '/productDetail',
       productId: productId,
     });
   }
@@ -265,9 +265,10 @@ const ProductsList = () => {
   return (
     <React.Fragment>
       <Breadcrumb>
-        <Breadcrumb.Item>  <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
         <Breadcrumb.Item >
-        <Link to="/dashboard/productGroupList">Ürün Grubu</Link>
+          <Link to="/products/categories">Ürün Grubu</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
       </Breadcrumb>

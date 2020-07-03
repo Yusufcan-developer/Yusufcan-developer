@@ -70,12 +70,12 @@ function loginError() {
 
         dispatch(clearMenu());
         window.sessionStorage.setItem("nameAndSurname", userName);
-        history.push('/dashboard/productsList');
+        history.push('/productsList');
       })
       .catch(error => loginError());
   }
 
-  let { from } = location.state || { from: { pathname: '/dashboard/productsList' } };
+  let { from } = location.state || { from: { pathname: '/productsList' } };
 
   if (redirectToReferrer) {
     return <Redirect to={from} />;
@@ -85,7 +85,7 @@ function loginError() {
       <div className="isoLoginContentWrapper">
         <div className="isoLoginContent">
           <div className="isoLogoWrapper">
-            <Link to="/dashboard">
+            <Link to="/">
               <IntlMessages id="page.signInTitle" />
             </Link>
           </div>

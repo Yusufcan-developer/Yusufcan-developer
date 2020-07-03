@@ -26,14 +26,14 @@ export default function SignUp() {
       dispatch(login());
     }
     dispatch(clearMenu());
-    history.push('/dashboard');
+    history.push('/');
   };
   return (
     <SignUpStyleWrapper className="isoSignUpPage">
       <div className="isoSignUpContentWrapper">
         <div className="isoSignUpContent">
           <div className="isoLogoWrapper">
-            <Link to="/dashboard">
+            <Link to="/">
               <IntlMessages id="page.signUpTitle" />
             </Link>
           </div>

@@ -10,7 +10,7 @@ const options = [
       leftIcon: "ion-clipboard",
       children: [
         {
-          key: 'orderFollowUp',
+          key: 'reports/orders',
           label: 'sidebar.orderFollowUp',
           leftIcon: 'ion-android-mail',
         },
@@ -20,12 +20,12 @@ const options = [
           leftIcon: 'ion-android-mail',
         },
         {
-          key: 'customerRecords',
+          key: 'reports/accounts/transactions',
           label: 'sidebar.customerRecords',
           leftIcon: 'ion-android-mail',
         },
         {
-          key: 'checkingReports',
+          key: 'reports/cheques',
           label: 'sidebar.checkingReports',
           leftIcon: 'ion-android-mail',
         },
@@ -35,7 +35,7 @@ const options = [
           leftIcon: 'ion-android-mail',
         },
         {
-          key: 'customerList',
+          key: 'reports/accounts',
           label: 'sidebar.customerList',
           leftIcon: 'ion-android-mail',
         },
@@ -47,7 +47,7 @@ const options = [
       ],
     },  
     {
-      key: "productGroupList",
+      key: "products/categories",
       label: "sidebar.productsList",
       leftIcon: "ion-bag"
     },

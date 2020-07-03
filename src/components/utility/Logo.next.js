@@ -13,7 +13,7 @@ export default function({ collapsed }) {
         </div>
       ) : (
         <h3>
-          <Link href="/dashboard">
+          <Link href="/">
             <a>{siteConfig.siteName}</a>
           </Link>
         </h3>
