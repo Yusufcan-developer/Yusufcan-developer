@@ -3,6 +3,11 @@ import InputNumber from '../uielements/InputNumber';
 import { notification } from '../index';
 import { Col,  Row, Button } from "antd";
 import IntlMessages from "@iso/components/utility/intlMessages";
+import Input, {
+  InputSearch,
+  InputGroup,
+  Textarea,
+} from '@iso/components/uielements/input';
 
 export default function({
   price,
@@ -16,9 +21,9 @@ export default function({
   products,
 }) {
   const onChange = value => {
-    if (!isNaN(value)) {
-      if (value !== quantity) {
-        changeQuantity(productItem.itemCode, value);
+    if (!isNaN(value.target.value)) {
+      if (value.target.value !== quantity) {
+        changeQuantity(productItem.itemCode, value.target.value);
       }
     } else {
       notification('error', 'Please give valid number');
@@ -64,8 +69,9 @@ export default function({
                                 type="primary"
                                 onClick={event => onRemoveBox(productItem)}
                               > {<IntlMessages id="-" />}
-                              </Button></Col> <Col span={8}> <InputNumber
+                              </Button></Col> <Col span={8}> <Input
                                 min={1}
+                                style={{ width: 60,textAlign: "right" }}
                                 max={1000}
                                 defaultValue={1}
                                 value={quantity}

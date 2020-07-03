@@ -7,10 +7,10 @@ const actions = {
     type: actions.CHANGE_VIEW,
     view,
   }),
-  changeFilter: productQuantity => {
+  changeFilter: (filterType,filterValue) => {
     return (dispatch, getState) => {
-      const { filters } = getState().Filters;
-      console.log('xxxx aktarım filter',filters)
+    const filters=[]
+    filters.push({filterType,filterValue:filterValue});
       dispatch({
         type: actions.UPDATE_DATA,
         filters,
