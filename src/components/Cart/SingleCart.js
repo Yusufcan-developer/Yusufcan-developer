@@ -81,7 +81,7 @@ export default function({
      
       </td>
       <td className="isoItemQuantity">
-        {quantity*productItem.m2Pallet}
+        {(quantity*productItem.m2Pallet).toFixed(2) }
       </td>
       <td className="isoItemPriceTotal">{totalPrice} TL</td>
     </tr>
