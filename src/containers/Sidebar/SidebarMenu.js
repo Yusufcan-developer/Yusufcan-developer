@@ -3,14 +3,11 @@ import { Link, useRouteMatch } from 'react-router-dom';
 
 import Menu from '@iso/components/uielements/menu';
 import IntlMessages from '@iso/components/utility/intlMessages';
+import { stripTrailingSlash } from '@iso/lib/helpers/utility';
+
+
 const SubMenu = Menu.SubMenu;
 
-const stripTrailingSlash = str => {
-  if (str.substr(-1) === '/') {
-    return str.substr(0, str.length - 1);
-  }
-  return str;
-};
 export default React.memo(function SidebarMenu({
   singleOption,
   submenuStyle,
