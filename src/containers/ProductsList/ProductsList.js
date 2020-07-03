@@ -10,7 +10,7 @@ import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge }
 import siteConfig from "@iso/config/site.config";
 import Modals from '@iso/components/Feedback/Modal';
 import InputNumber from '@iso/components/uielements/InputNumber';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory,useRouteMatch } from 'react-router-dom';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import PageHeader from "@iso/components/utility/pageHeader";
 import { direction } from '@iso/lib/helpers/rtl';
@@ -59,6 +59,7 @@ const ProductsList = () => {
   const [keyword, setKeyword] = useState()
   const [ locationKeys, setLocationKeys ] = useState([])
 
+  const match = useRouteMatch();
   useEffect(() => {
     return history.listen(location => {
       if (history.action === 'PUSH') {
@@ -392,7 +393,9 @@ const ProductsList = () => {
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} >
                       <div className="isoCardImage">
-                        <img alt="example" src={item.imageUrl} onClick={event => selectedProductId(item.itemCode)}  onMouseOver={e => console.log(e)} />                
+                      <Link to={`${'products/detail'}/${item.itemCode}`}>
+                        <img alt="example" src={item.imageUrl}   onMouseOver={e => console.log(e)} />                
+                        </Link>{' '}
                       </div>
                       <div className="isoCardContent">
                         <Row>
