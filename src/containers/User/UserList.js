@@ -153,42 +153,51 @@ const UserList = () => {
     {
       title: "Adı",
       dataIndex: "firstName",
-      key: "firstName"
+      key: "firstName",
+      width: 200,
     },
     {
       title: "Soyadı",
       dataIndex: "lastName",
-      key: "lastName"
+      key: "lastName",
+      width: 200,
     },
     {
       title: "Kullanıcı Adı",
       dataIndex: "username",
-      key: "username"
+      key: "username",
+      width: 150,
     },
     {
       title: "E-posta",
       dataIndex: "email",
-      key: "email"
+      key: "email",
+      width: 170,
+      ellipsis: true
     },
     {
       title: "Rol",
-      dataIndex: "role",
-      key: "role"
+      dataIndex: ['role', 'roleDescription'],
+      key: "role.roleDescription",
+      width: 150,
+      ellipsis: true
     },
     {
       title: "Bayi Kodu",
-      dataIndex: "dealerCode",
-      key: "dealerCode"
+      dataIndex: "dealerCodes",
+      key: "dealerCodes",
+      width: 130,
     },
     {
       title: "Saha Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
+      dataIndex: "fieldCodes",
+      key: "fieldCodes",
+      width: 130,
     },
     {
       title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode"
+      dataIndex: "regionCodes",
+      key: "regionCodes",
     }
   ];
   //Hide shipping table columns
@@ -267,8 +276,10 @@ const UserList = () => {
           loading={loading}
           //expandable={{expandedRowRender}}
           pagination={false}
-          scroll={{ x: 'calc(700px + 100%)' }}
-          bordered={true}
+          // scroll={{ x: 'calc(700px + 100%)' }}
+          scroll={{x: 'max-content'}}
+          size="medium"
+          bordered={false}
           pagination={{ position: 'none', pageSize: pageSize }}
         />
         <br></br>
