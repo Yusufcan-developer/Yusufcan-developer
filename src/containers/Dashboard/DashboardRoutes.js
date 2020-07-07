@@ -358,7 +358,7 @@ const routes = [
     component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
   },
   {
-    path: 'reports/orders',
+    path: 'reports/orders/',
     component: lazy(() => import('@iso/containers/Order/OrderFollowUp')),
   },
   {
@@ -383,8 +383,8 @@ const routes = [
     exact: false
   },
    {
-     path: 'products/categories',
-     component: lazy(() => import('@iso/containers/ProductGroups/ProductGroupList')),
+    path: 'products/categories',
+    component: lazy(() => import('@iso/containers/ProductGroups/ProductGroupList')),
    },
 ];
 

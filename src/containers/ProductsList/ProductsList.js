@@ -9,7 +9,7 @@ import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, 
 import siteConfig from "@iso/config/site.config";
 import Modals from '@iso/components/Feedback/Modal';
 import InputNumber from '@iso/components/uielements/InputNumber';
-import { Link, useHistory, useRouteMatch } from 'react-router-dom';
+import { Link, useHistory, useRouteMatch,useParams,useLocation } from 'react-router-dom';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import PageHeader from "@iso/components/utility/pageHeader";
 import { direction } from '@iso/lib/helpers/rtl';
@@ -26,14 +26,15 @@ import Input, {
 } from '@iso/components/uielements/input';
 import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
 import basicStyle from '@iso/assets/styles/constants';
-
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import filterActions from '@iso/redux/filter/actions';
-import data from "../../redux/mail/data";
+// import data from "../../redux/mail/data";
 import fake from './fake';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
+import { arrayOf } from "prop-types";
+
 
 const margin = {
   margin: direction === 'rtl' ? '0 0 8px 8px' : '0 8px 8px 0',
@@ -50,72 +51,71 @@ const ProductsList = () => {
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8)
   const [quantity, setQuantity] = useState(1)
-  const [productGroup, setProductGroup] = useState([history.location.productGroupId])
+  const [productGroup, setProductGroup] = useState([])
+  const [productType, setProductType] = useState([])
+  const [series, setSeries] = useState([])
   const [dimension, setDimension] = useState([])
   const [color, setColor] = useState([])
   const [surface, setSurface] = useState([])
-  const [productionStatus, setProductionStatus] = useState([])
   const [keyword, setKeyword] = useState()
   const [locationKeys, setLocationKeys] = useState([])
+  const { searchQuery } = useParams();
 
   const match = useRouteMatch();
+  const queryString = require('query-string');
+  const location = useLocation();
+
+  function getQueryVariable(query) {
+
+    const parsed = queryString.parse(location.search);
+    console.log('xxxxx parse',parsed.pg);
+    if((parsed.pg!==undefined)&&(arrayOf(parsed.pg))){setProductGroup(parsed.pg); }else {console.log('xxxxx array değil');setProductGroup([parsed.pg])};
+    if((parsed.ut!==undefined)&&(arrayOf(parsed.ut))){setProductType(parsed.ut);} else if(parsed.ut===undefined){setProductType([])} else {setProductType([parsed.ut])};
+    if((parsed.dm!==undefined)&&(arrayOf(parsed.dm))){setDimension(parsed.dm);} else if(parsed.dm===undefined){setDimension([])} else {setDimension([parsed.dm])};
+    if((parsed.se!==undefined)&&(arrayOf(parsed.se))){setSeries(parsed.se);}  else if(parsed.se===undefined){setSeries([])} else {setSeries([parsed.se])};
+    if((parsed.clr!==undefined)&&(arrayOf(parsed.clr))){setColor(parsed.clr);} else if(parsed.clr===undefined){setColor([])}  else {setColor([parsed.clr])};
+    if((parsed.sfc!==undefined)&&(arrayOf(parsed.sfc))){setSurface(parsed.sfc);} else if(parsed.sfc===undefined){setSurface([])}  else {setSurface([parsed.sfc])};
+  }
   useEffect(() => {
-    return history.listen(location => {
-      if (history.action === 'PUSH') {
-        setLocationKeys([location.key])
-        console.log('xxxx ileri gittim')
-      }
-
-      if (history.action === 'POP') {
-        if (locationKeys[1] === location.key) {
-          setLocationKeys(([_, ...keys]) => keys)
-
-          console.log('xxxx ileri gittim')
-
-        } else {
-          setLocationKeys((keys) => [location.key, ...keys])
-
-          console.log('xxxx geri gittim')
-
-        }
-      }
-    })
-  }, [locationKeys,])
-  useEffect(() => {
+    getQueryVariable(searchQuery)
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
 
   useEffect(() => {
+    getQueryVariable(searchQuery)
     setChangePageSize(pageSize);
   }, [pageSize]);
 
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  const { filters } = useSelector(state => state.Filters);
-  if (filters.length > 0) { console.log('xxxx fils', filters) }
+  // const { filters } = useSelector(state => state.Filters);
+  // if (filters.length > 0) { console.log('xxxx fils', filters) }
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
-  const { addToFilter, changeFilter } = filterActions;
+  // const { addToFilter, changeFilter } = filterActions;
 
   const dispatch = useDispatch();
 
   //ProductListHook
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "productionStatus": productionStatus, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "series": series, "types": productType,"surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
   //Ürün Grubu 
   const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
 
-  //Boyutlar
+  //Ürün Tipi 
+  const [productTypeData] = useFilterData(`${siteConfig.api.productType}`);
+
+  //Ebatlar
   const [dimensionData] = useFilterData(`${siteConfig.api.dimensions}`);
+
+  //Seriler
+  const [serieData] = useFilterData(`${siteConfig.api.series}`);
 
   //Renkler
   const [colorData] = useFilterData(`${siteConfig.api.colors}`);
 
   //Yüzeyler
   const [surfaceData] = useFilterData(`${siteConfig.api.surfaces}`);
-
-  //Durumlar
-  const [productionStatusData] = useFilterData(`${siteConfig.api.productionStatusData}`);
 
   //Ürün grubu adı getirme
   console.log('info product GroupId', history.location.productGroupId)
@@ -153,34 +153,98 @@ const ProductsList = () => {
 
   //Product Group Filter Event
   function onChangeProductGroup(checkedProductGroupValue) {
-    setProductGroup(checkedProductGroupValue)
-    onAddFilterRedux('ProductGroup', checkedProductGroupValue)
-    if (productGroup.length > 0) { return setOnChange(true); }
+    setProductGroup(checkedProductGroupValue);
+
+    const params = new URLSearchParams(location.search);
+    params.delete('pg');
+    if (checkedProductGroupValue.length > 0) {
+      checkedProductGroupValue.forEach(item => {
+        params.append('pg', item);
+        params.toString(); 
+      });    
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
   };
+
+  //Product Type Filter Event
+  function onChangeProductType(checkedProductTypeValue) {
+    setProductType(checkedProductTypeValue);
+
+    const params = new URLSearchParams(location.search);
+    params.delete('ut');
+    if(checkedProductTypeValue.length> 0){
+      checkedProductTypeValue.forEach(item => {
+        params.append('ut', item);
+        params.toString();        
+      });      
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
+
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
     setDimension(checkedDimensionValue)
-    onAddFilterRedux('Dimension', checkedDimensionValue)
+
+    const params = new URLSearchParams(location.search);
+    params.delete('dm');
+    if (checkedDimensionValue.length > 0) {
+        checkedDimensionValue.forEach(item => {
+        params.append('dm', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
+  //Series Filter Event
+  function onChangeSerie(checkedSerieValue) {
+    setSeries(checkedSerieValue)
+
+   const params = new URLSearchParams(location.search);
+    params.delete('se');
+    if (checkedSerieValue.length > 0) {
+      checkedSerieValue.forEach(item => {
+        params.append('se', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   };
 
   //Color Filter Event
   function onChangeColor(checkedColorValue) {
     setColor(checkedColorValue)
+    const params = new URLSearchParams(location.search);
+    params.delete('clr');
+    if (checkedColorValue.length > 0) {
+      checkedColorValue.forEach(item => {
+        params.append('clr', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
 
   //Surface Filter Event
   function onChangeSurface(checkedSurfaceValue) {
     setSurface(checkedSurfaceValue)
+
+    const params = new URLSearchParams(location.search);
+    params.delete('sfc');
+    if (checkedSurfaceValue.length > 0) {
+      checkedSurfaceValue.forEach(item => {
+        params.append('sfc', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
 
-  //productionStatus Filter Event
-  function onChangeProductionStatus(checkedProductionStatusValue) {
-    setProductionStatus(checkedProductionStatusValue)
-    return setOnChange(true);
-  }
   function selectedProductId(productId) {
     console.log('info selected productId', productId);
     // history.push({
@@ -217,17 +281,17 @@ const ProductsList = () => {
     }
   };
 
-  function onAddFilterRedux(groupName, checkedProductGroupValue) {
-    const filterType = groupName;
-    // if (filters.length === 0) { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
-    // else {
-    //   console.log('xxxx secilen grup',checkedProductGroupValue)
-    const tileset = _.find(filters, function (item) { return item.filterType === groupName; });
-    if (tileset) { console.log('xxxx tileSet', tileset.filterValue); dispatch(changeFilter(filterType, checkedProductGroupValue)); }
+  // function onAddFilterRedux(groupName, checkedProductGroupValue) {
+  //   const filterType = groupName;
+  //   // if (filters.length === 0) { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
+  //   // else {
+  //   //   console.log('xxxx secilen grup',checkedProductGroupValue)
+  //   const tileset = _.find(filters, function (item) { return item.filterType === groupName; });
+  //   if (tileset) { console.log('xxxx tileSet', tileset.filterValue); dispatch(changeFilter(filterType, checkedProductGroupValue)); }
 
-    //Yeni Filter Grubu Ekleme işlemi
-    else { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
-  };
+  //   //Yeni Filter Grubu Ekleme işlemi
+  //   else { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
+  // };
 
   function onAddBox(product) {
     inputNumberShowOrHide(product)
@@ -313,13 +377,11 @@ const ProductsList = () => {
         <PageHeader>Ürünler Listesi</PageHeader>
         <div className="isoAlgoliaMainWrapper">
           <SidebarWrapper className="isoAlgoliaSidebar">
-            <div className="isoAlgoliaSidebarItem">
-              <InputSearch placeholder="Ara" // value={search}
+              <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
                 onChange={onchangeInputSearch}
                 onSearch={onSearch}
                 onKeyDown={keyPress} />
-            </div>
-            <div >
+            <div >            
               <Collapse accordion expandIconPosition={expandIconPosition}>
                 <Panel header={<IntlMessages id="Ürün Grubu" />} key="0">
                   <CheckboxGroup
@@ -330,23 +392,48 @@ const ProductsList = () => {
                   />
                 </Panel></Collapse>
             </div>
+            <div >
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Ürün Tipi" />} key="1">
+                  <CheckboxGroup
+                    options={productTypeData}
+                    value={productType}
+                    onChange={onChangeProductType}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
             <div>
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Boyut" />} key="1">
+                <Panel header={<IntlMessages id="Ebat" />} key="2">
                   <CheckboxGroup
                     options={
-                      dimensionData.map(e => e === null ? 'Yok' : e)}
+                    dimensionData.map(e => e === null ? 'Yok' : e)}
                     onChange={onChangeDimension}
+                    value={dimension}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+            <div>
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Seriler" />} key="3">
+                  <CheckboxGroup
+                    value={series}
+                    options={
+                    serieData.map(e => e === null ? 'Yok' : e)}
+                    onChange={onChangeSerie}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel></Collapse>
             </div>
             <div >
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Renkler" />} key="2">
+                <Panel header={<IntlMessages id="Renkler" />} key="4">
                   <CheckboxGroup
+                    value={color}
                     options={
-                      colorData.map(e => e === null ? 'Yok' : e)}
+                    colorData.map(e => e === null || e === '' ? 'Yok' : e)}
                     onChange={onChangeColor}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -354,26 +441,16 @@ const ProductsList = () => {
             </div>
             <div >
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Yüzeyler" />} key="3">
+                <Panel header={<IntlMessages id="Yüzeyler" />} key="5">
                   <CheckboxGroup
+                    value={surface}
                     options={
-                      surfaceData.map(e => e === null ? 'Yok' : e)}
+                    surfaceData.map(e => e === null ? 'Yok' : e)}
                     onChange={onChangeSurface}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel></Collapse>
-            </div>
-            <div>
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Üretim Durumu" />} key="4">
-                  <CheckboxGroup
-                    options={
-                      productionStatusData.map(e => e === null ? 'Yok' : e)}
-                    onChange={onChangeProductionStatus}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
+            </div>          
 
             {/* <ClearAll /> */}
           </SidebarWrapper>

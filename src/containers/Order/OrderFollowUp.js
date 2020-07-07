@@ -6,6 +6,7 @@ import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Link, useHistory, useRouteMatch,useParams,useLocation } from 'react-router-dom';
 import { PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -18,7 +19,8 @@ import columnConfig from "@iso/config/ColumnOptions.config";
 import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
-
+import { key } from "styled-theme";
+import { string,arrayOf } from "prop-types";
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
@@ -56,17 +58,39 @@ const OrderFollowUp = () => {
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
+  const [newUrlParams,setNewUrlParams]=useState('')
+  const location = useLocation();
+  const { searchQuery } = useParams();
 
+  const match = useRouteMatch();
+  const queryString = require('query-string');
+  const history = useHistory();
+
+  function getQueryVariable(query) {
+
+    const parsed = queryString.parse(location.search);
+    console.log('xxxxx fic',parsed.fic.length);
+    console.log('xxxxx dec',parsed.dec);
+    console.log('xxxxx rec',parsed.rec);
+
+  
+    if((parsed.fic!==undefined)&&(parsed.fic.length===1)){setFieldCodes([parsed.fic]); }else {console.log('xxxxx buraya neden geliyorsun',setFieldCodes(parsed.fic));}
+    // if((parsed.ut!==undefined)&&(arrayOf(parsed.rec))){setRegionCodes(parsed.rec);} 
+    // if((parsed.dm!==undefined)&&(arrayOf(parsed.fic))){setFieldCodes(parsed.fic);}
+  }
 
   useEffect(() => {
+    getQueryVariable(searchQuery)
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
 
   useEffect(() => {
+    getQueryVariable(searchQuery)
     setChangePageSize(pageSize);
   }, [pageSize]);
 
   useEffect(() => {
+    getQueryVariable(searchQuery)
     setFromDate(fromDate);
     setToDate(toDate);
   }, [fromDate, toDate]);
@@ -78,12 +102,10 @@ const OrderFollowUp = () => {
 const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
 
 const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-console.log('xxxx tr',treeData)
 /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const onExpand = expandedKeys => {
-    console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
-    // or, you can remove all expanded children keys.
+    console.log("onExpand", expandedKeys); 
 
     setExpandedKeys(expandedKeys);
     setAutoExpandParent(false);
@@ -99,8 +121,25 @@ console.log('xxxx tr',treeData)
     setSelectedKeys(selectedKeys);
   };
   const searchButton = () => {
-    //Saha , Bölge , Bayi kodları çözümleme
-    setOnChange(true);
+    const params = new URLSearchParams(location.search);
+
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
+
+    params.append('from',fromDate);params.toString();
+    params.append('to',toDate);params.toString();
+    if(searchKey.length> 0){params.append('keyword',searchKey);}   
+    let createUrl=null;
+    if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; console.log('xxxxx createUrl',createUrl);}else{createUrl=params}
+    
+    console.log('xxxx location path',location.pathname)
+    history.push(`${location.pathname}?${createUrl}`);   
+
+    return setOnChange(true);
   };
   
   function onChangeDealerCode(value) {
@@ -108,19 +147,28 @@ console.log('xxxx tr',treeData)
     let fieldArrObj = [];
     let regionArrObj= [];
     let dealerArrObj= [];
+    const params = new URLSearchParams(location.search);
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
 
     if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
     _.filter(value, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item);params.toString();  }
       else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);params.append('rec', item); params.toString();  
       }
       else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);params.append('dec', item); params.toString();  
       }
     });
+    setNewUrlParams(params.toString());
   };
   function changeTimePicker(value, dateString) {
+   
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
@@ -421,6 +469,7 @@ const OrderDetailcolumns = [
               <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
+                  value={fieldCodes}
                   onChange={onChangeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}

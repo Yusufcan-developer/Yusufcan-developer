@@ -10,7 +10,7 @@ const options = [
       leftIcon: "ion-clipboard",
       children: [
         {
-          key: 'reports/orders',
+          key: 'reports/orders/',
           label: 'sidebar.orderFollowUp',
           leftIcon: 'ion-android-mail',
         },

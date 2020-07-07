@@ -78,5 +78,5 @@ export const PRIVATE_ROUTE = {
   SWIPER_SLIDER: '/swiperslider',
   CUSTOMERREPORT:'/reports/accounts/transactions',
   CHECKINGREPORT:'/reports/cheques',
-  ORDERFOLLOWUP:'/reports/orders'
+  ORDERFOLLOWUP:'/reports/orders/'
 };
