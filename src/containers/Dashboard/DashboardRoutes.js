@@ -342,19 +342,19 @@ const routes = [
     component: lazy(() => import('@iso/containers/GithubSearch/GithubSearch')),
   },
   {
-    path: 'reports/accounts/transactions',
+    path: 'reports/accounts/transactions/',
     component: lazy(() => import('@iso/containers/CustomerRecords/CustomerRecords')),
   },
   {
-    path: 'reports/cheques',
+    path: 'reports/cheques/',
     component: lazy(() => import('@iso/containers/CheckingReports/CheckingReports')),
   },
   {
-    path: 'reports/deliveries',
+    path: 'reports/deliveries/',
     component: lazy(() => import('@iso/containers/Shipping/Shipping')),
   },
   {
-    path: 'reports/letters',
+    path: 'reports/letters/',
     component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
   },
   {
@@ -362,7 +362,7 @@ const routes = [
     component: lazy(() => import('@iso/containers/Order/OrderFollowUp')),
   },
   {
-    path: 'reports/accounts',
+    path: 'reports/accounts/',
     component: lazy(() => import('@iso/containers/CustomerList/CustomerList')),
   },
   {

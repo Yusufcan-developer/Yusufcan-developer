@@ -21,27 +21,27 @@ const options = [
         leftIcon: "ion-android-mail"
       },
       {
-        key: "reports/deliveries",
+        key: "reports/deliveries/",
         label: "sidebar.shipping",
         leftIcon: "ion-android-mail"
       },
       {
-        key: "reports/accounts/transactions",
+        key: "reports/accounts/transactions/",
         label: "sidebar.customerRecords",
         leftIcon: "ion-android-mail"
       },
       {
-        key: "reports/cheques",
+        key: "reports/cheques/",
         label: "sidebar.checkingReports",
         leftIcon: "ion-android-mail"
       },
       {
-        key: "reports/letters",
+        key: "reports/letters/",
         label: "sidebar.lettersOfGuarantee",
         leftIcon: "ion-android-mail"
       },
       {
-        key: 'reports/accounts',
+        key: 'reports/accounts/',
         label: 'sidebar.customerList',
         leftIcon: 'ion-android-mail',
       },

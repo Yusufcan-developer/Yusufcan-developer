@@ -6,6 +6,7 @@ import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import { Table, Row, Col, Pagination,  TreeSelect } from "antd";
+import { Link, useHistory, useRouteMatch,useParams,useLocation } from 'react-router-dom';
 import { DownOutlined , PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -59,16 +60,72 @@ const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFo
 const [dealerCodes,setDealerCodes]=useState()
 const [regionCodes,setRegionCodes]=useState()
 const [fieldCodes,setFieldCodes]=useState()
+const [selectedDealerCode, setSelectedDealerCode]=useState();
+const [newUrlParams,setNewUrlParams]=useState('') 
+const location = useLocation();
+const { searchQuery } = useParams();
 
- useEffect(() => {        
+const match = useRouteMatch();
+const queryString = require('query-string');
+const history = useHistory();
+
+function getQueryVariable(query) {
+
+  const parsed = queryString.parse(location.search);
+  
+  if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
+  if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
+
+  let newDealarCode = []
+  if ((parsed.fic !== undefined)) {
+    _.each(parsed.fic, (item, i) => {
+      newDealarCode.push(item);
+    }); setSelectedDealerCode(newDealarCode)
+  }
+  if (parsed.rec !== undefined) {
+    if(Array.isArray(parsed.rec)){
+      _.each(parsed.rec, (item, i) => {
+        newDealarCode.push(item);
+      });
+    }else {newDealarCode.push(parsed.rec)}
+   
+  }
+ 
+  if (parsed.dec !== undefined) {
+    if(Array.isArray(parsed.dec)){
+      _.each(parsed.dec, (item, i) => {
+        newDealarCode.push(item);
+      });
+    }else {newDealarCode.push(parsed.dec)}
+   
+  }
+  let fieldArrObj = [];
+  let regionArrObj= [];
+  let dealerArrObj= [];
+
+  if(newDealarCode.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+  _.filter(newDealarCode, function (item) {
+    if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj);  }
+    else if (item.split("|").length === 2) {
+      regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);  
+    }
+    else {
+      dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); 
+    }
+  });
+
+}
+
+ useEffect(() => {    
 
    console.log("currentPage!", localCurrentPage);
-
+   getQueryVariable(searchQuery)
    setCurrentPage(localCurrentPage);  
  },[localCurrentPage]);
  
  useEffect(() => { 
    console.log("pageSize!", pageSize);
+   getQueryVariable(searchQuery)
    setChangePageSize(pageSize);
  },[pageSize]);
 
@@ -98,23 +155,52 @@ useFetch(`${siteConfig.api.deliveries}`, {"DealerCodes":dealerCodes,"regionCodes
     setSelectedKeys(selectedKeys);
   };
   const searchButton = () => {
-    setOnChange(true);
+     
+    const params = new URLSearchParams(location.search);
+
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
+
+    params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
+    params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
+    if(searchKey.length> 0){params.append('keyword',searchKey);}   
+    let createUrl=null;
+    if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
+    
+    history.push(`${location.pathname}?${createUrl}`);   
+
+    return setOnChange(true);
   };
-  function onChangeDealerCode(value) {
+  function onChangeDealerCode(value) {    
     let fieldArrObj = [];
     let regionArrObj= [];
     let dealerArrObj= [];
-    
-    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    const params = new URLSearchParams(location.search);
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
+
+    if (value.length === 0) {setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    else{
     _.filter(value, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
       else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
       }
       else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
       }
+      setSelectedDealerCode(value)
+      setNewUrlParams(params.toString());
     });
+  }
   };
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
@@ -306,6 +392,7 @@ function currentPageChange(current){
               <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
+                  value={selectedDealerCode}
                   onChange={onChangeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
@@ -318,6 +405,7 @@ function currentPageChange(current){
               <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
+                  value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   onOk={onOk}

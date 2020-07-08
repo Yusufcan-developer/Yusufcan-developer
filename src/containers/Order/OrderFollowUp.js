@@ -57,8 +57,9 @@ const OrderFollowUp = () => {
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
-  const [fieldCodes, setFieldCodes] = useState()
-  const [newUrlParams,setNewUrlParams]=useState('')
+  const [fieldCodes, setFieldCodes] = useState();
+  const [selectedDealerCode, setSelectedDealerCode]=useState();
+  const [newUrlParams,setNewUrlParams]=useState('') 
   const location = useLocation();
   const { searchQuery } = useParams();
 
@@ -69,37 +70,71 @@ const OrderFollowUp = () => {
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
-    console.log('xxxxx fic',parsed.fic.length);
-    console.log('xxxxx dec',parsed.dec);
-    console.log('xxxxx rec',parsed.rec);
+    
+    if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
+    if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
 
-  
-    if((parsed.fic!==undefined)&&(parsed.fic.length===1)){setFieldCodes([parsed.fic]); }else {console.log('xxxxx buraya neden geliyorsun',setFieldCodes(parsed.fic));}
-    // if((parsed.ut!==undefined)&&(arrayOf(parsed.rec))){setRegionCodes(parsed.rec);} 
-    // if((parsed.dm!==undefined)&&(arrayOf(parsed.fic))){setFieldCodes(parsed.fic);}
+    let newDealarCode = []
+    if ((parsed.fic !== undefined)) {
+      _.each(parsed.fic, (item, i) => {
+        newDealarCode.push(item);
+      }); setSelectedDealerCode(newDealarCode)
+    }
+    if (parsed.rec !== undefined) {
+      if(Array.isArray(parsed.rec)){
+        _.each(parsed.rec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      }else {newDealarCode.push(parsed.rec)}
+     
+    }
+   
+    if (parsed.dec !== undefined) {
+      if(Array.isArray(parsed.dec)){
+        _.each(parsed.dec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      }else {newDealarCode.push(parsed.dec)}
+     
+    }
+    let fieldArrObj = [];
+    let regionArrObj= [];
+    let dealerArrObj= [];
+
+    if(newDealarCode.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    _.filter(newDealarCode, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj);  }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);  
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); 
+      }
+    });
+ 
   }
 
-  useEffect(() => {
-    getQueryVariable(searchQuery)
+  useEffect(() => {    
     setCurrentPage(localCurrentPage);
+    getQueryVariable(searchQuery)
   }, [localCurrentPage]);
 
-  useEffect(() => {
-    getQueryVariable(searchQuery)
+  useEffect(() => {    
     setChangePageSize(pageSize);
+    getQueryVariable(searchQuery)
   }, [pageSize]);
 
   useEffect(() => {
-    getQueryVariable(searchQuery)
     setFromDate(fromDate);
     setToDate(toDate);
+    getQueryVariable(searchQuery)
   }, [fromDate, toDate]);
 
 
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
     useOrderFollowData(`${siteConfig.api.orders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
-const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
+  const [dataGetApi, loadingGetApi , setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
 
 const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 /*********************************************** CUSTOM HOOKS ************************************************************ */
@@ -120,7 +155,8 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
     console.log("onSelect", info);
     setSelectedKeys(selectedKeys);
   };
-  const searchButton = () => {
+  const searchButton = () => {  
+   
     const params = new URLSearchParams(location.search);
 
     params.delete('dec');
@@ -130,13 +166,12 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
     params.delete('to');
     params.delete('keyword');
 
-    params.append('from',fromDate);params.toString();
-    params.append('to',toDate);params.toString();
-    if(searchKey.length> 0){params.append('keyword',searchKey);}   
+    params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
+    params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
+    if(searchKey.length> 0){params.append('keyword',searchKey);params.toString();}   
     let createUrl=null;
-    if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; console.log('xxxxx createUrl',createUrl);}else{createUrl=params}
+    if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
     
-    console.log('xxxx location path',location.pathname)
     history.push(`${location.pathname}?${createUrl}`);   
 
     return setOnChange(true);
@@ -155,17 +190,20 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
     params.delete('to');
     params.delete('keyword');
 
-    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    if (value.length === 0) {setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    else{
     _.filter(value, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item);params.toString();  }
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
       else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);params.append('rec', item); params.toString();  
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
       }
       else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);params.append('dec', item); params.toString();  
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
       }
+      setSelectedDealerCode(value)
+      setNewUrlParams(params.toString());
     });
-    setNewUrlParams(params.toString());
+  }
   };
   function changeTimePicker(value, dateString) {
    
@@ -469,7 +507,7 @@ const OrderDetailcolumns = [
               <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
-                  value={fieldCodes}
+                  value={selectedDealerCode}
                   onChange={onChangeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
@@ -482,6 +520,7 @@ const OrderDetailcolumns = [
               <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
+                  value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   onOk={onOk}
@@ -507,8 +546,8 @@ const OrderDetailcolumns = [
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-          //expandable={{expandedRowRender}}
-          expandedRowRender={expandedRow}
+          expandable={{'expandedRowRender': expandedRow}}
+          // expandedRowRender={expandedRow}
           pagination={false}
           scroll={{ x: 'calc(700px + 100%)'}}
           bordered={true}

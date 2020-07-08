@@ -68,14 +68,47 @@ const ProductsList = () => {
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
-    console.log('xxxxx parse',parsed.pg);
-    if((parsed.pg!==undefined)&&(arrayOf(parsed.pg))){setProductGroup(parsed.pg); }else {console.log('xxxxx array değil');setProductGroup([parsed.pg])};
-    if((parsed.ut!==undefined)&&(arrayOf(parsed.ut))){setProductType(parsed.ut);} else if(parsed.ut===undefined){setProductType([])} else {setProductType([parsed.ut])};
-    if((parsed.dm!==undefined)&&(arrayOf(parsed.dm))){setDimension(parsed.dm);} else if(parsed.dm===undefined){setDimension([])} else {setDimension([parsed.dm])};
-    if((parsed.se!==undefined)&&(arrayOf(parsed.se))){setSeries(parsed.se);}  else if(parsed.se===undefined){setSeries([])} else {setSeries([parsed.se])};
-    if((parsed.clr!==undefined)&&(arrayOf(parsed.clr))){setColor(parsed.clr);} else if(parsed.clr===undefined){setColor([])}  else {setColor([parsed.clr])};
-    if((parsed.sfc!==undefined)&&(arrayOf(parsed.sfc))){setSurface(parsed.sfc);} else if(parsed.sfc===undefined){setSurface([])}  else {setSurface([parsed.sfc])};
-  }
+    
+    //Product Group get url data
+    if (parsed.pg !== undefined) {
+      if (Array.isArray(parsed.pg)) {
+        setProductGroup(parsed.pg)
+      } else { setProductGroup([parsed.pg]); }
+    }
+
+    //Product Type get url data
+    if (parsed.ut !== undefined) {
+      if (Array.isArray(parsed.ut)) {
+        setProductType(parsed.ut)
+      } else { setProductType([parsed.ut]); }
+    }
+
+    //Dimension get url data
+    if (parsed.dm !== undefined) {
+      if (Array.isArray(parsed.dm)) {
+        setDimension(parsed.dm)
+      } else { setDimension([parsed.dm]); }
+    }
+
+    //Series get url data
+    if (parsed.se !== undefined) {
+      if (Array.isArray(parsed.se)) {
+        setSeries(parsed.se)
+      } else { setSeries([parsed.se]); }
+    }
+     //Color get url data
+     if (parsed.clr !== undefined) {
+      if (Array.isArray(parsed.clr)) {
+        setColor(parsed.clr)
+      } else { setColor([parsed.clr]); }
+    }
+     //Surface get url data
+     if (parsed.sfc !== undefined) {
+      if (Array.isArray(parsed.sfc)) {
+        setSurface(parsed.sfc)
+      } else { setSurface([parsed.sfc]); }
+    }
+    }
   useEffect(() => {
     getQueryVariable(searchQuery)
     setCurrentPage(localCurrentPage);
@@ -135,15 +168,26 @@ const ProductsList = () => {
     setKeyword(e.target.value);
   }
 
+  function keywordAddUrl() {
+    const params = new URLSearchParams(location.search);
+    params.delete('keyword');
+    if (keyword.length > 0) {
+
+      params.append('keyword', keyword);
+      params.toString();
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  }
+  
   const keyPress = e => {
     if (e.keyCode == 13) {
-      return setOnChange(true);
+      keywordAddUrl();
     }
   }
   ///
-  const onSearch = e => {
-    console.log('xxxx inputSearcten geliyorum', keyword);
-    return setOnChange(true);
+  const onSearch = e => {    
+    keywordAddUrl();
   }
 
   function onchangePagination(page, pageSize) {
@@ -246,11 +290,7 @@ const ProductsList = () => {
   }
 
   function selectedProductId(productId) {
-    console.log('info selected productId', productId);
-    // history.push({
-    //   pathname: '/products/detail',
-    //   productId: productId,
-    // });
+    console.log('info selected productId', productId); 
   }
   function inputNumberShowOrHide(value) {
     var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
@@ -337,7 +377,6 @@ const ProductsList = () => {
     const product = productData;
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
-    console.log('xxxx e', event.target.value);
     setQuantity(parseInt(event.target.value));
     productQuantity.forEach(productItem => {
       if (productItem.itemCode !== selectedProduct.itemCode) {
