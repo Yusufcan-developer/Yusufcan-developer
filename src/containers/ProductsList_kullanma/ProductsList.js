@@ -51,6 +51,7 @@ const ProductsList = () => {
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8)
   const [quantity, setQuantity] = useState(1)
+  const [productStatus,setProductStatus]=useState(['OUTLET','PORTFÖYDE'])
   const [productGroup, setProductGroup] = useState([])
   const [productType, setProductType] = useState([])
   const [series, setSeries] = useState([])
@@ -130,7 +131,7 @@ const ProductsList = () => {
 
   //ProductListHook
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "series": series, "types": productType,"surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "series": series,"productStatus":productStatus, "types": productType,"surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
   //Ürün Grubu 
   const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
