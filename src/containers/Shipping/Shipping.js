@@ -75,7 +75,7 @@ function getQueryVariable(query) {
   
   if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
   if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
-
+  if(parsed.keyword!==undefined){setSearchKey(parsed.keyword);}
   let newDealarCode = []
 
 if (parsed.fic !== undefined) {
@@ -263,11 +263,7 @@ function currentPageChange(current){
         dataIndex: "regionCode",
         key: "regionCode"
       },
-      {
-        title: "Bölge Adı",
-        dataIndex: "regionName",
-        key: "regionName"
-      },
+      
       {
         title: "Bölge Yöneticisi",
         dataIndex: "regionManager",
@@ -278,11 +274,7 @@ function currentPageChange(current){
         dataIndex: "fieldCode",
         key: "fieldCode"
       },
-      {
-        title: "Alan Adı",
-        dataIndex: "fieldName",
-        key: "fieldName"
-      },
+      
       {
         title: "Alan Yöneticisi",
         dataIndex: "fieldManager",
@@ -360,16 +352,42 @@ function currentPageChange(current){
         align:"center"
       }
   ];
-  //Hide shipping table columns
-  // const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer
-  // if (getHideColumns.length > 0) {
-  //   for (let index = 0; index < getHideColumns.length; index++) {
-  //     columns = _.without(columns, _.findWhere(columns, {
-  //       dataIndex: getHideColumns[index].dataIndex
-  //     }
-  //     ))
-  //   }
-  // }
+  //Hide order table column
+  const role=window.sessionStorage.getItem("role");
+  if (role === 'admin') { }
+  else if (role === 'fieldmanager') {
+    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Field;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if (role === 'regionmanager') {
+    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Region;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if (role === 'dealer') {
+    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
 
   
   return (
@@ -418,7 +436,7 @@ function currentPageChange(current){
                 />
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>

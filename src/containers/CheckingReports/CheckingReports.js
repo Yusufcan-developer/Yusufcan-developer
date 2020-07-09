@@ -48,7 +48,7 @@ const CheckingReports = () =>  {
   const Option = SelectOption;
   /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [searchKey, setSearchKey] = useState('');
-  const [serialNumber, setSerialNumber] = useState('');
+  const [serialNumber, setSerialNumber] = useState();
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
@@ -71,8 +71,18 @@ const CheckingReports = () =>  {
     const parsed = queryString.parse(location.search);
     
     if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
-    if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
-
+    if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))}
+    if(parsed.keyword!==undefined){setSearchKey(parsed.keyword);}
+    if(parsed.sno!==undefined){setSerialNumber([parsed.sno]);}
+    let checkType=[];
+    if(parsed.ctype!==undefined){
+      if (Array.isArray(parsed.ctype)) {
+        _.each(parsed.ctype, (item) => {
+          checkType.push(item);
+        });
+      } else { checkType.push(parsed.ctype); }
+    }
+    setSelectedCheckqueType(checkType);
     let newDealarCode = []
 
   if (parsed.fic !== undefined) {
@@ -136,7 +146,7 @@ const CheckingReports = () =>  {
   }, [fromDate, toDate]);
 
    const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount,setOnChange] = 
-   useFetch(`${siteConfig.api.cheques}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+   useFetch(`${siteConfig.api.cheques}`, {"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"serialNumbers":serialNumber,"types":selectedCheckqueType,"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
 
    const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 
@@ -156,10 +166,18 @@ const CheckingReports = () =>  {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('sno');
+    params.delete('ctype');
 
     params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
     params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
     if(searchKey.length> 0){params.append('keyword',searchKey);params.toString();}
+    if(serialNumber!==undefined){params.append('sno',serialNumber);params.toString();}
+    if(selectedCheckqueType!==undefined){
+    _.filter(selectedCheckqueType, function (item) {
+    params.append('ctype',item);params.toString();
+    })}
+
     let createUrl=null;
     if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
     history.push(`${location.pathname}?${createUrl}`);
@@ -177,6 +195,8 @@ const CheckingReports = () =>  {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('serialNumber');
+    params.delete('ctype');
 
     if (value.length === 0) {setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else{
@@ -228,9 +248,9 @@ function currentPageChange(current){
   console.log("current :", current);
   setlocalCurrentPage(current);
 }
-// function handleChange(value) {
-//   console.log(`xxxxx selected ${value}`);
-// }
+function chequeHandleChange(value) {
+  setSelectedCheckqueType(value);
+}
 let columns = [
   {
     title: "Türü",
@@ -256,22 +276,12 @@ let columns = [
       title: "Bölge Kodu",
       dataIndex: "regionCode",
       key: "regionCode"
-    },
-    {
-      title: "Bölge Adı",
-      dataIndex: "regionName",
-      key: "regionName"
-    },
+    },   
     {
       title: "Alan Kodu",
       dataIndex: "fieldCode",
       key: "fieldCode"
-    },
-    {
-      title: "Alan Adı",
-      dataIndex: "fieldName",
-      key: "fieldName"
-    },
+    },   
     {
       title: "Tutar",
       dataIndex: "amount",
@@ -324,15 +334,42 @@ let columns = [
     },
 ];
 
-//Hide checking report table columns
-// const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Dealer
-// if (getHideColumns.length > 0) {
-//     for (let index = 0; index < getHideColumns.length; index++) {
-//     columns = _.without(columns, _.findWhere(columns, {
-//     dataIndex: getHideColumns[index].dataIndex
-//     }
-//     ))}
-// }
+//Hide order table column
+const role=window.sessionStorage.getItem("role");
+if (role === 'admin') { }
+else if (role === 'fieldmanager') {
+  const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Field;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
+else if (role === 'regionmanager') {
+  const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Region;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
+else if (role === 'dealer') {
+  const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Dealer;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -379,7 +416,7 @@ let columns = [
                   mode="multiple"
                   style={{ marginBottom: '8px', width: '250px' }}                  
                   placeholder="Çek Türü Seçiniz"
-                  onChange={handleChange}
+                  onChange={chequeHandleChange}
                   value={selectedCheckqueType}
                 >
                   {children}
@@ -395,10 +432,10 @@ let columns = [
                 />
               </Col>
               <Col span={4}>
-                <Input size="small" placeholder="Seri No" onChange={event => setSerialNumber(event.target.value)} />
+                <Input size="small" placeholder="Seri No" value={serialNumber} onChange={event => setSerialNumber([event.target.value])} />
               </Col>
               <Col span={4}>
-                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={4} >
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>

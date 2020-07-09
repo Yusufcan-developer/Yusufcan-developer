@@ -25,7 +25,18 @@ export default {
         }
       
       ] ,
-      Area:[
+      Field:[
+        {
+          dataIndex: "dealerCode",         
+        },
+        {
+          dataIndex: "dealerName",
+        },
+        {
+          dataIndex: "dealerSubCode",
+        }, 
+      ],
+      Region:[
         {
           dataIndex: "dealerCode",         
         },
@@ -62,7 +73,7 @@ export default {
         }
       
       ] ,
-      Area:[
+      Field:[
         {
           dataIndex: "dealerCode",         
         },
@@ -99,7 +110,7 @@ export default {
         }
       
       ] ,
-      Area:[
+      Field:[
         {
           dataIndex: "dealerCode",         
         },
@@ -136,7 +147,7 @@ export default {
         }
       
       ] ,
-      Area:[
+      Field:[
         {
           dataIndex: "dealerCode",         
         },
@@ -149,6 +160,80 @@ export default {
       ]
   }, 
  GuaranteeLetterTableHideColumns: {
+    Dealer : [
+        {
+          dataIndex: "dealerCode",         
+        },
+        {
+          dataIndex: "dealerName",
+        },
+        {
+          dataIndex: "dealerSubCode",
+        },      
+        {
+          dataIndex:"regionCode",
+        },
+        {
+          dataIndex:"regionName",
+        },
+        {
+          dataIndex:"fieldCode",
+        },
+        {
+          dataIndex:"fieldName",
+        }
+      
+      ] ,
+      Area:[
+        {
+          dataIndex: "dealerCode",         
+        },
+        {
+          dataIndex: "dealerName",
+        },
+        {
+          dataIndex: "dealerSubCode",
+        }, 
+      ]
+  },
+  CustomerListTableHideColumns: {
+    Dealer : [
+        {
+          dataIndex: "dealerCode",         
+        },
+        {
+          dataIndex: "dealerName",
+        },
+        {
+          dataIndex: "dealerSubCode",
+        },      
+        {
+          dataIndex:"regionCode",
+        },
+        {
+          dataIndex:"regionName",
+        },
+        {
+          dataIndex:"fieldCode",
+        },
+        {
+          dataIndex:"fieldName",
+        }
+      
+      ] ,
+      Area:[
+        {
+          dataIndex: "dealerCode",         
+        },
+        {
+          dataIndex: "dealerName",
+        },
+        {
+          dataIndex: "dealerSubCode",
+        }, 
+      ]
+  },
+  DistributionTableHideColumns: {
     Dealer : [
         {
           dataIndex: "dealerCode",         

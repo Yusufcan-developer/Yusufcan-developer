@@ -76,7 +76,7 @@ export default function() {
     
     if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
     if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
-
+    if(parsed.keyword!==undefined){setSearchKey(parsed.keyword);}
     let newDealarCode = []
 
   if (parsed.fic !== undefined) {
@@ -249,22 +249,12 @@ function onChangeDealerCode(value) {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
       key: "regionCode"
-    },
-    {
-      title: "Bölge Adı",
-      dataIndex: "regionName",
-      key: "regionName"
-    },
+    },   
     {
       title: "Alan Kodu",
       dataIndex: "fieldCode",
       key: "fieldCode"
-    },
-    {
-      title: "Alan Adı",
-      dataIndex: "fieldName",
-      key: "fieldName"
-    },
+    },   
     {
       title: "Bölge Müdürü",
       dataIndex: "regionManager",
@@ -311,16 +301,42 @@ function onChangeDealerCode(value) {
         tableOptions.sortedInfo.order
     }
   ];
-  
-  //Hide customer record table columns
-  // const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer
-  // if (getHideColumns.length > 0) {
-  //     for (let index = 0; index < getHideColumns.length; index++) {
-  //     columns = _.without(columns, _.findWhere(columns, {
-  //     dataIndex: getHideColumns[index].dataIndex
-  //     }
-  //     ))}
-  // }
+ //Hide order table column
+const role=window.sessionStorage.getItem("role");
+if (role === 'admin') { }
+else if (role === 'fieldmanager') {
+  const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Field;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
+else if (role === 'regionmanager') {
+  const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Region;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
+else if (role === 'dealer') {
+  const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Dealer;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -366,7 +382,7 @@ function onChangeDealerCode(value) {
                 />
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>

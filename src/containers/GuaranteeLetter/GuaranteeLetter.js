@@ -70,7 +70,7 @@ export default function () {
     
     if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
     if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
-
+    if(parsed.keyword!==undefined){setSearchKey(parsed.keyword);}
     let newDealarCode = []
 
   if (parsed.fic !== undefined) {
@@ -233,30 +233,45 @@ export default function () {
 
   let columns = [
     {
-      title: "Bayi Kodu",
+      title: "Bitiş Tarihi",
+      dataIndex: "toDate",
+      key: "toDate",
+      render: (toDate) => moment(toDate).format(siteConfig.dateFormat),
+      sorter: (a, b) => a.toDate - b.toDate,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "toDate" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Numara",
+      dataIndex: "documentId",
+      key: "documentId",
+      sorter: (a, b) => a.documentId - b.documentId,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "documentId" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Müşteri Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode"
     },
     {
-      title: "Bayi Adı",
+      title: "Müşteri Ünvan",
       dataIndex: "dealerName",
       key: "dealerName"
     },
-    {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
-    },
+    // {
+    //   title: "Bayi Alt Kodu",
+    //   dataIndex: "dealerSubCode",
+    //   key: "dealerSubCode"
+    // },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
       key: "regionCode"
     },
-    {
-      title: "Bölge Adı",
-      dataIndex: "regionName",
-      key: "regionName"
-    },
+  
     {
       title: "Bölge Yöneticisi",
       dataIndex: "regionManager",
@@ -272,25 +287,8 @@ export default function () {
         tableOptions.sortedInfo.columnKey === "fromDate" &&
         tableOptions.sortedInfo.order
     },
-    {
-      title: "Bitiş Tarihi",
-      dataIndex: "toDate",
-      key: "toDate",
-      render: (toDate) => moment(toDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.toDate - b.toDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "toDate" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "Döküman ID",
-      dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => a.documentId - b.documentId,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order
-    },
+   
+  
     {
       title: "TR Kodu",
       dataIndex: "trCode",
@@ -319,16 +317,42 @@ export default function () {
       key: "branch"
     },
   ];
-  //Hide guaranteeLetter table columns
-  // const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Dealer
-  // if (getHideColumns.length > 0) {
-  //   for (let index = 0; index < getHideColumns.length; index++) {
-  //     columns = _.without(columns, _.findWhere(columns, {
-  //       dataIndex: getHideColumns[index].dataIndex
-  //     }
-  //     ))
-  //   }
-  // }
+ //Hide order table column
+const role=window.sessionStorage.getItem("role");
+if (role === 'admin') { }
+else if (role === 'fieldmanager') {
+  const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Field;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
+else if (role === 'regionmanager') {
+  const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Region;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
+else if (role === 'dealer') {
+  const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Dealer;
+  if (getHideColumns.length > 0) {
+    for (let index = 0; index < getHideColumns.length; index++) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: getHideColumns[index].dataIndex
+      }
+      ))
+    }
+  }
+}
 
 
   return (
@@ -376,7 +400,7 @@ export default function () {
                 />
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
