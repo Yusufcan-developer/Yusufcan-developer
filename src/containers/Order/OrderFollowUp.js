@@ -75,11 +75,16 @@ const OrderFollowUp = () => {
     if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
 
     let newDealarCode = []
-    if ((parsed.fic !== undefined)) {
+
+  if (parsed.fic !== undefined) {
+    if(Array.isArray(parsed.fic)){
       _.each(parsed.fic, (item, i) => {
         newDealarCode.push(item);
-      }); setSelectedDealerCode(newDealarCode)
-    }
+      });
+    }else {newDealarCode.push(parsed.fic)}
+   
+  }
+
     if (parsed.rec !== undefined) {
       if(Array.isArray(parsed.rec)){
         _.each(parsed.rec, (item, i) => {
@@ -97,6 +102,9 @@ const OrderFollowUp = () => {
       }else {newDealarCode.push(parsed.dec)}
      
     }
+    setSelectedDealerCode(newDealarCode);
+
+    //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
     let fieldArrObj = [];
     let regionArrObj= [];
     let dealerArrObj= [];
@@ -111,7 +119,6 @@ const OrderFollowUp = () => {
         dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); 
       }
     });
- 
   }
 
   useEffect(() => {    
@@ -168,11 +175,10 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
 
     params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
     params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
-    if(searchKey.length> 0){params.append('keyword',searchKey);params.toString();}   
+    if(searchKey.length> 0){params.append('keyword',searchKey);params.toString();}
     let createUrl=null;
     if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
-    
-    history.push(`${location.pathname}?${createUrl}`);   
+    history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
   };
@@ -198,7 +204,7 @@ const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.a
         regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
       }
       else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);console.log('xxxxx de',item); params.append('dec', item); params.toString();
       }
       setSelectedDealerCode(value)
       setNewUrlParams(params.toString());

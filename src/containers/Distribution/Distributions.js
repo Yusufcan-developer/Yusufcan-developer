@@ -71,18 +71,23 @@ export default function () {
   const history = useHistory();
   
   function getQueryVariable(query) {
-  
+
     const parsed = queryString.parse(location.search);
     
     if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
     if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
-  
+
     let newDealarCode = []
-    if ((parsed.fic !== undefined)) {
+
+  if (parsed.fic !== undefined) {
+    if(Array.isArray(parsed.fic)){
       _.each(parsed.fic, (item, i) => {
         newDealarCode.push(item);
-      }); setSelectedDealerCode(newDealarCode)
-    }
+      });
+    }else {newDealarCode.push(parsed.fic)}
+   
+  }
+
     if (parsed.rec !== undefined) {
       if(Array.isArray(parsed.rec)){
         _.each(parsed.rec, (item, i) => {
@@ -100,10 +105,13 @@ export default function () {
       }else {newDealarCode.push(parsed.dec)}
      
     }
+    setSelectedDealerCode(newDealarCode);
+
+    //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
     let fieldArrObj = [];
     let regionArrObj= [];
     let dealerArrObj= [];
-  
+
     if(newDealarCode.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
     _.filter(newDealarCode, function (item) {
       if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj);  }
@@ -114,7 +122,6 @@ export default function () {
         dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); 
       }
     });
-  
   }
 
   useEffect(() => {
@@ -137,8 +144,8 @@ getQueryVariable(searchQuery)
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
   /*********************************************** CUSTOM HOOKS ************************************************************ */
 
-  const searchButton = () => {
-     
+  const searchButton = () => {  
+   
     const params = new URLSearchParams(location.search);
 
     params.delete('dec');
@@ -150,11 +157,10 @@ getQueryVariable(searchQuery)
 
     params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
     params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
-    if(searchKey.length> 0){params.append('keyword',searchKey);}   
+    if(searchKey.length> 0){params.append('keyword',searchKey);params.toString();}
     let createUrl=null;
     if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
-    
-    history.push(`${location.pathname}?${createUrl}`);   
+    history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
   };
@@ -402,6 +408,7 @@ getQueryVariable(searchQuery)
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
+                  value={selectedDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
