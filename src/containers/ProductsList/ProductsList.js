@@ -511,7 +511,7 @@ const ProductsList = () => {
                     <SingleCardWrapper className={listClass} style={style} >
                       <div className="isoCardImage">
                         <Link to={`${'/products/detail'}/${item.itemCode}`}>
-                          <img alt="example" src={item.imageUrl} onMouseOver={e => console.log(e)} />
+                          <img alt="Ürün Fotoğrafı" src={item.imageUrl} onMouseOver={e => console.log(e)} />
                         </Link>{' '}
                       </div>
                       <div className="isoCardContent">
