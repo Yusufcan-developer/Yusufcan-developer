@@ -378,26 +378,18 @@ const ChequesReport = () => {
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
-              <Col span={4}>
+              <Col span={6}>
                 <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
               </Col>
-              <Col span={4} >
+              <Col span={6} >
                 <FormItem label={<IntlMessages id="page.chequesType" />}></FormItem>
               </Col>
-              <Col span={4} >
+              <Col span={6} >
                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={4} >
-                <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
-              </Col>
-              <Col span={4} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={4} offset={1}>
               </Col>
             </Row>
             <Row>
-              <Col span={4}>
+              <Col span={6}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -410,7 +402,7 @@ const ChequesReport = () => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={4}>
+              <Col span={6}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: '250px' }}
@@ -421,7 +413,7 @@ const ChequesReport = () => {
                   {children}
                 </Select>
               </Col>
-              <Col span={4}>
+              <Col span={6}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -430,13 +422,25 @@ const ChequesReport = () => {
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col span={4}>
+            </Row>
+            <Row>
+              <Col span={5}>
+                <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
+              </Col>
+              <Col span={5} offset={1}>
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+              </Col>
+              <Col span={6} offset={2}>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={5}>
                 <Input size="small" placeholder="Seri No" value={serialNumber} onChange={event => setSerialNumber([event.target.value])} />
               </Col>
-              <Col span={4}>
+              <Col span={5} offset={1}>
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={4} >
+              <Col span={5} align="right">
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
