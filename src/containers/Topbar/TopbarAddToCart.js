@@ -55,7 +55,7 @@ export default function TopbarAddtoCart() {
           key={product.itemCode}
           quantity={product.quantity}
           name={'testler'}
-          changeQuantity={changeQuantity} 
+          changeQuantity={changeQuantity}
           cancelQuantity={event => cancelQuantity(product)}
           productItem={products[product.itemCode]}
           {...products[product.itemCode]}
@@ -125,8 +125,8 @@ export default function TopbarAddtoCart() {
         {productQuantity.length === 0 ? (
           ''
         ) : (
-          <span>{productQuantity.length}</span>
-        )}
+            <span>{productQuantity.length}</span>
+          )}
       </div>
     </Popover>
   );

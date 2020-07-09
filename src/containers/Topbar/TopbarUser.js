@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Popover from '@iso/components/uielements/popover';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import userpic from '@iso/assets/images/UserLogin.png';
@@ -9,9 +9,11 @@ import TopbarDropdownWrapper from './TopbarDropdown.styles';
 
 const { logout } = authAction;
 
-export default function TopbarUser() {
+export default function TopbarUser(props) {
   const [visible, setVisibility] = React.useState(false);
+  const { displayName } = props;
   const dispatch = useDispatch();
+  const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   function handleVisibleChange() {
     setVisibility(visible => !visible);
   }
@@ -39,9 +41,14 @@ export default function TopbarUser() {
       arrowPointAtCenter={true}
       placement="bottomLeft"
     >
-      <div className="isoImgWrapper">
+      {/* <div className="isoImgWrapper">
         <img alt="user" src={userpic} />   
-      </div>
+      </div> */}
+      <i
+        className="ion-android-contact"
+        style={{ color: customizedTheme.textColor }}
+      />
+      <h5 style={{ display: 'inline', marginLeft: '10px' }}>{displayName}</h5>
     </Popover>
   );
 }

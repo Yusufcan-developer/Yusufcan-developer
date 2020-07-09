@@ -20,7 +20,7 @@ export default function Topbar() {
     dispatch,
   ]);
   const isCollapsed = collapsed && !openDrawer;
-  const userName= window.sessionStorage.getItem("nameAndSurname");
+  const username = window.sessionStorage.getItem("nameAndSurname");
   const styling = {
     background: customizedTheme.backgroundColor,
     position: 'fixed',
@@ -58,10 +58,9 @@ export default function Topbar() {
           </li>
           <li onClick={() => setSelectedItem('addToCart')} className="isoCart">
             <TopbarAddtoCart />
-          </li>        
-          <li onClick={() => setSelectedItem('user')} className="isoUser">
-            <TopbarUser />                      
-          <h5>{userName}</h5> 
+          </li>
+          <li onClick={() => setSelectedItem('user')} className="isoContact">
+            <TopbarUser displayName={username} />
           </li>
         </ul>
       </Header>
