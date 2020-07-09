@@ -17,7 +17,7 @@ import Item from "antd/lib/list/Item";
 const reqJson = [
   {
     "Id"   :"VİTRİFİYE (SSG)",
-    "title": "Vitrifiye",
+    "title": "VİTRİFİYE (SSG)",
     "description": "Lavabo, Klozet, Bide, Pisuvar, Helataşı, Bedensel Engelli Ürünler",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/ardesia_final_35159.jpg",
   },
@@ -51,11 +51,13 @@ const ProductGroupList = () => {
   function selectedProductGroup (productGroupId) {
     //Product Group Id
     console.log('info productGroupId',productGroupId);
-
-    history.push({
-      pathname: '/products/search',
-      productGroupId: productGroupId,
-    });
+    // return (
+    // <Link to={`${'/products/search'}/ProductGroup:${productGroupId}`}></Link>)
+  
+    // history.push({
+    //   pathname: '/products/search',
+    //   productGroupId: productGroupId,
+    // });
     }
   return (
     <LayoutWrapper>
@@ -68,16 +70,18 @@ const ProductGroupList = () => {
         {reqJson.map((item) => (      
               
           <Col xs={{ span: 24 }} sm={{ span: 6 }}>
+          <Link to={`${'/products/search'}/?pg=${item.Id}`}>
             <Card
               hoverable
               style={{ width: 300, marginTop: 16 }}
-              loading={false}
-              onClick={event=> selectedProductGroup(item.Id)}
+              loading={false}                
+              onClick={event => selectedProductGroup(item.Id)}
               cover={
-                <img
+
+                < img
                   alt="example"
-                  src= {item.imageUrl}
-                  style= {{height: '180px'}}
+                  src={item.imageUrl}
+                  style={{ height: '180px' }}
                 />
               }
             >
@@ -86,6 +90,7 @@ const ProductGroupList = () => {
                 description={item.description}
               />
             </Card>
+            </Link>
           </Col>
         ))}
 

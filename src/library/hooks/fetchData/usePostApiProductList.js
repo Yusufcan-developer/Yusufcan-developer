@@ -14,7 +14,6 @@ function useProductData(url, reqBody) {
   const [dimension,setDimension]=useState([])
   const [color,setColor]=useState([])
   const [surface,setSurface]=useState([])
-  const [productionStatus,setProductionStatus]=useState([])
   const [keyword,setKeyword]=useState()
   const [from, setFrom] = useState();
   const [to, setTo] = useState();
@@ -24,7 +23,7 @@ function useProductData(url, reqBody) {
 
   async function fetchUrl() {
   
-    const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"productionStatus":productionStatus,"surfaces":surface, "colors":color, "dimensions":dimension, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
+    const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"surfaces":surface, "colors":color, "dimensions":dimension, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
    
    console.log('xxxx req',reqB)
     const requestOptions = {

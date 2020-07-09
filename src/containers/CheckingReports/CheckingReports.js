@@ -10,6 +10,7 @@ import { PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import { Link, useHistory, useRouteMatch,useParams,useLocation } from 'react-router-dom';
 import Input, {
   InputGroup,
 } from '@iso/components/uielements/input';
@@ -50,16 +51,73 @@ const CheckingReports = () =>  {
   const [dealerCodes,setDealerCodes]=useState()
   const [regionCodes,setRegionCodes]=useState()
   const [fieldCodes,setFieldCodes]=useState()
-
+  const [selectedDealerCode, setSelectedDealerCode]=useState();
+  const [newUrlParams,setNewUrlParams]=useState('') 
+  const location = useLocation();
+  const { searchQuery } = useParams();
+  
+  const match = useRouteMatch();
+  const queryString = require('query-string');
+  const history = useHistory();
+  
+  function getQueryVariable(query) {
+  
+    const parsed = queryString.parse(location.search);
+    
+    if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
+    if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
+  
+    let newDealarCode = []
+    if ((parsed.fic !== undefined)) {
+      _.each(parsed.fic, (item, i) => {
+        newDealarCode.push(item);
+      }); setSelectedDealerCode(newDealarCode)
+    }
+    if (parsed.rec !== undefined) {
+      if(Array.isArray(parsed.rec)){
+        _.each(parsed.rec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      }else {newDealarCode.push(parsed.rec)}
+     
+    }
+   
+    if (parsed.dec !== undefined) {
+      if(Array.isArray(parsed.dec)){
+        _.each(parsed.dec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      }else {newDealarCode.push(parsed.dec)}
+     
+    }
+    let fieldArrObj = [];
+    let regionArrObj= [];
+    let dealerArrObj= [];
+  
+    if(newDealarCode.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    _.filter(newDealarCode, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj);  }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);  
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); 
+      }
+    });
+  
+  }
   useEffect(() => {
+    getQueryVariable(searchQuery)
     setCurrentPage(localCurrentPage);  
   },[localCurrentPage]);
   
   useEffect(() => {
+    getQueryVariable(searchQuery)
     setChangePageSize(pageSize);
   },[pageSize]);
 
   useEffect(() => {
+    getQueryVariable(searchQuery)
     setFromDate(fromDate);
     setToDate(toDate);
   }, [fromDate, toDate]);
@@ -71,24 +129,54 @@ const CheckingReports = () =>  {
   /*********************************************** CUSTOM HOOKS ************************************************************ */
 
   const searchButton = () => {
-    setOnChange(true);
+     
+    const params = new URLSearchParams(location.search);
+
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
+
+    params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
+    params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
+    if(searchKey.length> 0){params.append('keyword',searchKey);}   
+    let createUrl=null;
+    if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
+    
+    history.push(`${location.pathname}?${createUrl}`);   
+
+    return setOnChange(true);
   };
-  
-  function onChangeDealerCode(value) {
+  function onChangeDealerCode(value) {    
     let fieldArrObj = [];
     let regionArrObj= [];
     let dealerArrObj= [];
-    if(value.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    const params = new URLSearchParams(location.search);
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
+
+    if (value.length === 0) {setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    else{
     _.filter(value, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
       else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
       }
       else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
       }
+      setSelectedDealerCode(value)
+      setNewUrlParams(params.toString());
     });
+  }
   };
+  
   function changeTimePicker(value, dateString) {
 
     setFromDate(dateString[0]);

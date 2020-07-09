@@ -228,7 +228,7 @@ const ProductDetail = () => {
                 <Descriptions.Item label="Renk"> <Tag>{color}</Tag></Descriptions.Item>
               </Descriptions></Col>
               <Col span={8}><Descriptions>
-                <Descriptions.Item label="Boyut"><Tag>{dimension}</Tag></Descriptions.Item>
+                <Descriptions.Item label="Ebat"><Tag>{dimension}</Tag></Descriptions.Item>
               </Descriptions></Col>
 
             </Row>
