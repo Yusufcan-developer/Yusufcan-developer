@@ -522,26 +522,26 @@ const SearchComponent = () => {
                           </Button>
                         ) : (
                             <Row justify="center" align="middle">
-                              <Col span={4} style={{ width: '100%' }}>  <Button
-                                type="primary"
-                                onClick={event => onRemoveBox(item)}
-                              >  {<IntlMessages id="-" />}
-                              </Button></Col>
-                              <Col span={8}>
+                              <Col span={4} style={{ width: '100%' }} align="right">
+                                <Button type="primary" onClick={event => onRemoveBox(item)}>
+                                  {<IntlMessages id="-" />}
+                                </Button>
+                              </Col>
+                              <Col span={8} align="middle">
                                 <Input
                                   onChange={event => onChangeQuantity(event, item)}
-                                  style={{ width: 80, textAlign: "right" }}
+                                  style={{ textAlign: "right" }}
                                   maxLength={25}
                                   defaultValue={1}
                                   step={1}
                                   value={inputNumberQuantityValue(item)}
                                 />
                               </Col>
-                              <Col span={4} style={{ width: '100%' }}>  <Button
-                                type="primary"
-                                onClick={event => onAddBox(item)}
-                              >  {<IntlMessages id="+" />}
-                              </Button></Col>
+                              <Col span={4} style={{ width: '100%' }}>
+                                <Button type="primary" onClick={event => onAddBox(item)}>
+                                  {<IntlMessages id="+" />}
+                                </Button>
+                              </Col>
                             </Row>
 
                           )}
