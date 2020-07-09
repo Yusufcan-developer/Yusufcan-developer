@@ -371,7 +371,7 @@ const routes = [
   },
   {
     path: 'blank_page',
-    component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
+    component: lazy(() => import('@iso/containers/Products/Search')),
   },
   {
     path: 'products/search',
