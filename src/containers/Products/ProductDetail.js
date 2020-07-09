@@ -1,42 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Descriptions, Tabs, Button, Breadcrumb,notification } from 'antd';
+import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification } from 'antd';
 import PageHeader from '@iso/components/utility/pageHeader';
 import Box from '@iso/components/utility/box';
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
-import ContentHolder from '@iso/components/utility/contentHolder';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
 import Tags from '@iso/components/uielements/tag';
 import TagWrapper from './tag.styles';
-import InputNumber from '@iso/components/uielements/InputNumber';
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import siteConfig from "@iso/config/site.config";
-import { Link, useHistory,useRouteMatch,useParams } from 'react-router-dom';
-import Modals from '@iso/components/Feedback/Modal';
-import {
-  SwiperWithCustomNav,
-
-} from '@iso/ui/SwiperSlider';
+import { Link, useHistory, useRouteMatch, useParams } from 'react-router-dom';
+import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
-import {
-  customNavSlider,
-} from './slider.data';
-import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
 
-const reqJson = [
-  {
-    "productGroupId": 1,
-    "name": "Seramiksan Monte Verde Zeytin Yer Duvar Seramiği 905402",
-    "title": "Vitrifiye",
-    "ürünKodu": "S2587ASDE",
-    "Fiyat": "27,50",
-    "description": "Ürün Kodu 650873 (60 x 120)",
-    "imageUrl": "https://www.seramiksan.com.tr/images/kategoriler/ocean_4668b.jpg",
-  },
-];
 const { TabPane } = Tabs;
 const Tag = props => (
   <TagWrapper>
@@ -61,11 +40,11 @@ const ProductDetail = () => {
   //const productId1 = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice,imageUrl] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
   const onChange = value => {
     setQuantity(value);
-    const product=productItem;
-    if (productQuantity.length === 0) { dispatch(addToCart(product,value)); } //Sepete
+    const product = productItem;
+    if (productQuantity.length === 0) { dispatch(addToCart(product, value)); } //Sepete
     else {
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
       if (selectedProduct === undefined) {
@@ -73,7 +52,7 @@ const ProductDetail = () => {
       }
       else {
         const newProductQuantity = [];
-        const selectedQuantity=value;
+        const selectedQuantity = value;
         productQuantity.forEach(productItem => {
           if (productItem.itemCode !== selectedProduct.itemCode) {
             newProductQuantity.push(productItem);
@@ -92,69 +71,66 @@ const ProductDetail = () => {
   };
   function onRemoveBox(product) {
     inputNumberShowOrHide(product)
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-      if(selectedProduct.quantity!==1)
-      {
-        const newProductQuantity = [];
-        productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode) {
-            newProductQuantity.push(productItem);
-          } else {
-            const itemCode = productItem.itemCode
-            const quantity = productItem.quantity - 1;
-            newProductQuantity.push({
-              itemCode,
-              quantity,
-            });
-          }
-        });
-        dispatch(changeProductQuantity(newProductQuantity));
-      }
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    if (selectedProduct.quantity !== 1) {
+      const newProductQuantity = [];
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode
+          const quantity = productItem.quantity - 1;
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
   };
   //Add product basket
   function onAddBox(product) {
     inputNumberShowOrHide()
-    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode)===undefined)) { dispatch(addToCart(product, 1)); notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' }); } //Sepete
+    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) { dispatch(addToCart(product, 1)); notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' }); } //Sepete
     else {
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);      
-        const newProductQuantity = [];
-        const selectedQuantity=quantity;
-        productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode) {
-            newProductQuantity.push(productItem);
-          } else {
-            const itemCode = productItem.itemCode
-            const quantity = productItem.quantity + 1;
-            newProductQuantity.push({
-              itemCode,
-              quantity,
-            });
-          }
-        });
-        dispatch(changeProductQuantity(newProductQuantity));
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      const newProductQuantity = [];
+      const selectedQuantity = quantity;
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode
+          const quantity = productItem.quantity + 1;
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
 
-      }
-    };
-  function inputNumberShowOrHide()
-  {
+    }
+  };
+  function inputNumberShowOrHide() {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
     if (selectedProduct === undefined) {
       return false;
     }
     else { return true; }
   }
-  function inputNumberQuantityValue()
-  { 
+  function inputNumberQuantityValue() {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
     if (selectedProduct === undefined) {
       return 1
     }
     else {
       return selectedProduct.quantity;
-    }   
+    }
   }
   //Redux product quantity change event
-  function onChangeQuantity(event,productItem) {
+  function onChangeQuantity(event, productItem) {
     const product = productItem;
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
     const newProductQuantity = [];
@@ -191,8 +167,8 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
 
           <Box >
-            <SwiperWithCustomNav prevButtonText={"geri"} 
-                   >
+            <SwiperWithCustomNav prevButtonText={"geri"}
+            >
               {/* {imageUrl.map(item => (
                 <img
                   key={`customnav-slider--key${item}`}
@@ -200,11 +176,11 @@ const ProductDetail = () => {
                   alt={item.title}
                 />
               ))} */}
-               <img
-                  key={`customnav-slider--key${imageUrl}`}
-                  src={imageUrl}
-                  height="500px"
-                />
+              <img
+                key={`customnav-slider--key${imageUrl}`}
+                src={imageUrl}
+                height="500px"
+              />
             </SwiperWithCustomNav>
           </Box>
         </Col>
@@ -235,42 +211,40 @@ const ProductDetail = () => {
               <Col span={8}>
                 <Descriptions.Item style={{ color: 'red' }} >{listPrice} {"TL"}</Descriptions.Item>
               </Col>
-              </Row>
-              <Row>
-              <Col span={8}>    
-              {!inputNumberShowOrHide(productItem) ? (
-                          <Button
-                            type="primary"
-                            onClick={event => onAddBox(productItem)}
-                          >  {<IntlMessages id="Sepete Ekle" />}
-                          </Button>
-                        ) : (
-                            <Row justify="center"  align="middle">
-                              <Col span={4} style={{ width: '100%' }}>  <Button
-                                type="primary"
-                                onClick={event => onRemoveBox(productItem)}
-                              >  {<IntlMessages id="-" />}
-                              </Button></Col>
-                              <Col span={8}>  <Input
-                                min={1}
-                                max={1000}
-                                defaultValue={1}
-                                value={inputNumberQuantityValue(productItem)}
-                                step={1}
-                                style={{ width: 80,textAlign: "right" }}  
-                                // onClick={}
-                                onChange={event => onChangeQuantity(event, productItem)}
-                              /></Col>
-                              <Col span={4} style={{ width: '100%' }}>  <Button
-                                type="primary"
-                                onClick={event => onAddBox(productItem)}
-                              >  {<IntlMessages id="+" />}
-                              </Button></Col>
-                            </Row>
-
-                          )}              
-              </Col>    
-              </Row>
+            </Row>
+            <Row>
+              <Col span={8}>
+                {!inputNumberShowOrHide(productItem) ? (
+                  <Button type="primary" onClick={event => onAddBox(productItem)}>
+                    {<IntlMessages id="Sepete Ekle" />}
+                  </Button>
+                ) : (
+                    <Row justify="center" align="middle">
+                      <Col span={4} style={{ width: '100%' }} align="right">
+                        <Button type="primary" onClick={event => onRemoveBox(productItem)}>
+                          {<IntlMessages id="-" />}
+                        </Button>
+                      </Col>
+                      <Col span={8}>
+                        <Input
+                          min={1}
+                          max={1000}
+                          defaultValue={1}
+                          value={inputNumberQuantityValue(productItem)}
+                          step={1}
+                          style={{ textAlign: "right" }}
+                          onChange={event => onChangeQuantity(event, productItem)}
+                        />
+                      </Col>
+                      <Col span={4} style={{ width: '100%' }}>
+                        <Button type="primary" onClick={event => onAddBox(productItem)}>
+                          {<IntlMessages id="+" />}
+                        </Button>
+                      </Col>
+                    </Row>
+                  )}
+              </Col>
+            </Row>
           </Box>
         </Col>
       </Row>
