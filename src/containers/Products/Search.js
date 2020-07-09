@@ -1,0 +1,564 @@
+import React, { useState, useEffect } from "react";
+import IntlMessages from "@iso/components/utility/intlMessages";
+import Form from "@iso/components/uielements/form";
+import Box from "@iso/components/utility/box";
+import _ from 'underscore';
+import { SingleCardWrapper } from './Shuffle.styles';
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification } from "antd";
+import siteConfig from "@iso/config/site.config";
+import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import ContentHolder from '@iso/components/utility/contentHolder';
+import PageHeader from "@iso/components/utility/pageHeader";
+import { direction } from '@iso/lib/helpers/rtl';
+import AlgoliaSearchPageWrapper from './Algolia.styles';
+import { CheckboxGroup } from '@iso/components/uielements/checkbox';
+import Input, { InputSearch, } from '@iso/components/uielements/input';
+import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
+import { useDispatch, useSelector } from 'react-redux';
+import ecommerceActions from '@iso/redux/ecommerce/actions';
+import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
+import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
+
+
+const margin = {
+  margin: direction === 'rtl' ? '0 0 8px 8px' : '0 8px 8px 0',
+};
+const { Panel } = Collapse;
+const FormItem = Form.Item;
+
+const { Meta } = Card;
+
+const SearchComponent = () => {
+  const [inputNumberShow, setInputNumberShow] = React.useState(false);
+  const [addCartLoading, setAddCartLoading] = React.useState(false);
+  const history = useHistory();
+  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8)
+  const [quantity, setQuantity] = useState(1)
+  const [productGroup, setProductGroup] = useState([])
+  const [productType, setProductType] = useState([])
+  const [series, setSeries] = useState([])
+  const [dimension, setDimension] = useState([])
+  const [color, setColor] = useState([])
+  const [surface, setSurface] = useState([])
+  const [keyword, setKeyword] = useState()
+  const [locationKeys, setLocationKeys] = useState([])
+  const { searchQuery } = useParams();
+
+  const match = useRouteMatch();
+  const queryString = require('query-string');
+  const location = useLocation();
+
+  function getQueryVariable(query) {
+
+    const parsed = queryString.parse(location.search);
+
+    //Product Group get url data
+    if (parsed.pg !== undefined) {
+      if (Array.isArray(parsed.pg)) {
+        setProductGroup(parsed.pg)
+      } else { setProductGroup([parsed.pg]); }
+    }
+
+    //Product Type get url data
+    if (parsed.ut !== undefined) {
+      if (Array.isArray(parsed.ut)) {
+        setProductType(parsed.ut)
+      } else { setProductType([parsed.ut]); }
+    }
+
+    //Dimension get url data
+    if (parsed.dm !== undefined) {
+      if (Array.isArray(parsed.dm)) {
+        setDimension(parsed.dm)
+      } else { setDimension([parsed.dm]); }
+    }
+
+    //Series get url data
+    if (parsed.se !== undefined) {
+      if (Array.isArray(parsed.se)) {
+        setSeries(parsed.se)
+      } else { setSeries([parsed.se]); }
+    }
+    //Color get url data
+    if (parsed.clr !== undefined) {
+      if (Array.isArray(parsed.clr)) {
+        setColor(parsed.clr)
+      } else { setColor([parsed.clr]); }
+    }
+    //Surface get url data
+    if (parsed.sfc !== undefined) {
+      if (Array.isArray(parsed.sfc)) {
+        setSurface(parsed.sfc)
+      } else { setSurface([parsed.sfc]); }
+    }
+  }
+  useEffect(() => {
+    getQueryVariable(searchQuery)
+    setCurrentPage(localCurrentPage);
+  }, [localCurrentPage]);
+
+  useEffect(() => {
+    getQueryVariable(searchQuery)
+    setChangePageSize(pageSize);
+  }, [pageSize]);
+
+  //Redux ürünler listeleme
+  const { productQuantity, products } = useSelector(state => state.Ecommerce);
+  // const { filters } = useSelector(state => state.Filters);
+  // if (filters.length > 0) { console.log('xxxx fils', filters) }
+  const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
+  // const { addToFilter, changeFilter } = filterActions;
+
+  const dispatch = useDispatch();
+
+  //ProductListHook
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
+    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "series": series, "types": productType, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+
+  //Ürün Grubu 
+  const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
+
+  //Ürün Tipi 
+  const [productTypeData] = useFilterData(`${siteConfig.api.productType}`);
+
+  //Ebatlar
+  const [dimensionData] = useFilterData(`${siteConfig.api.dimensions}`);
+
+  //Seriler
+  const [serieData] = useFilterData(`${siteConfig.api.series}`);
+
+  //Renkler
+  const [colorData] = useFilterData(`${siteConfig.api.colors}`);
+
+  //Yüzeyler
+  const [surfaceData] = useFilterData(`${siteConfig.api.surfaces}`);
+
+  //Ürün grubu adı getirme
+  console.log('info product GroupId', history.location.productGroupId)
+
+  const listClass = `isoSingleCard card grid`;
+  const style = { zIndex: 100 - 90 };
+  const expandIconPosition = "left";
+
+  const radioStyle = {
+    display: 'block',
+    height: '30px',
+    lineHeight: '30px',
+  };
+
+  //InputSearch Filter Event
+  const onchangeInputSearch = e => {
+    setKeyword(e.target.value);
+  }
+
+  function keywordAddUrl() {
+    const params = new URLSearchParams(location.search);
+    params.delete('keyword');
+    if (keyword.length > 0) {
+
+      params.append('keyword', keyword);
+      params.toString();
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  }
+
+  const keyPress = e => {
+    if (e.keyCode == 13) {
+      keywordAddUrl();
+    }
+  }
+  ///
+  const onSearch = e => {
+    keywordAddUrl();
+  }
+
+  function onchangePagination(page, pageSize) {
+    setPageSize(pageSize);
+    setlocalCurrentPage(page);
+  };
+
+  //Product Group Filter Event
+  function onChangeProductGroup(checkedProductGroupValue) {
+    setProductGroup(checkedProductGroupValue);
+
+    const params = new URLSearchParams(location.search);
+    params.delete('pg');
+    if (checkedProductGroupValue.length > 0) {
+      checkedProductGroupValue.forEach(item => {
+        params.append('pg', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
+
+  //Product Type Filter Event
+  function onChangeProductType(checkedProductTypeValue) {
+    setProductType(checkedProductTypeValue);
+
+    const params = new URLSearchParams(location.search);
+    params.delete('ut');
+    if (checkedProductTypeValue.length > 0) {
+      checkedProductTypeValue.forEach(item => {
+        params.append('ut', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
+
+  //Dimension Filter Event
+  function onChangeDimension(checkedDimensionValue) {
+    setDimension(checkedDimensionValue)
+
+    const params = new URLSearchParams(location.search);
+    params.delete('dm');
+    if (checkedDimensionValue.length > 0) {
+      checkedDimensionValue.forEach(item => {
+        params.append('dm', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
+  //Series Filter Event
+  function onChangeSerie(checkedSerieValue) {
+    setSeries(checkedSerieValue)
+
+    const params = new URLSearchParams(location.search);
+    params.delete('se');
+    if (checkedSerieValue.length > 0) {
+      checkedSerieValue.forEach(item => {
+        params.append('se', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
+
+  //Color Filter Event
+  function onChangeColor(checkedColorValue) {
+    setColor(checkedColorValue)
+    const params = new URLSearchParams(location.search);
+    params.delete('clr');
+    if (checkedColorValue.length > 0) {
+      checkedColorValue.forEach(item => {
+        params.append('clr', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  }
+
+  //Surface Filter Event
+  function onChangeSurface(checkedSurfaceValue) {
+    setSurface(checkedSurfaceValue)
+
+    const params = new URLSearchParams(location.search);
+    params.delete('sfc');
+    if (checkedSurfaceValue.length > 0) {
+      checkedSurfaceValue.forEach(item => {
+        params.append('sfc', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  }
+
+  function selectedProductId(productId) {
+    console.log('info selected productId', productId);
+  }
+  function inputNumberShowOrHide(value) {
+    var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
+    if (selectedProduct === undefined) {
+      return false;
+    }
+    else { return true; }
+  }
+  function onRemoveBox(product) {
+    inputNumberShowOrHide(product)
+    setAddCartLoading(true);
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    if (selectedProduct.quantity !== 1) {
+      const newProductQuantity = [];
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode
+          const quantity = productItem.quantity - 1;
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
+  };
+
+  // function onAddFilterRedux(groupName, checkedProductGroupValue) {
+  //   const filterType = groupName;
+  //   // if (filters.length === 0) { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
+  //   // else {
+  //   //   console.log('xxxx secilen grup',checkedProductGroupValue)
+  //   const tileset = _.find(filters, function (item) { return item.filterType === groupName; });
+  //   if (tileset) { console.log('xxxx tileSet', tileset.filterValue); dispatch(changeFilter(filterType, checkedProductGroupValue)); }
+
+  //   //Yeni Filter Grubu Ekleme işlemi
+  //   else { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
+  // };
+
+  function onAddBox(product) {
+    inputNumberShowOrHide(product)
+    setAddCartLoading(true);
+
+    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) {
+      dispatch(addToCart(product, 1));
+      notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+    }
+    else {
+      const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      const newProductQuantity = [];
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode;
+          const quantity = productItem.quantity + 1;
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
+  };
+
+
+  //Input Number return quantity value
+  function inputNumberQuantityValue(product) {
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    if (selectedProduct === undefined) {
+      return 1
+    }
+    else {
+      return selectedProduct.quantity;
+    }
+  }
+  //Redux product quantity change event
+  function onChangeQuantity(event, productData) {
+
+    const product = productData;
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    const newProductQuantity = [];
+    setQuantity(parseInt(event.target.value));
+    productQuantity.forEach(productItem => {
+      if (productItem.itemCode !== selectedProduct.itemCode) {
+        newProductQuantity.push(productItem);
+      } else {
+        const itemCode = productItem.itemCode
+        const quantity = parseInt(event.target.value);
+        newProductQuantity.push({
+          itemCode,
+          quantity,
+        });
+      }
+    });
+    dispatch(changeProductQuantity(newProductQuantity));
+
+  };
+  //
+  const onChange = checkedList => {
+    //setCheckedList(checkedList);
+    // setIndeterminate(
+    //   !!checkedList.length && checkedList.length < plainOptions.length
+    // );
+    // setCheckAll(checkedList.length === plainOptions.length);
+  };
+
+  return (
+    <React.Fragment>
+      <Breadcrumb>
+        <Breadcrumb.Item>
+          <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
+        <Breadcrumb.Item >
+          <Link to="/products/categories">Ürün Grubu</Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
+      </Breadcrumb>
+      <AlgoliaSearchPageWrapper className="isoAlgoliaSearchPage">
+        <PageHeader>Ürünler Listesi</PageHeader>
+        <div className="isoAlgoliaMainWrapper">
+          <SidebarWrapper className="isoAlgoliaSidebar">
+            <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
+              onChange={onchangeInputSearch}
+              onSearch={onSearch}
+              onKeyDown={keyPress} />
+            <div >
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Ürün Grubu" />} key="0">
+                  <CheckboxGroup
+                    options={productGroupData}
+                    value={productGroup}
+                    onChange={onChangeProductGroup}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+            <div >
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Ürün Tipi" />} key="1">
+                  <CheckboxGroup
+                    options={productTypeData}
+                    value={productType}
+                    onChange={onChangeProductType}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+            <div>
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Ebat" />} key="2">
+                  <CheckboxGroup
+                    options={
+                      dimensionData.map(e => e === null ? 'Yok' : e)}
+                    onChange={onChangeDimension}
+                    value={dimension}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+            <div>
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Seriler" />} key="3">
+                  <CheckboxGroup
+                    value={series}
+                    options={
+                      serieData.map(e => e === null ? 'Yok' : e)}
+                    onChange={onChangeSerie}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+            <div >
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Renkler" />} key="4">
+                  <CheckboxGroup
+                    value={color}
+                    options={
+                      colorData.map(e => e === null || e === '' ? 'Yok' : e)}
+                    onChange={onChangeColor}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+            <div >
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Yüzeyler" />} key="5">
+                  <CheckboxGroup
+                    value={surface}
+                    options={
+                      surfaceData.map(e => e === null ? 'Yok' : e)}
+                    onChange={onChangeSurface}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+
+            {/* <ClearAll /> */}
+          </SidebarWrapper>
+          <ContentHolder>
+
+            <Row>
+              <Col span={8} offset={16} align="right" >
+                {totalDataCount > 0 &&
+                  <h4>
+                    {totalDataCount} adet sonuç bulundu
+        </h4>}
+              </Col>
+            </Row>
+            <Box>
+              <Spin spinning={loading}>
+                <Row gutter={[24, 16]}>
+
+                  {data.map((item) => (
+                    <SingleCardWrapper className={listClass} style={style} >
+                      <div className="isoCardImage">
+                        <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                          <img alt="Ürün Fotoğrafı" src={item.imageUrl} onMouseOver={e => console.log(e)} />
+                        </Link>{' '}
+                      </div>
+                      <div className="isoCardContent">
+                        <Row>
+                          <Col span={6} >
+                            <h3 className="isoCardTitle">{item.series}</h3>
+                          </Col>
+                          <Col span={18} align="right" >
+                            <h3 className="isoCardDate">{item.type}</h3>
+                          </Col>
+                        </Row>
+                        <span className="isoCardDate">
+                          {item.description}
+                        </span>
+                        <span className="isoCardDate">
+                          {item.color} - {item.surface}
+                        </span>
+                        <h3 align="center" className="isoCardTitle">{item.listPrice} {"TL"}</h3>
+                        {!inputNumberShowOrHide(item) ? (
+                          <Button
+                            type="primary"
+                            onClick={event => onAddBox(item)}
+                          >  {<IntlMessages id="Sepete Ekle" />}
+                          </Button>
+                        ) : (
+                            <Row justify="center" align="middle">
+                              <Col span={4} style={{ width: '100%' }}>  <Button
+                                type="primary"
+                                onClick={event => onRemoveBox(item)}
+                              >  {<IntlMessages id="-" />}
+                              </Button></Col>
+                              <Col span={8}>
+                                <Input
+                                  onChange={event => onChangeQuantity(event, item)}
+                                  style={{ width: 80, textAlign: "right" }}
+                                  maxLength={25}
+                                  defaultValue={1}
+                                  step={1}
+                                  value={inputNumberQuantityValue(item)}
+                                />
+                              </Col>
+                              <Col span={4} style={{ width: '100%' }}>  <Button
+                                type="primary"
+                                onClick={event => onAddBox(item)}
+                              >  {<IntlMessages id="+" />}
+                              </Button></Col>
+                            </Row>
+
+                          )}
+
+                      </div>
+                    </SingleCardWrapper>
+
+                  ))}
+                  <Pagination defaultCurrent={0} total={totalDataCount} pageSize={8} onChange={onchangePagination} />
+                </Row>
+              </Spin>
+            </Box>
+          </ContentHolder>
+        </div>
+      </AlgoliaSearchPageWrapper>
+    </React.Fragment>
+  );
+};
+
+export default SearchComponent;

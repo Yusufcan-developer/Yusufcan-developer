@@ -343,31 +343,31 @@ const routes = [
   },
   {
     path: 'reports/accounts/transactions/',
-    component: lazy(() => import('@iso/containers/CustomerRecords/CustomerRecords')),
+    component: lazy(() => import('@iso/containers/Reports/AccountTransactions')),
   },
   {
     path: 'reports/cheques/',
-    component: lazy(() => import('@iso/containers/CheckingReports/CheckingReports')),
+    component: lazy(() => import('@iso/containers/Reports/Cheques')),
   },
   {
     path: 'reports/deliveries/',
-    component: lazy(() => import('@iso/containers/Shipping/Shipping')),
+    component: lazy(() => import('@iso/containers/Reports/Deliveries')),
   },
   {
     path: 'reports/letters/',
-    component: lazy(() => import('@iso/containers/GuaranteeLetter/GuaranteeLetter')),
+    component: lazy(() => import('@iso/containers/Reports/Letters')),
   },
   {
     path: 'reports/orders/',
-    component: lazy(() => import('@iso/containers/Order/OrderFollowUp')),
+    component: lazy(() => import('@iso/containers/Reports/Orders')),
   },
   {
     path: 'reports/accounts/',
-    component: lazy(() => import('@iso/containers/CustomerList/CustomerList')),
+    component: lazy(() => import('@iso/containers/Reports/Accounts')),
   },
   {
     path: 'reports/distributions',
-    component: lazy(() => import('@iso/containers/Distribution/Distributions')),
+    component: lazy(() => import('@iso/containers/Reports/Deliveries')),
   },
   {
     path: 'blank_page',
@@ -375,16 +375,16 @@ const routes = [
   },
   {
     path: 'products/search',
-    component: lazy(() => import('@iso/containers/ProductsList/ProductsList')),
+    component: lazy(() => import('@iso/containers/Products/Search')),
   },
   {
     path: 'products/detail/:productId',
-    component: lazy(() => import('@iso/containers/ProductDetail/ProductDetail')),
+    component: lazy(() => import('@iso/containers/Products/ProductDetail')),
     exact: false
   },
    {
     path: 'products/categories',
-    component: lazy(() => import('@iso/containers/ProductGroups/ProductGroupList')),
+    component: lazy(() => import('@iso/containers/Products/Categories')),
    },
 ];
 

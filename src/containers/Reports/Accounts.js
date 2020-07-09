@@ -6,20 +6,18 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { PoweroffOutlined } from '@ant-design/icons';
 import { Table, Row, Col, Pagination, TreeSelect } from "antd";
-import { Link, useHistory, useRouteMatch,useParams,useLocation } from 'react-router-dom';
+import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import Input, {
-  InputGroup,
-} from '@iso/components/uielements/input';
+import Input from '@iso/components/uielements/input';
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
+import ReportPagination from "./ReportPagination";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -39,10 +37,10 @@ const formItemLayout = {
 const configTreeCheckedKeys = (checkedKeys, treeData) => {
 
   var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
-  console.log("configTreeCheckedKeys",newTreeData);
+  console.log("configTreeCheckedKeys", newTreeData);
 };
 
-export default function() {
+export default function () {
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
@@ -53,7 +51,7 @@ export default function() {
     sortedInfo: "",
     filteredInfo: ""
   });
- /*********************************************** CUSTOM HOOKS ************************************************************ */
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
@@ -61,141 +59,141 @@ export default function() {
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
-  const [selectedDealerCode, setSelectedDealerCode]=useState();
-  const [newUrlParams,setNewUrlParams]=useState('') 
+  const [selectedDealerCode, setSelectedDealerCode] = useState();
+  const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
   const { searchQuery } = useParams();
-  
+
   const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
-  
+
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
-    
-    if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
-    if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
-    if(parsed.keyword!==undefined){setSearchKey(parsed.keyword);}
+
+    if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
+    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     let newDealarCode = []
 
-  if (parsed.fic !== undefined) {
-    if(Array.isArray(parsed.fic)){
-      _.each(parsed.fic, (item, i) => {
-        newDealarCode.push(item);
-      });
-    }else {newDealarCode.push(parsed.fic)}
-   
-  }
+    if (parsed.fic !== undefined) {
+      if (Array.isArray(parsed.fic)) {
+        _.each(parsed.fic, (item, i) => {
+          newDealarCode.push(item);
+        });
+      } else { newDealarCode.push(parsed.fic) }
+
+    }
 
     if (parsed.rec !== undefined) {
-      if(Array.isArray(parsed.rec)){
+      if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
           newDealarCode.push(item);
         });
-      }else {newDealarCode.push(parsed.rec)}
-     
+      } else { newDealarCode.push(parsed.rec) }
+
     }
-   
+
     if (parsed.dec !== undefined) {
-      if(Array.isArray(parsed.dec)){
+      if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
           newDealarCode.push(item);
         });
-      }else {newDealarCode.push(parsed.dec)}
-     
+      } else { newDealarCode.push(parsed.dec) }
+
     }
     setSelectedDealerCode(newDealarCode);
 
     //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
     let fieldArrObj = [];
-    let regionArrObj= [];
-    let dealerArrObj= [];
+    let regionArrObj = [];
+    let dealerArrObj = [];
 
-    if(newDealarCode.length===0){return setFieldCodes(fieldArrObj);setRegionCodes(regionArrObj);setDealerCodes(dealerArrObj)}
+    if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
     _.filter(newDealarCode, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj);  }
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
       else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);  
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
       }
       else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); 
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
       }
     });
   }
-  useEffect(() => {        
+  useEffect(() => {
     getQueryVariable(searchQuery)
     console.log("currentPage!", localCurrentPage);
 
-    setCurrentPage(localCurrentPage);  
-  },[localCurrentPage]);
-  
-  useEffect(() => { 
+    setCurrentPage(localCurrentPage);
+  }, [localCurrentPage]);
+
+  useEffect(() => {
     getQueryVariable(searchQuery)
     console.log("pageSize!", pageSize);
     setChangePageSize(pageSize);
-  },[pageSize]);
+  }, [pageSize]);
 
-  const [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount,setOnChange] = 
-  useFetch(`${siteConfig.api.accounts}`,{"DealerCodes":dealerCodes,"regionCodes":regionCodes,"fieldCodes":fieldCodes,"from":moment(fromDate, 'DD-MM-YYYY'), "to" :moment(toDate, 'DD-MM-YYYY'),"keyword":searchKey, "pageIndex": localCurrentPage - 1 , "pageCount": pageSize });
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.accounts}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
-  const [treeData, loadingTree , setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-/*********************************************** CUSTOM HOOKS ************************************************************ */
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
 
-const searchButton = () => {  
-   
-  const params = new URLSearchParams(location.search);
+  const searchButton = () => {
 
-  params.delete('dec');
-  params.delete('rec');
-  params.delete('fic');
-  params.delete('from')
-  params.delete('to');
-  params.delete('keyword');
+    const params = new URLSearchParams(location.search);
 
-  params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
-  params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
-  if(searchKey.length> 0){params.append('keyword',searchKey);params.toString();}
-  let createUrl=null;
-  if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
-  history.push(`${location.pathname}?${createUrl}`);
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
 
-  return setOnChange(true);
-};
-function onChangeDealerCode(value) {    
-  let fieldArrObj = [];
-  let regionArrObj= [];
-  let dealerArrObj= [];
-  const params = new URLSearchParams(location.search);
-  params.delete('dec');
-  params.delete('rec');
-  params.delete('fic');
-  params.delete('from')
-  params.delete('to');
-  params.delete('keyword');
+    params.append('from', moment(fromDate).format('YYYY-DD-MM')); params.toString();
+    params.append('to', moment(toDate).format('YYYY-DD-MM')); params.toString();
+    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    let createUrl = null;
+    if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
+    history.push(`${location.pathname}?${createUrl}`);
 
-  if (value.length === 0) {setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
-  else{
-  _.filter(value, function (item) {
-    if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
-    else if (item.split("|").length === 2) {
-      regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
-    }
+    return setOnChange(true);
+  };
+  function onChangeDealerCode(value) {
+    let fieldArrObj = [];
+    let regionArrObj = [];
+    let dealerArrObj = [];
+    const params = new URLSearchParams(location.search);
+    params.delete('dec');
+    params.delete('rec');
+    params.delete('fic');
+    params.delete('from')
+    params.delete('to');
+    params.delete('keyword');
+
+    if (value.length === 0) { setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
-      dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
+      _.filter(value, function (item) {
+        if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
+        else if (item.split("|").length === 2) {
+          regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
+        }
+        else {
+          dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
+        }
+        setSelectedDealerCode(value)
+        setNewUrlParams(params.toString());
+      });
     }
-    setSelectedDealerCode(value)
-    setNewUrlParams(params.toString());
-  });
-}
-};
+  };
 
   function changeTimePicker(value, dateString) {
 
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
-  
+
   function onChange(value, dateString) {
     console.log("Selected Time: ", value);
     console.log("Başlanıç Tarihi: ", dateString[0]);
@@ -206,26 +204,23 @@ function onChangeDealerCode(value) {
     console.log("onOk: ", value);
   }
 
- const handleChange = (pagination, filters, sorter) => {
-  console.log('Various parameters', pagination, filters, sorter);
-  setState({
-    ...tableOptions,
-    ["sortedInfo"]: sorter,
-    ["filteredInfo"]: filters
-  });
-};
+  const handleChange = (pagination, filters, sorter) => {
+    console.log('Various parameters', pagination, filters, sorter);
+    setState({
+      ...tableOptions,
+      ["sortedInfo"]: sorter,
+      ["filteredInfo"]: filters
+    });
+  };
 
-  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  //Pagination : Tablo  pageSize'ı değiştirir
   function onShowSizeChange(current, pageSize) {
-    console.log("pageSize :", pageSize);
-    console.log("current :", current);
     setPageSize(pageSize);
     setlocalCurrentPage(current);
   }
 
-  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  // Pagination : Seçili sayfanın saklandığı state'i değiştirir
   function currentPageChange(current) {
-    console.log("current :", current);
     setlocalCurrentPage(current);
   }
 
@@ -249,12 +244,12 @@ function onChangeDealerCode(value) {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
       key: "regionCode"
-    },   
+    },
     {
       title: "Alan Kodu",
       dataIndex: "fieldCode",
       key: "fieldCode"
-    },   
+    },
     {
       title: "Bölge Müdürü",
       dataIndex: "regionManager",
@@ -284,9 +279,9 @@ function onChangeDealerCode(value) {
       title: "Bakiye",
       dataIndex: "balance",
       key: "balance",
-      render:(balance)=>balance.toFixed(2),
+      render: (balance) => balance.toFixed(2),
       sorter: (a, b) => a.balance - b.balance,
-      align:"right",
+      align: "right",
       sortOrder:
         tableOptions.sortedInfo.columnKey === "balance" &&
         tableOptions.sortedInfo.order
@@ -294,49 +289,49 @@ function onChangeDealerCode(value) {
     {
       title: "Bakiye Durumu",
       dataIndex: "balanceStatus",
-      key: "balanceStatus", 
+      key: "balanceStatus",
       sorter: (a, b) => a.balanceStatus.length - b.balanceStatus.length,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "balanceStatus" &&
         tableOptions.sortedInfo.order
     }
   ];
- //Hide order table column
-const role=window.sessionStorage.getItem("role");
-if (role === 'admin') { }
-else if (role === 'fieldmanager') {
-  const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Field;
-  if (getHideColumns.length > 0) {
-    for (let index = 0; index < getHideColumns.length; index++) {
-      columns = _.without(columns, _.findWhere(columns, {
-        dataIndex: getHideColumns[index].dataIndex
+  //Hide order table column
+  const role = window.sessionStorage.getItem("role");
+  if (role === 'admin') { }
+  else if (role === 'fieldmanager') {
+    const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Field;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
       }
-      ))
     }
   }
-}
-else if (role === 'regionmanager') {
-  const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Region;
-  if (getHideColumns.length > 0) {
-    for (let index = 0; index < getHideColumns.length; index++) {
-      columns = _.without(columns, _.findWhere(columns, {
-        dataIndex: getHideColumns[index].dataIndex
+  else if (role === 'regionmanager') {
+    const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Region;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
       }
-      ))
     }
   }
-}
-else if (role === 'dealer') {
-  const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Dealer;
-  if (getHideColumns.length > 0) {
-    for (let index = 0; index < getHideColumns.length; index++) {
-      columns = _.without(columns, _.findWhere(columns, {
-        dataIndex: getHideColumns[index].dataIndex
+  else if (role === 'dealer') {
+    const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Dealer;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
       }
-      ))
     }
   }
-}
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -344,7 +339,7 @@ else if (role === 'dealer') {
       </PageHeader>
       <Box>
         <Collapse accordion>
-        <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
               <Col span={6}>
                 <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
@@ -395,23 +390,30 @@ else if (role === 'dealer') {
       </Box>
       {/* Data list volume */}
       <Box>
+        <ReportPagination
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          pageSize={pageSize}
+          total={totalDataCount}
+          position="top"
+        />
         <Table
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-          bordered={true}
-          pagination={{position: 'none', pageSize: pageSize}}
-          scroll={{ x: 'calc(700px + 50%)'}}
+          pagination={false}
+          // scroll={{ x: 'calc(700px + 50%)' }}
+          scroll={{ x: 'max-content' }}
+          size="medium"
+          bordered={false}
         />
-        <br></br>     
-        <Pagination 
-          showSizeChanger
+        <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
-          position = 'bottom'
-          pageSize= {pageSize}
-          total= {totalDataCount}
+          pageSize={pageSize}
+          total={totalDataCount}
+          position="bottom"
         />
       </Box>
     </LayoutWrapper>
