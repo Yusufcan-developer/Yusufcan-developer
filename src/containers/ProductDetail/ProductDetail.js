@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Card, Descriptions, Tabs, Button, Breadcrumb } from 'antd';
+import { Row, Col, Card, Descriptions, Tabs, Button, Breadcrumb,notification } from 'antd';
 import PageHeader from '@iso/components/utility/pageHeader';
 import Box from '@iso/components/utility/box';
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import IntlMessages from '@iso/components/utility/intlMessages';
-import { notification } from "@iso/components/index";
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
 import Tags from '@iso/components/uielements/tag';
@@ -115,7 +114,7 @@ const ProductDetail = () => {
   //Add product basket
   function onAddBox(product) {
     inputNumberShowOrHide()
-    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode)===undefined)) { dispatch(addToCart(product, 1)); notification('info', 'Ürün Sepete Eklenmiştir'); } //Sepete
+    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode)===undefined)) { dispatch(addToCart(product, 1)); notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' }); } //Sepete
     else {
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);      
         const newProductQuantity = [];

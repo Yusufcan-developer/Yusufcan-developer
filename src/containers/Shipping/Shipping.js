@@ -77,11 +77,16 @@ function getQueryVariable(query) {
   if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
 
   let newDealarCode = []
-  if ((parsed.fic !== undefined)) {
+
+if (parsed.fic !== undefined) {
+  if(Array.isArray(parsed.fic)){
     _.each(parsed.fic, (item, i) => {
       newDealarCode.push(item);
-    }); setSelectedDealerCode(newDealarCode)
-  }
+    });
+  }else {newDealarCode.push(parsed.fic)}
+ 
+}
+
   if (parsed.rec !== undefined) {
     if(Array.isArray(parsed.rec)){
       _.each(parsed.rec, (item, i) => {
@@ -99,6 +104,9 @@ function getQueryVariable(query) {
     }else {newDealarCode.push(parsed.dec)}
    
   }
+  setSelectedDealerCode(newDealarCode);
+
+  //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
   let fieldArrObj = [];
   let regionArrObj= [];
   let dealerArrObj= [];
@@ -113,7 +121,6 @@ function getQueryVariable(query) {
       dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); 
     }
   });
-
 }
 
  useEffect(() => {    
@@ -154,8 +161,8 @@ useFetch(`${siteConfig.api.deliveries}`, {"DealerCodes":dealerCodes,"regionCodes
     console.log("onSelect", info);
     setSelectedKeys(selectedKeys);
   };
-  const searchButton = () => {
-     
+  const searchButton = () => {  
+   
     const params = new URLSearchParams(location.search);
 
     params.delete('dec');
@@ -167,11 +174,10 @@ useFetch(`${siteConfig.api.deliveries}`, {"DealerCodes":dealerCodes,"regionCodes
 
     params.append('from',moment(fromDate).format('YYYY-DD-MM'));params.toString();
     params.append('to',moment(toDate).format('YYYY-DD-MM'));params.toString();
-    if(searchKey.length> 0){params.append('keyword',searchKey);}   
+    if(searchKey.length> 0){params.append('keyword',searchKey);params.toString();}
     let createUrl=null;
     if(newUrlParams.length> 0){createUrl=newUrlParams+'&'+params; }else{createUrl=params}
-    
-    history.push(`${location.pathname}?${createUrl}`);   
+    history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
   };
@@ -234,7 +240,6 @@ function currentPageChange(current){
   console.log("current :", current);
   setlocalCurrentPage(current);
 }
-
 
   let columns = [
     

@@ -25,6 +25,7 @@ export default {
     accounts: apiUrl + 'customers/accounts',                                  //Cari Listesi:POST
     transactions: apiUrl + 'customers/transactions',                          //Cari Hareketler:POST
     accountsTree: apiUrl + 'Customers/accounts-tree',                         //Bayi kodları(Tree) listesi:GET
+    chequeTypes: apiUrl + 'Customers/lookup/cheque-types',                    //Çek türleri listesi:GET
     users: apiUrl + 'Users/users',                                            //Kullanıcılar:POST
     authenticate: apiUrl + 'Users/authenticate',                              //Kullanıcı Doğrulama:POST
   },
