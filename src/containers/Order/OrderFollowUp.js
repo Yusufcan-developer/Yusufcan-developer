@@ -73,7 +73,7 @@ const OrderFollowUp = () => {
     
     if(parsed.from!==undefined){setFromDate(moment(parsed.from).format('DD-MM-YYYY'))}
     if(parsed.from!==undefined){setToDate(moment(parsed.to).format('DD-MM-YYYY'))} 
-
+    if(parsed.keyword!==undefined){setSearchKey(parsed.keyword);}
     let newDealarCode = []
 
   if (parsed.fic !== undefined) {
@@ -255,18 +255,7 @@ return (  <Table columns={OrderDetailcolumns} dataSource={dataGetApi[index]} loa
 };
 
 //Order Detail Columns
-const OrderDetailcolumns = [
-  // {
-  //   title: "Sipariş No",
-  //   dataIndex: "orderNo",
-  //   key: "orderNo"
-  // },
-  // {
-  //   title: "Sipariş Tarihi",
-  //   dataIndex: "orderDate",
-  //   key: "orderDate",
-  //   render:(text)=>moment(text).format(siteConfig.dateFormat)
-  // },
+const OrderDetailcolumns = [  
   {
     title: "Tip",
     dataIndex: "type",
@@ -367,12 +356,7 @@ const OrderDetailcolumns = [
         title: "Bölge Kodu",
         dataIndex: "regionCode",
         key: "regionCode",
-      },
-      {
-        title: "Bölge Adı",
-        dataIndex: "regionName",
-        key: "regionName",
-      },
+      },     
       {
         title: "Bölge Yöneticisi",
         dataIndex: "regionManager",
@@ -382,12 +366,7 @@ const OrderDetailcolumns = [
         title: "Alan Kodu",
         dataIndex: "fieldCode",
         key: "fieldCode",
-      },
-      {
-        title: "Alan Adı",
-        dataIndex: "fieldName",
-        key: "fieldName",
-      },
+      },     
       {
         title: "Alan Yöneticisi",
         dataIndex: "fieldManager",
@@ -478,16 +457,42 @@ const OrderDetailcolumns = [
       },
   ];
 
-  //Hide order table columns
-  // const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer
-  // if (getHideColumns.length > 0) {
-  //     for (let index = 0; index < getHideColumns.length; index++) {
-  //     columns = _.without(columns, _.findWhere(columns, {
-  //     dataIndex: getHideColumns[index].dataIndex
-  //     }
-  //     ))}
-  // }
-    
+  //Hide order table column
+  const role=window.sessionStorage.getItem("role");
+  if (role === 'admin') { }
+  else if (role === 'fieldmanager') {
+    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Field;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if (role === 'regionmanager') {
+    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Region;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if (role === 'dealer') {
+    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -534,7 +539,7 @@ const OrderDetailcolumns = [
                 />
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Ürün adı , Sipariş numarası giriniz" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>

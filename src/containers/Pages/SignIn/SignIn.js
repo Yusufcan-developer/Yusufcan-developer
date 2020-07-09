@@ -70,6 +70,7 @@ function loginError() {
 
         dispatch(clearMenu());
         window.sessionStorage.setItem("nameAndSurname", userName);
+        window.sessionStorage.setItem("role", data.role.roleName);
         history.push('/productsList');
       })
       .catch(error => loginError());

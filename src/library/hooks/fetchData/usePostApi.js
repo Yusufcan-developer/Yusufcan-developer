@@ -12,13 +12,15 @@ function useFetch(url, reqBody) {
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
+  const [serialNumber, setSerialNumber] = useState();
+  const [selectedCheckqueType, setSelectedCheckqueType]=useState();
   const [from, setFrom] = useState();
   const [to, setTo] = useState();
   const [searchkey,setSearchKey]=useState();
   
   async function fetchUrl() {
   
-    const reqB = reqBody == null || reqBody==undefined ? {"DealerCodes":dealerCodes,"Regioncodes":regionCodes,"FieldCodes":fieldCodes,"from":from,"to":to,"keyword":searchkey, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
+    const reqB = reqBody == null || reqBody==undefined ? {"DealerCodes":dealerCodes,"Regioncodes":regionCodes,"FieldCodes":fieldCodes,"from":from,"to":to,"types":selectedCheckqueType,"keyword":searchkey,"serialNumbers":serialNumber, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
     const requestOptions = {
       method: "POST",
       headers: {
@@ -28,7 +30,7 @@ function useFetch(url, reqBody) {
 
       body: JSON.stringify(reqBody)
     };
-
+    console.log('xxxxx reqB',reqB)
     await fetch(url, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
