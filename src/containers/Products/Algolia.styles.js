@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import WithDirection from '@iso/lib/helpers/rtl';
 
 const WDAlgoliaSearchPageWrapper = styled.div`
-  padding: 70px 35px 40px;
+  padding: 40px 20px;
   overflow: hidden;
 
   @media only screen and (max-width: 767px) {
@@ -18,6 +18,10 @@ const WDAlgoliaSearchPageWrapper = styled.div`
     margin: ${props =>
       props['data-rtl'] === 'rtl' ? '0 0 20px 0' : '0 0 20px 0'};
     display: flex;
+  }
+
+  .isoAlgoliaSidebar {
+    padding-top: 20px;
   }
 
   &.sidebarOpen {

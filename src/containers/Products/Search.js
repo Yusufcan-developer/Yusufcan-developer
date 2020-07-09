@@ -388,14 +388,14 @@ const SearchComponent = () => {
 
   return (
     <React.Fragment>
-      <Breadcrumb>
+      {/* <Breadcrumb>
         <Breadcrumb.Item>
           <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
         <Breadcrumb.Item >
           <Link to="/products/categories">Ürün Grubu</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
-      </Breadcrumb>
+      </Breadcrumb> */}
       <AlgoliaSearchPageWrapper className="isoAlgoliaSearchPage">
         <PageHeader>Ürünler Listesi</PageHeader>
         <div className="isoAlgoliaMainWrapper">
@@ -478,13 +478,9 @@ const SearchComponent = () => {
             {/* <ClearAll /> */}
           </SidebarWrapper>
           <ContentHolder>
-
             <Row>
-              <Col span={8} offset={16} align="right" >
-                {totalDataCount > 0 &&
-                  <h4>
-                    {totalDataCount} adet sonuç bulundu
-        </h4>}
+              <Col span={8} offset={16} align="right">
+                {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
               </Col>
             </Row>
             <Box>
@@ -543,12 +539,9 @@ const SearchComponent = () => {
                                 </Button>
                               </Col>
                             </Row>
-
                           )}
-
                       </div>
                     </SingleCardWrapper>
-
                   ))}
                   <Pagination defaultCurrent={0} total={totalDataCount} pageSize={8} onChange={onchangePagination} />
                 </Row>
