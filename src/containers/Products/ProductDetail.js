@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification } from 'antd';
+import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table } from 'antd';
 import PageHeader from '@iso/components/utility/pageHeader';
 import Box from '@iso/components/utility/box';
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
@@ -9,6 +9,7 @@ import Form from "@iso/components/uielements/form";
 import Tags from '@iso/components/uielements/tag';
 import TagWrapper from './tag.styles';
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
+import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseData";
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import siteConfig from "@iso/config/site.config";
@@ -40,7 +41,9 @@ const ProductDetail = () => {
   //const productId1 = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
+  const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
+
   const onChange = value => {
     setQuantity(value);
     const product = productItem;
@@ -149,6 +152,26 @@ const ProductDetail = () => {
     });
     dispatch(changeProductQuantity(newProductQuantity));
   };
+  let columns = [
+
+    {
+      title: "Ambar Kodu",
+      dataIndex: "warehouseId",
+      key: "warehouseId",
+    },
+    {
+      title: "Ambar Adı",
+      dataIndex: "warehouseName",
+      key: "warehouseName",
+    },
+    {
+      title: "Bakiye (" + unit + ")",
+      dataIndex: "balance",
+      align: "right",
+      key: "balance",
+    },
+
+  ];
   return (
     <LayoutWrapper>
       <Breadcrumb>
@@ -169,13 +192,6 @@ const ProductDetail = () => {
           <Box >
             <SwiperWithCustomNav prevButtonText={"geri"}
             >
-              {/* {imageUrl.map(item => (
-                <img
-                  key={`customnav-slider--key${item}`}
-                  src={item.thumb_url}
-                  alt={item.title}
-                />
-              ))} */}
               <img
                 key={`customnav-slider--key${imageUrl}`}
                 src={imageUrl}
@@ -187,64 +203,74 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box
           >
-            <Row>
-              {<Col span={8}> <Descriptions>
-                <Descriptions.Item label="Ürün Kodu"><Tag>{itemCode}</Tag></Descriptions.Item>
-              </Descriptions></Col>}
-              <Col span={8}><Descriptions>
-                <Descriptions.Item label="Serisi"><Tag>{series}</Tag></Descriptions.Item>
-              </Descriptions></Col>
-              <Col span={8}> <Descriptions>
-                <Descriptions.Item label="Üretim Durumu"><Tag color="#87d068"> {productionStatus}</Tag></Descriptions.Item>
-              </Descriptions></Col>
-            </Row>
-            <Row>
-              <Col span={8}> <Descriptions>
-                <Descriptions.Item label="Renk"> <Tag>{color}</Tag></Descriptions.Item>
-              </Descriptions></Col>
-              <Col span={8}><Descriptions>
-                <Descriptions.Item label="Ebat"><Tag>{dimension}</Tag></Descriptions.Item>
-              </Descriptions></Col>
+            <Row><Col span={12}><Form.Item label="Ürün Kodu">
+              <span className="ant-form-text">{itemCode === null ? '-' : itemCode}</span>
+            </Form.Item>
+              <Form.Item label="Serisi">
+                <span className="ant-form-text">{series === null ? '-' : series}</span>
+              </Form.Item>
+              <Form.Item label="Üretim Durumu">
+                <span className="ant-form-text">{productionStatus === null ? '-' : productionStatus}</span>
+              </Form.Item>
+              <Form.Item label="Renk">
+                <span className="ant-form-text">{color === null ? '-' : color}</span>
+              </Form.Item>
+              <Form.Item label="Ebat">
+                <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
+              </Form.Item>
+            </Col>
+              <Col span={12}>
+                <Row style={{ marginTop: '30px' }}>
+                  <Col align="center" span={24}>
+                    <span style={{ fontSize:'35px' }}><strong>{listPrice}</strong> {"TL"}</span>
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: '30px' }}>
+                  <Col align="center" span={24}>
+                    {!inputNumberShowOrHide(productItem) ? (
+                      <Button type="primary" onClick={event => onAddBox(productItem)}>
+                        {<IntlMessages id="Sepete Ekle" />}
+                      </Button>
+                    ) : (
+                        <Row align="middle">
+                          <Col span={6} style={{ width: '100%' }} align="right" offset={2}>
+                            <Button type="primary" onClick={event => onRemoveBox(productItem)}>
+                              {<IntlMessages id="-" />}
+                            </Button>
+                          </Col>
+                          <Col span={8}>
+                            <Input
+                              min={1}
+                              max={1000}
+                              defaultValue={1}
+                              value={inputNumberQuantityValue(productItem)}
+                              step={1}
+                              style={{ textAlign: "right" }}
+                              onChange={event => onChangeQuantity(event, productItem)}
+                            />
+                          </Col>
+                          <Col span={6} style={{ width: '100%' }} align="left">
+                            <Button type="primary" onClick={event => onAddBox(productItem)}>
+                              {<IntlMessages id="+" />}
+                            </Button>
+                          </Col>
+                        </Row>
+                      )}
+                  </Col>
+                </Row>
 
-            </Row>
-            <Row>
-              <Col span={8}>
-                <Descriptions.Item style={{ color: 'red' }} >{listPrice} {"TL"}</Descriptions.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={8}>
-                {!inputNumberShowOrHide(productItem) ? (
-                  <Button type="primary" onClick={event => onAddBox(productItem)}>
-                    {<IntlMessages id="Sepete Ekle" />}
-                  </Button>
-                ) : (
-                    <Row justify="center" align="middle">
-                      <Col span={4} style={{ width: '100%' }} align="right">
-                        <Button type="primary" onClick={event => onRemoveBox(productItem)}>
-                          {<IntlMessages id="-" />}
-                        </Button>
-                      </Col>
-                      <Col span={8}>
-                        <Input
-                          min={1}
-                          max={1000}
-                          defaultValue={1}
-                          value={inputNumberQuantityValue(productItem)}
-                          step={1}
-                          style={{ textAlign: "right" }}
-                          onChange={event => onChangeQuantity(event, productItem)}
-                        />
-                      </Col>
-                      <Col span={4} style={{ width: '100%' }}>
-                        <Button type="primary" onClick={event => onAddBox(productItem)}>
-                          {<IntlMessages id="+" />}
-                        </Button>
-                      </Col>
-                    </Row>
-                  )}
-              </Col>
-            </Row>
+              </Col></Row>
+
+
+            <Table
+              columns={columns}
+              dataSource={warehouseData}
+              pagination={false}
+              scroll={{ x: 'max-content' }}
+              size="medium"
+              bordered={false}
+            />
+
           </Box>
         </Col>
       </Row>
@@ -252,62 +278,32 @@ const ProductDetail = () => {
         <Col span={24} style={colStyle}>
           <Box
           >
-            <Row>
 
-              <Tabs defaultActiveKey="1" type="card" size={"small"}>
-                <TabPane tab="Ürün Açıklaması" key="1">
-                  Ürün Açıklaması
+            <Tabs defaultActiveKey="1" type="card" size={"small"}>
+              <TabPane tab="Ürün Açıklaması" key="1">
+                Ürün Açıklaması
           </TabPane>
-                <TabPane tab="Teknik Özellik" key="2">
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col className="gutter-row" span={6}>
-                      <div style={style}>Ebat:</div>
-                    </Col>
-                    <Col >
-                      <div style={style}>{dimension}</div>
-                    </Col>
+              <TabPane tab="Teknik Özellik" key="2">
+                <Form.Item label="Ebat">
+                  <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
+                </Form.Item>
 
-                  </Row>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col className="gutter-row" span={6}>
-                      <div style={style}>Yüzey:</div>
-                    </Col>
-                    <Col >
-                      <div style={style}>{surface}</div>
-                    </Col>
+                <Form.Item label="Yüzey">
+                  <span className="ant-form-text">{surface === null ? '-' : surface}</span>
+                </Form.Item>
+                <Form.Item label="Renk">
+                  <span className="ant-form-text">{color === null ? '-' : color}</span>
+                </Form.Item>
+                <Form.Item label="Tipi">
+                  <span className="ant-form-text">{type === null ? '-' : type}</span>
+                </Form.Item>
+                <Form.Item label="Kenar">
+                  <span className="ant-form-text">{rectifying === null ? '-' : rectifying}</span>
+                </Form.Item>
 
-                  </Row>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col className="gutter-row" span={6}>
-                      <div style={style}>Renk:</div>
-                    </Col>
-                    <Col >
-                      <div style={style}>{color}</div>
-                    </Col>
+              </TabPane>
+            </Tabs>
 
-                  </Row>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col className="gutter-row" span={6}>
-                      <div style={style}>Tipi:</div>
-                    </Col>
-                    <Col >
-                      <div style={style}>{type}</div>
-                    </Col>
-
-                  </Row>
-                  <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}>
-                    <Col className="gutter-row" span={6}>
-                      <div style={style}>Kenar:</div>
-                    </Col>
-                    <Col >
-                      <div style={style}>{rectifying}</div>
-                    </Col>
-
-                  </Row>
-                </TabPane>
-              </Tabs>
-
-            </Row>
           </Box>
         </Col>
       </Row>

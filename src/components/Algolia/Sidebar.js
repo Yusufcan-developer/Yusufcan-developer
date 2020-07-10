@@ -39,7 +39,6 @@ const onChange = checkedList => {
   //   !!checkedList.length && checkedList.length < plainOptions.length
   // );
   // setCheckAll(checkedList.length === plainOptions.length);
-  console.log('xxxx checkedList.length',checkedList)
 };
 // const onCheckAllChange = e => {
 //   setCheckedList(e.target.checked ? plainOptions : []);

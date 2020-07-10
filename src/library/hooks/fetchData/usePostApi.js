@@ -30,7 +30,6 @@ function useFetch(url, reqBody) {
 
       body: JSON.stringify(reqBody)
     };
-    console.log('xxxxx reqB',reqB)
     await fetch(url, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
