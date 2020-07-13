@@ -18,6 +18,7 @@ import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import ExcelExport from "../ExcelExport/ExcelExport";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -160,6 +161,10 @@ const OrdersReport = () => {
     console.log("onSelect", info);
     setSelectedKeys(selectedKeys);
   };
+  const exportExcelButton = () => {
+    ExcelExport(columns, data, 'Geçmiş Siparişler');
+  }
+
   const searchButton = () => {
 
     const params = new URLSearchParams(location.search);
@@ -391,6 +396,7 @@ const OrdersReport = () => {
       title: "Sipariş Tarihi",
       dataIndex: "orderDate",
       key: "orderDate",
+      type: "date",
       sorter: (a, b) => a.orderDate - b.orderDate,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "orderDate" &&
@@ -558,6 +564,11 @@ const OrdersReport = () => {
       </Box>
       {/* Data list volume */}
       <Box >
+        <Col span={8} offset={16} align="right" >
+          <Button align="right" type="primary" loading={iconLoading} onClick={exportExcelButton}>
+            {<IntlMessages id="forms.button.exportExcel" />}
+          </Button>
+        </Col>
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}

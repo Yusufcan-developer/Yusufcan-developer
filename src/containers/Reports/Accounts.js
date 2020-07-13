@@ -18,6 +18,7 @@ import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import ExcelExport from "../ExcelExport/ExcelExport";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -139,6 +140,9 @@ export default function () {
 
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
   /*********************************************** CUSTOM HOOKS ************************************************************ */
+  const exportExcelButton = () => {
+    ExcelExport(columns, data, 'Teminat Mektubu');
+  }
 
   const searchButton = () => {
 
@@ -390,6 +394,11 @@ export default function () {
       </Box>
       {/* Data list volume */}
       <Box>
+      <Col span={8} offset={16} align="right" >
+          <Button align="right" type="primary" loading={iconLoading} onClick={exportExcelButton}>
+            {<IntlMessages id="forms.button.exportExcel" />}
+          </Button>
+        </Col>
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}

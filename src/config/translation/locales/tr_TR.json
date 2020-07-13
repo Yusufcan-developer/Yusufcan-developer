@@ -39,6 +39,7 @@
   "sidebar.input": "Input",
   "sidebar.editor": "Editor",
   "forms.button.label_Search": "Ara",
+  "forms.button.exportExcel": "Excel'e Aktar",
   "sidebar.formsWithValidation": "Forms With Validation",
   "sidebar.progress": "Progress",
   "sidebar.button": "Button",

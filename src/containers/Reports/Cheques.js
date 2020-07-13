@@ -19,6 +19,7 @@ import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import ExcelExport from "../ExcelExport/ExcelExport";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -153,6 +154,9 @@ const ChequesReport = () => {
     children.push(<Option key={chequeTypeData[i]}>{chequeTypeData[i]}</Option>);
   }
   /*********************************************** CUSTOM HOOKS ************************************************************ */
+  const exportExcelButton = () => {
+    ExcelExport(columns, data, 'Çek-Senet');
+  }
 
   const searchButton = () => {
 
@@ -296,6 +300,7 @@ const ChequesReport = () => {
       title: "Vade",
       dataIndex: "issueDate",
       key: "issueDate",
+      type: "date",
       render: (issueDate) => moment(issueDate).format(siteConfig.dateFormat),
       sorter: (a, b) => a.issueDate - b.issueDate,
       sortOrder:
@@ -451,6 +456,11 @@ const ChequesReport = () => {
       </Box>
       {/* Data list volume */}
       <Box >
+      <Col span={8} offset={16} align="right" >
+          <Button align="right" type="primary" loading={iconLoading} onClick={exportExcelButton}>
+            {<IntlMessages id="forms.button.exportExcel" />}
+          </Button>
+        </Col>
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
