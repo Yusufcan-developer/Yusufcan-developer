@@ -23,16 +23,6 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 4 },
-    sm: { span: 2 }
-  },
-  wrapperCol: {
-    xs: { span: 16 },
-    sm: { span: 8 }
-  }
-};
 
 const configTreeCheckedKeys = (checkedKeys, treeData) => {
 
@@ -53,6 +43,7 @@ export default function () {
   });
   /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20)
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
@@ -75,6 +66,8 @@ export default function () {
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
+    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
+    if ((parsed.pgindex !== undefined)&& (selectedCurrentPage===0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -154,9 +147,13 @@ export default function () {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
 
-    params.append('from', moment(fromDate).format('YYYY-DD-MM')); params.toString();
-    params.append('to', moment(toDate).format('YYYY-DD-MM')); params.toString();
+    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    params.append('pgsize', pageSize);
+    params.append('pgindex', localCurrentPage);
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -175,6 +172,8 @@ export default function () {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
 
     if (value.length === 0) { setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -193,15 +192,11 @@ export default function () {
   };
 
   function changeTimePicker(value, dateString) {
-
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
 
   function onChange(value, dateString) {
-    console.log("Selected Time: ", value);
-    console.log("Başlanıç Tarihi: ", dateString[0]);
-    console.log("Bitiş Tarihi: ", dateString[1]);
   }
 
   function onOk(value) {
@@ -219,15 +214,14 @@ export default function () {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    console.log("pageSize :", pageSize);
-    console.log("current :", current);
+    setSelectedCurrentPage(current);
     setPageSize(pageSize);
     setlocalCurrentPage(current);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
-    console.log("current :", current);
+    setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
   }
 
@@ -467,6 +461,7 @@ export default function () {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
+          current={localCurrentPage}
           position="top"
         />
         <Table
@@ -485,6 +480,7 @@ export default function () {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
+          current={localCurrentPage}
           position="bottom"
         />
       </Box>

@@ -5,7 +5,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, TreeSelect } from "antd";
 import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -23,29 +23,10 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 4 },
-    sm: { span: 2 }
-  },
-  wrapperCol: {
-    xs: { span: 16 },
-    sm: { span: 8 }
-  }
-};
-
-const configTreeCheckedKeys = (checkedKeys, treeData) => {
-
-  var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
-  console.log("configTreeCheckedKeys", newTreeData);
-};
-
 export default function () {
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState([]);
   const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -53,6 +34,7 @@ export default function () {
   });
   /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20)
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
@@ -64,7 +46,6 @@ export default function () {
   const location = useLocation();
   const { searchQuery } = useParams();
 
-  const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
 
@@ -75,6 +56,10 @@ export default function () {
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
+    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }   
+    if ((parsed.pgindex !== undefined)&& (selectedCurrentPage===0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    
+
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -152,9 +137,13 @@ export default function () {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
 
-    params.append('from', moment(fromDate).format('YYYY-DD-MM')); params.toString();
-    params.append('to', moment(toDate).format('YYYY-DD-MM')); params.toString();
+    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    params.append('pgsize', pageSize);
+    params.append('pgindex', localCurrentPage);
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -179,6 +168,8 @@ export default function () {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
 
     if (value.length === 0) { setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -219,12 +210,13 @@ export default function () {
     console.log("pageSize :", pageSize);
     console.log("current :", current);
     setPageSize(pageSize);
+    setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
-    console.log("current :", current);
+    setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
   }
 
@@ -429,6 +421,7 @@ export default function () {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
+          current={localCurrentPage}
           position="top"
         />
         <Table
@@ -447,6 +440,7 @@ export default function () {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
+          current={localCurrentPage}
           position="bottom"
         />
       </Box>
