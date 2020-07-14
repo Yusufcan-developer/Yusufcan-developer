@@ -2,7 +2,7 @@ import React from "react";
 import { Pagination } from "antd";
 
 export default (props) => {
-    const { onShowSizeChange, onChange, pageSize, total, position } = props;
+    const { onShowSizeChange, onChange, pageSize, total, position,current } = props;
     let style = null;
     if (position === 'top') {
         style = { marginBottom: '10px' };
@@ -16,6 +16,7 @@ export default (props) => {
             onChange={onChange}
             pageSize={pageSize}
             total={total}
+            current={current}
             showTotal={total => `Toplam ${total} kayıt`}
             hideOnSinglePage
             style={style}
