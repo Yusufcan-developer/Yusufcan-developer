@@ -67,7 +67,6 @@ const ProductsList = () => {
   const location = useLocation();
 
   function getQueryVariable(query) {
-
     const parsed = queryString.parse(location.search);
     
     //Product Group get url data
@@ -110,22 +109,19 @@ const ProductsList = () => {
       } else { setSurface([parsed.sfc]); }
     }
     }
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    setCurrentPage(localCurrentPage);
-  }, [localCurrentPage]);
+  // useEffect(() => {
+  //   getQueryVariable(searchQuery)
+  //   setCurrentPage(localCurrentPage);
+  // }, [localCurrentPage]);
 
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    setChangePageSize(pageSize);
-  }, [pageSize]);
+  // useEffect(() => {
+  //   getQueryVariable(searchQuery)
+  //   setChangePageSize(pageSize);
+  // }, [pageSize]);
 
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  // const { filters } = useSelector(state => state.Filters);
-  // if (filters.length > 0) { console.log('xxxx fils', filters) }
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
-  // const { addToFilter, changeFilter } = filterActions;
 
   const dispatch = useDispatch();
 
@@ -133,7 +129,7 @@ const ProductsList = () => {
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
     useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "series": series,"productStatus":productStatus, "types": productType,"surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
-  //Ürün Grubu 
+  //Ürün Grubu
   const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
 
   //Ürün Tipi 
@@ -173,7 +169,6 @@ const ProductsList = () => {
     const params = new URLSearchParams(location.search);
     params.delete('keyword');
     if (keyword.length > 0) {
-
       params.append('keyword', keyword);
       params.toString();
     }
@@ -186,7 +181,6 @@ const ProductsList = () => {
       keywordAddUrl();
     }
   }
-  ///
   const onSearch = e => {    
     keywordAddUrl();
   }
@@ -374,7 +368,6 @@ const ProductsList = () => {
   }
   //Redux product quantity change event
   function onChangeQuantity(event, productData) {
-
     const product = productData;
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
@@ -392,7 +385,6 @@ const ProductsList = () => {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
-
   };
   //
   const onChange = checkedList => {

@@ -11,8 +11,10 @@ export default {
     productDetail: apiUrl + 'carts/products/',                                //Ürün detay bilgisi: GET
     productGroup: apiUrl + 'carts/lookup/product-categories',                 //Ürün Gruplerı:GET
     productType: apiUrl + 'carts/lookup/product-types',                       //Ürün Tipleri:GET
+    productInfoRedux: apiUrl + 'carts/carts',                                 //Ürün Bilgileri Redux:POST
+    productInfoDatabase: apiUrl + 'carts/carts/',                            //Ürün Bilgileri Database:GET
     dimensions: apiUrl + 'carts/lookup/product-dimensions',                   //Ebatlar:GET
-    series:apiUrl + 'carts/lookup/product-series',                              //Seriler:GET
+    series:apiUrl + 'carts/lookup/product-series',                            //Seriler:GET
     colors: apiUrl + 'carts/lookup/product-colors',                           //Renkler:GET
     surfaces: apiUrl + 'carts/lookup/product-surfaces',                       //Yüzeyler:GET
     productionStatusData: apiUrl + 'carts/lookup/product-production-status',  //Üretim Durumları:GET
