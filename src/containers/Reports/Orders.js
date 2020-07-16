@@ -63,7 +63,7 @@ const OrdersReport = () => {
     if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if ((parsed.pgindex !== undefined)&& (selectedCurrentPage===0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -72,7 +72,6 @@ const OrdersReport = () => {
           newDealarCode.push(item);
         });
       } else { newDealarCode.push(parsed.fic) }
-
     }
 
     if (parsed.rec !== undefined) {
@@ -81,7 +80,6 @@ const OrdersReport = () => {
           newDealarCode.push(item);
         });
       } else { newDealarCode.push(parsed.rec) }
-
     }
 
     if (parsed.dec !== undefined) {
@@ -90,7 +88,6 @@ const OrdersReport = () => {
           newDealarCode.push(item);
         });
       } else { newDealarCode.push(parsed.dec) }
-
     }
     setSelectedDealerCode(newDealarCode);
 
@@ -110,7 +107,6 @@ const OrdersReport = () => {
       }
     });
   }
-
   useEffect(() => {
     setCurrentPage(localCurrentPage);
     getQueryVariable(searchQuery)
@@ -126,7 +122,6 @@ const OrdersReport = () => {
     setToDate(toDate);
     getQueryVariable(searchQuery)
   }, [fromDate, toDate]);
-
 
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
     useOrderFollowData(`${siteConfig.api.orders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
@@ -155,11 +150,9 @@ const OrdersReport = () => {
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Geçmiş Siparişler');
   }
-
-  const searchButton = () => {
-
+  function dataSearch(selectedPageIndex,selectedPageSize) {
     const params = new URLSearchParams(location.search);
-
+    
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -171,14 +164,17 @@ const OrdersReport = () => {
 
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('pgsize', pageSize);
-    params.append('pgindex', localCurrentPage);
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
+  }
+  const searchButton = () => {
+    dataSearch();
   };
 
   function onChangeDealerCode(value) {
@@ -212,7 +208,6 @@ const OrdersReport = () => {
     }
   };
   function changeTimePicker(value, dateString) {
-
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
@@ -234,14 +229,15 @@ const OrdersReport = () => {
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
+    dataSearch(current,pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
+    dataSearch(current);
   }
-
 
   const expandedRow = (row, index) => {
 
