@@ -64,7 +64,7 @@ const ChequesReport = () => {
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.sno !== undefined) { setSerialNumber([parsed.sno]); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if ((parsed.pgindex !== undefined)&& (selectedCurrentPage===0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
 
     let checkType = [];
     if (parsed.ctype !== undefined) {
@@ -151,8 +151,7 @@ const ChequesReport = () => {
     ExcelExport(columns, data, 'Çek-Senet');
   }
 
-  const searchButton = () => {
-
+  function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
 
     params.delete('dec');
@@ -161,28 +160,22 @@ const ChequesReport = () => {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
-    params.delete('sno');
-    params.delete('ctype');
     params.delete('pgsize');
     params.delete('pgindex');
 
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('pgsize', pageSize);
-    params.append('pgindex', localCurrentPage);
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    if (serialNumber !== undefined) { params.append('sno', serialNumber); params.toString(); }
-    if (selectedCheckqueType !== undefined) {
-      _.filter(selectedCheckqueType, function (item) {
-        params.append('ctype', item); params.toString();
-      })
-    }
-
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
+  }
+  const searchButton = () => {
+    dataSearch();
   };
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
@@ -239,12 +232,14 @@ const ChequesReport = () => {
     setSelectedCurrentPage(current);
     setPageSize(pageSize);
     setlocalCurrentPage(current);
+    dataSearch(current,pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
+    dataSearch(current);
   }
   function chequeHandleChange(value) {
     setSelectedCheckqueType(value);
@@ -451,7 +446,7 @@ const ChequesReport = () => {
       </Box>
       {/* Data list volume */}
       <Box >
-      <Col span={8} offset={16} align="right" >
+        <Col span={8} offset={16} align="right" >
           <Button align="right" type="primary" loading={iconLoading} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>

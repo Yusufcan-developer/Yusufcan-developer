@@ -126,11 +126,9 @@ export default function () {
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Cari Hareketler');
   }
-
-  const searchButton = () => {
-
+  function dataSearch(selectedPageIndex,selectedPageSize) {
     const params = new URLSearchParams(location.search);
-
+    
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -142,14 +140,17 @@ export default function () {
 
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('pgsize', pageSize);
-    params.append('pgindex', localCurrentPage);
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
+  }
+  const searchButton = () => {
+    dataSearch();
   };
 
   function changeTimePicker(value, dateString) {
@@ -207,17 +208,17 @@ export default function () {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    console.log("pageSize :", pageSize);
-    console.log("current :", current);
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
+    dataSearch(current,pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
+    dataSearch(current);
   }
 
   let columns = [
