@@ -17,6 +17,7 @@ async function getDatabaseProductInfo() {
     }
   };  
   const userName = window.sessionStorage.getItem("nameAndSurname");
+  if(localStorage.getItem("id_token")){
   await fetch(`${siteConfig.api.productInfoDatabase}${userName}`, requestOptions)
     .then(response => {
       if (!response.ok) throw Error(response.statusText);
@@ -27,13 +28,13 @@ async function getDatabaseProductInfo() {
       productInfo = data;
     })
     .catch();
-  return productInfo;
+  return productInfo;}
 }
 
 async function getInitData() {
   let productQuantity = [];
   const products = {};
-  if (!isServer) {
+  if (localStorage.getItem("id_token")){
     const cartProductQuantity = localStorage.getItem('cartProductQuantity');
     let cartProducts = localStorage.getItem('cartProducts');
     const productsData = await getDatabaseProductInfo();

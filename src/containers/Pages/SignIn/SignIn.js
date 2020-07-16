@@ -46,6 +46,11 @@ function loginError() {
     cancelText: 'Cancel',
   });
 }
+const keyPress = e => {
+  if (e.keyCode == 13) {
+    handleLogin(e);
+  }
+}
   function handleLogin(e) {
     e.preventDefault();
 
@@ -110,6 +115,7 @@ function loginError() {
                   type="password"
                   placeholder="Şifre"
                   autoComplete="false"
+                  onKeyDown={keyPress}
                   onChange={event => setPassword(event.target.value)}
                 />
               </div>
