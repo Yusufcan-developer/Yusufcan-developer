@@ -18,7 +18,7 @@ async function getDatabaseProductInfo() {
   };  
   const userName = window.sessionStorage.getItem("nameAndSurname");
   if(localStorage.getItem("id_token")){
-  await fetch(`${siteConfig.api.productInfoDatabase}${userName}`, requestOptions)
+  await fetch(`${siteConfig.api.productInfoDatabase}${''}`, requestOptions)
     .then(response => {
       if (!response.ok) throw Error(response.statusText);
       return response.json();
