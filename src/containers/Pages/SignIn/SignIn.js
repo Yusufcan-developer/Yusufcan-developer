@@ -81,7 +81,7 @@ const keyPress = e => {
       .catch(error => loginError());
   }
 
-  let { from } = location.state || { from: { pathname: '/productsList' } };
+  let { from } = location.state || { from: { pathname: '/products/categories' } };
 
   if (redirectToReferrer) {
     return <Redirect to={from} />;
