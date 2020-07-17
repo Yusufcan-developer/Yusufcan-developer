@@ -74,8 +74,8 @@ const keyPress = e => {
         dispatch(login(data.token));
 
         dispatch(clearMenu());
-        window.sessionStorage.setItem("nameAndSurname", userName);
-        window.sessionStorage.setItem("role", data.role.roleName);
+        localStorage.setItem("nameAndSurname", userName);
+        localStorage.setItem("role", data.role.roleName);
         history.push('/productsList');
       })
       .catch(error => loginError());
