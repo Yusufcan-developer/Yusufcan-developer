@@ -20,7 +20,7 @@ export default function Topbar() {
     dispatch,
   ]);
   const isCollapsed = collapsed && !openDrawer;
-  const username = window.sessionStorage.getItem("nameAndSurname");
+  const username = localStorage.getItem("nameAndSurname");
   const styling = {
     background: customizedTheme.backgroundColor,
     position: 'fixed',

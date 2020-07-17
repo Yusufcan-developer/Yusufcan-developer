@@ -329,7 +329,7 @@ const ChequesReport = () => {
   ];
 
   //Hide order table column
-  const role = window.sessionStorage.getItem("role");
+  const role = localStorage.getItem("role");
   if (role === 'admin') { }
   else if (role === 'fieldmanager') {
     const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Field;

@@ -13,12 +13,13 @@ async function getDatabaseProductInfo() {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
+     
       Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
     }
   };  
-  const userName = window.sessionStorage.getItem("nameAndSurname");
-  if(localStorage.getItem("id_token")){
-  await fetch(`${siteConfig.api.productInfoDatabase}${''}`, requestOptions)
+  const userName = localStorage.getItem("nameAndSurname");
+
+  await fetch(`${siteConfig.api.productInfoDatabase}${userName}`, requestOptions)
     .then(response => {
       if (!response.ok) throw Error(response.statusText);
       return response.json();
@@ -28,7 +29,7 @@ async function getDatabaseProductInfo() {
       productInfo = data;
     })
     .catch();
-  return productInfo;}
+  return productInfo;
 }
 
 async function getInitData() {
