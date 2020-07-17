@@ -76,7 +76,7 @@ const keyPress = e => {
         dispatch(clearMenu());
         localStorage.setItem("nameAndSurname", userName);
         localStorage.setItem("role", data.role.roleName);
-        history.push('/productsList');
+        history.push('/products/categories');
       })
       .catch(error => loginError());
   }
