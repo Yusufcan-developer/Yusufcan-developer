@@ -76,12 +76,12 @@ const keyPress = e => {
         dispatch(clearMenu());
         window.sessionStorage.setItem("nameAndSurname", userName);
         window.sessionStorage.setItem("role", data.role.roleName);
-        history.push('/productsList');
+        history.push('/products/categories');
       })
       .catch(error => loginError());
   }
 
-  let { from } = location.state || { from: { pathname: '/productsList' } };
+  let { from } = location.state || { from: { pathname: '/products/categories' } };
 
   if (redirectToReferrer) {
     return <Redirect to={from} />;
