@@ -11,7 +11,6 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
-import { useGetOrderItems } from "@iso/lib/hooks/fetchData/useGetOrderItems";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
@@ -50,11 +49,11 @@ const OrdersReport = () => {
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
   const { searchQuery } = useParams();
-
+  
   const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
-
+  const [orderDetailItemsData, setOrderDetailItemsData] = useState();
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
@@ -108,6 +107,9 @@ const OrdersReport = () => {
     });
   }
   useEffect(() => {
+
+    console.log('xxxx orderIdArray',orderIdArray)
+     getOrderDetailItem('', '003100000')
     setCurrentPage(localCurrentPage);
     getQueryVariable(searchQuery)
   }, [localCurrentPage]);
@@ -125,15 +127,10 @@ const OrdersReport = () => {
 
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
     useOrderFollowData(`${siteConfig.api.orders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
-
-  const [dataGetApi, loadingGetApi, setOnChangeGetApi, setOrderId] = useGetOrderItems(`${siteConfig.api.orderDetail}`);
-
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
   /*********************************************** CUSTOM HOOKS ************************************************************ */
-
-  const onExpand = expandedKeys => {
-    console.log("onExpand", expandedKeys);
-
+  
+  async function onExpand(expandedKeys) {
     setExpandedKeys(expandedKeys);
     setAutoExpandParent(false);
   };
@@ -177,6 +174,30 @@ const OrdersReport = () => {
     dataSearch();
   };
 
+  async function getOrderDetailItem(url,orderNoItems) {
+    url=siteConfig.api.orderDetail;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+
+    await fetch(`${url}/?orderNo=${orderNoItems}`, requestOptions)
+      .then(response => {
+        if (!response.ok) throw Error(response.statusText);
+        return response.json();
+      })
+      .then(data => {
+        console.log('xxxx 1',data)
+        setOrderDetailItemsData(data);
+        
+      })
+      .catch();
+      
+      return orderDetailItemsData;
+  }
   function onChangeDealerCode(value) {
 
     let fieldArrObj = [];
@@ -238,23 +259,16 @@ const OrdersReport = () => {
     setlocalCurrentPage(current);
     dataSearch(current);
   }
-
-  const expandedRow = (row, index) => {
-
-    setOrderId(orderIdArray);
-
-    console.log("orderIdArray :", orderIdArray);
-    console.log("dataGetApi", dataGetApi);
-
-    return (<Table
-      columns={OrderDetailcolumns}
-      dataSource={dataGetApi[index]}
-      loading={loadingGetApi}
-      pagination={false}
-      scroll={{ x: 'max-content' }}
-      size="medium"
-      bordered={false}
-    />);
+  function expandedRow(row, index) {
+    console.log('xxxx orderDetailItemsData',orderDetailItemsData)
+   return (<Table
+     columns={OrderDetailcolumns}
+     dataSource={orderDetailItemsData[0].Value}
+     pagination={false}
+     scroll={{ x: 'max-content' }}
+     size="medium"
+     bordered={false}
+   />);
   };
 
   //Order Detail Columns
@@ -576,6 +590,7 @@ const OrdersReport = () => {
           loading={loading}
           expandable={{ 'expandedRowRender': expandedRow }}
           pagination={false}
+          onExpand={onExpand}
           // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"

@@ -35,6 +35,7 @@ const SearchComponent = () => {
   const [addCartLoading, setAddCartLoading] = React.useState(false);
   const history = useHistory();
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(8)
   const [quantity, setQuantity] = useState(1)
   const [productGroup, setProductGroup] = useState([])
@@ -57,6 +58,9 @@ const SearchComponent = () => {
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
+
+    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
+    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
 
     //Product Group get url data
     if (parsed.pg !== undefined) {
@@ -120,11 +124,7 @@ const SearchComponent = () => {
 
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  // const { filters } = useSelector(state => state.Filters);
-  // if (filters.length > 0) { console.log('xxxx fils', filters) }
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
-  // const { addToFilter, changeFilter } = filterActions;
-
   const dispatch = useDispatch();
 
   //ProductListHook
@@ -191,12 +191,32 @@ const SearchComponent = () => {
   const onSearch = e => {
     keywordAddUrl();
   }
-
-  function onchangePagination(page, pageSize) {
+/**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
-    setlocalCurrentPage(page);
-  };
+    setSelectedCurrentPage(current);
+    setlocalCurrentPage(current);
+    const params = new URLSearchParams(location.search);
+    params.delete('pgsize');
+    params.delete('pgindex');
 
+    params.append('pgsize', pageSize);
+    params.append('pgindex', current);
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  }
+
+/**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+function currentPageChange(current) {
+  setSelectedCurrentPage(current);
+  setlocalCurrentPage(current);
+
+  const params = new URLSearchParams(location.search);
+  params.delete('pgindex');
+  params.append('pgindex', current)
+  history.push(`${location.pathname}?${params.toString()}`);
+  return setOnChange(true);
+}
   //Product Group Filter Event
   function onChangeProductGroup(checkedProductGroupValue) {
     setProductGroup(checkedProductGroupValue);
@@ -446,6 +466,7 @@ const SearchComponent = () => {
               onChange={onchangeInputSearch}
               onSearch={onSearch}
               onKeyDown={keyPress} />
+
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Ürün Grubu" />} key="0">
                 <CheckboxGroup
@@ -600,7 +621,12 @@ const SearchComponent = () => {
                       </div>
                     </SingleCardWrapper>
                   ))}
-                  <Pagination defaultCurrent={0} total={totalDataCount} pageSize={8} onChange={onchangePagination} />
+                  <Pagination  onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          pageSize={pageSize}
+          total={totalDataCount}
+          current={localCurrentPage}
+          position="top"/>
                 </Row>
               </Spin>
             </Box>
