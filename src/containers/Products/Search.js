@@ -480,12 +480,12 @@ const SearchComponent = () => {
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Tip" />} key="1">
                 <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
-                  <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
-                    Parçalı Satış
-                </Radio>
-                  <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
+                <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
                     Hepsi
                 </Radio>
+                  <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
+                    Parçalı Satış
+                </Radio>                  
                 </RadioGroup>
               </Panel>
             </Collapse>
