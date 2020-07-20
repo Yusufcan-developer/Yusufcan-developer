@@ -72,6 +72,7 @@ const ProductDetail = () => {
       }
     };
   };
+
   function onRemoveBox(product) {
     inputNumberShowOrHide(product)
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
@@ -152,8 +153,8 @@ const ProductDetail = () => {
     });
     dispatch(changeProductQuantity(newProductQuantity));
   };
-  let columns = [
 
+  let columns = [
     {
       title: "Ambar Kodu",
       dataIndex: "warehouseId",
@@ -170,8 +171,12 @@ const ProductDetail = () => {
       align: "right",
       key: "balance",
     },
-
   ];
+  const layout = {
+    labelCol: { span: 8, },
+    wrapperCol: { span: 16 },
+  };
+
   return (
     <LayoutWrapper>
       <Breadcrumb>
@@ -188,10 +193,8 @@ const ProductDetail = () => {
       <Row style={rowStyle} gutter={gutter} justify="start">
         <PageHeader>{<Descriptions title={"Ürün Detayı -", description}></Descriptions>}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
-
-          <Box >
-            <SwiperWithCustomNav prevButtonText={"geri"}
-            >
+          <Box>
+            <SwiperWithCustomNav prevButtonText={"geri"}>
               <img
                 key={`customnav-slider--key${imageUrl}`}
                 src={imageUrl}
@@ -201,31 +204,34 @@ const ProductDetail = () => {
           </Box>
         </Col>
         <Col md={12} sm={12} xs={24} style={colStyle}>
-          <Box
-          >
-            <Row><Col span={12}><Form.Item label="Ürün Kodu">
-              <span className="ant-form-text">{itemCode === null ? '-' : itemCode}</span>
-            </Form.Item>
-              <Form.Item label="Serisi">
-                <span className="ant-form-text">{series === null ? '-' : series}</span>
-              </Form.Item>
-              <Form.Item label="Üretim Durumu">
-                <span className="ant-form-text">{productionStatus === null ? '-' : productionStatus}</span>
-              </Form.Item>
-              <Form.Item label="Renk">
-                <span className="ant-form-text">{color === null ? '-' : color}</span>
-              </Form.Item>
-              <Form.Item label="Ebat">
-                <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
-              </Form.Item>
-              <Form.Item label="Not">
-                <span className="ant-form-text">{canBeSoldPartially != true ? '-' : 'Parçalı satılabilir'}</span>
-              </Form.Item>
-            </Col>
+          <Box>
+            <Row>
+              <Col span={12}>
+                <Form {...layout}>
+                  <Form.Item label="Ürün Kodu">
+                    <span className="ant-form-text">{itemCode === null ? '-' : itemCode}</span>
+                  </Form.Item>
+                  <Form.Item label="Serisi">
+                    <span className="ant-form-text">{series === null ? '-' : series}</span>
+                  </Form.Item>
+                  <Form.Item label="Üretim Durumu">
+                    <span className="ant-form-text">{productionStatus === null ? '-' : productionStatus}</span>
+                  </Form.Item>
+                  <Form.Item label="Renk">
+                    <span className="ant-form-text">{color === null ? '-' : color}</span>
+                  </Form.Item>
+                  <Form.Item label="Ebat">
+                    <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
+                  </Form.Item>
+                  <Form.Item label="Not">
+                    <span className="ant-form-text">{canBeSoldPartially != true ? '-' : 'Parçalı satılabilir'}</span>
+                  </Form.Item>
+                </Form>
+              </Col>
               <Col span={12}>
                 <Row style={{ marginTop: '30px' }}>
                   <Col align="center" span={24}>
-                    <span style={{ fontSize:'35px' }}><strong>{listPrice}</strong> {"TL"}</span>
+                    <span style={{ fontSize: '35px' }}><strong>{listPrice}</strong> {"TL"}</span>
                   </Col>
                 </Row>
                 <Row style={{ marginTop: '30px' }}>
@@ -261,55 +267,49 @@ const ProductDetail = () => {
                       )}
                   </Col>
                 </Row>
-
-              </Col></Row>
-
-
+              </Col>
+            </Row>
             <Table
               columns={columns}
               dataSource={warehouseData}
               pagination={false}
-              scroll={{ x: 'max-content' }}
-              size="medium"
+              // scroll={{ x: 'max-content' }}
+              size="small"
               bordered={false}
             />
-
+            <Row style={{ ...rowStyle, marginTop: '10px' }} gutter={gutter} justify="start">
+              <Col span={24} style={colStyle}>
+                <Tabs defaultActiveKey="1" type="card" size={"small"}>
+                  <TabPane tab="Ürün Açıklaması" key="1">
+                    Ürün Açıklaması
+                    </TabPane>
+                  <TabPane tab="Teknik Özellik" key="2">
+                    <Form.Item label="Ebat">
+                      <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
+                    </Form.Item>
+                    <Form.Item label="Yüzey">
+                      <span className="ant-form-text">{surface === null ? '-' : surface}</span>
+                    </Form.Item>
+                    <Form.Item label="Renk">
+                      <span className="ant-form-text">{color === null ? '-' : color}</span>
+                    </Form.Item>
+                    <Form.Item label="Tipi">
+                      <span className="ant-form-text">{type === null ? '-' : type}</span>
+                    </Form.Item>
+                    <Form.Item label="Kenar">
+                      <span className="ant-form-text">{rectifying === null ? '-' : rectifying}</span>
+                    </Form.Item>
+                  </TabPane>
+                  <TabPane tab="Kampanya" key="3">
+                    Kampanya
+                    </TabPane>
+                </Tabs>
+              </Col>
+            </Row>
           </Box>
         </Col>
       </Row>
-      <Row style={rowStyle} gutter={gutter} justify="start">
-        <Col span={24} style={colStyle}>
-          <Box
-          >
 
-            <Tabs defaultActiveKey="1" type="card" size={"small"}>
-              <TabPane tab="Ürün Açıklaması" key="1">
-                Ürün Açıklaması
-          </TabPane>
-              <TabPane tab="Teknik Özellik" key="2">
-                <Form.Item label="Ebat">
-                  <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
-                </Form.Item>
-
-                <Form.Item label="Yüzey">
-                  <span className="ant-form-text">{surface === null ? '-' : surface}</span>
-                </Form.Item>
-                <Form.Item label="Renk">
-                  <span className="ant-form-text">{color === null ? '-' : color}</span>
-                </Form.Item>
-                <Form.Item label="Tipi">
-                  <span className="ant-form-text">{type === null ? '-' : type}</span>
-                </Form.Item>
-                <Form.Item label="Kenar">
-                  <span className="ant-form-text">{rectifying === null ? '-' : rectifying}</span>
-                </Form.Item>
-
-              </TabPane>
-            </Tabs>
-
-          </Box>
-        </Col>
-      </Row>
     </LayoutWrapper>
   );
 }

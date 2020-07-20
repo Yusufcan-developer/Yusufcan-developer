@@ -446,6 +446,7 @@ function currentPageChange(current) {
     // );
     // setCheckAll(checkedList.length === plainOptions.length);
   };
+  const collapseProps = { accordion: true, expandIconPosition: { expandIconPosition }, style: { marginTop: '10px' } };
 
   return (
     <React.Fragment>
@@ -465,100 +466,92 @@ function currentPageChange(current) {
               onChange={onchangeInputSearch}
               onSearch={onSearch}
               onKeyDown={keyPress} />
-            <div >
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Kategori" />} key="0">
-                  <CheckboxGroup
-                    options={productGroupData}
-                    value={productGroup}
-                    onChange={onChangeProductGroup}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
-            <div >
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Tip" />} key="1">
-                  <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
-                    <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
-                      Hepsi
+
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Ürün Grubu" />} key="0">
+                <CheckboxGroup
+                  options={productGroupData}
+                  value={productGroup}
+                  onChange={onChangeProductGroup}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+              </Panel>
+            </Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Satış Durumu" />} key="1">
+                <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
+                  <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
+                    Parçalı Satış
                 </Radio>
-                    <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
-                      Parçalı Satış
+                  <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
+                    Hepsi
                 </Radio>
-                  </RadioGroup>
-                </Panel></Collapse>
-            </div>
-            <div >
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Kalite" />} key="2">
-                  <CheckboxGroup
-                    options={productionQualityData}
-                    value={productQuality}
-                    onChange={onChangeProductQuality}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
-            <div >
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Ürün Tipi" />} key="3">
-                  <CheckboxGroup
-                    options={productTypeData}
-                    value={productType}
-                    onChange={onChangeProductType}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
-            <div>
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Ebat" />} key="4">
-                  <CheckboxGroup
-                    options={
-                      dimensionData.map(e => e === null ? 'Yok' : e)}
-                    onChange={onChangeDimension}
-                    value={dimension}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
-            <div>
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Seriler" />} key="5">
-                  <CheckboxGroup
-                    value={series}
-                    options={
-                      serieData.map(e => e === null ? 'Yok' : e)}
-                    onChange={onChangeSerie}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
-            <div >
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Renkler" />} key="6">
-                  <CheckboxGroup
-                    value={color}
-                    options={
-                      colorData.map(e => e === null || e === '' ? 'Yok' : e)}
-                    onChange={onChangeColor}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
-            <div >
-              <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Yüzeyler" />} key="7">
-                  <CheckboxGroup
-                    value={surface}
-                    options={
-                      surfaceData.map(e => e === null ? 'Yok' : e)}
-                    onChange={onChangeSurface}
-                    style={{ display: 'flex', flexDirection: 'column' }}
-                  />
-                </Panel></Collapse>
-            </div>
+                </RadioGroup>
+              </Panel>
+            </Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Ürün Kalitesi" />} key="2">
+                <CheckboxGroup
+                  options={productionQualityData}
+                  value={productQuality}
+                  onChange={onChangeProductQuality}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+              </Panel>
+            </Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Ürün Tipi" />} key="3">
+                <CheckboxGroup
+                  options={productTypeData}
+                  value={productType}
+                  onChange={onChangeProductType}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+              </Panel>
+            </Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Ebat" />} key="4">
+                <CheckboxGroup
+                  options={
+                    dimensionData.map(e => e === null ? 'Yok' : e)}
+                  onChange={onChangeDimension}
+                  value={dimension}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+              </Panel>
+            </Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Seriler" />} key="5">
+                <CheckboxGroup
+                  value={series}
+                  options={
+                    serieData.map(e => e === null ? 'Yok' : e)}
+                  onChange={onChangeSerie}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+              </Panel>
+            </Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Renkler" />} key="6">
+                <CheckboxGroup
+                  value={color}
+                  options={
+                    colorData.map(e => e === null || e === '' ? 'Yok' : e)}
+                  onChange={onChangeColor}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+              </Panel></Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="Yüzeyler" />} key="7">
+                <CheckboxGroup
+                  value={surface}
+                  options={
+                    surfaceData.map(e => e === null ? 'Yok' : e)}
+                  onChange={onChangeSurface}
+                  style={{ display: 'flex', flexDirection: 'column' }}
+                />
+              </Panel>
+            </Collapse>
 
             {/* <ClearAll /> */}
           </SidebarWrapper>
@@ -640,7 +633,7 @@ function currentPageChange(current) {
           </ContentHolder>
         </div>
       </AlgoliaSearchPageWrapper>
-    </React.Fragment>
+    </React.Fragment >
   );
 };
 
