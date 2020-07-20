@@ -191,7 +191,7 @@ const SearchComponent = () => {
   const onSearch = e => {
     keywordAddUrl();
   }
-/**Pagination : Tablo  pageSize'ı değiştirir*/
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
@@ -206,17 +206,17 @@ const SearchComponent = () => {
     return setOnChange(true);
   }
 
-/**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-function currentPageChange(current) {
-  setSelectedCurrentPage(current);
-  setlocalCurrentPage(current);
+  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  function currentPageChange(current) {
+    setSelectedCurrentPage(current);
+    setlocalCurrentPage(current);
 
-  const params = new URLSearchParams(location.search);
-  params.delete('pgindex');
-  params.append('pgindex', current)
-  history.push(`${location.pathname}?${params.toString()}`);
-  return setOnChange(true);
-}
+    const params = new URLSearchParams(location.search);
+    params.delete('pgindex');
+    params.append('pgindex', current)
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  }
   //Product Group Filter Event
   function onChangeProductGroup(checkedProductGroupValue) {
     setProductGroup(checkedProductGroupValue);
@@ -468,7 +468,7 @@ function currentPageChange(current) {
               onKeyDown={keyPress} />
 
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Ürün Grubu" />} key="0">
+              <Panel header={<IntlMessages id="Kategori" />} key="0">
                 <CheckboxGroup
                   options={productGroupData}
                   value={productGroup}
@@ -478,7 +478,7 @@ function currentPageChange(current) {
               </Panel>
             </Collapse>
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Satış Durumu" />} key="1">
+              <Panel header={<IntlMessages id="Tip" />} key="1">
                 <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
                   <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
                     Parçalı Satış
@@ -490,7 +490,7 @@ function currentPageChange(current) {
               </Panel>
             </Collapse>
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Ürün Kalitesi" />} key="2">
+              <Panel header={<IntlMessages id="Kalite" />} key="2">
                 <CheckboxGroup
                   options={productionQualityData}
                   value={productQuality}
@@ -621,12 +621,12 @@ function currentPageChange(current) {
                       </div>
                     </SingleCardWrapper>
                   ))}
-                  <Pagination  onShowSizeChange={onShowSizeChange}
-          onChange={currentPageChange}
-          pageSize={pageSize}
-          total={totalDataCount}
-          current={localCurrentPage}
-          position="top"/>
+                  <Pagination onShowSizeChange={onShowSizeChange}
+                    onChange={currentPageChange}
+                    pageSize={pageSize}
+                    total={totalDataCount}
+                    current={localCurrentPage}
+                    position="top" />
                 </Row>
               </Spin>
             </Box>
