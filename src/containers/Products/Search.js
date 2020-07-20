@@ -35,8 +35,8 @@ const SearchComponent = () => {
   const [addCartLoading, setAddCartLoading] = React.useState(false);
   const history = useHistory();
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
-  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(8)
+  const [selectedCurrentPage, setSelectedCurrentPage] = useState(20);
+  const [pageSize, setPageSize] = useState(20)
   const [quantity, setQuantity] = useState(1)
   const [productGroup, setProductGroup] = useState([])
   const [productType, setProductType] = useState([])
