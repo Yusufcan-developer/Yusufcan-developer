@@ -15,6 +15,8 @@ function useProductData(url, reqBody) {
   const [color,setColor]=useState([])
   const [productStatus,setProductStatus]=useState([])
   const [surface,setSurface]=useState([])
+  const [productionQuality, setProductionQuality] = useState([])
+  const [salesStatus, setSalesStatus] = useState()
   const [keyword,setKeyword]=useState()
   const [from, setFrom] = useState();
   const [to, setTo] = useState();
@@ -24,7 +26,7 @@ function useProductData(url, reqBody) {
 
   async function fetchUrl() {
   
-    const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"surfaces":surface, "colors":color, "dimensions":dimension, "productStatus":productStatus, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
+    const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"salesStatus": salesStatus, "surfaces":surface, "colors":color, "dimensions":dimension, "productStatus":productStatus, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
    
    console.log('xxxx req',reqB)
     const requestOptions = {
@@ -36,7 +38,6 @@ function useProductData(url, reqBody) {
 
       body: JSON.stringify(reqBody)
     };
-    console.log('xxxx req',requestOptions)
     await fetch(url, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);

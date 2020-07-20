@@ -108,13 +108,11 @@ export default function () {
   }
   useEffect(() => {
     getQueryVariable(searchQuery)
-    console.log("currentPage!", localCurrentPage);
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
 
   useEffect(() => {
     getQueryVariable(searchQuery)
-    console.log("pageSize!", pageSize);
     setChangePageSize(pageSize);
   }, [pageSize]);
 
@@ -188,17 +186,12 @@ export default function () {
     }
   };
   function onChange(value, dateString) {
-    console.log("Selected Time: ", value);
-    console.log("Başlanıç Tarihi: ", dateString[0]);
-    console.log("Bitiş Tarihi: ", dateString[1]);
   }
 
   function onOk(value) {
-    console.log("onOk: ", value);
   }
 
   const handleChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter);
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,

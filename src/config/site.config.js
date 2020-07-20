@@ -17,6 +17,7 @@ export default {
     series:apiUrl + 'carts/lookup/product-series',                            //Seriler:GET
     colors: apiUrl + 'carts/lookup/product-colors',                           //Renkler:GET
     surfaces: apiUrl + 'carts/lookup/product-surfaces',                       //Yüzeyler:GET
+    productionQuality: apiUrl + 'carts/lookup/product-qualities',             //Ürün Kalitesi:GET
     productionStatusData: apiUrl + 'carts/lookup/product-production-status',  //Üretim Durumları:GET
     orders: apiUrl + 'Customers/orders',                                      //Sipariş Üst Bilgi:POST
     orderDetail: apiUrl + 'Customers/orders/',                                //Sipariş Kalem Bilgi:POST

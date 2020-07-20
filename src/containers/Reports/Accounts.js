@@ -26,7 +26,6 @@ const { RangePicker } = DatePicker;
 
 const configTreeCheckedKeys = (checkedKeys, treeData) => {
   var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
-  console.log("configTreeCheckedKeys", newTreeData);
 };
 
 export default function () {
@@ -115,14 +114,12 @@ export default function () {
   }
   useEffect(() => {
     getQueryVariable(searchQuery)
-    console.log("currentPage!", localCurrentPage);
 
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
 
   useEffect(() => {
     getQueryVariable(searchQuery)
-    console.log("pageSize!", pageSize);
     setChangePageSize(pageSize);
   }, [pageSize]);
 
@@ -201,11 +198,9 @@ export default function () {
   }
 
   function onOk(value) {
-    console.log("onOk: ", value);
   }
 
   const handleChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter);
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,

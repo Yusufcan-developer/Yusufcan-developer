@@ -70,7 +70,6 @@ const keyPress = e => {
         return response.json();
       })
       .then(data => {
-        console.log("Token :", data.token);
         dispatch(login(data.token));
 
         dispatch(clearMenu());

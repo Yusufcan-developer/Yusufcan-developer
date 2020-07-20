@@ -6,12 +6,14 @@ import _ from 'underscore';
 import { SingleCardWrapper } from './Shuffle.styles';
 import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification } from "antd";
 import siteConfig from "@iso/config/site.config";
+import enumerations from "@iso/config/enumerations";
 import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import PageHeader from "@iso/components/utility/pageHeader";
 import { direction } from '@iso/lib/helpers/rtl';
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { CheckboxGroup } from '@iso/components/uielements/checkbox';
+import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import Input, { InputSearch, } from '@iso/components/uielements/input';
 import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,10 +39,13 @@ const SearchComponent = () => {
   const [quantity, setQuantity] = useState(1)
   const [productGroup, setProductGroup] = useState([])
   const [productType, setProductType] = useState([])
+  const [productQuality, setProductQuality] = useState([])
   const [series, setSeries] = useState([])
   const [dimension, setDimension] = useState([])
   const [color, setColor] = useState([])
   const [surface, setSurface] = useState([])
+  const [productionQuality, setProductionQuality] = useState([])
+  const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All)
   const [keyword, setKeyword] = useState()
   const [locationKeys, setLocationKeys] = useState([])
   const { searchQuery } = useParams();
@@ -92,6 +97,16 @@ const SearchComponent = () => {
         setSurface(parsed.sfc)
       } else { setSurface([parsed.sfc]); }
     }
+    //Sales Status get url data
+    if (parsed.ss !== undefined) {
+      setSalesStatus(parsed.ss)
+    }
+     //Product Quality get url data
+     if (parsed.pq !== undefined) {
+      if (Array.isArray(parsed.pq)) {
+        setProductQuality(parsed.pq)
+      } else { setProductQuality([parsed.pq]); }
+    }
   }
   useEffect(() => {
     getQueryVariable(searchQuery)
@@ -114,7 +129,7 @@ const SearchComponent = () => {
 
   //ProductListHook
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "series": series, "types": productType, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+    useProductData(`${siteConfig.api.products}`, { "keyword": keyword,"qualities": productQuality,  "salesStatus": salesStatus, "series": series, "types": productType, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
   //Ürün Grubu 
   const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
@@ -133,6 +148,9 @@ const SearchComponent = () => {
 
   //Yüzeyler
   const [surfaceData] = useFilterData(`${siteConfig.api.surfaces}`);
+
+  //Ürün kalitesi getirme
+  const [productionQualityData] = useFilterData(`${siteConfig.api.productionQuality}`);
 
   //Ürün grubu adı getirme
   console.log('info product GroupId', history.location.productGroupId)
@@ -195,6 +213,16 @@ const SearchComponent = () => {
     return setOnChange(true);
   };
 
+  function onChangeSalesStatus(event) {
+    setSalesStatus(event.target.value)
+    const params = new URLSearchParams(location.search);
+    params.delete('ss');
+    params.append('ss', event.target.value);
+    params.toString();
+
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  }
   //Product Type Filter Event
   function onChangeProductType(checkedProductTypeValue) {
     setProductType(checkedProductTypeValue);
@@ -204,6 +232,21 @@ const SearchComponent = () => {
     if (checkedProductTypeValue.length > 0) {
       checkedProductTypeValue.forEach(item => {
         params.append('ut', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
+  //Product Quality Filter Event
+  function onChangeProductQuality(checkedProductQualityValue) {
+    setProductQuality(checkedProductQualityValue);
+
+    const params = new URLSearchParams(location.search);
+    params.delete('pq');
+    if (checkedProductQualityValue.length > 0) {
+      checkedProductQualityValue.forEach(item => {
+        params.append('pq', item);
         params.toString();
       });
     }
@@ -344,7 +387,6 @@ const SearchComponent = () => {
     }
   };
 
-
   //Input Number return quantity value
   function inputNumberQuantityValue(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
@@ -375,7 +417,6 @@ const SearchComponent = () => {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
-
   };
   //
   const onChange = checkedList => {
@@ -417,7 +458,31 @@ const SearchComponent = () => {
             </div>
             <div >
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Ürün Tipi" />} key="1">
+                <Panel header={<IntlMessages id="Satış Durumu" />} key="1">
+                  <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
+                    <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
+                      Parçalı Satış
+                </Radio>
+                    <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
+                      Hepsi
+                </Radio>
+                  </RadioGroup>
+                </Panel></Collapse>
+            </div>
+            <div >
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Ürün Kalitesi" />} key="2">
+                  <CheckboxGroup
+                    options={productionQualityData}
+                    value={productQuality}
+                    onChange={onChangeProductQuality}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            </div>
+            <div >
+              <Collapse accordion expandIconPosition={expandIconPosition}>
+                <Panel header={<IntlMessages id="Ürün Tipi" />} key="3">
                   <CheckboxGroup
                     options={productTypeData}
                     value={productType}
@@ -428,7 +493,7 @@ const SearchComponent = () => {
             </div>
             <div>
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Ebat" />} key="2">
+                <Panel header={<IntlMessages id="Ebat" />} key="4">
                   <CheckboxGroup
                     options={
                       dimensionData.map(e => e === null ? 'Yok' : e)}
@@ -440,7 +505,7 @@ const SearchComponent = () => {
             </div>
             <div>
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Seriler" />} key="3">
+                <Panel header={<IntlMessages id="Seriler" />} key="5">
                   <CheckboxGroup
                     value={series}
                     options={
@@ -452,7 +517,7 @@ const SearchComponent = () => {
             </div>
             <div >
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Renkler" />} key="4">
+                <Panel header={<IntlMessages id="Renkler" />} key="6">
                   <CheckboxGroup
                     value={color}
                     options={
@@ -464,7 +529,7 @@ const SearchComponent = () => {
             </div>
             <div >
               <Collapse accordion expandIconPosition={expandIconPosition}>
-                <Panel header={<IntlMessages id="Yüzeyler" />} key="5">
+                <Panel header={<IntlMessages id="Yüzeyler" />} key="7">
                   <CheckboxGroup
                     value={surface}
                     options={
