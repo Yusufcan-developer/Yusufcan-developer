@@ -20,7 +20,7 @@ export default {
     productionQuality: apiUrl + 'carts/lookup/product-qualities',             //Ürün Kalitesi:GET
     productionStatusData: apiUrl + 'carts/lookup/product-production-status',  //Üretim Durumları:GET
     orders: apiUrl + 'Customers/orders',                                      //Sipariş Üst Bilgi:POST
-    orderDetail: apiUrl + 'Customers/orders/',                                //Sipariş Kalem Bilgi:POST
+    orderDetail: apiUrl + 'customers/order-line-items',                       //Sipariş Kalem Bilgi:GET
     distributions: apiUrl + 'customers/distributions',                        //Dağıtım:POST
     deliveries: apiUrl + 'Customers/deliveries',                              //Sevkiyat:POST
     cheques: apiUrl + 'customers/cheques',                                    //Çek-Senet:POST
