@@ -174,9 +174,11 @@ const SearchComponent = () => {
   function keywordAddUrl() {
     const params = new URLSearchParams(location.search);
     params.delete('keyword');
+    params.delete('pgindex');
     if (keyword.length > 0) {
 
       params.append('keyword', keyword);
+      params.append('pgindex',1);
       params.toString();
     }
     history.push(`${location.pathname}?${params.toString()}`);
