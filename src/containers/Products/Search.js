@@ -4,7 +4,7 @@ import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import _ from 'underscore';
 import { SingleCardWrapper } from './Shuffle.styles';
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification } from "antd";
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography } from "antd";
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
 import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
@@ -56,7 +56,7 @@ const SearchComponent = () => {
   const location = useLocation();
 
   function getQueryVariable(query) {
-    
+
     const parsed = queryString.parse(location.search);
 
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
@@ -112,6 +112,7 @@ const SearchComponent = () => {
       } else { setProductQuality([parsed.pq]); }
     }
   }
+
   useEffect(() => {
     getQueryVariable(searchQuery)
     setCurrentPage(localCurrentPage);
@@ -187,11 +188,11 @@ const SearchComponent = () => {
       keywordAddUrl();
     }
   }
-  ///
+
   const onSearch = e => {
     keywordAddUrl();
   }
-  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  //Pagination : Tablo  pageSize'ı değiştirir
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
@@ -206,7 +207,7 @@ const SearchComponent = () => {
     return setOnChange(true);
   }
 
-  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  ///Pagination : Seçili sayfanın saklandığı state'i değiştirir
   function currentPageChange(current) {
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
@@ -273,7 +274,6 @@ const SearchComponent = () => {
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   };
-
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
     setDimension(checkedDimensionValue)
@@ -319,7 +319,6 @@ const SearchComponent = () => {
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
-
   //Surface Filter Event
   function onChangeSurface(checkedSurfaceValue) {
     setSurface(checkedSurfaceValue)
@@ -339,6 +338,7 @@ const SearchComponent = () => {
   function selectedProductId(productId) {
     console.log('info selected productId', productId);
   }
+
   function inputNumberShowOrHide(value) {
     var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
     if (selectedProduct === undefined) {
@@ -346,6 +346,7 @@ const SearchComponent = () => {
     }
     else { return true; }
   }
+
   function onRemoveBox(product) {
     inputNumberShowOrHide(product)
     setAddCartLoading(true);
@@ -367,18 +368,6 @@ const SearchComponent = () => {
       dispatch(changeProductQuantity(newProductQuantity));
     }
   };
-
-  // function onAddFilterRedux(groupName, checkedProductGroupValue) {
-  //   const filterType = groupName;
-  //   // if (filters.length === 0) { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
-  //   // else {
-  //   //   console.log('xxxx secilen grup',checkedProductGroupValue)
-  //   const tileset = _.find(filters, function (item) { return item.filterType === groupName; });
-  //   if (tileset) { console.log('xxxx tileSet', tileset.filterValue); dispatch(changeFilter(filterType, checkedProductGroupValue)); }
-
-  //   //Yeni Filter Grubu Ekleme işlemi
-  //   else { dispatch(addToFilter(filterType, checkedProductGroupValue)); }
-  // };
 
   function onAddBox(product) {
     inputNumberShowOrHide(product)
@@ -447,7 +436,7 @@ const SearchComponent = () => {
     // setCheckAll(checkedList.length === plainOptions.length);
   };
   const collapseProps = { accordion: true, expandIconPosition: { expandIconPosition }, style: { marginTop: '10px' } };
-
+  const { Text } = Typography;
   return (
     <React.Fragment>
       {/* <Breadcrumb>
@@ -579,21 +568,20 @@ const SearchComponent = () => {
                             <h3 className="isoCardTitle">{item.series}</h3>
                           </Col>
                           <Col span={18} align="right" >
-                            <h3 className="isoCardDate">{item.type}</h3>
+                            <Text mark style={{ fontSize: '80%' }}>{item.type}</Text>
                           </Col>
                         </Row>
                         <span className="isoCardDate">
                           {item.description}
                         </span>
                         <span className="isoCardDate">
-                          {item.color} - {item.surface}
+                          {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span>
-                        <h3 align="center" className="isoCardTitle">{item.listPrice} {"TL"}</h3>
+                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{item.listPrice} {"TL"}</div>
                         {!inputNumberShowOrHide(item) ? (
                           <Button
                             type="primary"
-                            onClick={event => onAddBox(item)}
-                          >  {<IntlMessages id="Sepete Ekle" />}
+                            onClick={event => onAddBox(item)}>{<IntlMessages id="Sepete Ekle" />}
                           </Button>
                         ) : (
                             <Row justify="center" align="middle">
