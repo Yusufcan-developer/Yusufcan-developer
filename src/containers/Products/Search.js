@@ -38,7 +38,7 @@ const SearchComponent = () => {
   const [selectedCurrentPage, setSelectedCurrentPage] = useState(20);
   const [pageSize, setPageSize] = useState(20)
   const [quantity, setQuantity] = useState(1)
-  const [productGroup, setProductGroup] = useState([])
+  const [productGroup, setProductGroup] = useState([localStorage.getItem("productCategories")])
   const [productType, setProductType] = useState([])
   const [productQuality, setProductQuality] = useState([])
   const [series, setSeries] = useState([])
@@ -56,7 +56,7 @@ const SearchComponent = () => {
   const location = useLocation();
 
   function getQueryVariable(query) {
-
+    
     const parsed = queryString.parse(location.search);
 
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }

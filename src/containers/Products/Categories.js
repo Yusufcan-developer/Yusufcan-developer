@@ -51,6 +51,7 @@ const ProductGroupList = () => {
   function selectedProductGroup (productGroupId) {
     //Product Group Id
     console.log('info productGroupId',productGroupId);
+    localStorage.setItem("productCategories", productGroupId);
     // return (
     // <Link to={`${'/products/search'}/ProductGroup:${productGroupId}`}></Link>)
   
