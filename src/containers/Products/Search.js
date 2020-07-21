@@ -61,7 +61,7 @@ const SearchComponent = () => {
 
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
-
+    if (parsed.keyword !== undefined) { setKeyword(parsed.keyword); }
     //Product Group get url data
     if (parsed.pg !== undefined) {
       if (Array.isArray(parsed.pg)) {
@@ -465,6 +465,7 @@ const SearchComponent = () => {
             <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
               onChange={onchangeInputSearch}
               onSearch={onSearch}
+              value={keyword}
               onKeyDown={keyPress} />
 
             <Collapse {...collapseProps}>
