@@ -54,6 +54,7 @@ const OrdersReport = () => {
   const queryString = require('query-string');
   const history = useHistory();
   const [orderDetailItemsData, setOrderDetailItemsData] = useState();
+  
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
