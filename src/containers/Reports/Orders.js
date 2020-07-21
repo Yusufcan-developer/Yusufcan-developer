@@ -108,9 +108,6 @@ const OrdersReport = () => {
     });
   }
   useEffect(() => {
-
-    console.log('xxxx orderIdArray',orderIdArray)
-     getOrderDetailItem('', '003100000')
     setCurrentPage(localCurrentPage);
     getQueryVariable(searchQuery)
   }, [localCurrentPage]);
@@ -126,7 +123,7 @@ const OrdersReport = () => {
     getQueryVariable(searchQuery)
   }, [fromDate, toDate]);
 
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray,orderDetailData] =
     useOrderFollowData(`${siteConfig.api.orders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
   /*********************************************** CUSTOM HOOKS ************************************************************ */
@@ -175,30 +172,6 @@ const OrdersReport = () => {
     dataSearch();
   };
 
-  async function getOrderDetailItem(url,orderNoItems) {
-    url=siteConfig.api.orderDetail;
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      }
-    };
-
-    await fetch(`${url}/?orderNo=${orderNoItems}`, requestOptions)
-      .then(response => {
-        if (!response.ok) throw Error(response.statusText);
-        return response.json();
-      })
-      .then(data => {
-        console.log('xxxx 1',data)
-        setOrderDetailItemsData(data);
-        
-      })
-      .catch();
-      
-      return orderDetailItemsData;
-  }
   function onChangeDealerCode(value) {
 
     let fieldArrObj = [];
@@ -261,15 +234,18 @@ const OrdersReport = () => {
     dataSearch(current);
   }
   function expandedRow(row, index) {
-    console.log('xxxx orderDetailItemsData',orderDetailItemsData)
-   return (<Table
-     columns={OrderDetailcolumns}
-     dataSource={orderDetailItemsData[0].Value}
-     pagination={false}
-     scroll={{ x: 'max-content' }}
-     size="medium"
-     bordered={false}
-   />);
+    let orderDetailIndex;
+    _.each(orderDetailData, (item, i) => {
+      if (item.Key === row.orderNo) { return orderDetailIndex = i }
+    });
+    return (<Table
+      columns={OrderDetailcolumns}
+      dataSource={orderDetailData[orderDetailIndex].Value}
+      pagination={false}
+      scroll={{ x: 'max-content' }}
+      size="medium"
+      bordered={false}
+    />);
   };
 
   //Order Detail Columns

@@ -117,10 +117,10 @@ const SearchComponent = () => {
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
 
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    setChangePageSize(pageSize);
-  }, [pageSize]);
+  // useEffect(() => {
+  //   getQueryVariable(searchQuery)
+  //   setChangePageSize(pageSize);
+  // }, [pageSize]);
 
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
