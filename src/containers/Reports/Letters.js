@@ -12,12 +12,13 @@ import Collapse from "@iso/components/uielements/collapse";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import Input from '@iso/components/uielements/input';
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
-import ExcelExport from "../ExcelExport/ExcelExport";
+import ExcelExport from "./ExcelExport";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -173,13 +174,13 @@ export default function () {
     return setOnChange(true);
   }
   const searchButton = () => {
-  dataSearch();
+    dataSearch();
   };
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setlocalCurrentPage(current);
-    dataSearch(current,pageSize);
+    dataSearch(current, pageSize);
   }
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
@@ -190,7 +191,7 @@ export default function () {
 
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Teminat Mektubu');
-  }  
+  }
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
     let regionArrObj = [];
@@ -224,7 +225,7 @@ export default function () {
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
-  } 
+  }
   let columns = [
     {
       title: "Bitiş Tarihi",
@@ -407,7 +408,8 @@ export default function () {
       {/* Data list volume */}
       <Box>
         <Col span={8} offset={16} align="right" >
-          <Button align="right" type="primary" loading={iconLoading} onClick={exportExcelButton}>
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+            icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>
         </Col>

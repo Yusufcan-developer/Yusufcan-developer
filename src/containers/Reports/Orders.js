@@ -12,12 +12,13 @@ import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
-import ExcelExport from "../ExcelExport/ExcelExport";
+import ExcelExport from "./ExcelExport";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -49,12 +50,12 @@ const OrdersReport = () => {
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
   const { searchQuery } = useParams();
-  
+
   const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
   const [orderDetailItemsData, setOrderDetailItemsData] = useState();
-  
+
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
@@ -123,11 +124,11 @@ const OrdersReport = () => {
     getQueryVariable(searchQuery)
   }, [fromDate, toDate]);
 
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray,orderDetailData] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
     useOrderFollowData(`${siteConfig.api.orders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
   /*********************************************** CUSTOM HOOKS ************************************************************ */
-  
+
   async function onExpand(expandedKeys) {
     setExpandedKeys(expandedKeys);
     setAutoExpandParent(false);
@@ -145,9 +146,9 @@ const OrdersReport = () => {
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Geçmiş Siparişler');
   }
-  function dataSearch(selectedPageIndex,selectedPageSize) {
+  function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    
+
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -224,7 +225,7 @@ const OrdersReport = () => {
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
-    dataSearch(current,pageSize);
+    dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
@@ -548,7 +549,8 @@ const OrdersReport = () => {
       {/* Data list volume */}
       <Box >
         <Col span={8} offset={16} align="right" >
-          <Button align="right" type="primary" loading={iconLoading} onClick={exportExcelButton}>
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+            icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>
         </Col>

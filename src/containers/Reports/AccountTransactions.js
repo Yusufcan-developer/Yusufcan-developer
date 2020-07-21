@@ -12,12 +12,13 @@ import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
-import ExcelExport from "../ExcelExport/ExcelExport";
+import ExcelExport from "./ExcelExport";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -56,9 +57,9 @@ export default function () {
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }   
-    if ((parsed.pgindex !== undefined)&& (selectedCurrentPage===0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
-    
+    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
+    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+
 
     let newDealarCode = []
 
@@ -124,9 +125,9 @@ export default function () {
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Cari Hareketler');
   }
-  function dataSearch(selectedPageIndex,selectedPageSize) {
+  function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    
+
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -204,7 +205,7 @@ export default function () {
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
-    dataSearch(current,pageSize);
+    dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
@@ -406,7 +407,8 @@ export default function () {
       {/* Data list volume */}
       <Box>
         <Col span={8} offset={16} align="right" >
-          <Button align="right" type="primary" loading={iconLoading} onClick={exportExcelButton}>
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+            icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>
         </Col>
