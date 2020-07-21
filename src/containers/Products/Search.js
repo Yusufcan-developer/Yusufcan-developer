@@ -480,12 +480,12 @@ const SearchComponent = () => {
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Tip" />} key="1">
                 <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
-                <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
+                  <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
                     Hepsi
                 </Radio>
                   <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
                     Parçalı Satış
-                </Radio>                  
+                </Radio>
                 </RadioGroup>
               </Panel>
             </Collapse>
@@ -626,6 +626,7 @@ const SearchComponent = () => {
                     pageSize={pageSize}
                     total={totalDataCount}
                     current={localCurrentPage}
+                    hideOnSinglePage
                     position="top" />
                 </Row>
               </Spin>
@@ -633,7 +634,7 @@ const SearchComponent = () => {
           </ContentHolder>
         </div>
       </AlgoliaSearchPageWrapper>
-    </React.Fragment >
+    </React.Fragment>
   );
 };
 
