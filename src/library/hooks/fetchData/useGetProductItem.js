@@ -18,7 +18,7 @@ function useGetProductItem(url) {
   const [unit,setUnit]=useState();
   const [imageUrl,setImageUrl]=useState();
   const [canBeSoldPartially,setCanBeSoldPartially]=useState();
-
+  const [notes,setNotes]=useState();
   async function fetchUrl() {
 
     const requestOptions = {
@@ -51,6 +51,7 @@ function useGetProductItem(url) {
         setImageUrl(data.imageUrl);
         setUnit(data.unit);
         setCanBeSoldPartially(data.canBeSoldPartially);
+        setNotes(data.notes);
       })
       .catch();
 
@@ -63,7 +64,7 @@ function useGetProductItem(url) {
     setLoading(true);
     fetchUrl();
   }, [ onChange]);
-  return [ loading , description,itemCode,series,productionStatus,surface,color,dimension,productItem,type,rectifying,listPrice,imageUrl,unit,canBeSoldPartially, setOnChange];
+  return [ loading , description,itemCode,series,productionStatus,surface,color,dimension,productItem,type,rectifying,listPrice,imageUrl,unit,canBeSoldPartially,notes, setOnChange];
 }
 
 

@@ -41,7 +41,7 @@ const ProductDetail = () => {
   //const productId1 = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially,notes] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -223,6 +223,7 @@ const ProductDetail = () => {
                   <Form.Item label="Not">
                     <span className="ant-form-text">{canBeSoldPartially != true ? '-' : 'Parçalı satılabilir'}</span>
                   </Form.Item>
+                  <span className="ant-form-text" >{notes === null && productionStatus === '' ? '' : notes}</span>
                 </Form>
 
               </Col>
@@ -231,7 +232,7 @@ const ProductDetail = () => {
                 {productionStatus === 'OUTLET' ? (
                   <Row >
                     <Col align="right" span={24}>
-                      <Tag>
+                      <Tag color="#f50">
                         <span className="ant-form-text">{productionStatus === null && productionStatus === 'ÜRETİM DIŞI' ? '-' : productionStatus}</span>
                       </Tag>
                     </Col>
