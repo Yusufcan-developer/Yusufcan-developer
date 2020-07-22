@@ -214,9 +214,6 @@ const ProductDetail = () => {
                   <Form.Item label="Serisi">
                     <span className="ant-form-text">{series === null ? '-' : series}</span>
                   </Form.Item>
-                  <Form.Item label="Üretim Durumu">
-                    <span className="ant-form-text">{productionStatus === null ? '-' : productionStatus}</span>
-                  </Form.Item>
                   <Form.Item label="Renk">
                     <span className="ant-form-text">{color === null ? '-' : color}</span>
                   </Form.Item>
@@ -227,47 +224,61 @@ const ProductDetail = () => {
                     <span className="ant-form-text">{canBeSoldPartially != true ? '-' : 'Parçalı satılabilir'}</span>
                   </Form.Item>
                 </Form>
+
               </Col>
-              <Col span={12}>
-                <Row style={{ marginTop: '30px' }}>
-                  <Col align="center" span={24}>
-                    <span style={{ fontSize: '35px' }}><strong>{listPrice}</strong> {"TL"}</span>
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: '30px' }}>
-                  <Col align="center" span={24}>
-                    {!inputNumberShowOrHide(productItem) ? (
-                      <Button type="primary" onClick={event => onAddBox(productItem)}>
-                        {<IntlMessages id="Sepete Ekle" />}
-                      </Button>
-                    ) : (
-                        <Row align="middle">
-                          <Col span={6} style={{ width: '100%' }} align="right" offset={2}>
-                            <Button type="primary" onClick={event => onRemoveBox(productItem)}>
-                              {<IntlMessages id="-" />}
-                            </Button>
-                          </Col>
-                          <Col span={8}>
-                            <Input
-                              min={1}
-                              max={1000}
-                              defaultValue={1}
-                              value={inputNumberQuantityValue(productItem)}
-                              step={1}
-                              style={{ textAlign: "right" }}
-                              onChange={event => onChangeQuantity(event, productItem)}
-                            />
-                          </Col>
-                          <Col span={6} style={{ width: '100%' }} align="left">
-                            <Button type="primary" onClick={event => onAddBox(productItem)}>
-                              {<IntlMessages id="+" />}
-                            </Button>
-                          </Col>
-                        </Row>
-                      )}
-                  </Col>
-                </Row>
-              </Col>
+             
+                <Col span={12}>
+                {productionStatus === 'OUTLET' ? (
+                  <Row >
+                    <Col align="right" span={24}>
+                      <Tag>
+                        <span className="ant-form-text">{productionStatus === null && productionStatus === 'ÜRETİM DIŞI' ? '-' : productionStatus}</span>
+                      </Tag>
+                    </Col>
+                  </Row>             
+                  ):( <Row >
+                  
+                  </Row>  )}
+                  <Row style={{ marginTop: '30px' }}>
+                    <Col align="center" span={24}>
+                      <span style={{ fontSize: '35px' }}><strong>{listPrice}</strong> {"TL"}</span>
+
+                    </Col>
+                  </Row>
+                  <Row style={{ marginTop: '30px' }}>
+                    <Col align="center" span={24}>
+                      {!inputNumberShowOrHide(productItem) ? (
+                        <Button type="primary" onClick={event => onAddBox(productItem)}>
+                          {<IntlMessages id="Sepete Ekle" />}
+                        </Button>
+                      ) : (
+                          <Row align="middle">
+                            <Col span={6} style={{ width: '100%' }} align="right" offset={2}>
+                              <Button type="primary" onClick={event => onRemoveBox(productItem)}>
+                                {<IntlMessages id="-" />}
+                              </Button>
+                            </Col>
+                            <Col span={8}>
+                              <Input
+                                min={1}
+                                max={1000}
+                                defaultValue={1}
+                                value={inputNumberQuantityValue(productItem)}
+                                step={1}
+                                style={{ textAlign: "right" }}
+                                onChange={event => onChangeQuantity(event, productItem)}
+                              />
+                            </Col>
+                            <Col span={6} style={{ width: '100%' }} align="left">
+                              <Button type="primary" onClick={event => onAddBox(productItem)}>
+                                {<IntlMessages id="+" />}
+                              </Button>
+                            </Col>
+                          </Row>
+                        )}
+                    </Col>
+                  </Row>
+                </Col>
             </Row>
             <Table
               columns={columns}
