@@ -470,7 +470,7 @@ const SearchComponent = () => {
               </Panel>
             </Collapse>
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Tip" />} key="1">
+              <Panel header={<IntlMessages id="Satış Tipi" />} key="1">
                 <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
                   <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
                     Hepsi
@@ -567,7 +567,7 @@ const SearchComponent = () => {
                       <div className="isoCardContent">
                         <Row>
                           <Col span={6} >
-                            <h3 className="isoCardTitle">{item.series}</h3>
+                            <h3 className="isoCardTitle">{item.itemCode}</h3>
                           </Col>
                           <Col span={18} align="right" >
                             <Text mark style={{ fontSize: '80%' }}>{item.type}</Text>
