@@ -20,7 +20,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
-
+import {
+  SortAscendingOutlined,
+} from '@ant-design/icons';
 
 const margin = {
   margin: direction === 'rtl' ? '0 0 8px 8px' : '0 8px 8px 0',
@@ -36,20 +38,25 @@ const SearchComponent = () => {
   const history = useHistory();
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [selectedCurrentPage, setSelectedCurrentPage] = useState(20);
-  const [pageSize, setPageSize] = useState(20)
-  const [quantity, setQuantity] = useState(1)
-  const [productGroup, setProductGroup] = useState([localStorage.getItem("productCategories")])
-  const [productType, setProductType] = useState([])
-  const [productQuality, setProductQuality] = useState([])
-  const [series, setSeries] = useState([])
-  const [dimension, setDimension] = useState([])
-  const [color, setColor] = useState([])
-  const [surface, setSurface] = useState([])
-  const [productionQuality, setProductionQuality] = useState([])
-  const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All)
-  const [keyword, setKeyword] = useState()
-  const [locationKeys, setLocationKeys] = useState([])
+  const [pageSize, setPageSize] = useState(20);
+  const [quantity, setQuantity] = useState(1);
+  const [productGroup, setProductGroup] = useState([localStorage.getItem("productCategories")]);
+  const [productType, setProductType] = useState([]);
+  const [productQuality, setProductQuality] = useState([]);
+  const [series, setSeries] = useState([]);
+  const [dimension, setDimension] = useState([]);
+  const [color, setColor] = useState([]);
+  const [surface, setSurface] = useState([]);
+  const [productionQuality, setProductionQuality] = useState([]);
+  const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
+  const [keyword, setKeyword] = useState();
+  const [locationKeys, setLocationKeys] = useState([]);
+  const [sortingField, setSortingField]=useState();
+  const [sortingOrder, setSortingOrder]=useState();
   const { searchQuery } = useParams();
+  const [itemRefButtonType,setItemRefButtonType]=useState('dashed');
+  const [listPriceLowestButtonType,setListPriceLowestButtonType]=useState('dashed');
+  const [listPriceHighestButtonType,setListPriceHighestButtonType]=useState('dashed');
 
   const match = useRouteMatch();
   const queryString = require('query-string');
@@ -62,6 +69,22 @@ const SearchComponent = () => {
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
     if (parsed.keyword !== undefined) { setKeyword(parsed.keyword); }
+    if (parsed.srto !== undefined) { setSortingOrder(parsed.srto); }
+    if (parsed.srtf !== undefined) { setSortingField(parsed.srtf); switch (parsed.srtf) {
+      case 'ItemRef':
+        return 
+          setItemRefButtonType('primary');
+        
+      case 'ListPrice':
+        
+          if(parsed.srto=='ASC'){return setListPriceLowestButtonType('primary')}
+          else{return setListPriceHighestButtonType('primary')}
+          default:
+      return setItemRefButtonType('primary');
+     
+    }}
+    else{setItemRefButtonType('primary');}
+    
     //Product Group get url data
     if (parsed.pg !== undefined) {
       if (Array.isArray(parsed.pg)) {
@@ -118,11 +141,6 @@ const SearchComponent = () => {
     setCurrentPage(localCurrentPage);
   }, [localCurrentPage]);
 
-  // useEffect(() => {
-  //   getQueryVariable(searchQuery)
-  //   setChangePageSize(pageSize);
-  // }, [pageSize]);
-
   //Redux ürünler listeleme
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
@@ -130,7 +148,7 @@ const SearchComponent = () => {
 
   //ProductListHook
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "qualities": productQuality, "salesStatus": salesStatus, "series": series, "types": productType, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "qualities": productQuality, "salesStatus": salesStatus, "series": series, "types": productType, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize, "sortingField": sortingField,"sortingOrder": sortingOrder });
 
   //Ürün Grubu 
   const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
@@ -178,7 +196,7 @@ const SearchComponent = () => {
     if (keyword.length > 0) {
 
       params.append('keyword', keyword);
-      params.append('pgindex',1);
+      params.append('pgindex', 1);
       params.toString();
     }
     history.push(`${location.pathname}?${params.toString()}`);
@@ -235,7 +253,7 @@ const SearchComponent = () => {
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   };
-
+  //Sales Status Filter Event
   function onChangeSalesStatus(event) {
     setSalesStatus(event.target.value)
     const params = new URLSearchParams(location.search);
@@ -306,7 +324,6 @@ const SearchComponent = () => {
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   };
-
   //Color Filter Event
   function onChangeColor(checkedColorValue) {
     setColor(checkedColorValue)
@@ -341,6 +358,56 @@ const SearchComponent = () => {
     console.log('info selected productId', productId);
   }
 
+  //Product Sorting
+  function itemRefSorting() {
+    setSortingField('ItemRef');
+    setSortingOrder('DESC');
+    const params = new URLSearchParams(location.search);
+    params.delete('srtf');
+    params.delete('srto');
+    params.append('srtf', 'ItemRef');
+    params.append('srto', 'DESC');
+    params.toString();
+    setItemRefButtonType('primary');
+    setListPriceHighestButtonType('dashed');
+    setListPriceLowestButtonType('dashed');
+  history.push(`${location.pathname}?${params.toString()}`);
+  return setOnChange(true);
+  }
+  //List Price Lowest Sorting
+  function listPriceLowestSorting() {
+    setSortingField('ListPrice');
+    setSortingOrder('ASC');
+
+    const params = new URLSearchParams(location.search);
+    params.delete('srtf');
+    params.delete('srto');
+    params.append('srtf', 'ListPrice');
+    params.append('srto', 'ASC');
+    params.toString();
+    setListPriceLowestButtonType('primary');
+    setItemRefButtonType('dashed');
+    setListPriceHighestButtonType('dashed');
+  history.push(`${location.pathname}?${params.toString()}`);
+  return setOnChange(true);
+  }
+   //List Price Highest Sorting
+   function listPriceHighestSorting() {
+    setSortingField('ListPrice');
+    setSortingOrder('DESC');
+
+    const params = new URLSearchParams(location.search);
+    params.delete('srtf');
+    params.delete('srto');
+    params.append('srtf', 'ListPrice');
+    params.append('srto', 'DESC');
+    params.toString();
+    setListPriceHighestButtonType('primary');
+    setListPriceLowestButtonType('dashed');
+    setItemRefButtonType('dashed');
+  history.push(`${location.pathname}?${params.toString()}`);
+  return setOnChange(true);
+  }
   function inputNumberShowOrHide(value) {
     var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
     if (selectedProduct === undefined) {
@@ -548,6 +615,14 @@ const SearchComponent = () => {
             {/* <ClearAll /> */}
           </SidebarWrapper>
           <ContentHolder>
+            <Row>
+              <Col align="center">              
+                <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>Son eklenen ürünler <SortAscendingOutlined /></Button>
+                <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
+                <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
+              </Col>
+            </Row>
+
             <Row>
               <Col span={8} offset={16} align="right">
                 {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}

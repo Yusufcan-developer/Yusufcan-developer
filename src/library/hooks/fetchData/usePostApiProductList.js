@@ -23,10 +23,12 @@ function useProductData(url, reqBody) {
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [orderIdArray, setOrderIdArray] = useState();
+  const [sortingField, setSortingField]=useState();
+  const [sortingOrder, setSortingOrder]=useState();
 
   async function fetchUrl() {
   
-    const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"salesStatus": salesStatus, "surfaces":surface, "colors":color, "dimensions":dimension, "productStatus":productStatus, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
+    const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"salesStatus": salesStatus, "surfaces":surface, "colors":color, "dimensions":dimension, "productStatus":productStatus, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize, "sortingField": sortingField,"sortingOrder": sortingOrder } : reqBody; 
    
    console.log('xxxx req',reqB)
     const requestOptions = {
