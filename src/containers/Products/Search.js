@@ -37,7 +37,7 @@ const SearchComponent = () => {
   const [addCartLoading, setAddCartLoading] = React.useState(false);
   const history = useHistory();
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
-  const [selectedCurrentPage, setSelectedCurrentPage] = useState(20);
+  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [quantity, setQuantity] = useState(1);
   const [productGroup, setProductGroup] = useState([localStorage.getItem("productCategories")]);
@@ -65,7 +65,7 @@ const SearchComponent = () => {
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
-
+debugger
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
     if (parsed.keyword !== undefined) { setKeyword(parsed.keyword); }
@@ -244,6 +244,9 @@ const SearchComponent = () => {
 
     const params = new URLSearchParams(location.search);
     params.delete('pg');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     if (checkedProductGroupValue.length > 0) {
       checkedProductGroupValue.forEach(item => {
         params.append('pg', item);
@@ -259,6 +262,9 @@ const SearchComponent = () => {
     const params = new URLSearchParams(location.search);
     params.delete('ss');
     params.append('ss', event.target.value);
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     params.toString();
 
     history.push(`${location.pathname}?${params.toString()}`);
@@ -270,6 +276,9 @@ const SearchComponent = () => {
 
     const params = new URLSearchParams(location.search);
     params.delete('ut');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     if (checkedProductTypeValue.length > 0) {
       checkedProductTypeValue.forEach(item => {
         params.append('ut', item);
@@ -285,6 +294,9 @@ const SearchComponent = () => {
 
     const params = new URLSearchParams(location.search);
     params.delete('pq');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     if (checkedProductQualityValue.length > 0) {
       checkedProductQualityValue.forEach(item => {
         params.append('pq', item);
@@ -300,6 +312,9 @@ const SearchComponent = () => {
 
     const params = new URLSearchParams(location.search);
     params.delete('dm');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     if (checkedDimensionValue.length > 0) {
       checkedDimensionValue.forEach(item => {
         params.append('dm', item);
@@ -315,6 +330,9 @@ const SearchComponent = () => {
 
     const params = new URLSearchParams(location.search);
     params.delete('se');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     if (checkedSerieValue.length > 0) {
       checkedSerieValue.forEach(item => {
         params.append('se', item);
@@ -329,6 +347,9 @@ const SearchComponent = () => {
     setColor(checkedColorValue)
     const params = new URLSearchParams(location.search);
     params.delete('clr');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     if (checkedColorValue.length > 0) {
       checkedColorValue.forEach(item => {
         params.append('clr', item);
@@ -344,6 +365,9 @@ const SearchComponent = () => {
 
     const params = new URLSearchParams(location.search);
     params.delete('sfc');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setlocalCurrentPage(1);
     if (checkedSurfaceValue.length > 0) {
       checkedSurfaceValue.forEach(item => {
         params.append('sfc', item);
@@ -617,7 +641,7 @@ const SearchComponent = () => {
           <ContentHolder>
             <Row>
               <Col align="center">              
-                <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>Son eklenen ürünler <SortAscendingOutlined /></Button>
+                <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                 <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                 <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
               </Col>
@@ -654,7 +678,7 @@ const SearchComponent = () => {
                         <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span>
-                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{item.listPrice} {"TL"}</div>
+                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{item.listPrice.toFixed(2)} {"TL"}</div>
                         {!inputNumberShowOrHide(item) ? (
                           <Button
                             type="primary"

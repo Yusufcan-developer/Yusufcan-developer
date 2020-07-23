@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table } from 'antd';
+import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag } from 'antd';
 import PageHeader from '@iso/components/utility/pageHeader';
 import Box from '@iso/components/utility/box';
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
-import Tags from '@iso/components/uielements/tag';
+import noImage from '@iso/assets/images/noImage.png';
 import TagWrapper from './tag.styles';
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
 import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseData";
@@ -18,11 +18,11 @@ import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
 
 const { TabPane } = Tabs;
-const Tag = props => (
-  <TagWrapper>
-    <Tags {...props}>{props.children}</Tags>
-  </TagWrapper>
-);
+// const Tag = props => (
+//   <TagWrapper>
+//     <Tags {...props}>{props.children}</Tags>
+//   </TagWrapper>
+// );
 
 const FormItem = Form.Item;
 const ProductDetail = () => {
@@ -41,7 +41,7 @@ const ProductDetail = () => {
   //const productId1 = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially,notes] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -176,7 +176,6 @@ const ProductDetail = () => {
     labelCol: { span: 8, },
     wrapperCol: { span: 16 },
   };
-
   return (
     <LayoutWrapper>
       <Breadcrumb>
@@ -189,15 +188,14 @@ const ProductDetail = () => {
           <Link to="/products/search">Ürünler listesi</Link></Breadcrumb.Item>
         <Breadcrumb.Item>Ürün Detayı</Breadcrumb.Item>
       </Breadcrumb>
-
       <Row style={rowStyle} gutter={gutter} justify="start">
-        <PageHeader>{<Descriptions title={"Ürün Detayı -", description}></Descriptions>}</PageHeader>
+        <PageHeader>{itemCode + " - " + description}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
-            <SwiperWithCustomNav prevButtonText={"geri"}>
+            <SwiperWithCustomNav navigationControl={false} >
               <img
                 key={`customnav-slider--key${imageUrl}`}
-                src={imageUrl}
+                src={imageUrl === undefined ? noImage : imageUrl}
                 height="500px"
               />
             </SwiperWithCustomNav>
@@ -211,7 +209,7 @@ const ProductDetail = () => {
                   <Form.Item label="Ürün Kodu">
                     <span className="ant-form-text">{itemCode === null ? '-' : itemCode}</span>
                   </Form.Item>
-                  <Form.Item label="Serisi">
+                  <Form.Item label="Seri">
                     <span className="ant-form-text">{series === null ? '-' : series}</span>
                   </Form.Item>
                   <Form.Item label="Renk">
@@ -220,66 +218,69 @@ const ProductDetail = () => {
                   <Form.Item label="Ebat">
                     <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
                   </Form.Item>
-                  <Form.Item label="Not">
-                    <span className="ant-form-text">{canBeSoldPartially != true ? '-' : 'Parçalı satılabilir'}</span>
-                  </Form.Item>
-                  <span className="ant-form-text" >{notes === null && productionStatus === '' ? '' : notes}</span>
+                  {notes != undefined ? (
+                      <Form.Item label="Not">
+                        <Tag color="purple">
+                          {notes}
+                        </Tag>
+                      </Form.Item>
+                  ) : (<Form.Item> </Form.Item>)}
                 </Form>
 
               </Col>
-             
-                <Col span={12}>
+
+              <Col span={12}>
                 {productionStatus === 'OUTLET' ? (
                   <Row >
                     <Col align="right" span={24}>
-                      <Tag color="#f50">
-                        <span className="ant-form-text">{productionStatus === null && productionStatus === 'ÜRETİM DIŞI' ? '-' : productionStatus}</span>
+                      <Tag color="purple">
+                        {productionStatus}
                       </Tag>
                     </Col>
-                  </Row>             
-                  ):( <Row >
-                  
-                  </Row>  )}
-                  <Row style={{ marginTop: '30px' }}>
-                    <Col align="center" span={24}>
-                      <span style={{ fontSize: '35px' }}><strong>{listPrice}</strong> {"TL"}</span>
+                  </Row>
+                ) : (<Row >
 
-                    </Col>
-                  </Row>
-                  <Row style={{ marginTop: '30px' }}>
-                    <Col align="center" span={24}>
-                      {!inputNumberShowOrHide(productItem) ? (
-                        <Button type="primary" onClick={event => onAddBox(productItem)}>
-                          {<IntlMessages id="Sepete Ekle" />}
-                        </Button>
-                      ) : (
-                          <Row align="middle">
-                            <Col span={6} style={{ width: '100%' }} align="right" offset={2}>
-                              <Button type="primary" onClick={event => onRemoveBox(productItem)}>
-                                {<IntlMessages id="-" />}
-                              </Button>
-                            </Col>
-                            <Col span={8}>
-                              <Input
-                                min={1}
-                                max={1000}
-                                defaultValue={1}
-                                value={inputNumberQuantityValue(productItem)}
-                                step={1}
-                                style={{ textAlign: "right" }}
-                                onChange={event => onChangeQuantity(event, productItem)}
-                              />
-                            </Col>
-                            <Col span={6} style={{ width: '100%' }} align="left">
-                              <Button type="primary" onClick={event => onAddBox(productItem)}>
-                                {<IntlMessages id="+" />}
-                              </Button>
-                            </Col>
-                          </Row>
-                        )}
-                    </Col>
-                  </Row>
-                </Col>
+                </Row>)}
+                <Row style={{ marginTop: '30px' }}>
+                  <Col align="center" span={24}>
+                    <span style={{ fontSize: '35px' }}><strong>{listPrice}</strong> {"TL"}</span>
+
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: '30px' }}>
+                  <Col align="center" span={24}>
+                    {!inputNumberShowOrHide(productItem) ? (
+                      <Button type="primary" onClick={event => onAddBox(productItem)}>
+                        {<IntlMessages id="Sepete Ekle" />}
+                      </Button>
+                    ) : (
+                        <Row align="middle">
+                          <Col span={6} style={{ width: '100%' }} align="right" offset={2}>
+                            <Button type="primary" onClick={event => onRemoveBox(productItem)}>
+                              {<IntlMessages id="-" />}
+                            </Button>
+                          </Col>
+                          <Col span={8}>
+                            <Input
+                              min={1}
+                              max={1000}
+                              defaultValue={1}
+                              value={inputNumberQuantityValue(productItem)}
+                              step={1}
+                              style={{ textAlign: "right" }}
+                              onChange={event => onChangeQuantity(event, productItem)}
+                            />
+                          </Col>
+                          <Col span={6} style={{ width: '100%' }} align="left">
+                            <Button type="primary" onClick={event => onAddBox(productItem)}>
+                              {<IntlMessages id="+" />}
+                            </Button>
+                          </Col>
+                        </Row>
+                      )}
+                  </Col>
+                </Row>
+              </Col>
             </Row>
             <Table
               columns={columns}
