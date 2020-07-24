@@ -22,7 +22,10 @@ export default function OrderInfo() {
       );
     });
   }
-
+//Change First Name 
+function saveOrder(event) {
+  console.log('xxxx companyName',localStorage.getItem("companyName"))
+};
   return (
     <OrderTable className="isoOrderInfo">
       <div className="isoOrderTable">
@@ -37,7 +40,7 @@ export default function OrderInfo() {
           <span>{totalPrice.toFixed(2)} TL</span>
         </div>
 
-        <Button type="primary" className="isoOrderBtn">
+        <Button type="primary" className="isoOrderBtn" onClick={event => saveOrder(event)}>
           Sipariş Oluştur
         </Button>
       </div>

@@ -1,10 +1,10 @@
 // hooks.js
 import { useState, useEffect } from "react";
 
-function useFilterData(url) {
+function useFilterProductCategories(url) {
   const [data, setData] = useState([]);
-  const [loadingFilter, setLoading] = useState(true);
-  const [onChangeFilter, setOnChangeFilter] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [onChange, setOnChange] = useState(false);
 
   async function fetchUrl() {
 
@@ -21,12 +21,9 @@ function useFilterData(url) {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
-      .then(data => {        
+      .then(data => {  
         
-        console.log("Data :", data );
-
         setData(data);
-        setOnChangeFilter(false)
         setLoading(false);
       })
       .catch();
@@ -34,11 +31,11 @@ function useFilterData(url) {
   useEffect(() => {
     setLoading(true);   
     fetchUrl();
-  }, [onChangeFilter]);
+  }, []);
 
 
-  return [data, loadingFilter , setOnChangeFilter];
+  return [data, loading , setOnChange];
 }
 
 
-export { useFilterData };
+export { useFilterProductCategories };

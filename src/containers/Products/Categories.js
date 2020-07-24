@@ -19,13 +19,13 @@ const reqJson = [
     "Id"   :"VİTRİFİYE (SSG)",
     "title": "VİTRİFİYE (SSG)",
     "description": "Lavabo, Klozet, Bide, Pisuvar, Helataşı, Bedensel Engelli Ürünler",
-    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/ardesia_final_35159.jpg",
+    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/alves_final_14c24.jpg",
   },
   {
     "Id"   :"KARO",
     "title": "Karo",
     "description": "Banyo, Mutfak, İç ve Dış Mekanlar, Ticari Mekan",
-    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/alves_final_14c24.jpg",
+    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/ardesia_final_35159.jpg",
   },
   {
     "Id"   :"YAPI KİMYASALLARI",

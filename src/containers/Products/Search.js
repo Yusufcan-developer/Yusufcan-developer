@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
+import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterProductCategories";
 import {
   SortAscendingOutlined,
 } from '@ant-design/icons';
@@ -40,7 +41,8 @@ const SearchComponent = () => {
   const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [quantity, setQuantity] = useState(1);
-  const [productGroup, setProductGroup] = useState([localStorage.getItem("productCategories")]);
+  const [productGroup, setProductGroup] = useState(localStorage.getItem("productCategories"));
+  const [filterProductGroup, setFilterProductGroup] = useState([localStorage.getItem("productCategories")]);
   const [productType, setProductType] = useState([]);
   const [productQuality, setProductQuality] = useState([]);
   const [series, setSeries] = useState([]);
@@ -51,12 +53,12 @@ const SearchComponent = () => {
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
   const [keyword, setKeyword] = useState();
   const [locationKeys, setLocationKeys] = useState([]);
-  const [sortingField, setSortingField]=useState();
-  const [sortingOrder, setSortingOrder]=useState();
+  const [sortingField, setSortingField] = useState();
+  const [sortingOrder, setSortingOrder] = useState();
   const { searchQuery } = useParams();
-  const [itemRefButtonType,setItemRefButtonType]=useState('dashed');
-  const [listPriceLowestButtonType,setListPriceLowestButtonType]=useState('dashed');
-  const [listPriceHighestButtonType,setListPriceHighestButtonType]=useState('dashed');
+  const [itemRefButtonType, setItemRefButtonType] = useState('dashed');
+  const [listPriceLowestButtonType, setListPriceLowestButtonType] = useState('dashed');
+  const [listPriceHighestButtonType, setListPriceHighestButtonType] = useState('dashed');
 
   const match = useRouteMatch();
   const queryString = require('query-string');
@@ -65,31 +67,33 @@ const SearchComponent = () => {
   function getQueryVariable(query) {
 
     const parsed = queryString.parse(location.search);
-debugger
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
     if (parsed.keyword !== undefined) { setKeyword(parsed.keyword); }
     if (parsed.srto !== undefined) { setSortingOrder(parsed.srto); }
-    if (parsed.srtf !== undefined) { setSortingField(parsed.srtf); switch (parsed.srtf) {
-      case 'ItemRef':
-        return 
+    if (parsed.srtf !== undefined) {
+      setSortingField(parsed.srtf); switch (parsed.srtf) {
+        case 'ItemRef':
+          return
           setItemRefButtonType('primary');
-        
-      case 'ListPrice':
-        
-          if(parsed.srto=='ASC'){return setListPriceLowestButtonType('primary')}
-          else{return setListPriceHighestButtonType('primary')}
-          default:
-      return setItemRefButtonType('primary');
-     
-    }}
-    else{setItemRefButtonType('primary');}
-    
+
+        case 'ListPrice':
+
+          if (parsed.srto == 'ASC') { return setListPriceLowestButtonType('primary') }
+          else { return setListPriceHighestButtonType('primary') }
+        default:
+          return setItemRefButtonType('primary');
+
+      }
+    }
+    else { setItemRefButtonType('primary'); }
+
     //Product Group get url data
     if (parsed.pg !== undefined) {
       if (Array.isArray(parsed.pg)) {
         setProductGroup(parsed.pg)
-      } else { setProductGroup([parsed.pg]); }
+        setFilterProductGroup(parsed.pg)
+      } else {setFilterProductGroup(parsed.pg); setProductGroup(parsed.pg); }
     }
 
     //Product Type get url data
@@ -135,7 +139,6 @@ debugger
       } else { setProductQuality([parsed.pq]); }
     }
   }
-
   useEffect(() => {
     getQueryVariable(searchQuery)
     setCurrentPage(localCurrentPage);
@@ -148,31 +151,28 @@ debugger
 
   //ProductListHook
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "qualities": productQuality, "salesStatus": salesStatus, "series": series, "types": productType, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize, "sortingField": sortingField,"sortingOrder": sortingOrder });
+    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "qualities": productQuality, "salesStatus": salesStatus, "series": series, "types": productType, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [productGroup], "pageIndex": localCurrentPage - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Ürün Grubu 
-  const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
+  const [productGroupData] = useFilterProductCategories(`${siteConfig.api.productGroup}`);
 
   //Ürün Tipi 
-  const [productTypeData] = useFilterData(`${siteConfig.api.productType}`);
+  const [productTypeData, loadingFilter, setOnChangeFilter] = useFilterData(`${siteConfig.api.productType}?categories=${filterProductGroup}`);
 
   //Ebatlar
-  const [dimensionData] = useFilterData(`${siteConfig.api.dimensions}`);
+  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = useFilterData(`${siteConfig.api.dimensions}?categories=${filterProductGroup}`);
 
   //Seriler
-  const [serieData] = useFilterData(`${siteConfig.api.series}`);
+  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = useFilterData(`${siteConfig.api.series}?categories=${filterProductGroup}`);
 
   //Renkler
-  const [colorData] = useFilterData(`${siteConfig.api.colors}`);
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = useFilterData(`${siteConfig.api.colors}?categories=${filterProductGroup}`);
 
   //Yüzeyler
-  const [surfaceData] = useFilterData(`${siteConfig.api.surfaces}`);
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = useFilterData(`${siteConfig.api.surfaces}?categories=${filterProductGroup}`);
 
   //Ürün kalitesi getirme
-  const [productionQualityData] = useFilterData(`${siteConfig.api.productionQuality}`);
-
-  //Ürün grubu adı getirme
-  console.log('info product GroupId', history.location.productGroupId)
+  // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = useFilterData(`${siteConfig.api.productionQuality}?${filterProductGroup}`);
 
   const listClass = `isoSingleCard card grid`;
   const style = { zIndex: 100 - 90 };
@@ -238,23 +238,10 @@ debugger
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
+
   //Product Group Filter Event
   function onChangeProductGroup(checkedProductGroupValue) {
-    setProductGroup(checkedProductGroupValue);
-
-    const params = new URLSearchParams(location.search);
-    params.delete('pg');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
-    setlocalCurrentPage(1);
-    if (checkedProductGroupValue.length > 0) {
-      checkedProductGroupValue.forEach(item => {
-        params.append('pg', item);
-        params.toString();
-      });
-    }
-    history.push(`${location.pathname}?${params.toString()}`);
-    return setOnChange(true);
+    clearFilterAndNewSearch(checkedProductGroupValue.target.value);
   };
   //Sales Status Filter Event
   function onChangeSalesStatus(event) {
@@ -382,6 +369,41 @@ debugger
     console.log('info selected productId', productId);
   }
 
+  function clearFilterAndNewSearch(getProductGroupName) {
+    const params = new URLSearchParams(location.search);
+    //Clear Params New Search
+    setProductType([]);
+    setDimension([]);
+    setSeries([]);
+    setColor([]);
+    setSurface([]);
+    if (getProductGroupName != undefined) {
+      let productGroupName = getProductGroupName;
+      params.delete('pg');
+      setProductGroup(productGroupName);
+      setFilterProductGroup(productGroupName);
+      params.append('pg', productGroupName);
+      params.toString();
+    }
+    params.delete('ut');
+    params.delete('dm');
+    params.delete('se');
+    params.delete('clr');
+    params.delete('sfc');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+
+    setlocalCurrentPage(1);
+
+    history.push(`${location.pathname}?${params.toString()}`);
+    setOnChangeFilter(true);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
+    // setOnChangeQualityFilter(true);
+    return setOnChange(true);
+  }
   //Product Sorting
   function itemRefSorting() {
     setSortingField('ItemRef');
@@ -395,8 +417,8 @@ debugger
     setItemRefButtonType('primary');
     setListPriceHighestButtonType('dashed');
     setListPriceLowestButtonType('dashed');
-  history.push(`${location.pathname}?${params.toString()}`);
-  return setOnChange(true);
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
   }
   //List Price Lowest Sorting
   function listPriceLowestSorting() {
@@ -412,11 +434,11 @@ debugger
     setListPriceLowestButtonType('primary');
     setItemRefButtonType('dashed');
     setListPriceHighestButtonType('dashed');
-  history.push(`${location.pathname}?${params.toString()}`);
-  return setOnChange(true);
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
   }
-   //List Price Highest Sorting
-   function listPriceHighestSorting() {
+  //List Price Highest Sorting
+  function listPriceHighestSorting() {
     setSortingField('ListPrice');
     setSortingOrder('DESC');
 
@@ -429,8 +451,8 @@ debugger
     setListPriceHighestButtonType('primary');
     setListPriceLowestButtonType('dashed');
     setItemRefButtonType('dashed');
-  history.push(`${location.pathname}?${params.toString()}`);
-  return setOnChange(true);
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
   }
   function inputNumberShowOrHide(value) {
     var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
@@ -549,15 +571,11 @@ debugger
               onSearch={onSearch}
               value={keyword}
               onKeyDown={keyPress} />
-
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Kategori" />} key="0">
-                <CheckboxGroup
-                  options={productGroupData}
-                  value={productGroup}
-                  onChange={onChangeProductGroup}
-                  style={{ display: 'flex', flexDirection: 'column' }}
-                />
+                <RadioGroup onChange={onChangeProductGroup} options={productGroupData}
+                  value={productGroup}>
+                </RadioGroup>
               </Panel>
             </Collapse>
             <Collapse {...collapseProps}>
@@ -572,7 +590,7 @@ debugger
                 </RadioGroup>
               </Panel>
             </Collapse>
-            <Collapse {...collapseProps}>
+            {/* <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Kalite" />} key="2">
                 <CheckboxGroup
                   options={productionQualityData}
@@ -581,66 +599,84 @@ debugger
                   style={{ display: 'flex', flexDirection: 'column' }}
                 />
               </Panel>
-            </Collapse>
-            <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Ürün Tipi" />} key="3">
-                <CheckboxGroup
-                  options={productTypeData}
-                  value={productType}
-                  onChange={onChangeProductType}
-                  style={{ display: 'flex', flexDirection: 'column' }}
-                />
-              </Panel>
-            </Collapse>
-            <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Ebat" />} key="4">
-                <CheckboxGroup
-                  options={
-                    dimensionData.map(e => e === null ? 'Yok' : e)}
-                  onChange={onChangeDimension}
-                  value={dimension}
-                  style={{ display: 'flex', flexDirection: 'column' }}
-                />
-              </Panel>
-            </Collapse>
-            <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Seriler" />} key="5">
-                <CheckboxGroup
-                  value={series}
-                  options={
-                    serieData.map(e => e === null ? 'Yok' : e)}
-                  onChange={onChangeSerie}
-                  style={{ display: 'flex', flexDirection: 'column' }}
-                />
-              </Panel>
-            </Collapse>
-            <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Renkler" />} key="6">
-                <CheckboxGroup
-                  value={color}
-                  options={
-                    colorData.map(e => e === null || e === '' ? 'Yok' : e)}
-                  onChange={onChangeColor}
-                  style={{ display: 'flex', flexDirection: 'column' }}
-                />
-              </Panel></Collapse>
-            <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Yüzeyler" />} key="7">
-                <CheckboxGroup
-                  value={surface}
-                  options={
-                    surfaceData.map(e => e === null ? 'Yok' : e)}
-                  onChange={onChangeSurface}
-                  style={{ display: 'flex', flexDirection: 'column' }}
-                />
-              </Panel>
-            </Collapse>
+            </Collapse> */}
+            {(productTypeData.length != 1 && productTypeData != null) ? (
+              <Collapse {...collapseProps}>
+                <Panel header={<IntlMessages id="Ürün Tipi" />} key="2">
+                  <CheckboxGroup
+                    options={productTypeData}
+                    value={productType}
+                    onChange={onChangeProductType}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel>
+              </Collapse>
+            ) : (<Collapse ></Collapse>)}
+
+            {(dimensionData.length != 1 && dimensionData != null) ? (
+              <Collapse {...collapseProps}>
+                <Panel header={<IntlMessages id="Ebat" />} key="3">
+                  <CheckboxGroup
+                    options={
+                      dimensionData.map(e => e === null ? 'Yok' : e)}
+                    onChange={onChangeDimension}
+                    value={dimension}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel>
+              </Collapse>
+            ) : (<Collapse ></Collapse>)}
+
+            {(serieData.length != 1 && serieData != null) ? (
+              <Collapse {...collapseProps}>
+                <Panel header={<IntlMessages id="Seriler" />} key="4">
+                  <CheckboxGroup
+                    value={series}
+                    options={
+                      serieData.map(e => e === null ? 'Yok' : e)}
+                    onChange={onChangeSerie}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel>
+              </Collapse>
+            ) : (<Collapse ></Collapse>)}
+
+            {(colorData.length != 1 && colorData != null) ? (
+              <Collapse {...collapseProps}>
+                <Panel header={<IntlMessages id="Renkler" />} key="5">
+                  <CheckboxGroup
+                    value={color}
+                    options={
+                      colorData.map(e => e === null || e === '' ? 'Yok' : e)}
+                    onChange={onChangeColor}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel></Collapse>
+            ) : (<Collapse ></Collapse>)}
+
+            {(surfaceData.length != 1 && surfaceData != null) ? (
+              <Collapse {...collapseProps}>
+                <Panel header={<IntlMessages id="Yüzeyler" />} key="6">
+                  <CheckboxGroup
+                    value={surface}
+                    options={
+                      surfaceData.map(e => e === null ? 'Yok' : e)}
+                    onChange={onChangeSurface}
+                    style={{ display: 'flex', flexDirection: 'column' }}
+                  />
+                </Panel>
+              </Collapse>
+            ) : (<Collapse ></Collapse>)}
+            <Button
+              type="primary"
+              onClick={event => clearFilterAndNewSearch()}>{<IntlMessages id="Temizle" />}
+            </Button>
 
             {/* <ClearAll /> */}
           </SidebarWrapper>
           <ContentHolder>
             <Row>
-              <Col align="center">              
+              <Col align="center">
                 <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                 <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                 <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>

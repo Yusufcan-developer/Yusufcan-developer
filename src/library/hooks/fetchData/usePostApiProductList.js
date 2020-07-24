@@ -54,19 +54,17 @@ function useProductData(url, reqBody) {
         });
         const totalPages = data.totalPages;
         const dataCount = data.totalDataCount;
-        console.log("Data :", value );
-        console.log("orderIdArrayHooks :", orderIdArrayH );
 
         setTotalDataCount(dataCount);
         setTotalPage(totalPages);
         setData(value);  
-        setOrderIdArray(orderIdArrayH);
+        // setOrderIdArray(orderIdArrayH);
 
         setLoading(false); 
         setOnChange(false); 
 
-      })
-      .catch(console.log('xxxx hata'));
+       }) .catch(error => console.log('hata',error));
+      // .catch(console.log('xxxx hata'));
 
     // const response = await fetch(url);
     // const json = await response.json();
