@@ -66,7 +66,7 @@ const options = [
         label: 'sidebar.uploadingPhotos',
       },
       {
-        key: 'signup',
+        key: 'admin/saveUser',
         label: 'sidebar.signUp',
         withoutDashboard: true,
       },
