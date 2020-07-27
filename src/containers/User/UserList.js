@@ -16,6 +16,7 @@ import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
+import UserModel from './UserModel';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 
@@ -124,7 +125,12 @@ const UserList = () => {
   function onOk(value) {
     console.log("onOk: ", value);
   }
-
+  
+  const selectedRow = () => {
+    console.log('xxxx tıkladın')
+    UserModel();
+  
+  };
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -274,6 +280,12 @@ const UserList = () => {
           dataSource={data}
           onChange={handleChange}
           loading={loading}
+          onRow={(record, rowIndex) => {
+    return {
+      onClick: event => {UserModel()}, 
+    };
+  }}
+    
           //expandable={{expandedRowRender}}
           pagination={false}
           // scroll={{ x: 'calc(700px + 100%)' }}

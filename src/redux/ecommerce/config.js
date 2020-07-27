@@ -21,7 +21,7 @@ async function getDatabaseProductInfo() {
 
   await fetch(`${siteConfig.api.productInfoDatabase}${userName}`, requestOptions)
     .then(response => {
-      if (!response.ok) throw Error(response.statusText);
+      if (!response.ok)  {return response.statusText;}//throw Error(response.statusText);
       return response.json();
     })
     .then(data => {
@@ -39,7 +39,7 @@ async function getInitData() {
     const cartProductQuantity = localStorage.getItem('cartProductQuantity');
     let cartProducts = localStorage.getItem('cartProducts');
     const productsData = await getDatabaseProductInfo();
-
+    if(productsData!=='Unauthorized'){
     // Database product code and product quantity send Redux  
     let sendReduxProductList = _.each(productsData.items, (item) => {
       item['quantity'] = item['amount'];
@@ -52,7 +52,7 @@ async function getInitData() {
       });
       products[product.itemCode] = product.item;
     });
-  }
+  }}
 
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
   localStorage.setItem('cartProducts', JSON.stringify(products));

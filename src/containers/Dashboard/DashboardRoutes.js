@@ -307,6 +307,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/User/UserList')),
   },
   {
+    path: 'admin/saveUser',
+    component: lazy(() => import('@iso/containers/User/SaveUser')),
+  },
+  {
     path: 'dropzone',
     component: lazy(() =>
       import('@iso/containers/AdvancedUI/Dropzone/Dropzone')
