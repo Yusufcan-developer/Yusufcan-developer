@@ -93,7 +93,7 @@ const SearchComponent = () => {
       if (Array.isArray(parsed.pg)) {
         setProductGroup(parsed.pg)
         setFilterProductGroup(parsed.pg)
-      } else {setFilterProductGroup(parsed.pg); setProductGroup(parsed.pg); }
+      } else { setFilterProductGroup(parsed.pg); setProductGroup(parsed.pg); }
     }
 
     //Product Type get url data
@@ -105,28 +105,72 @@ const SearchComponent = () => {
 
     //Dimension get url data
     if (parsed.dm !== undefined) {
-      if (Array.isArray(parsed.dm)) {
-        setDimension(parsed.dm)
-      } else { setDimension([parsed.dm]); }
+      let dimensionNewArray
+      if (parsed.dm)
+        if (Array.isArray(parsed.dm)) {
+          dimensionNewArray = _.map(parsed.dm.map(e => e === 'null' || e === '' ? null : e));
+        } else {
+          dimensionNewArray = _.map([parsed.dm].map(e => e === 'null' || e === '' ? null : e));
+        }
+        const nullOrBlankData=_.filter(dimensionNewArray, function (Item) {
+          if (Item === null || Item === '') {
+            return true;
+          }
+        });
+        if(nullOrBlankData.length>0){dimensionNewArray.push('');}
+      setDimension(dimensionNewArray);
     }
 
-    //Series get url data
+    //Serie get url data
     if (parsed.se !== undefined) {
-      if (Array.isArray(parsed.se)) {
-        setSeries(parsed.se)
-      } else { setSeries([parsed.se]); }
+      let seriesNewArray
+      if (parsed.se)
+        if (Array.isArray(parsed.se)) {
+          seriesNewArray = _.map(parsed.se.map(e => e === 'null' || e === '' ? null : e));
+        } else {
+          seriesNewArray = _.map([parsed.se].map(e => e === 'null' || e === '' ? null : e));
+        }
+        const nullOrBlankData=_.filter(seriesNewArray, function (Item) {
+          if (Item === null || Item === '') {
+            return true;
+          }
+        });
+        if(nullOrBlankData.length>0){seriesNewArray.push('');}
+      setSeries(seriesNewArray);
     }
     //Color get url data
     if (parsed.clr !== undefined) {
-      if (Array.isArray(parsed.clr)) {
-        setColor(parsed.clr)
-      } else { setColor([parsed.clr]); }
+      let colorNewArray
+      if (parsed.clr)
+        if (Array.isArray(parsed.clr)) {
+          colorNewArray = _.map(parsed.clr.map(e => e === 'null' || e === '' ? null : e));
+        } else {
+          colorNewArray = _.map([parsed.clr].map(e => e === 'null' || e === '' ? null : e));
+        }
+        const nullOrBlankData=_.filter(colorNewArray, function (Item) {
+          if (Item === null || Item === '') {
+            return true;
+          }
+        });
+        if(nullOrBlankData.length>0){colorNewArray.push('');}
+        setColor(colorNewArray);
     }
     //Surface get url data
     if (parsed.sfc !== undefined) {
-      if (Array.isArray(parsed.sfc)) {
-        setSurface(parsed.sfc)
-      } else { setSurface([parsed.sfc]); }
+      let surfaceNewArray
+      if (parsed.sfc)
+        if (Array.isArray(parsed.sfc)) {
+          surfaceNewArray = _.map(parsed.sfc.map(e => e === 'null' || e === '' ? null : e));
+        } else {
+          surfaceNewArray = _.map([parsed.sfc].map(e => e === 'null' || e === '' ? null : e));
+        }
+        const nullOrBlankData=_.filter(surfaceNewArray, function (Item) {
+          if (Item === null || Item === '') {
+            return true;
+          }
+        });
+        if(nullOrBlankData.length>0){surfaceNewArray.push('');}
+        setSurface(surfaceNewArray);
     }
     //Sales Status get url data
     if (parsed.ss !== undefined) {
@@ -295,72 +339,105 @@ const SearchComponent = () => {
   };
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
-    setDimension(checkedDimensionValue)
+    const dimensionNewArray = _.map(checkedDimensionValue.map(e => e === 'Yok' || e === '' ? null  : e));
+   
+    const nullOrBlankData=_.filter(dimensionNewArray, function (Item) {
+      if (Item === null || Item === '') {
+        return true;
+      }
+    });
+    if(nullOrBlankData){dimensionNewArray.push('');}
 
+    setDimension(dimensionNewArray)
     const params = new URLSearchParams(location.search);
     params.delete('dm');
     params.delete('pgindex');
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
-    if (checkedDimensionValue.length > 0) {
-      checkedDimensionValue.forEach(item => {
+    checkedDimensionValue.forEach(item => {
+      if (item === 'Yok') { params.append('dm', null); }
+      else {
         params.append('dm', item);
         params.toString();
-      });
-    }
+      }
+    })
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   };
   //Series Filter Event
   function onChangeSerie(checkedSerieValue) {
-    setSeries(checkedSerieValue)
+    const serieNewArray = _.map(checkedSerieValue.map(e => e === 'Yok' || e === '' ? null : e));
+
+    const nullOrBlankData=_.filter(serieNewArray, function (Item) {
+      if (Item === null || Item === '') {
+        return true;
+      }
+    });
+    if(nullOrBlankData){serieNewArray.push('');}
+
+    setSeries(serieNewArray)
 
     const params = new URLSearchParams(location.search);
     params.delete('se');
     params.delete('pgindex');
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
-    if (checkedSerieValue.length > 0) {
-      checkedSerieValue.forEach(item => {
+    checkedSerieValue.forEach(item => {
+      if (item === 'Yok') { params.append('se', null) }
+      else {
         params.append('se', item);
         params.toString();
-      });
-    }
+      }
+    });
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   };
   //Color Filter Event
   function onChangeColor(checkedColorValue) {
-    setColor(checkedColorValue)
+    const colorNewArray = _.map(checkedColorValue.map(e => e === 'Yok' || e === '' ? null : e));
+
+    const nullOrBlankData=_.filter(colorNewArray, function (Item) {
+      if (Item === null || Item === '') {
+        return true;
+      }
+    });
+    if(nullOrBlankData){colorNewArray.push('');}
+
+    setColor(colorNewArray);
     const params = new URLSearchParams(location.search);
     params.delete('clr');
     params.delete('pgindex');
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
-    if (checkedColorValue.length > 0) {
-      checkedColorValue.forEach(item => {
-        params.append('clr', item);
-        params.toString();
-      });
-    }
+    checkedColorValue.forEach(item => {
+      if (item === 'Yok') { params.append('clr', null); }
+      else { params.append('clr', item); }
+    });
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
   //Surface Filter Event
   function onChangeSurface(checkedSurfaceValue) {
-    setSurface(checkedSurfaceValue)
+    const surfaceNewArray = _.map(checkedSurfaceValue.map(e => e === 'Yok' || e === '' ? null : e));
+  
+    const nullOrBlankData=_.filter(surfaceNewArray, function (Item) {
+      if (Item === null || Item === '') {
+        return true;
+      }
+    });
+    if(nullOrBlankData){surfaceNewArray.push('');}
+
+    setSurface(surfaceNewArray)
 
     const params = new URLSearchParams(location.search);
     params.delete('sfc');
     params.delete('pgindex');
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
-    if (checkedSurfaceValue.length > 0) {
-      checkedSurfaceValue.forEach(item => {
-        params.append('sfc', item);
-        params.toString();
-      });
-    }
+    checkedSurfaceValue.forEach(item => {
+      if (item === 'Yok') { params.append('sfc', null); }
+      else { params.append('sfc', item); params.toString(); }
+    });
     history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
@@ -618,9 +695,9 @@ const SearchComponent = () => {
                 <Panel header={<IntlMessages id="Ebat" />} key="3">
                   <CheckboxGroup
                     options={
-                      dimensionData.map(e => e === null ? 'Yok' : e)}
+                      dimensionData.map(e => e === null || e === 'null' ? 'Yok' : e)}
                     onChange={onChangeDimension}
-                    value={dimension}
+                    value={dimension.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel>
@@ -628,12 +705,13 @@ const SearchComponent = () => {
             ) : (<Collapse ></Collapse>)}
 
             {(serieData.length != 1 && serieData != null) ? (
+          
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Seriler" />} key="4">
                   <CheckboxGroup
-                    value={series}
+                    value={series.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
                     options={
-                      serieData.map(e => e === null ? 'Yok' : e)}
+                      serieData.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
                     onChange={onChangeSerie}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -645,9 +723,9 @@ const SearchComponent = () => {
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Renkler" />} key="5">
                   <CheckboxGroup
-                    value={color}
+                    value={color.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
                     options={
-                      colorData.map(e => e === null || e === '' ? 'Yok' : e)}
+                      colorData.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
                     onChange={onChangeColor}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -658,9 +736,9 @@ const SearchComponent = () => {
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Yüzeyler" />} key="6">
                   <CheckboxGroup
-                    value={surface}
+                    value={surface.map(e => e === null || e === 'null' ? 'Yok' : e)}
                     options={
-                      surfaceData.map(e => e === null ? 'Yok' : e)}
+                      surfaceData.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
                     onChange={onChangeSurface}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
