@@ -440,7 +440,7 @@ const ProductsList = () => {
                 <Panel header={<IntlMessages id="Ebat" />} key="2">
                   <CheckboxGroup
                     options={
-                    dimensionData.map(e => e === null ? 'Yok' : e)}
+                    dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeDimension}
                     value={dimension}
                     style={{ display: 'flex', flexDirection: 'column' }}
@@ -453,7 +453,7 @@ const ProductsList = () => {
                   <CheckboxGroup
                     value={series}
                     options={
-                    serieData.map(e => e === null ? 'Yok' : e)}
+                    serieData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeSerie}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -465,7 +465,7 @@ const ProductsList = () => {
                   <CheckboxGroup
                     value={color}
                     options={
-                    colorData.map(e => e === null || e === '' ? 'Yok' : e)}
+                    colorData.map(e => e === null || e === '' ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeColor}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -477,7 +477,7 @@ const ProductsList = () => {
                   <CheckboxGroup
                     value={surface}
                     options={
-                    surfaceData.map(e => e === null ? 'Yok' : e)}
+                    surfaceData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeSurface}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />

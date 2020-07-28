@@ -339,7 +339,7 @@ const SearchComponent = () => {
   };
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
-    const dimensionNewArray = _.map(checkedDimensionValue.map(e => e === 'Yok' || e === '' ? null  : e));
+    const dimensionNewArray = _.map(checkedDimensionValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null  : e));
    
     const nullOrBlankData=_.filter(dimensionNewArray, function (Item) {
       if (Item === null || Item === '') {
@@ -355,7 +355,7 @@ const SearchComponent = () => {
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
     checkedDimensionValue.forEach(item => {
-      if (item === 'Yok') { params.append('dm', null); }
+      if (item === siteConfig.nullOrEmptySearchItem) { params.append('dm', null); }
       else {
         params.append('dm', item);
         params.toString();
@@ -366,7 +366,7 @@ const SearchComponent = () => {
   };
   //Series Filter Event
   function onChangeSerie(checkedSerieValue) {
-    const serieNewArray = _.map(checkedSerieValue.map(e => e === 'Yok' || e === '' ? null : e));
+    const serieNewArray = _.map(checkedSerieValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
 
     const nullOrBlankData=_.filter(serieNewArray, function (Item) {
       if (Item === null || Item === '') {
@@ -383,7 +383,7 @@ const SearchComponent = () => {
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
     checkedSerieValue.forEach(item => {
-      if (item === 'Yok') { params.append('se', null) }
+      if (item === siteConfig.nullOrEmptySearchItem) { params.append('se', null) }
       else {
         params.append('se', item);
         params.toString();
@@ -394,7 +394,7 @@ const SearchComponent = () => {
   };
   //Color Filter Event
   function onChangeColor(checkedColorValue) {
-    const colorNewArray = _.map(checkedColorValue.map(e => e === 'Yok' || e === '' ? null : e));
+    const colorNewArray = _.map(checkedColorValue.map(e => e === siteConfig.nullOrEmptySearchItem|| e === '' ? null : e));
 
     const nullOrBlankData=_.filter(colorNewArray, function (Item) {
       if (Item === null || Item === '') {
@@ -410,7 +410,7 @@ const SearchComponent = () => {
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
     checkedColorValue.forEach(item => {
-      if (item === 'Yok') { params.append('clr', null); }
+      if (item === siteConfig.nullOrEmptySearchItem) { params.append('clr', null); }
       else { params.append('clr', item); }
     });
     history.push(`${location.pathname}?${params.toString()}`);
@@ -418,7 +418,7 @@ const SearchComponent = () => {
   }
   //Surface Filter Event
   function onChangeSurface(checkedSurfaceValue) {
-    const surfaceNewArray = _.map(checkedSurfaceValue.map(e => e === 'Yok' || e === '' ? null : e));
+    const surfaceNewArray = _.map(checkedSurfaceValue.map(e => e === siteConfig.nullOrEmptySearchItem|| e === '' ? null : e));
   
     const nullOrBlankData=_.filter(surfaceNewArray, function (Item) {
       if (Item === null || Item === '') {
@@ -435,7 +435,7 @@ const SearchComponent = () => {
     params.append('pgindex', 1)
     setlocalCurrentPage(1);
     checkedSurfaceValue.forEach(item => {
-      if (item === 'Yok') { params.append('sfc', null); }
+      if (item === siteConfig.nullOrEmptySearchItem) { params.append('sfc', null); }
       else { params.append('sfc', item); params.toString(); }
     });
     history.push(`${location.pathname}?${params.toString()}`);
@@ -695,9 +695,9 @@ const SearchComponent = () => {
                 <Panel header={<IntlMessages id="Ebat" />} key="3">
                   <CheckboxGroup
                     options={
-                      dimensionData.map(e => e === null || e === 'null' ? 'Yok' : e)}
+                      dimensionData.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeDimension}
-                    value={dimension.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
+                    value={dimension.map(e => e === null ||  e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel>
@@ -709,9 +709,9 @@ const SearchComponent = () => {
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Seriler" />} key="4">
                   <CheckboxGroup
-                    value={series.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
+                    value={series.map(e => e === null ||  e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      serieData.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
+                      serieData.map(e => e === null ||  e === 'null' ? siteConfig.nullOrEmptySearchItem: e)}
                     onChange={onChangeSerie}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -723,9 +723,9 @@ const SearchComponent = () => {
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Renkler" />} key="5">
                   <CheckboxGroup
-                    value={color.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
+                    value={color.map(e => e === null ||  e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      colorData.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
+                      colorData.map(e => e === null ||  e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeColor}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -736,9 +736,9 @@ const SearchComponent = () => {
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Yüzeyler" />} key="6">
                   <CheckboxGroup
-                    value={surface.map(e => e === null || e === 'null' ? 'Yok' : e)}
+                    value={surface.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      surfaceData.map(e => e === null ||  e === 'null' ? 'Yok' : e)}
+                      surfaceData.map(e => e === null ||  e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeSurface}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />

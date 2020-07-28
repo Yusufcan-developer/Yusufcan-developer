@@ -6,6 +6,7 @@ export default {
   siteIcon: 'ion-flash',
   footerText: `Karya SMD © ${new Date().getFullYear()}`,
   enableAnimatedRoute: false,
+  nullOrEmptySearchItem:'(YOK)',
   api: {
     products: apiUrl + 'carts/products',                                      //Ürünler:POST
     productDetail: apiUrl + 'carts/products/',                                //Ürün detay bilgisi: GET
