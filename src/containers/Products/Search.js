@@ -346,7 +346,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if(nullOrBlankData){dimensionNewArray.push('');}
+    if ((nullOrBlankData) && (dimensionNewArray.length >0)) { dimensionNewArray.push(''); }
 
     setDimension(dimensionNewArray)
     const params = new URLSearchParams(location.search);
@@ -373,7 +373,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if(nullOrBlankData){serieNewArray.push('');}
+    if ((nullOrBlankData) && (serieNewArray.length >0)) { serieNewArray.push(''); }
 
     setSeries(serieNewArray)
 
@@ -401,7 +401,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if(nullOrBlankData){colorNewArray.push('');}
+    if ((nullOrBlankData) && (colorNewArray.length >0)) { colorNewArray.push(''); }
 
     setColor(colorNewArray);
     const params = new URLSearchParams(location.search);
@@ -425,7 +425,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if(nullOrBlankData){surfaceNewArray.push('');}
+    if ((nullOrBlankData) && (surfaceNewArray.length >0)) { surfaceNewArray.push(''); }
 
     setSurface(surfaceNewArray)
 
