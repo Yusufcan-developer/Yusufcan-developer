@@ -1,5 +1,6 @@
 // hooks.js
 import { useState, useEffect } from "react";
+import _ from 'underscore';
 
 function useFilterData(url) {
   const [data, setData] = useState([]);
@@ -24,8 +25,18 @@ function useFilterData(url) {
       .then(data => {        
         
         console.log("Data :", data );
-
-        setData(data);
+        const nullOrBlankData=_.filter(data, function (Item) {
+          if (Item === null || Item === '') {
+            return true;
+          }
+        });
+        let filterData = _.filter(data, function (Item) {
+          if (Item != null || Item != '') {
+            return Item;
+          }
+        });
+        if(nullOrBlankData.length>0){filterData.push(null);}
+        setData(filterData);
         setOnChangeFilter(false)
         setLoading(false);
       })
