@@ -31,7 +31,9 @@ export default {
     accountsTree: apiUrl + 'Customers/accounts-tree',                         //Bayi kodları(Tree) listesi:GET
     chequeTypes: apiUrl + 'Customers/lookup/cheque-types',                    //Çek türleri listesi:GET
     warehouse: apiUrl + 'carts/warehouse-balances/',                          //Ambar bilgisi: GET
-    users: apiUrl + 'Users/users',                                            //Kullanıcılar:POST
+    users: apiUrl + 'Users/users/search',                                     //Kullanıcılar:POST
+    lookUpFieldCode:apiUrl + 'customers/lookup/field-codes',                  //Lookup FieldCodes:GET
+    lookUpRegionCode:apiUrl + 'customers/lookup/region-codes',                //Lookup RegionCodes:GET
     authenticate: apiUrl + 'Users/authenticate',                              //Kullanıcı Doğrulama:POST
   },
   dateFormat: 'DD-MM-YYYY',
