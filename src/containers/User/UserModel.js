@@ -37,7 +37,6 @@ export default function UserModel() {
     };
     return (
         <>
-
             <Modal
                 visible={visible}
                 title="Yeni Kullanıcı"
@@ -57,7 +56,6 @@ export default function UserModel() {
           </Button>
                 ]}
             >
-
                 <Form
                     labelCol={{
                         span: 4,

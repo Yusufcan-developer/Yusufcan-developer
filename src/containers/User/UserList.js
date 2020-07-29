@@ -5,7 +5,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Modal, Select } from "antd";
 import { DownOutlined, PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -14,6 +14,7 @@ import Input, {
 } from '@iso/components/uielements/input';
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 import UserModel from './UserModel';
@@ -23,6 +24,7 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 
 const formItemLayout = {
@@ -40,11 +42,16 @@ const formItemLayout = {
 const UserList = () => {
   //******************************************************************************************************************* */
   const [searchKey, setSearchKey] = useState('');
+  const [username, setUsername] = useState();
+  const [firstName, setFirstName] = useState();
+  const [lastName, setLastName] = useState();
+  const [email, setEmail] = useState();
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [checkedKeys, setCheckedKeys] = useState();
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -61,6 +68,10 @@ const UserList = () => {
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
 
+  const [componentSize, setComponentSize] = useState('default');
+  const onFormLayoutChange = ({ size }) => {
+    setComponentSize(size);
+  };
   useEffect(() => {
 
     console.log("currentPage!", localCurrentPage);
@@ -74,6 +85,19 @@ const UserList = () => {
   }, [pageSize]);
 
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+
+  const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpFieldCode}`);
+  const lookupFieldChildren = [];
+  _.each(lookupFieldTreeData, (item, i) => {
+    lookupFieldChildren.push(<Option key={item}>{item}</Option>);
+  });
+  
+  const [lookupRegionTreeData, lookupFieldLoadingTree, lookupFieldSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpRegionCode}`);
+  const lookupRegionChildren = [];
+  _.each(lookupRegionTreeData, (item, i) => {
+    lookupRegionChildren.push(<Option key={item}>{item}</Option>);
+  });
+  //const [lookupRegionTreeData, lookupRegionLoadingTree, lookupRegionSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpRegionCode}`);
 
 
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
@@ -125,11 +149,11 @@ const UserList = () => {
   function onOk(value) {
     console.log("onOk: ", value);
   }
-  
+
   const selectedRow = () => {
     console.log('xxxx tıkladın')
     UserModel();
-  
+
   };
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
@@ -139,7 +163,14 @@ const UserList = () => {
       ["filteredInfo"]: filters
     });
   };
-
+  const setModalUserInfo = (record) => {
+    console.log('xxxx rec', record);
+    setUsername(record.username);
+    setFirstName(record.firstName);
+    setLastName(record.lastName);
+    setEmail(record.email);
+    setVisible(true);
+  };
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     console.log("pageSize :", pageSize);
@@ -217,7 +248,19 @@ const UserList = () => {
   //   }
   // }
 
-
+  function showModal() {
+    setVisible(true);
+  };
+  function handleOk() {
+    // setLoading(true);
+    setTimeout(() => {
+      // setLoading(false);
+      setVisible(false);
+    }, 3000);
+  };
+  function handleCancel() {
+    setVisible(false);
+  };
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -281,15 +324,15 @@ const UserList = () => {
           onChange={handleChange}
           loading={loading}
           onRow={(record, rowIndex) => {
-    return {
-      onClick: event => {UserModel()}, 
-    };
-  }}
-    
+            return {
+              onClick: event => { setModalUserInfo(record, rowIndex) }
+            };
+          }}
+
           //expandable={{expandedRowRender}}
           pagination={false}
           // scroll={{ x: 'calc(700px + 100%)' }}
-          scroll={{x: 'max-content'}}
+          scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
           pagination={{ position: 'none', pageSize: pageSize }}
@@ -304,6 +347,89 @@ const UserList = () => {
           total={totalDataCount}
         />
       </Box>
+      <Modal
+        visible={visible}
+        title="Yeni Kullanıcı"
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            İptal
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={loading}
+            onClick={handleOk}
+          >
+            Kaydet
+          </Button>
+        ]}
+      >
+
+        <Form
+          labelCol={{
+            span: 4,
+          }}
+          wrapperCol={{
+            span: 14,
+          }}
+          layout="horizontal"
+          initialValues={{
+            size: componentSize,
+          }}
+          onValuesChange={onFormLayoutChange}
+          size={componentSize}
+        >
+          <Form.Item label="Kullanıcı adı">
+            <Input value={username} />
+          </Form.Item>
+          <Form.Item label="Ad">
+            <Input value={firstName} />
+          </Form.Item>
+          <Form.Item label="Soyad">
+            <Input value={lastName} />
+          </Form.Item>
+          <Form.Item label="Email">
+            <Input value={email} />
+          </Form.Item>
+          <Form.Item label="Rol">
+            <Input />
+          </Form.Item>
+        </Form>
+        <Form.Item label=" Bayi Kodu">
+          <Select
+            mode="multiple"
+            style={{ width: '100%' }}
+            placeholder="Bayi Kodu seciniz"
+            defaultValue={['a10', 'c12']}
+          //onChange={handleChange}
+          >
+            {/* {children} */}
+          </Select>
+        </Form.Item>
+        <Form.Item label="Bölge Kodu">
+          <Select
+            mode="multiple"
+            style={{ width: '100%' }}
+            placeholder="Bölge Kodu seciniz"
+          //onChange={handleChange}
+          >
+          {lookupRegionChildren}
+          </Select>
+        </Form.Item>
+        <Form.Item label="  Saha Kodu">
+          <Select
+            mode="multiple"
+            style={{ width: '100%' }}
+            placeholder="Saha Kodu seciniz"
+          //value={selectedDealerCode}
+          //onChange={handleChange}
+          >
+          {lookupFieldChildren}
+          </Select>
+        </Form.Item>
+      </Modal>
     </LayoutWrapper>
   );
 }

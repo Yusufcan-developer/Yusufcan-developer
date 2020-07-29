@@ -6,7 +6,6 @@ export default function SaveUser() {
 
     const [loading, setLoading] = useState(false);
     const [visible, setVisible] = useState(true);
-
     const [userName, setUserName] = useState();
     const [firstName, setFirstName] = useState();
     const [lastName, setLastName] = useState();
@@ -36,7 +35,6 @@ export default function SaveUser() {
     };
     return (
         <>
-
             <Modal
                 visible={visible}
                 title="Yeni Kullanıcı"
@@ -72,7 +70,7 @@ export default function SaveUser() {
                     size={componentSize}
                 >
                     <Form.Item label="Kullanıcı adı">
-                        <Input value={userName}/>
+                        <Input value={userName} />
                     </Form.Item>
                     <Form.Item label="Ad">
                         <Input />
