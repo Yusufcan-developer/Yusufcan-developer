@@ -209,7 +209,6 @@ const OrdersReport = () => {
   }
 
   function onOk(value) {
-    console.log("xxxx onOk: ", value);
   }
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);

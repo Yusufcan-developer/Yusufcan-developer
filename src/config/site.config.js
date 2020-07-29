@@ -34,6 +34,9 @@ export default {
     users: apiUrl + 'Users/users/search',                                     //Kullanıcılar:POST
     lookUpFieldCode:apiUrl + 'customers/lookup/field-codes',                  //Lookup FieldCodes:GET
     lookUpRegionCode:apiUrl + 'customers/lookup/region-codes',                //Lookup RegionCodes:GET
+    lookUpDealerCode:apiUrl + 'customers/lookup/dealer-codes',                //Lookup DealerCodes:GET
+    roles:apiUrl + 'Users/roles',                                             //Roles:GET
+    getUser:apiUrl + 'Users/users/',                                          //Kullanıcı Bilgisi:GET
     authenticate: apiUrl + 'Users/authenticate',                              //Kullanıcı Doğrulama:POST
   },
   dateFormat: 'DD-MM-YYYY',
