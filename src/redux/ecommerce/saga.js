@@ -50,7 +50,7 @@ export function* updateData({ products, productQuantity }) {
     },
     body: JSON.stringify(reqBody)
   };
-  fetch(siteConfig.api.productInfoRedux, requestOptions)
+  fetch(siteConfig.api.cartSave, requestOptions)
     .then(response => {
       if (!response.ok) throw Error(response.statusText);
       return response.json();

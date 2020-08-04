@@ -31,7 +31,6 @@ function useOrderFollowData(url, reqBody) {
       },
       body: JSON.stringify(reqBody)
     };
-    
     const requestOrderDetailOptions = {
       method: "GET",
       headers: {
