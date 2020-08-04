@@ -26,7 +26,7 @@ export default function SignIn() {
   const [redirectToReferrer, setRedirectToReferrer] = React.useState(false);
 
   //States
-  const [userName, setUsername] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   React.useEffect(() => {
@@ -54,13 +54,13 @@ const keyPress = e => {
   function handleLogin(e) {
     e.preventDefault();
 
-    if (!userName || !password) { return loginError() }
+    if (!username || !password) { return loginError() }
 
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        userName: userName,
+        username: username,
         password: password })
   };
 
@@ -73,7 +73,7 @@ const keyPress = e => {
         dispatch(login(data.token));
 
         dispatch(clearMenu());
-        localStorage.setItem("nameAndSurname", userName);
+        localStorage.setItem("nameAndSurname", username);
         localStorage.setItem("role", data.role.roleName);
         history.push('/products/categories');
       })

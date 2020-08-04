@@ -4,6 +4,9 @@ import _ from 'underscore';
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import React, { useState, useEffect } from "react";
+import authAction from '@iso/redux/auth/actions';
+
+const { logout } = authAction;
 const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
 async function getDatabaseProductInfo() {
@@ -16,16 +19,15 @@ async function getDatabaseProductInfo() {
      
       Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
     }
-  };  
-  const userName = localStorage.getItem("nameAndSurname");
-
-  await fetch(`${siteConfig.api.productInfoDatabase}${userName}`, requestOptions)
+  };
+  const username = localStorage.getItem("nameAndSurname");
+  if(!username){return 'Unauthorized'}
+  await fetch(`${siteConfig.api.cartGetByAccountNo}${username}`, requestOptions)
     .then(response => {
       if (!response.ok)  {return response.statusText;}//throw Error(response.statusText);
       return response.json();
     })
     .then(data => {
-      console.log("Get : ", `${siteConfig.api.productInfoDatabase}`);
       productInfo = data;
     })
     .catch();
@@ -52,7 +54,7 @@ async function getInitData() {
       });
       products[product.itemCode] = product.item;
     });
-  }}
+  }else{}}
 
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
   localStorage.setItem('cartProducts', JSON.stringify(products));

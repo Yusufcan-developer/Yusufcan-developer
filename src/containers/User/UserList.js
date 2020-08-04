@@ -5,7 +5,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch,Menu, Dropdown,Tag } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag } from "antd";
 import { DownOutlined, PoweroffOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -15,10 +15,11 @@ import Input, {
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
+import { usePostUser } from "@iso/lib/hooks/fetchData/usePostApiUser";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 import UserModel from './UserModel';
-import _ from 'underscore';
+import _, { object } from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 
 const { Panel } = Collapse;
@@ -29,16 +30,20 @@ const { Option } = Select;
 const UserList = () => {
   //******************************************************************************************************************* */
   const [searchKey, setSearchKey] = useState('');
+  const [userId, setUserId] = useState(-1);
   const [username, setUsername] = useState();
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
-  const [email, setEmail] = useState(); 
+  const [email, setEmail] = useState();
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [checkedKeys, setCheckedKeys] = useState();
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [regionVisible, setRegionVisible] = useState(false);
+  const [fieldVisible, setFieldVisible] = useState(false);
+  const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -54,23 +59,29 @@ const UserList = () => {
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
-  const [role,setRole]=useState();
-  const [isLocked,setIsLocked]=useState();
-  const [userInfoFieldCodes,setUserInfoFieldCodes]=useState();
-  const [title,setTitle]=useState();
-  let selectedUserId=1;
+  const [role, setRole] = useState();
+  const [objectRole, setObjectRole] = useState();
+  const [isLocked, setIsLocked] = useState();
+  const [userInfoFieldCodes, setUserInfoFieldCodes] = useState();
+  const [title, setTitle] = useState();
+  let selectedUserId = 1;
   const [componentSize, setComponentSize] = useState('default');
-  
+
   const onFormLayoutChange = ({ size }) => {
     setComponentSize(size);
   };
   const menu = (
-    <Menu >
-      <Menu.Item key="1">Düzenle</Menu.Item>
+    <Menu onClick={handleMenuClick}>
+      <Menu.Item key="1" >Düzenle</Menu.Item>
       <Menu.Item key="2">Parola değiştir</Menu.Item>
       <Menu.Item key="3">Sil</Menu.Item>
     </Menu>
   );
+  function handleMenuClick() {
+    setVisible(true);
+    fieldRegionAndDealearVisible(objectRole.roleName);
+  }
+
   useEffect(() => {
     console.log("currentPage!", localCurrentPage);
     setCurrentPage(localCurrentPage);
@@ -78,6 +89,11 @@ const UserList = () => {
 
   //Kullanıcı listesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
+  //Kullanıcı düzenleme
+  const [userPostData, userPostloading, setOnchangePostUser] = usePostUser(`${siteConfig.api.user}`, {
+    "Id": userId, "firstName": firstName, "lastName": lastName,
+    "username": username, "isLocked": isLocked, "email": email, "role": objectRole, "dealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": userInfoFieldCodes
+  });
 
   //Saha kodları listesi ve Lookup döndürme işlemi
   const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpFieldCode}`);
@@ -96,18 +112,18 @@ const UserList = () => {
   const [lookupDealerTreeData, lookupDealerLoadingTree, lookupDealerSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpDealerCode}`);
   const lookupDealerChildren = [];
   _.each(lookupDealerTreeData, (item, i) => {
-    lookupDealerChildren.push(<Option key={item.Key}>{item.Key+'-'+item.Value}</Option>);
+    lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
   });
- //Rol listesi ve Lookup döndürme işlemi
- const [lookupRolesTreeData, lookupRolesLoadingTree, lookupRolesSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.roles}`);
- const lookupRoleChildren = [];
- _.each(lookupRolesTreeData, (item, i) => {
-  lookupRoleChildren.push(<Option key={item.id}>{item.roleDescription}</Option>);
- });
+  //Rol listesi ve Lookup döndürme işlemi
+  const [lookupRolesTreeData, lookupRolesLoadingTree, lookupRolesSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.roles}`);
+  const lookupRoleChildren = [];
+  _.each(lookupRolesTreeData, (item, i) => {
+    lookupRoleChildren.push(<Option key={item.id} roleName={item.roleName} id={item.id}>{item.roleDescription}</Option>);
+  });
   //Filter Bayi,Bölge,Saha kodları listesi
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
     useFetch(`${siteConfig.api.users}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
-    /*********************************************** CUSTOM HOOKS ************************************************************ */
+  /*********************************************** CUSTOM HOOKS ************************************************************ */
 
 
   const onExpand = expandedKeys => {
@@ -155,11 +171,6 @@ const UserList = () => {
     console.log("onOk: ", value);
   }
 
-  const selectedRow = () => {
-    console.log('xxxx tıkladın')
-    UserModel();
-
-  };
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -168,7 +179,7 @@ const UserList = () => {
       ["filteredInfo"]: filters
     });
   };
- 
+
   async function getDatabaseProductInfo(userId) {
     //Get User Info
     let productInfo;
@@ -186,28 +197,29 @@ const UserList = () => {
         return response.json();
       })
       .then(data => {
-        console.log("Get : ", `${siteConfig.api.productInfoDatabase}`);
         productInfo = data;
       })
       .catch();
     return productInfo;
   }
 
-  async function setModalUserInfo (record) {
+  async function setModalUserInfo(record) {
     const userInfo = await getDatabaseProductInfo(record.id);
-    
+    setUserId(record.id);
     setUsername(userInfo.username);
     setFirstName(userInfo.firstName);
     setLastName(userInfo.lastName);
     setEmail(userInfo.email);
     setRole(String(userInfo.role.id));
+    setObjectRole(userInfo.role);
     setIsLocked(userInfo.isLocked);
     setUserInfoFieldCodes(userInfo.fieldCodes)
     setDealerCodes(userInfo.dealerCodes);
     setRegionCodes(userInfo.regionCodes);
     setTitle(userInfo.title);
-    setVisible(true);
+    // setVisible(true);
   };
+
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     console.log("pageSize :", pageSize);
@@ -223,6 +235,70 @@ const UserList = () => {
     setlocalCurrentPage(current);
   }
 
+  //User modal events
+  function showModal() {
+    setVisible(true);
+  };
+  function handleOk() {
+    setOnchangePostUser(true);
+    // setLoading(true);
+    setTimeout(() => {
+      // setLoading(false);
+      setVisible(false);
+    }, 3000);
+   // modalSelectedValueClear();
+  };
+  function handleCancel() {
+    setVisible(false);
+    setDealerCodes();
+    setRegionCodes();
+    setUserInfoFieldCodes();
+    //modalSelectedValueClear();
+  };
+  function roleHandleChange(value, roleInfo) {
+    setRole(value);
+    setObjectRole(roleInfo);
+    fieldRegionAndDealearVisible(roleInfo.roleName);
+    modalSelectedValueClear(roleInfo.roleName);
+  }
+  function dealerCodeHandleChange(value) {
+    setDealerCodes(value);
+  }
+  function regionCodeHandleChange(value) {
+    setRegionCodes(value);
+  }
+  function fieldCodeHandleChange(value) {
+    setUserInfoFieldCodes(value);
+  }
+  function isLockedChange(value) {
+    setIsLocked(value);
+  }
+  function fieldRegionAndDealearVisible(roleName) {
+
+    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')) {
+      setRegionVisible(true);
+      setFieldVisible(true);
+      setDealerCodeSelectModSingle(true);
+    }
+    else if (roleName === 'regionmanager') {
+      setFieldVisible(true);
+      setRegionVisible(false);
+      setDealerCodeSelectModSingle(false);
+    }
+    else {
+      setRegionVisible(false);
+      setFieldVisible(false);
+      setDealerCodeSelectModSingle(false);
+    }
+  }
+  //User Modal secilen öğelerin temizlenmesi
+  function modalSelectedValueClear(roleName) {
+    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')) {
+
+    } else { setDealerCodes(); }
+    setRegionCodes();
+    setUserInfoFieldCodes();
+  }
   let columns = [
     {
       title: "Adı",
@@ -253,80 +329,48 @@ const UserList = () => {
       title: "Bayi Kodu",
       dataIndex: "dealerCodes",
       key: "dealerCodes",
-      render:(dealerCodes) =>  <Tag color="purple">
-      {dealerCodes}
-    </Tag>
+      render: (dealerCodes) => <Tag color="purple">
+        {dealerCodes}
+      </Tag>
     },
     {
       title: "Saha Kodu",
       dataIndex: "fieldCodes",
       key: "fieldCodes",
-      render:(fieldCodes) =>  <Tag color="volcano">
-      {fieldCodes}
-    </Tag>
+      render: (fieldCodes) => <Tag color="volcano">
+        {fieldCodes}
+      </Tag>
     },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCodes",
       key: "regionCodes",
-      render:(regionCodes) =>  <Tag color="cyan">
-      {regionCodes}
-    </Tag>
-     
+      render: (regionCodes) => <Tag color="cyan">
+        {regionCodes}
+      </Tag>
+
     },
     {
       title: "Ünvan",
       dataIndex: "title",
       key: "title",
-      ellipsis:true,
+      ellipsis: true,
     },
     {
       title: "İşlemler",
       dataIndex: "title",
       key: "title",
-      fixed:"right",
-      render: () => (
-        <Dropdown overlay={menu}>
-        <Button>
-          İşlemler <DownOutlined />
-        </Button>
-      </Dropdown>
+      fixed: "right",
+      render: (text, record) => (
+        <Dropdown overlay={menu} trigger={['click']} >
+          <Button onClick={event => { setModalUserInfo(record) }}>
+            İşlemler  <DownOutlined />
+          </Button>
+        </Dropdown>
+
       ),
     }
-  ];  
-
-  //User modal events
-  function showModal() {
-    setVisible(true);
-  };
-  function handleOk() {
-    // setLoading(true);
-    setTimeout(() => {
-      // setLoading(false);
-      setVisible(false);
-    }, 3000);
-  };
-  function handleCancel() {
-    setVisible(false);
-    setDealerCodes();
-    setRegionCodes();
-    setFieldCodes();
-  };
-  function roleHandleChange(value) {
-    setRole(value);
-  }
-  function dealerCodeHandleChange(value) {
-    setDealerCodes(value);
-  }
-  function regionCodeHandleChange(value) {
-    setRegionCodes(value);
-  }
-  function fieldCodeHandleChange(value) {
-    setUserInfoFieldCodes(value);
-  }
-  function isLockedChange(value) {
-    setIsLocked(value);
-  }
+  ];
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -389,11 +433,6 @@ const UserList = () => {
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-          onRow={(record, rowIndex) => {
-            return {
-              onClick: event => { setModalUserInfo(record, rowIndex) }
-            };
-          }}
           pagination={false}
           scroll={{ x: 'max-content' }}
           size="medium"
@@ -442,9 +481,20 @@ const UserList = () => {
           onValuesChange={onFormLayoutChange}
           size={componentSize}
         >
-          <Form.Item label="Kullanıcı adı">          
+          <Form.Item label="Kullanıcı adı">
             <Input value={username} onChange={event => setUsername(event.target.value)} />
           </Form.Item>
+          <Form.Item label="Rol" onChange={event => setRole(event.target.value)}>
+            <Select
+              style={{ width: '100%' }}
+              placeholder="Rol seçiniz"
+              value={role}
+              onChange={roleHandleChange}
+            >
+              {lookupRoleChildren}
+            </Select>
+          </Form.Item>
+
           <Form.Item label="Ad" onChange={event => setFirstName(event.target.value)} >
             <Input value={firstName} />
           </Form.Item>
@@ -457,20 +507,10 @@ const UserList = () => {
           <Form.Item label="Ünvan" onChange={event => setTitle(event.target.value)}>
             <Input value={title} />
           </Form.Item>
-          <Form.Item label="Rol" onChange={event => setRole(event.target.value)}>
-          <Select
-            style={{ width: '100%' }}
-            placeholder="Rol seçiniz"
-            value={role}
-            onChange={roleHandleChange}
-          >
-            {lookupRoleChildren}
-          </Select>
-          </Form.Item>
         </Form>
         <Form.Item label="Bayi Kodu">
           <Select
-            mode="multiple"
+            mode={(dealerCodeSelectModSingle === true) ? ("single") : ("multiple")}
             style={{ width: '100%' }}
             placeholder="Bayi Kodu seçiniz"
             value={dealerCodes}
@@ -482,6 +522,7 @@ const UserList = () => {
         <Form.Item label="Bölge Kodu">
           <Select
             mode="multiple"
+            disabled={regionVisible}
             style={{ width: '100%' }}
             placeholder="Bölge Kodu seçiniz"
             value={regionCodes}
@@ -493,16 +534,17 @@ const UserList = () => {
         <Form.Item label="Saha Kodu">
           <Select
             mode="multiple"
+            disabled={fieldVisible}
             style={{ width: '100%' }}
             placeholder="Saha Kodu seçiniz"
             value={userInfoFieldCodes}
-           onChange={fieldCodeHandleChange}
+            onChange={fieldCodeHandleChange}
           >
             {lookupFieldChildren}
-          </Select> 
+          </Select>
         </Form.Item>
         <Form.Item >
-        <Switch checkedChildren="Pasif" unCheckedChildren="Aktif" onChange={isLockedChange} value={isLocked} />
+          <Switch checkedChildren="Pasif" unCheckedChildren="Aktif" onChange={isLockedChange} value={isLocked} />
         </Form.Item>
       </Modal>
     </LayoutWrapper>
