@@ -18,7 +18,7 @@ function useFilterProductCategories(url) {
     
     await fetch(url,requestOptions)
       .then(response => {
-        if (!response.ok) throw Error(response.statusText);
+        if (!response.ok) {return localStorage.removeItem('id_token');}
         return response.json();
       })
       .then(data => {  

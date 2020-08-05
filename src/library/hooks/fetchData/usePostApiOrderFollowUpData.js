@@ -41,10 +41,11 @@ function useOrderFollowData(url, reqBody) {
    
     await fetch(url, requestOptions) //Order Fetch
       .then(response => {
-        if (!response.ok) Promise.reject(response);//throw Error(response.statusText);
+        if (!response.ok)  {return localStorage.removeItem('id_token');} //Promise.reject(response);//throw Error(response.statusText);
         return response.json();
       })
-      .then(data => {        
+      .then(data => {
+        if(data){    
         const orderIdArrayH = [];
         const value = data.data.slice();
         value.forEach((item, index) => {          
@@ -77,6 +78,7 @@ function useOrderFollowData(url, reqBody) {
           setOrderDetailData(data);
         })
         .catch();
+        }
       })
       .catch();
   }  

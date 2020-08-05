@@ -21,6 +21,7 @@ import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import ExcelExport from "./ExcelExport";
+var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -330,9 +331,9 @@ const ChequesReport = () => {
   ];
 
   //Hide order table column
-  const role = localStorage.getItem("role");
-  if (role === 'admin') { }
-  else if (role === 'fieldmanager') {
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  if (token.urole === 'admin') { }
+  else if (token.urole === 'fieldmanager') {
     const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Field;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -343,7 +344,7 @@ const ChequesReport = () => {
       }
     }
   }
-  else if (role === 'regionmanager') {
+  else if (token.urole === 'regionmanager') {
     const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Region;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -354,7 +355,7 @@ const ChequesReport = () => {
       }
     }
   }
-  else if (role === 'dealer') {
+  else if (token.urole === 'dealer') {
     const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {

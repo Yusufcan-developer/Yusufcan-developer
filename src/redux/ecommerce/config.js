@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import React, { useState, useEffect } from "react";
 import authAction from '@iso/redux/auth/actions';
+var jwtDecode = require('jwt-decode');
 
 const { logout } = authAction;
 const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
@@ -20,9 +21,9 @@ async function getDatabaseProductInfo() {
       Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
     }
   };
-  const username = localStorage.getItem("nameAndSurname");
-  if(!username){return 'Unauthorized'}
-  await fetch(`${siteConfig.api.cartGetByAccountNo}${username}`, requestOptions)
+  const token = jwtDecode(localStorage.getItem("id_token"));  
+  if(!token.uname){return 'Unauthorized'}
+  await fetch(`${siteConfig.api.cartGetByAccountNo}${token.uname}`, requestOptions)
     .then(response => {
       if (!response.ok)  {return response.statusText;}//throw Error(response.statusText);
       return response.json();

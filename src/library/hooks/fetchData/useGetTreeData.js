@@ -18,16 +18,14 @@ function useGetTreeData(url) {
     
     await fetch(url,requestOptions)
       .then(response => {
-        if (!response.ok) throw Error(response.statusText);
+        if (!response.ok) {return localStorage.removeItem('id_token');}
         return response.json();
       })
       .then(data => {        
-        
-        console.log("useGetTree Data :", data );
-
+        if(data){
         setData(data);
         setLoading(false);
-      })
+      }})
       .catch();
   }
   useEffect(() => {

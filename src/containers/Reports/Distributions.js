@@ -19,6 +19,7 @@ import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import ExcelExport from "./ExcelExport";
+var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -363,9 +364,9 @@ export default function () {
   ];
 
   //Hide order table column
-  const role = localStorage.getItem("role");
-  if (role === 'admin') { }
-  else if (role === 'fieldmanager') {
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  if (token.urole === 'admin') { }
+  else if (token.urole === 'fieldmanager') {
     const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Field;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -376,7 +377,7 @@ export default function () {
       }
     }
   }
-  else if (role === 'regionmanager') {
+  else if (token.urole === 'regionmanager') {
     const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Region;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -387,7 +388,7 @@ export default function () {
       }
     }
   }
-  else if (role === 'dealer') {
+  else if (token.urole === 'dealer') {
     const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
