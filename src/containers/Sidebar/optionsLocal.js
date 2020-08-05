@@ -62,17 +62,7 @@ const options = [
           label: 'sidebar.uploadingPhotos',
         },    
         
-        {
-          key: 'signup',
-          label: 'sidebar.signUp',
-          withoutDashboard: true,
-        },
-        
-        {
-          key: 'resetpassword',
-          label: 'sidebar.resetPw',
-          withoutDashboard: true,
-        },
+       
   
         // {
         //   key: 'comingSoon',

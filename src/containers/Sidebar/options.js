@@ -65,17 +65,7 @@ const options = [
         key: 'admin/photos/upload',
         label: 'sidebar.uploadingPhotos',
       },
-      {
-        key: 'admin/saveUser',
-        label: 'sidebar.signUp',
-        withoutDashboard: true,
-      },
-      
-      {
-        key: 'resetpassword',
-        label: 'sidebar.resetPw',
-        withoutDashboard: false,
-      },
+     
     ],
   },   
 ];

@@ -203,11 +203,12 @@ const OrdersReport = () => {
       });
     }
   };
+
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
-
+  
   function onOk(value) {
   }
   const handleChange = (pagination, filters, sorter) => {

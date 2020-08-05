@@ -13,10 +13,10 @@ export default {
     productGroup: apiUrl + 'b2b/lookup/product-categories',                 //Ürün Gruplerı:GET
     productType: apiUrl + 'b2b/lookup/product-types',                       //Ürün Tipleri:GET
     cartSave: apiUrl + 'b2b/carts',                                         //Ürün Bilgileri Redux:POST
-    cartGetDefault: apiUrl + 'b2b/carts/default',                                   //Ürün Bilgileri Database:GET
-    cartGetByAccountNo: apiUrl + 'b2b/carts/account/',                        //Ürün Bilgileri Database:GET
+    cartGetDefault: apiUrl + 'b2b/carts/default',                           //Ürün Bilgileri Database:GET
+    cartGetByAccountNo: apiUrl + 'b2b/carts/account/',                      //Ürün Bilgileri Database:GET
     dimensions: apiUrl + 'b2b/lookup/product-dimensions',                   //Ebatlar:GET
-    series: apiUrl + 'b2b/lookup/product-series',                            //Seriler:GET
+    series: apiUrl + 'b2b/lookup/product-series',                           //Seriler:GET
     colors: apiUrl + 'b2b/lookup/product-colors',                           //Renkler:GET
     surfaces: apiUrl + 'b2b/lookup/product-surfaces',                       //Yüzeyler:GET
     productionQuality: apiUrl + 'b2b/lookup/product-qualities',             //Ürün Kalitesi:GET
@@ -42,7 +42,8 @@ export default {
     getUser: apiUrl + 'security/users/',                                         //Kullanıcı Bilgisi:GET
     user: apiUrl + 'security/users',                                             //Kullanıcı:POST
     authenticate: apiUrl + 'security/authenticate',                              //Kullanıcı Doğrulama:POST
-
+    changePassword: apiUrl + 'security/change-password',                         //Kullanıcı Doğrulama:POST
+    deleteUser: apiUrl + 'security/users/',                                      //Kullanıcı Bilgisi:DELETE
     //Kayıtlı sepetlerin listelenmesi
     cartGetAll: apiUrl + 'b2b/carts/all',                                  //Tüm sepetlerin listelenmesi
   },
