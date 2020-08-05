@@ -371,21 +371,7 @@ const options = [
         label: 'sidebar.signIn',
         withoutDashboard: true,
       },
-      {
-        key: 'signup',
-        label: 'sidebar.signUp',
-        withoutDashboard: true,
-      },
-      {
-        key: 'forgotpassword',
-        label: 'sidebar.forgotPw',
-        withoutDashboard: true,
-      },
-      {
-        key: 'resetpassword',
-        label: 'sidebar.resetPw',
-        withoutDashboard: true,
-      },
+     
 
       // {
       //   key: 'comingSoon',

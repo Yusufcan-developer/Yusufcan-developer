@@ -5,8 +5,8 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag } from "antd";
-import { DownOutlined, PoweroffOutlined } from '@ant-design/icons';
+import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag, notification,message } from "antd";
+import { DownOutlined, PoweroffOutlined,UserAddOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input, {
@@ -15,11 +15,11 @@ import Input, {
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
-import { usePostUser } from "@iso/lib/hooks/fetchData/usePostApiUser";
+// import { usePostUser } from "@iso/lib/hooks/fetchData/usePostApiUser";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
 import UserModel from './UserModel';
-import _, { object } from 'underscore';
+import _, { object, values } from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 
 const { Panel } = Collapse;
@@ -32,6 +32,9 @@ const UserList = () => {
   const [searchKey, setSearchKey] = useState('');
   const [userId, setUserId] = useState(-1);
   const [username, setUsername] = useState();
+  const [oldPassword, setOldPassword] = useState();
+  const [newPassword, setNewPassword] = useState();
+  const [confirmPassword, setConfirmPassword] = useState();
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
   const [email, setEmail] = useState();
@@ -41,6 +44,8 @@ const UserList = () => {
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+  const [deleteUserVisible, setDeleteUserVisible] = useState(false);
   const [regionVisible, setRegionVisible] = useState(false);
   const [fieldVisible, setFieldVisible] = useState(false);
   const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
@@ -64,12 +69,14 @@ const UserList = () => {
   const [isLocked, setIsLocked] = useState();
   const [userInfoFieldCodes, setUserInfoFieldCodes] = useState();
   const [title, setTitle] = useState();
-  let selectedUserId = 1;
   const [componentSize, setComponentSize] = useState('default');
-
+  const [form] = Form.useForm();
+  let selectedUserId = 1;
+  
   const onFormLayoutChange = ({ size }) => {
     setComponentSize(size);
   };
+  
   const menu = (
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="1" >Düzenle</Menu.Item>
@@ -77,9 +84,22 @@ const UserList = () => {
       <Menu.Item key="3">Sil</Menu.Item>
     </Menu>
   );
-  function handleMenuClick() {
-    setVisible(true);
-    fieldRegionAndDealearVisible(objectRole.roleName);
+  
+  function handleMenuClick(value) {
+    switch (value.key) {
+      case '1':
+        setVisible(true);
+        fieldRegionAndDealearVisible(objectRole.roleName);
+        break;
+      case '2':
+        setForgotPasswordVisible(true);
+        break;
+        case '3':
+          setDeleteUserVisible(true);
+          break;
+      default:
+        break;
+    }
   }
 
   useEffect(() => {
@@ -89,11 +109,6 @@ const UserList = () => {
 
   //Kullanıcı listesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-  //Kullanıcı düzenleme
-  const [userPostData, userPostloading, setOnchangePostUser] = usePostUser(`${siteConfig.api.user}`, {
-    "Id": userId, "firstName": firstName, "lastName": lastName,
-    "username": username, "isLocked": isLocked, "email": email, "role": objectRole, "dealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": userInfoFieldCodes
-  });
 
   //Saha kodları listesi ve Lookup döndürme işlemi
   const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpFieldCode}`);
@@ -180,7 +195,7 @@ const UserList = () => {
     });
   };
 
-  async function getDatabaseProductInfo(userId) {
+  async function getByUserId(userId) {
     //Get User Info
     let productInfo;
     const requestOptions = {
@@ -204,7 +219,7 @@ const UserList = () => {
   }
 
   async function setModalUserInfo(record) {
-    const userInfo = await getDatabaseProductInfo(record.id);
+    const userInfo = await getByUserId(record.id);
     setUserId(record.id);
     setUsername(userInfo.username);
     setFirstName(userInfo.firstName);
@@ -235,25 +250,60 @@ const UserList = () => {
     setlocalCurrentPage(current);
   }
 
+  function addNewUser() {
+    setVisible(true);
+  }
   //User modal events
   function showModal() {
     setVisible(true);
   };
-  function handleOk() {
-    setOnchangePostUser(true);
-    // setLoading(true);
-    setTimeout(() => {
-      // setLoading(false);
-      setVisible(false);
-    }, 3000);
-   // modalSelectedValueClear();
+
+  async function handleDeleteUserOk() {
+    const user = await deleteUser(userId);
+
+    if (user) { message.success('Kullanıcı başarıyla silinmiştir.'); setDeleteUserVisible(false); }
+    else { message.error('Kullanıcı silme işlemi başarısızdır.'); }
   };
+  async function handlePasswordOk() {
+    const password = await changePassword();
+
+    if (password) { message.success('Parola başarıyla değiştirilmiştir.'); setForgotPasswordVisible(false); }
+    else { message.error('Parola değiştirme işlemi başarısızdır.'); }
+  };
+  async function handleOk() {
+    // setLoading(true);
+    // setTimeout(() => {
+    //   setLoading(false);
+    //   setVisible(false);
+    // }, 3000);
+
+    //Kullanıcı düzenleme işlemi
+    const userInfo = await saveUser();
+    if (userInfo) { notification.info({ message: 'Kullanıcı işlemleri', description: 'başarıyla kaydedilmiştir.', placement: 'bottomRight' }); setVisible(false); }
+    else { notification.info({ message: 'Kullanıcı işlemleri', description: 'kaydetme işlemi başarısızdır.', placement: 'bottomRight' }); }
+    modalSelectedValueClear();
+
+  };
+
+
   function handleCancel() {
     setVisible(false);
+    setForgotPasswordVisible(false);
+    setDeleteUserVisible(false);
     setDealerCodes();
     setRegionCodes();
     setUserInfoFieldCodes();
-    //modalSelectedValueClear();
+    setTitle();
+    setUsername();
+    setFirstName();
+    setLastName();
+    setEmail();
+    setTitle();
+    setIsLocked(false);
+    setRole();
+    setFieldVisible(false);
+    setRegionVisible(false);
+    setDealerCodeSelectModSingle(false);
   };
   function roleHandleChange(value, roleInfo) {
     setRole(value);
@@ -299,6 +349,81 @@ const UserList = () => {
     setRegionCodes();
     setUserInfoFieldCodes();
   }
+
+  //Kullanıcı silme fetch işlemi
+  async function deleteUser(userId) {
+     //Get User Info
+     let productInfo;
+     const requestOptions = {
+       method: "DELETE",
+       headers: {
+         "Content-Type": "application/json",
+ 
+         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+       }
+     };
+     await fetch(`${siteConfig.api.deleteUser}${userId}`, requestOptions)
+       .then(response => {
+         if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
+         return response.json();
+       })
+       .then(data => {
+         productInfo = data;
+         console.log('xxxx silinen data',data);
+       })
+       .catch();
+     return productInfo;
+  }
+  //Parola düzenleme fetch işlemi
+  async function changePassword() {
+    let userData;
+    const reqBody = {
+      "username": username, "oldPassword": oldPassword, "newPassword": newPassword
+    }
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(siteConfig.api.changePassword, requestOptions)
+      .then(response => {
+        if (!response.ok) throw Error(response.statusText);
+        return response.json();
+      })
+      .then(data => {
+        userData = data;
+      }).catch(error => console.log('hata', error));
+    return userData;
+  }
+  //Kullanıcı düzenleme fetch işlemi
+  async function saveUser() {
+    let userData;
+    const reqBody = {
+      "Id": userId, "firstName": firstName, "lastName": lastName,
+      "username": username, "isLocked": isLocked, "email": email, "role": objectRole, "dealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": userInfoFieldCodes
+    }
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(siteConfig.api.user, requestOptions)
+      .then(response => {
+        if (!response.ok) throw Error(response.statusText);
+        return response.json();
+      })
+      .then(data => {
+        userData = data;
+      }).catch(error => console.log('hata', error));
+    return userData;
+  }
+
   let columns = [
     {
       title: "Adı",
@@ -376,15 +501,15 @@ const UserList = () => {
       <PageHeader>
         {<IntlMessages id="page.usersTitle.header" />}
       </PageHeader>
-      <Box>
+      <Box>    
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
               <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                <FormItem label={<IntlMessages id="page.roleTitle" />}></FormItem>
               </Col>
               <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                <FormItem label={<IntlMessages id="page.isLocked" />}></FormItem>
               </Col>
               <Col span={6} >
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
@@ -399,20 +524,18 @@ const UserList = () => {
                   onChange={onChangeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  placeholder={"Bayi Kodu Seçiniz"}
+                  placeholder={"Rol Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
               <Col span={6}>
-                <RangePicker
-                  format={siteConfig.dateFormat}
-                  onChange={changeTimePicker}
-                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  onOk={onOk}
-                  style={{ marginBottom: '8px', width: '250px' }}
-                />
+              <Select defaultValue="lucy" style={{ width: 120 }}  style={{ marginBottom: '8px', width: '250px' }} onChange={handleChange}>
+      <Option value="jack">Hepsi</Option>
+      <Option value="lucy">Açık</Option>
+      <Option value="Yiminghe">Kapalı</Option>
+    </Select>
               </Col>
               <Col span={6}>
                 <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
@@ -428,6 +551,12 @@ const UserList = () => {
       </Box>
       {/* Data list volume */}
       <Box>
+      <Col span={8} offset={16} align="right" >
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+            icon={<UserAddOutlined />} onClick={addNewUser} >
+            {<IntlMessages id="forms.button.addUser" />}
+          </Button>
+        </Col>
         <Table
           columns={columns}
           dataSource={data}
@@ -448,11 +577,14 @@ const UserList = () => {
           total={totalDataCount}
         />
       </Box>
+
       <Modal
         visible={visible}
-        title={username}
+        title={username === undefined ? 'Yeni Kullanıcı' : username}
         onOk={handleOk}
         onCancel={handleCancel}
+        // width={800}
+        maskClosable={false}
         footer={[
           <Button key="back" onClick={handleCancel}>
             İptal
@@ -480,10 +612,11 @@ const UserList = () => {
           }}
           onValuesChange={onFormLayoutChange}
           size={componentSize}
-        >
-          <Form.Item label="Kullanıcı adı">
+        > 
+              <Form.Item label="Kullanıcı adı">
             <Input value={username} onChange={event => setUsername(event.target.value)} />
           </Form.Item>
+           
           <Form.Item label="Rol" onChange={event => setRole(event.target.value)}>
             <Select
               style={{ width: '100%' }}
@@ -494,17 +627,19 @@ const UserList = () => {
               {lookupRoleChildren}
             </Select>
           </Form.Item>
-
+          <Form.Item label="Hesap" >
+          <Switch checkedChildren="Kapalı" unCheckedChildren="Açık" onChange={isLockedChange} value={isLocked} />
+        </Form.Item>
           <Form.Item label="Ad" onChange={event => setFirstName(event.target.value)} >
             <Input value={firstName} />
           </Form.Item>
           <Form.Item label="Soyad" onChange={event => setLastName(event.target.value)}>
             <Input value={lastName} />
           </Form.Item>
-          <Form.Item label="Email" onChange={event => setEmail(event.target.value)}>
+          <Form.Item label="E-Posta" onChange={event => setEmail(event.target.value)}>
             <Input value={email} />
           </Form.Item>
-          <Form.Item label="Ünvan" onChange={event => setTitle(event.target.value)}>
+          <Form.Item label="Unvan" onChange={event => setTitle(event.target.value)}>
             <Input value={title} />
           </Form.Item>
         </Form>
@@ -543,9 +678,109 @@ const UserList = () => {
             {lookupFieldChildren}
           </Select>
         </Form.Item>
-        <Form.Item >
-          <Switch checkedChildren="Pasif" unCheckedChildren="Aktif" onChange={isLockedChange} value={isLocked} />
-        </Form.Item>
+        
+      </Modal>
+
+      <Modal
+        visible={forgotPasswordVisible}
+        title="Parola Değiştirme"
+        okText="Kaydet"
+        cancelText="İptal"
+        maskClosable={false}
+        onCancel={handleCancel}
+        onOk={() => {
+          form
+            .validateFields()
+            .then(values => {
+              form.resetFields();
+              handlePasswordOk(values);
+            })
+            .catch(info => {
+              console.log('Validate Failed:', info);
+            });
+        }}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{
+            modifier: 'public',
+          }}
+        >
+          <Form.Item
+            label="Kullanıcı Adı"
+          >
+            <Input value={username} disabled={true} />
+          </Form.Item>
+          <Form.Item name="description" label="Eski Parola"
+          >
+            <Input value={oldPassword} onChange={event => setOldPassword(event.target.value)} />
+          </Form.Item>
+          <Form.Item
+            label="Yeni Parola"
+            title='title'
+            name='newPassword'
+            rules={[
+              {
+                required: true,
+                message: 'Yeni parola giriniz (boş bırakılamaz)!',
+              },
+              () => ({
+                validator(rule, value) {
+                  if (value.length > 5) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject('En az 6 karakter girmelisiniz!');
+                },
+              }),
+            ]}
+          >
+            <Input value={newPassword} onChange={event => setNewPassword(event.target.value)} />
+          </Form.Item>
+          <Form.Item
+            label="Yeni Parola (Tekrar)"
+            title='title'
+            name='confirmPassword'
+            rules={[
+              {
+                required: true,
+                message: 'Yeni Parola tekrar boş bırakılamaz!',
+              },
+              ({ getFieldValue }) => ({
+                validator(rule, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject('Yeni Parola ve Yeni Parola (Tekrar) aynı değildir!');
+                },
+              }),
+            ]}
+          >
+            <Input value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} />
+          </Form.Item>
+        </Form>
+      </Modal>
+    
+      <Modal
+        visible={deleteUserVisible}
+        title={username + " kullanıcısı silinecektir"} 
+        okText="Sil"
+        cancelText="İptal"
+        maskClosable={false}
+        onCancel={handleCancel}
+        onOk={handleDeleteUserOk}
+      >
+      <p>{firstName +' '+ lastName + ' '+'kullanıcısını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{
+          modifier: 'public',
+          }}
+        >
+        </Form>
       </Modal>
     </LayoutWrapper>
   );

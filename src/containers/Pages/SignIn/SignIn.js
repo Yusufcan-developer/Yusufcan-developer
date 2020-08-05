@@ -36,7 +36,6 @@ export default function SignIn() {
   }, [isLoggedIn]);
 
   //Events
-
 function loginError() {
   Modals.error({
     title: 'Kullanıcı Girişi',
