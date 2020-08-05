@@ -7,6 +7,8 @@ import TopbarSearch from './TopbarSearch';
 import TopbarUser from './TopbarUser';
 import TopbarAddtoCart from './TopbarAddToCart';
 import TopbarWrapper from './Topbar.styles';
+var jwtDecode = require('jwt-decode');
+
 
 const { Header } = Layout;
 const { toggleCollapsed } = appActions;
@@ -20,7 +22,8 @@ export default function Topbar() {
     dispatch,
   ]);
   const isCollapsed = collapsed && !openDrawer;
-  const username = localStorage.getItem("nameAndSurname");
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  const username = token.uname;
   const styling = {
     background: customizedTheme.backgroundColor,
     position: 'fixed',

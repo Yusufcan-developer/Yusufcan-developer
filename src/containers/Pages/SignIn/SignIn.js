@@ -32,6 +32,9 @@ export default function SignIn() {
   React.useEffect(() => {
     if (isLoggedIn) {
       setRedirectToReferrer(true);
+    }else{
+      localStorage.removeItem('role');
+      localStorage.removeItem('nameAndSurname');
     }
   }, [isLoggedIn]);
 
@@ -71,9 +74,7 @@ const keyPress = e => {
       .then(data => {
         dispatch(login(data.token));
 
-        dispatch(clearMenu());
-        localStorage.setItem("nameAndSurname", username);
-        localStorage.setItem("role", data.role.roleName);
+        dispatch(clearMenu()); 
         history.push('/products/categories');
       })
       .catch(error => loginError());

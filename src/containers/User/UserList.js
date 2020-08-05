@@ -5,6 +5,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
+import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag, notification,message } from "antd";
 import { DownOutlined, PoweroffOutlined,UserAddOutlined } from '@ant-design/icons';
 import PageHeader from "@iso/components/utility/pageHeader";
@@ -58,6 +59,7 @@ const UserList = () => {
   //******************************************************************************************************************* */
   /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat));
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat));
@@ -70,13 +72,52 @@ const UserList = () => {
   const [userInfoFieldCodes, setUserInfoFieldCodes] = useState();
   const [title, setTitle] = useState();
   const [componentSize, setComponentSize] = useState('default');
+  const [newUrlParams, setNewUrlParams] = useState('')
+  const location = useLocation();
+  const [filterIsLocked,setFilterIsLocked]=useState();
   const [form] = Form.useForm();
   let selectedUserId = 1;
-  
+  const match = useRouteMatch();
+  const queryString = require('query-string');
+  const history = useHistory();
+
   const onFormLayoutChange = ({ size }) => {
     setComponentSize(size);
   };
+  function getQueryVariable(query) {
+
+    const parsed = queryString.parse(location.search);
+
+    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
+    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
+    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    
+    // if (parsed.dec !== undefined) {
+    //   if (Array.isArray(parsed.dec)) {
+    //     _.each(parsed.dec, (item, i) => {
+    //       newDealarCode.push(item);
+    //     });
+    //   } else { newDealarCode.push(parsed.dec) }
+    // }
+    }
+    function dataSearch(selectedPageIndex, selectedPageSize) {
+      const params = new URLSearchParams(location.search)
+
+      params.delete('keyword');
+      params.delete('pgsize');
+      params.delete('pgindex');
+      params.delete('st')
+
+      if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+      if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
+      if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+      let createUrl = null;
+      if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
+      history.push(`${location.pathname}?${createUrl}`);
   
+      return setOnChange(true);
+    }
+    
   const menu = (
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="1" >Düzenle</Menu.Item>
@@ -159,7 +200,7 @@ const UserList = () => {
     setSelectedKeys(selectedKeys);
   };
   const searchButton = () => {
-    setOnChange(true);
+    dataSearch();
   };
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
@@ -519,22 +560,21 @@ const UserList = () => {
             </Row>
             <Row>
               <Col span={6}>
-                <TreeSelect
-                  treeData={treeData}
-                  onChange={onChangeDealerCode}
-                  treeCheckable={true}
-                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  placeholder={"Rol Seçiniz"}
-                  showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth={500}
-                />
+              <Select
+              mode={"multiple"}
+              style={{ marginBottom: '8px', width: '250px' }}
+              placeholder="Rol seçiniz"
+              value={role}
+              onChange={roleHandleChange}
+            >
+              {lookupRoleChildren}
+            </Select>
               </Col>
               <Col span={6}>
-              <Select defaultValue="lucy" style={{ width: 120 }}  style={{ marginBottom: '8px', width: '250px' }} onChange={handleChange}>
-      <Option value="jack">Hepsi</Option>
-      <Option value="lucy">Açık</Option>
-      <Option value="Yiminghe">Kapalı</Option>
+              <Select defaultValue="all" style={{ width: 120 }}  style={{ marginBottom: '8px', width: '250px' }} onChange={handleChange}>
+      <Option value="all">Hepsi</Option>
+      <Option value="open">Açık</Option>
+      <Option value="close">Kapalı</Option>
     </Select>
               </Col>
               <Col span={6}>
