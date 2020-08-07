@@ -13,19 +13,18 @@ import Collapse from "@iso/components/uielements/collapse";
 import Input, {
   InputGroup,
 } from '@iso/components/uielements/input';
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
-import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 // import { usePostUser } from "@iso/lib/hooks/fetchData/usePostApiUser";
 import siteConfig from "@iso/config/site.config";
 import moment from 'moment';
+import ReportPagination from "../Reports/ReportPagination";
 import UserModel from './UserModel';
-import _, { object, values } from 'underscore';
+import _, { object, values, each } from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const UserList = () => {
@@ -39,10 +38,6 @@ const UserList = () => {
   const [firstName, setFirstName] = useState();
   const [lastName, setLastName] = useState();
   const [email, setEmail] = useState();
-  const [expandedKeys, setExpandedKeys] = useState();
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const [checkedKeys, setCheckedKeys] = useState();
-  const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
@@ -67,8 +62,11 @@ const UserList = () => {
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
   const [role, setRole] = useState();
+  const [roleNames, setRoleNames] = useState();
+  
   const [objectRole, setObjectRole] = useState();
   const [isLocked, setIsLocked] = useState();
+  const [isActive,setIsActive]=useState(null);
   const [userInfoFieldCodes, setUserInfoFieldCodes] = useState();
   const [title, setTitle] = useState();
   const [componentSize, setComponentSize] = useState('default');
@@ -76,7 +74,6 @@ const UserList = () => {
   const location = useLocation();
   const [filterIsLocked,setFilterIsLocked]=useState();
   const [form] = Form.useForm();
-  let selectedUserId = 1;
   const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
@@ -85,31 +82,50 @@ const UserList = () => {
     setComponentSize(size);
   };
   function getQueryVariable(query) {
-
+    let role = []
     const parsed = queryString.parse(location.search);
-
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
-    
-    // if (parsed.dec !== undefined) {
-    //   if (Array.isArray(parsed.dec)) {
-    //     _.each(parsed.dec, (item, i) => {
-    //       newDealarCode.push(item);
-    //     });
-    //   } else { newDealarCode.push(parsed.dec) }
-    // }
+   
+    if (parsed.rol !== undefined) {
+      if (Array.isArray(parsed.rol)) {
+        _.each(parsed.rol, (item, i) => {
+          role.push(item);
+        });
+      } else { role.push(parsed.rol) }
+      setRole(role);
+      setRoleNames(role);
     }
+    
+    if (parsed.act !== undefined) { 
+      switch (parsed.act) {
+        case 'true':
+          setIsActive(true);
+          break;
+        case 'false':
+          setIsActive(false);
+          break;
+        default:
+          setIsActive(null)
+          break;
+      }
+    }
+    };
     function dataSearch(selectedPageIndex, selectedPageSize) {
       const params = new URLSearchParams(location.search)
 
       params.delete('keyword');
       params.delete('pgsize');
       params.delete('pgindex');
-      params.delete('st')
+      params.delete('act');
 
+      _.filter(roleNames, function (item) {
+        params.append('rol', item); params.toString();
+      });
+      params.append('act',isActive); 
       if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-      if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
+      if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setlocalCurrentPage(1);params.append('pgindex', 1) }
       if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
       let createUrl = null;
       if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -146,10 +162,8 @@ const UserList = () => {
   useEffect(() => {
     console.log("currentPage!", localCurrentPage);
     setCurrentPage(localCurrentPage);
+    getQueryVariable();
   }, [localCurrentPage]);
-
-  //Kullanıcı listesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
 
   //Saha kodları listesi ve Lookup döndürme işlemi
   const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpFieldCode}`);
@@ -173,60 +187,27 @@ const UserList = () => {
   //Rol listesi ve Lookup döndürme işlemi
   const [lookupRolesTreeData, lookupRolesLoadingTree, lookupRolesSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.roles}`);
   const lookupRoleChildren = [];
+  const lookupRoleNameChildren = [];
   _.each(lookupRolesTreeData, (item, i) => {
-    lookupRoleChildren.push(<Option key={item.id} roleName={item.roleName} id={item.id}>{item.roleDescription}</Option>);
+    lookupRoleChildren.push(<Option key={item.id} roleName={item.roleName} roleDescription={item.roleDescription} id={item.id}>{item.roleDescription}</Option>);
+    lookupRoleNameChildren.push(<Option key={item.roleName} roleName={item.roleName} roleDescription={item.roleDescription} id={item.id}>{item.roleDescription}</Option>);
   });
-  //Filter Bayi,Bölge,Saha kodları listesi
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.users}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+  
+  //Kullanıcı listesi
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,] =
+    useFetch(`${siteConfig.api.users}`, {"keyword": searchKey,"isActive": isActive,"roleNames": roleNames,  "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
   /*********************************************** CUSTOM HOOKS ************************************************************ */
 
-
-  const onExpand = expandedKeys => {
-    console.log("onExpand", expandedKeys); // if not set autoExpandParent to false, if children expanded, parent can not collapse.
-    // or, you can remove all expanded children keys.
-
-    setExpandedKeys(expandedKeys);
-    setAutoExpandParent(false);
-  };
-
-  const onCheck = checkedKeys => {
-    console.log("onCheck", checkedKeys);
-    setCheckedKeys(checkedKeys);
-  };
-
-  const onSelect = (selectedKeys, info) => {
-    console.log("onSelect", info);
-    setSelectedKeys(selectedKeys);
-  };
   const searchButton = () => {
     dataSearch();
   };
-  function onChangeDealerCode(value) {
-    let fieldArrObj = [];
-    let regionArrObj = [];
-    let dealerArrObj = [];
-
-    if (value.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
-    _.filter(value, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj) }
-      else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj)
-      }
-      else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj)
-      }
-    });
-  };
-  function changeTimePicker(value, dateString) {
-    setFromDate(dateString[0]);
-    setToDate(dateString[1]);
-  }
-
   function onOk(value) {
     console.log("onOk: ", value);
   }
-
+  
+  const handleChangeIsActive = (value) => { 
+    setIsActive(value);
+  };
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -278,17 +259,17 @@ const UserList = () => {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    console.log("pageSize :", pageSize);
-    console.log("current :", current);
     setPageSize(pageSize);
+    setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
+    dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
-
-    console.log("current :", current);
+    setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
+    dataSearch(current);
   }
 
   function addNewUser() {
@@ -302,32 +283,27 @@ const UserList = () => {
   async function handleDeleteUserOk() {
     const user = await deleteUser(userId);
 
-    if (user) { message.success('Kullanıcı başarıyla silinmiştir.'); setDeleteUserVisible(false); }
+    if (user) { message.success('Kullanıcı başarıyla silinmiştir.');cancelAndClearValues(); setDeleteUserVisible(false); }
     else { message.error('Kullanıcı silme işlemi başarısızdır.'); }
+    return setOnChange(true);
   };
   async function handlePasswordOk() {
     const password = await changePassword();
 
-    if (password) { message.success('Parola başarıyla değiştirilmiştir.'); setForgotPasswordVisible(false); }
+    if (password) { message.success('Parola başarıyla değiştirilmiştir.');cancelAndClearValues(); setForgotPasswordVisible(false); }
     else { message.error('Parola değiştirme işlemi başarısızdır.'); }
+    return setOnChange(true);
   };
-  async function handleOk() {
-    // setLoading(true);
-    // setTimeout(() => {
-    //   setLoading(false);
-    //   setVisible(false);
-    // }, 3000);
-
+  async function handleOk() {   
     //Kullanıcı düzenleme işlemi
     const userInfo = await saveUser();
-    if (userInfo) { notification.info({ message: 'Kullanıcı işlemleri', description: 'başarıyla kaydedilmiştir.', placement: 'bottomRight' }); setVisible(false); }
-    else { notification.info({ message: 'Kullanıcı işlemleri', description: 'kaydetme işlemi başarısızdır.', placement: 'bottomRight' }); }
+    if (userInfo) { message.success('Kullanıcı başarıyla kaydedilmiştir.');cancelAndClearValues(); setVisible(false); }
+    else {message.error('Kullanıcı kaydetme işlemi başarısızdır.'); }
     modalSelectedValueClear();
-
+    return setOnChange(true);
   };
 
-
-  function handleCancel() {
+  function cancelAndClearValues() {
     setVisible(false);
     setForgotPasswordVisible(false);
     setDeleteUserVisible(false);
@@ -345,15 +321,35 @@ const UserList = () => {
     setFieldVisible(false);
     setRegionVisible(false);
     setDealerCodeSelectModSingle(false);
+  }
+  function handleCancel() {
+    cancelAndClearValues();
   };
+  
   function roleHandleChange(value, roleInfo) {
     setRole(value);
     setObjectRole(roleInfo);
     fieldRegionAndDealearVisible(roleInfo.roleName);
     modalSelectedValueClear(roleInfo.roleName);
+
+    let selectedRoleName = []
+    let selectedroleDescription = []
+    if (roleInfo !== undefined) {
+      if (Array.isArray(roleInfo)) {
+        _.each(roleInfo, (item, i) => {
+          selectedroleDescription.push(item.key)
+          selectedRoleName.push(item.key);
+        });
+      } else { selectedRoleName.push(roleInfo.key);}
+
+    }
+    setRoleNames(selectedRoleName);
   }
+
   function dealerCodeHandleChange(value) {
-    setDealerCodes(value);
+    if (dealerCodeSelectModSingle) { setDealerCodes([value]); } else {
+      setDealerCodes(value);
+    }
   }
   function regionCodeHandleChange(value) {
     setRegionCodes(value);
@@ -410,7 +406,6 @@ const UserList = () => {
        })
        .then(data => {
          productInfo = data;
-         console.log('xxxx silinen data',data);
        })
        .catch();
      return productInfo;
@@ -495,26 +490,49 @@ const UserList = () => {
       title: "Bayi Kodu",
       dataIndex: "dealerCodes",
       key: "dealerCodes",
-      render: (dealerCodes) => <Tag color="purple">
-        {dealerCodes}
-      </Tag>
+      render: dealerCodes => (      
+        <>
+          { _.map(dealerCodes, (item, i) => {          
+            return (
+              <Tag color={'purple'} key={item}>
+                {item}
+              </Tag>
+            );
+          })}
+        </>
+      ),  
     },
     {
       title: "Saha Kodu",
       dataIndex: "fieldCodes",
       key: "fieldCodes",
-      render: (fieldCodes) => <Tag color="volcano">
-        {fieldCodes}
-      </Tag>
+      render: fieldCodes => (
+        <>
+          { _.map(fieldCodes, (item, i) => {           
+            return (
+              <Tag color={'volcano'} key={item}>
+                {item}
+              </Tag>
+            );
+          })}
+        </>
+      ),     
     },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCodes",
       key: "regionCodes",
-      render: (regionCodes) => <Tag color="cyan">
-        {regionCodes}
-      </Tag>
-
+      render: regionCodes => (
+        <>
+          { _.map(regionCodes, (item, i) => {           
+            return (
+              <Tag color={'cyan'} key={item}>
+                {item}
+              </Tag>
+            );
+          })}
+        </>
+      ),     
     },
     {
       title: "Ünvan",
@@ -567,18 +585,18 @@ const UserList = () => {
               value={role}
               onChange={roleHandleChange}
             >
-              {lookupRoleChildren}
+              {lookupRoleNameChildren}
             </Select>
               </Col>
               <Col span={6}>
-              <Select defaultValue="all" style={{ width: 120 }}  style={{ marginBottom: '8px', width: '250px' }} onChange={handleChange}>
-      <Option value="all">Hepsi</Option>
-      <Option value="open">Açık</Option>
-      <Option value="close">Kapalı</Option>
+              <Select value={isActive} defaultValue={null} style={{ width: 120 }}  style={{ marginBottom: '8px', width: '250px' }} onChange={handleChangeIsActive}>
+      <Option value={null}>Hepsi</Option>
+      <Option value={true}>Açık</Option>
+      <Option value={false}>Kapalı</Option>
     </Select>
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Anahtar kelime" onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
@@ -608,13 +626,13 @@ const UserList = () => {
           bordered={false}
         />
         <br></br>
-        <Pagination
-          showSizeChanger
+        <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
-          position='bottom'
           pageSize={pageSize}
           total={totalDataCount}
+          current={localCurrentPage}
+          position="bottom"
         />
       </Box>
 
@@ -623,7 +641,6 @@ const UserList = () => {
         title={username === undefined ? 'Yeni Kullanıcı' : username}
         onOk={handleOk}
         onCancel={handleCancel}
-        // width={800}
         maskClosable={false}
         footer={[
           <Button key="back" onClick={handleCancel}>

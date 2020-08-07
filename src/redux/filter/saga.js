@@ -17,9 +17,6 @@ export function* initData() {
   });
 }
 export function* updateData({ products, productQuantity }) {
-  console.log('xxxx up',products)
-  console.log('xxxx productQuantity ',productQuantity)
-  console.log('xxxx son update kISMI')
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
   localStorage.setItem('cartProducts', JSON.stringify(products));
   yield put({
@@ -29,7 +26,6 @@ export function* updateData({ products, productQuantity }) {
   });
 }
 export default function*() {
-  console.log('xxxx son update kISMI1')
   yield all([
     //takeEvery(actions.INIT_DATA_SAGA, initData),
     takeEvery(actions.UPDATE_DATA_SAGA, updateData),

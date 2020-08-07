@@ -47,19 +47,9 @@ const { Meta } = Card;
 const ProductGroupList = () => {
   const history = useHistory();
   const [loading, setloading] = useState(false);
- 
-  function selectedProductGroup (productGroupId) {
-    //Product Group Id
-    console.log('info productGroupId',productGroupId);
-    localStorage.setItem("productCategories", productGroupId);
-    // return (
-    // <Link to={`${'/products/search'}/ProductGroup:${productGroupId}`}></Link>)
-  
-    // history.push({
-    //   pathname: '/products/search',
-    //   productGroupId: productGroupId,
-    // });
-    }
+  useEffect(() => {
+   
+  }, []);
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>
@@ -75,8 +65,7 @@ const ProductGroupList = () => {
             <Card
               hoverable
               style={{ width: 300, marginTop: 16 }}
-              loading={false}                
-              onClick={event => selectedProductGroup(item.Id)}
+              loading={false}
               cover={
 
                 < img
