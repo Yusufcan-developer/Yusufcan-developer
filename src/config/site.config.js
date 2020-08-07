@@ -44,6 +44,7 @@ export default {
     authenticate: apiUrl + 'security/authenticate',                              //Kullanıcı Doğrulama:POST
     changePassword: apiUrl + 'security/change-password',                         //Kullanıcı Doğrulama:POST
     deleteUser: apiUrl + 'security/users/',                                      //Kullanıcı Bilgisi:DELETE
+    getAdress:apiUrl ,                      //Adres Bilgisi:GET
     //Kayıtlı sepetlerin listelenmesi
     cartGetAll: apiUrl + 'b2b/carts/all',                                  //Tüm sepetlerin listelenmesi
   },
