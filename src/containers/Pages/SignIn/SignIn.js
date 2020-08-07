@@ -1,4 +1,4 @@
-import React, { useState }  from 'react';
+import React, { useState } from 'react';
 import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 // import jwtDecode from 'jwt-decode';
@@ -22,7 +22,6 @@ export default function SignIn() {
   let location = useLocation();
   const dispatch = useDispatch();
   const isLoggedIn = useSelector(state => state.Auth.idToken);
-
   const [redirectToReferrer, setRedirectToReferrer] = React.useState(false);
 
   //States
@@ -32,7 +31,7 @@ export default function SignIn() {
   React.useEffect(() => {
     if (isLoggedIn) {
       setRedirectToReferrer(true);
-    }else{
+    } else {
       localStorage.clear();
       // localStorage.removeItem('role');
       // localStorage.removeItem('nameAndSurname');
@@ -41,20 +40,20 @@ export default function SignIn() {
   }, [isLoggedIn]);
 
   //Events
-function loginError() {
-  Modals.error({
-    title: 'Kullanıcı Girişi',
-    content:
-      'Kullanıcı adı veya şifrenizi kontrol ediniz',
-    okText: 'OK',
-    cancelText: 'Cancel',
-  });
-}
-const keyPress = e => {
-  if (e.keyCode == 13) {
-    handleLogin(e);
+  function loginError() {
+    Modals.error({
+      title: 'Kullanıcı Girişi',
+      content:
+        'Kullanıcı adı veya şifrenizi kontrol ediniz',
+      okText: 'OK',
+      cancelText: 'Cancel',
+    });
   }
-}
+  const keyPress = e => {
+    if (e.keyCode == 13) {
+      handleLogin(e);
+    }
+  }
   function handleLogin(e) {
     e.preventDefault();
 
@@ -65,8 +64,9 @@ const keyPress = e => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: username,
-        password: password })
-  };
+        password: password
+      })
+    };
 
     fetch(siteConfig.api.authenticate, requestOptions)
       .then(response => {
@@ -76,7 +76,7 @@ const keyPress = e => {
       .then(data => {
         dispatch(login(data.token));
 
-        dispatch(clearMenu()); 
+        dispatch(clearMenu());
         history.push('/products/categories');
       })
       .catch(error => loginError());
@@ -99,7 +99,7 @@ const keyPress = e => {
           <div className="isoSignInForm">
             <form>
               <div className="isoInputWrapper">
-              
+
                 <Input
                   controlId="userName"
                   size="large"
@@ -129,12 +129,12 @@ const keyPress = e => {
                   <IntlMessages id="page.signInButton" />
                 </Button>
               </div>
-             
+
             </form>
             <div className="isoCenterComponent isoHelperWrapper">
               <Link to="/forgotpassword" className="isoForgotPass">
                 <IntlMessages id="page.signInForgotPass" />
-              </Link>            
+              </Link>
             </div>
           </div>
         </div>

@@ -24,7 +24,6 @@ export default function OrderInfo() {
   }
 //Change First Name 
 function saveOrder(event) {
-  console.log('xxxx companyName',localStorage.getItem("companyName"))
 };
   return (
     <OrderTable className="isoOrderInfo">
