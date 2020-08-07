@@ -16,7 +16,6 @@ function getInitData() {
             objectID,
             quantity: parseInt(product.quantity, 10),
           });
-          console.log('xxxx c',cartProducts)
           products[objectID] = {
             ...cartProducts[objectID],
              price: 12//parseFloat(cartProducts[objectID].price, 10),

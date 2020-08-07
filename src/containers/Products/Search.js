@@ -41,8 +41,8 @@ const SearchComponent = () => {
   const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [quantity, setQuantity] = useState(1);
-  const [productGroup, setProductGroup] = useState(localStorage.getItem("productCategories"));
-  const [filterProductGroup, setFilterProductGroup] = useState([localStorage.getItem("productCategories")]);
+  const [productGroup, setProductGroup] = useState();
+  const [filterProductGroup, setFilterProductGroup] = useState();
   const [productType, setProductType] = useState([]);
   const [productQuality, setProductQuality] = useState([]);
   const [series, setSeries] = useState([]);

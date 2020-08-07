@@ -33,8 +33,10 @@ export default function SignIn() {
     if (isLoggedIn) {
       setRedirectToReferrer(true);
     }else{
-      localStorage.removeItem('role');
-      localStorage.removeItem('nameAndSurname');
+      localStorage.clear();
+      // localStorage.removeItem('role');
+      // localStorage.removeItem('nameAndSurname');
+      // localStorage.removeItem('productCategories');
     }
   }, [isLoggedIn]);
 

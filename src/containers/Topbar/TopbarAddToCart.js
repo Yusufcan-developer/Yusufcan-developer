@@ -27,6 +27,9 @@ export default function TopbarAddtoCart() {
     viewTopbarCart,
   } = useSelector(state => state.Ecommerce);
 
+  let quantity;
+  if (productQuantity) { quantity = productQuantity.length }
+  else { quantity = 0 }
   function hide() {
     dispatch(changeViewTopbarCart(false));
   }
@@ -122,10 +125,10 @@ export default function TopbarAddtoCart() {
           className="ion-android-cart"
           style={{ color: customizedTheme.textColor }}
         />
-        {productQuantity.length === 0 ? (
+        { quantity === 0 ? (
           ''
         ) : (
-            <span>{productQuantity.length}</span>
+            <span>{quantity}</span>
           )}
       </div>
     </Popover>
