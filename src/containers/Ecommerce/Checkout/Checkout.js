@@ -1,4 +1,7 @@
+//React
 import React, { useState, useEffect } from "react";
+
+//Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import Box from '@iso/components/utility/box';
 import BillingForm from './BillingForm';
@@ -16,6 +19,8 @@ import { useGetCustomerInfo } from "@iso/lib/hooks/fetchData/useGetCustomerInfo"
 import siteConfig from "@iso/config/site.config";
 import { Col, Row, Modal, Table, Input } from "antd";
 import Form from "@iso/components/uielements/form";
+
+//Other Library
 var jwtDecode = require('jwt-decode');
 const Option = SelectOption;
 
@@ -36,6 +41,14 @@ export default function () {
 
   let totalPrice;
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
+
+  //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
+  useEffect(() => {
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    getInitData(token.uid);
+  }, []);
+
+  //Get Products
   function renderProducts() {
     totalPrice = 0;
     return productQuantity.map(product => {
@@ -54,32 +67,34 @@ export default function () {
   function saveOrder(event) {
 
   };
-  useEffect(() => {
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    getInitData(token.uid);
-  }, []);
 
   //Change Company Name
   const onChangeCompanyName = e => {
     setCompanyName(e.target.value);
     localStorage.setItem("companyName", e.target.value);
   }
+
   //Change Company Name 
   const onChangeEmail = e => {
     setEmail(e.target.value);
   };
+
   //Change Phone 
   const onChangePhone = e => {
     setPhone(e.target.value);
   };
+
   //Change City 
   const onChangeCity = e => {
     setCity(e.target.value);
   };
-
+  
+  //Adres Modal iptal işlemi
   function handleCancel() {
     setVisible(false);
   };
+
+  //Adres Modal açma
   function handleShowModal() {
     setVisible(true);
   };
@@ -117,6 +132,8 @@ export default function () {
       render: () => <a>Seç</a>,
     },
   ];
+
+  //get user by id
   async function getByUserId(userId) {
     let userData;
     //Get User Info  
@@ -139,6 +156,8 @@ export default function () {
       .catch();
     return userData;
   }
+
+  //get adress
   async function getAdress(dealerCodes) {
     //Get User Info  
     const requestOptions = {
@@ -159,6 +178,8 @@ export default function () {
       .catch();
     return user;
   }
+
+  //get adress and user id function
   async function getInitData(userId) {
     const userData = await getByUserId(userId);
     const adress = await getAdress(userData.dealerCodes[0]);
