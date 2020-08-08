@@ -51,6 +51,7 @@ const DeliveriesReport = () => {
 
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
+  const [startingPageIndex,setStartingPageIndex]=useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -153,7 +154,7 @@ const DeliveriesReport = () => {
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', pageIndex) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -182,7 +183,7 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('pgsize');
 
-    if (value.length === 0) { setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
