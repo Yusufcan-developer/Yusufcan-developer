@@ -23,7 +23,7 @@ async function getDatabaseProductInfo() {
   };
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (!token.uname) { return 'Unauthorized' }
-  await fetch(`${siteConfig.api.cartGetByAccountNo}${token.uname}`, requestOptions)
+  await fetch(`${siteConfig.api.carts.getGetByAccountNo}${token.uname}`, requestOptions)
     .then(response => {
       if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
       return response.json();

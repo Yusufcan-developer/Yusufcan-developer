@@ -127,25 +127,25 @@ const ProductsList = () => {
 
   //ProductListHook
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products}`, { "keyword": keyword, "series": series,"productStatus":productStatus, "types": productType,"surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "series": series,"productStatus":productStatus, "types": productType,"surfaces": surface, "colors": color, "dimensions": dimension, "categories": productGroup, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
   //Ürün Grubu
-  const [productGroupData] = useFilterData(`${siteConfig.api.productGroup}`);
+  const [productGroupData] = useFilterData(`${siteConfig.api.lookup.getProductCategories}`);
 
   //Ürün Tipi 
-  const [productTypeData] = useFilterData(`${siteConfig.api.productType}`);
+  const [productTypeData] = useFilterData(`${siteConfig.api.lookup.getProductTypes}`);
 
   //Ebatlar
-  const [dimensionData] = useFilterData(`${siteConfig.api.dimensions}`);
+  const [dimensionData] = useFilterData(`${siteConfig.api.lookup.getDimensions}`);
 
   //Seriler
-  const [serieData] = useFilterData(`${siteConfig.api.series}`);
+  const [serieData] = useFilterData(`${siteConfig.api.lookup.getSeries}`);
 
   //Renkler
-  const [colorData] = useFilterData(`${siteConfig.api.colors}`);
+  const [colorData] = useFilterData(`${siteConfig.api.lookup.colors}`);
 
   //Yüzeyler
-  const [surfaceData] = useFilterData(`${siteConfig.api.surfaces}`);
+  const [surfaceData] = useFilterData(`${siteConfig.api.lookup.getSurfaces}`);
 
   //Ürün grubu adı getirme
   console.log('info product GroupId', history.location.productGroupId)

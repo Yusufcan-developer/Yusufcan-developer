@@ -1,24 +1,35 @@
+//React
 import React, { useState, useEffect } from "react";
+import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+
+//Components
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
+import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+
+//Fetch
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+
+//Styles
 import { DownloadOutlined } from '@ant-design/icons';
+
+//Configs
 import siteConfig from "@iso/config/site.config";
-import moment from 'moment';
-import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+
+//Other Library
 import ExcelExport from "./ExcelExport";
+import _ from 'underscore';
+import moment from 'moment';
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -26,7 +37,10 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
 const OrdersReport = () => {
-  //******************************************************************************************************************* */
+
+  const queryString = require('query-string');
+  const history = useHistory();
+
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
@@ -37,9 +51,7 @@ const OrdersReport = () => {
     sortedInfo: "",
     filteredInfo: ""
   });
-  //******************************************************************************************************************* */
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
-  const [localCurrentPage, setlocalCurrentPage] = useState(1);
+  const [pageIndex, setPageIndex] = useState(1);
   const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20)
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
@@ -52,22 +64,44 @@ const OrdersReport = () => {
   const location = useLocation();
   const { searchQuery } = useParams();
 
-  const match = useRouteMatch();
-  const queryString = require('query-string');
-  const history = useHistory();
-  const [orderDetailItemsData, setOrderDetailItemsData] = useState();
+  //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
+  useEffect(() => {
+    setCurrentPage(pageIndex);
+    getVariablesFromUrl(searchQuery)
+  }, [pageIndex]);
 
-  function getQueryVariable(query) {
+  useEffect(() => {
+    setChangePageSize(pageSize);
+    getVariablesFromUrl(searchQuery)
+  }, [pageSize]);
 
+  useEffect(() => {
+    setFromDate(fromDate);
+    setToDate(toDate);
+    getVariablesFromUrl(searchQuery)
+  }, [fromDate, toDate]);
+
+  //Rapor
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
+    useOrderFollowData(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+
+  //Bayi,Bölge ve Saha kodlarının getirilmesi
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+
+  //Url'i çözümleme işlemi
+  function getVariablesFromUrl(query) {
+
+    //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setPageIndex(parseInt(parsed.pgindex)); }
     let newDealarCode = []
 
+    //Field url data
     if (parsed.fic !== undefined) {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
@@ -76,6 +110,7 @@ const OrdersReport = () => {
       } else { newDealarCode.push(parsed.fic) }
     }
 
+    //RegionCode url data
     if (parsed.rec !== undefined) {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
@@ -84,6 +119,7 @@ const OrdersReport = () => {
       } else { newDealarCode.push(parsed.rec) }
     }
 
+    //Dealar url data
     if (parsed.dec !== undefined) {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
@@ -109,44 +145,30 @@ const OrdersReport = () => {
       }
     });
   }
-  useEffect(() => {
-    setCurrentPage(localCurrentPage);
-    getQueryVariable(searchQuery)
-  }, [localCurrentPage]);
 
-  useEffect(() => {
-    setChangePageSize(pageSize);
-    getQueryVariable(searchQuery)
-  }, [pageSize]);
-
-  useEffect(() => {
-    setFromDate(fromDate);
-    setToDate(toDate);
-    getQueryVariable(searchQuery)
-  }, [fromDate, toDate]);
-
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
-    useOrderFollowData(`${siteConfig.api.orders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
-
+  //Sipariş Kalemleri Görüntüleme
   async function onExpand(expandedKeys) {
     setExpandedKeys(expandedKeys);
     setAutoExpandParent(false);
   };
 
-  const onCheck = checkedKeys => {
-    console.log("onCheck", checkedKeys);
-    setCheckedKeys(checkedKeys);
+  //Sipariş Kalemleri Expand İşlemi
+  function expandedRow(row, index) {
+    let orderDetailIndex;
+    _.each(orderDetailData, (item, i) => {
+      if (item.Key === row.orderNo) { return orderDetailIndex = i }
+    });
+    return (<Table
+      columns={OrderDetailcolumns}
+      dataSource={orderDetailData[orderDetailIndex].Value}
+      pagination={false}
+      scroll={{ x: 'max-content' }}
+      size="medium"
+      bordered={false}
+    />);
   };
-
-  const onSelect = (selectedKeys, info) => {
-    console.log("onSelect", info);
-    setSelectedKeys(selectedKeys);
-  };
-  const exportExcelButton = () => {
-    ExcelExport(columns, data, 'Geçmiş Siparişler');
-  }
+  
+  //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
 
@@ -162,7 +184,7 @@ const OrdersReport = () => {
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', pageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -170,10 +192,12 @@ const OrdersReport = () => {
 
     return setOnChange(true);
   }
+  //Search Button Event
   const searchButton = () => {
     dataSearch();
   };
 
+  //Change DealerCode
   function onChangeDealerCode(value) {
 
     let fieldArrObj = [];
@@ -205,13 +229,12 @@ const OrdersReport = () => {
     }
   };
 
+  //Change from and To date
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
-  
-  function onOk(value) {
-  }
+
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -225,31 +248,21 @@ const OrdersReport = () => {
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
-    setlocalCurrentPage(current);
+    setPageIndex(current);
     dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
     setSelectedCurrentPage(current);
-    setlocalCurrentPage(current);
+    setPageIndex(current);
     dataSearch(current);
   }
-  function expandedRow(row, index) {
-    let orderDetailIndex;
-    _.each(orderDetailData, (item, i) => {
-      if (item.Key === row.orderNo) { return orderDetailIndex = i }
-    });
-    return (<Table
-      columns={OrderDetailcolumns}
-      dataSource={orderDetailData[orderDetailIndex].Value}
-      pagination={false}
-      scroll={{ x: 'max-content' }}
-      size="medium"
-      bordered={false}
-    />);
-  };
 
+  //Excel Oluşturma
+  const exportExcelButton = () => {
+    ExcelExport(columns, data, 'Geçmiş Siparişler');
+  }
   //Order Detail Columns
   const OrderDetailcolumns = [
     {
@@ -455,6 +468,7 @@ const OrdersReport = () => {
   ];
 
   //Hide order table column
+  //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
   else if (token.urole === 'fieldmanager') {
@@ -530,10 +544,9 @@ const OrdersReport = () => {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  onOk={onOk}
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
-                
+
               </Col>
               <Col span={6}>
                 <Input size="small" placeholder="Ürün adı , Sipariş numarası giriniz" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
@@ -560,7 +573,7 @@ const OrdersReport = () => {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
-          current={localCurrentPage}
+          current={pageIndex}
           position="top"
         />
         <Table
@@ -581,7 +594,7 @@ const OrdersReport = () => {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
-          current={localCurrentPage}
+          current={pageIndex}
           position="bottom"
         />
       </Box>

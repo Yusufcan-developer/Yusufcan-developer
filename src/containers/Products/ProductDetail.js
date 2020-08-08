@@ -1,47 +1,52 @@
+//React
 import React, { useState, useEffect } from "react";
-import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag } from 'antd';
-import PageHeader from '@iso/components/utility/pageHeader';
+import { useDispatch, useSelector } from 'react-redux';
+import ecommerceActions from '@iso/redux/ecommerce/actions';
+import { Link, useHistory, useRouteMatch, useParams } from 'react-router-dom';
+
+//Components
 import Box from '@iso/components/utility/box';
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import IntlMessages from '@iso/components/utility/intlMessages';
-import basicStyle from '@iso/assets/styles/constants';
-import Form from "@iso/components/uielements/form";
-import noImage from '@iso/assets/images/noImage.png';
-import TagWrapper from './tag.styles';
-import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
-import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseData";
-import { useDispatch, useSelector } from 'react-redux';
-import ecommerceActions from '@iso/redux/ecommerce/actions';
-import siteConfig from "@iso/config/site.config";
-import { Link, useHistory, useRouteMatch, useParams } from 'react-router-dom';
 import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
+import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag } from 'antd';
+
+//Fetch
+import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
+import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseData";
+
+//Configs
+import siteConfig from "@iso/config/site.config";
+import noImage from '@iso/assets/images/noImage.png';
+
+//Styles
+import PageHeader from '@iso/components/utility/pageHeader';
+import basicStyle from '@iso/assets/styles/constants';
+import Form from "@iso/components/uielements/form";
 
 const { TabPane } = Tabs;
-// const Tag = props => (
-//   <TagWrapper>
-//     <Tags {...props}>{props.children}</Tags>
-//   </TagWrapper>
-// );
 
-const FormItem = Form.Item;
 const ProductDetail = () => {
 
+  const dispatch = useDispatch();
+  const { productId } = useParams();
+
+  //Style States
   const { rowStyle, colStyle, gutter } = basicStyle;
   const style = { zIndex: 100 - 90 };
-  const history = useHistory();
+  const layout = {
+    labelCol: { span: 8, },
+    wrapperCol: { span: 16 },
+  };
+
+  //Redux States
   const [quantity, setQuantity] = useState(1)
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
-  const dispatch = useDispatch();
-  const match = useRouteMatch();
-  const { productId } = useParams();
-
-  //History özelliği
-  //const productId1 = history.location.productId;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes] = useGetProductItem(`${siteConfig.api.productDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -72,8 +77,8 @@ const ProductDetail = () => {
       }
     };
   };
-
-  function onRemoveBox(product) {
+  //removing items from the cart
+  function onRemoveProductCart(product) {
     inputNumberShowOrHide(product)
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     if (selectedProduct.quantity !== 1) {
@@ -93,8 +98,9 @@ const ProductDetail = () => {
       dispatch(changeProductQuantity(newProductQuantity));
     }
   };
-  //Add product basket
-  function onAddBox(product) {
+
+  //Adding products to the cart
+  function onAddProductCart(product) {
     inputNumberShowOrHide()
     if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) { dispatch(addToCart(product, 1)); notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' }); } //Sepete
     else {
@@ -117,6 +123,7 @@ const ProductDetail = () => {
 
     }
   };
+
   function inputNumberShowOrHide() {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
     if (selectedProduct === undefined) {
@@ -124,6 +131,7 @@ const ProductDetail = () => {
     }
     else { return true; }
   }
+  //Quantity input number Show/Hide
   function inputNumberQuantityValue() {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
     if (selectedProduct === undefined) {
@@ -172,10 +180,7 @@ const ProductDetail = () => {
       key: "balance",
     },
   ];
-  const layout = {
-    labelCol: { span: 8, },
-    wrapperCol: { span: 16 },
-  };
+
   return (
     <LayoutWrapper>
       <Breadcrumb>
@@ -219,11 +224,11 @@ const ProductDetail = () => {
                     <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
                   </Form.Item>
                   {notes != undefined ? (
-                      <Form.Item label="Not">
-                        <Tag color="purple">
-                          {notes}
-                        </Tag>
-                      </Form.Item>
+                    <Form.Item label="Not">
+                      <Tag color="purple">
+                        {notes}
+                      </Tag>
+                    </Form.Item>
                   ) : (<Form.Item> </Form.Item>)}
                 </Form>
 
@@ -250,13 +255,13 @@ const ProductDetail = () => {
                 <Row style={{ marginTop: '30px' }}>
                   <Col align="center" span={24}>
                     {!inputNumberShowOrHide(productItem) ? (
-                      <Button type="primary" onClick={event => onAddBox(productItem)}>
+                      <Button type="primary" onClick={event => onAddProductCart(productItem)}>
                         {<IntlMessages id="Sepete Ekle" />}
                       </Button>
                     ) : (
                         <Row align="middle">
                           <Col span={6} style={{ width: '100%' }} align="right" offset={2}>
-                            <Button type="primary" onClick={event => onRemoveBox(productItem)}>
+                            <Button type="primary" onClick={event => onRemoveProductCart(productItem)}>
                               {<IntlMessages id="-" />}
                             </Button>
                           </Col>
@@ -272,7 +277,7 @@ const ProductDetail = () => {
                             />
                           </Col>
                           <Col span={6} style={{ width: '100%' }} align="left">
-                            <Button type="primary" onClick={event => onAddBox(productItem)}>
+                            <Button type="primary" onClick={event => onAddProductCart(productItem)}>
                               {<IntlMessages id="+" />}
                             </Button>
                           </Col>

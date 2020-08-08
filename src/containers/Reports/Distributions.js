@@ -1,4 +1,8 @@
+//React
 import React, { useState, useEffect } from "react";
+import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+
+//Components
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
@@ -6,18 +10,23 @@ import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import { Table, Row, Col, Pagination, TreeSelect } from "antd";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
+
+//Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+
+//Configs
 import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
-import moment from 'moment';
-import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+
+//Other Library
+import moment from 'moment';
+import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 var jwtDecode = require('jwt-decode');
 
@@ -25,12 +34,11 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
+// const configTreeCheckedKeys = (checkedKeys, treeData) => {
 
-const configTreeCheckedKeys = (checkedKeys, treeData) => {
-
-  var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
-  console.log("configTreeCheckedKeys", newTreeData);
-};
+//   var newTreeData = treeData.find(item => item.key = "checkedKeys.key");
+//   console.log("configTreeCheckedKeys", newTreeData);
+// };
 
 export default function () {
   const [searchKey, setSearchKey] = useState('');
@@ -43,9 +51,7 @@ export default function () {
     sortedInfo: "",
     filteredInfo: ""
   });
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
-  const [localCurrentPage, setlocalCurrentPage] = useState(1);
-  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
+  const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
@@ -61,7 +67,27 @@ export default function () {
   const queryString = require('query-string');
   const history = useHistory();
 
-  function getQueryVariable(query) {
+  //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
+  useEffect(() => {
+    getVariablesFromUrl(searchQuery)
+    setCurrentPage(pageIndex);
+  }, [pageIndex]);
+
+  useEffect(() => {
+    getVariablesFromUrl(searchQuery)
+    console.log("pageSize!", pageSize);
+    setChangePageSize(pageSize);
+  }, [pageSize]);
+
+  //Rapor
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+
+  //Bayi,Bölge ve Saha kodlarının getirilmesi
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+
+  //Url'i çözümleme işlemi
+  function getVariablesFromUrl(query) {
 
     const parsed = queryString.parse(location.search);
 
@@ -69,7 +95,7 @@ export default function () {
     if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -78,7 +104,6 @@ export default function () {
           newDealarCode.push(item);
         });
       } else { newDealarCode.push(parsed.fic) }
-
     }
 
     if (parsed.rec !== undefined) {
@@ -87,7 +112,6 @@ export default function () {
           newDealarCode.push(item);
         });
       } else { newDealarCode.push(parsed.rec) }
-
     }
 
     if (parsed.dec !== undefined) {
@@ -96,7 +120,6 @@ export default function () {
           newDealarCode.push(item);
         });
       } else { newDealarCode.push(parsed.dec) }
-
     }
     setSelectedDealerCode(newDealarCode);
 
@@ -117,28 +140,7 @@ export default function () {
     });
   }
 
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    console.log("currentPage!", localCurrentPage);
-
-    setCurrentPage(localCurrentPage);
-  }, [localCurrentPage]);
-
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    console.log("pageSize!", pageSize);
-    setChangePageSize(pageSize);
-  }, [pageSize]);
-
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.distributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
-
-
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
-  const exportExcelButton = () => {
-    ExcelExport(columns, data, 'Dağıtım Listesi');
-  }
+  //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
 
@@ -154,7 +156,7 @@ export default function () {
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', pageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -162,9 +164,13 @@ export default function () {
 
     return setOnChange(true);
   }
+
+  //Search Button Event
   const searchButton = () => {
     dataSearch();
   };
+
+  //Change DealerCode
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
     let regionArrObj = [];
@@ -195,16 +201,10 @@ export default function () {
     }
   };
 
+  //Change from and To date
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
-  }
-
-  function onChange(value, dateString) {
-  }
-
-  function onOk(value) {
-    console.log("onOk: ", value);
   }
 
   const handleChange = (pagination, filters, sorter) => {
@@ -218,16 +218,14 @@ export default function () {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    setSelectedCurrentPage(current);
     setPageSize(pageSize);
-    setlocalCurrentPage(current);
+    setPageIndex(current);
     dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
-    setSelectedCurrentPage(current);
-    setlocalCurrentPage(current);
+    setPageIndex(current);
     dataSearch(current);
   }
 
@@ -399,6 +397,11 @@ export default function () {
       }
     }
   }
+
+  //Excel Oluştur
+  const exportExcelButton = () => {
+    ExcelExport(columns, data, 'Dağıtım Listesi');
+  }
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -439,7 +442,6 @@ export default function () {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  onOk={onOk}
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
@@ -468,7 +470,7 @@ export default function () {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
-          current={localCurrentPage}
+          current={pageIndex}
           position="top"
         />
         <Table
@@ -487,7 +489,7 @@ export default function () {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
-          current={localCurrentPage}
+          current={pageIndex}
           position="bottom"
         />
       </Box>

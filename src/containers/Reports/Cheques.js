@@ -1,4 +1,7 @@
 import React, { useState, useEffect, Children } from "react";
+import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+
+//Components
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
@@ -9,17 +12,22 @@ import { Table, Row, Col, Pagination, TreeSelect } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
+import Input from '@iso/components/uielements/input';
+
+//Fetch
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
-import Input from '@iso/components/uielements/input';
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+
+//Configs
 import siteConfig from "@iso/config/site.config";
 import { DownloadOutlined } from '@ant-design/icons';
-import moment from 'moment';
-import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+
+//Other Library
+import moment from 'moment';
+import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 var jwtDecode = require('jwt-decode');
 
@@ -28,7 +36,6 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
 const ChequesReport = () => {
-
   const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: '',
@@ -36,11 +43,9 @@ const ChequesReport = () => {
   });
   const children = [];
   const Option = SelectOption;
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [searchKey, setSearchKey] = useState('');
   const [serialNumber, setSerialNumber] = useState();
-  const [localCurrentPage, setlocalCurrentPage] = useState(1);
-  const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
+  const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
@@ -50,14 +55,44 @@ const ChequesReport = () => {
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [selectedCheckqueType, setSelectedCheckqueType] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
+
   const location = useLocation();
   const { searchQuery } = useParams();
-
-  const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
 
-  function getQueryVariable(query) {
+  //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
+  useEffect(() => {
+    getVariablesFromUrl(searchQuery)
+    setCurrentPage(pageIndex);
+  }, [pageIndex]);
+
+  useEffect(() => {
+    getVariablesFromUrl(searchQuery)
+    setChangePageSize(pageSize);
+  }, [pageSize]);
+
+  useEffect(() => {
+    getVariablesFromUrl(searchQuery)
+    setFromDate(fromDate);
+    setToDate(toDate);
+  }, [fromDate, toDate]);
+
+  //Rapor
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+
+  //Bayi,Bölge ve Saha kodlarının getirilmesi
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+
+  //Çek Tipleri
+  const [chequeTypeData] = useFilterData(`${siteConfig.api.lookup.getChequeTypes}`);
+  for (let i = 0; i < chequeTypeData.length; i++) {
+    children.push(<Option key={chequeTypeData[i]}>{chequeTypeData[i]}</Option>);
+  }
+
+  //Url'i çözümleme işlemi
+  function getVariablesFromUrl(query) {
 
     const parsed = queryString.parse(location.search);
 
@@ -66,7 +101,7 @@ const ChequesReport = () => {
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.sno !== undefined) { setSerialNumber([parsed.sno]); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
 
     let checkType = [];
     if (parsed.ctype !== undefined) {
@@ -123,36 +158,8 @@ const ChequesReport = () => {
       }
     });
   }
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    setCurrentPage(localCurrentPage);
-  }, [localCurrentPage]);
 
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    setChangePageSize(pageSize);
-  }, [pageSize]);
-
-  useEffect(() => {
-    getQueryVariable(searchQuery)
-    setFromDate(fromDate);
-    setToDate(toDate);
-  }, [fromDate, toDate]);
-
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.cheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
-
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.accountsTree}`);
-
-  const [chequeTypeData] = useFilterData(`${siteConfig.api.chequeTypes}`);
-  for (let i = 0; i < chequeTypeData.length; i++) {
-    children.push(<Option key={chequeTypeData[i]}>{chequeTypeData[i]}</Option>);
-  }
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
-  const exportExcelButton = () => {
-    ExcelExport(columns, data, 'Çek-Senet');
-  }
-
+  //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
 
@@ -168,7 +175,7 @@ const ChequesReport = () => {
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', localCurrentPage) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', pageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -176,9 +183,13 @@ const ChequesReport = () => {
 
     return setOnChange(true);
   }
+
+  //Search Button Event
   const searchButton = () => {
     dataSearch();
   };
+
+  //Change DealerCode
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
     let regionArrObj = [];
@@ -211,13 +222,15 @@ const ChequesReport = () => {
     }
   };
 
+  //Change from and To date
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
 
-  function onOk(value) {
-    console.log('onOk: ', value);
+  //Change Cheques Type
+  function chequeHandleChange(value) {
+    setSelectedCheckqueType(value);
   }
 
   const handleChange = (pagination, filters, sorter) => {
@@ -231,21 +244,17 @@ const ChequesReport = () => {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    setSelectedCurrentPage(current);
     setPageSize(pageSize);
-    setlocalCurrentPage(current);
+    setPageIndex(current);
     dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
-    setSelectedCurrentPage(current);
-    setlocalCurrentPage(current);
+    setPageIndex(current);
     dataSearch(current);
   }
-  function chequeHandleChange(value) {
-    setSelectedCheckqueType(value);
-  }
+
   let columns = [
     {
       title: "Türü",
@@ -366,6 +375,12 @@ const ChequesReport = () => {
       }
     }
   }
+
+  //Excel Oluştur
+  const exportExcelButton = () => {
+    ExcelExport(columns, data, 'Çek-Senet');
+  }
+
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -415,7 +430,6 @@ const ChequesReport = () => {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  onOk={onOk}
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
@@ -459,7 +473,7 @@ const ChequesReport = () => {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
-          current={localCurrentPage}
+          current={pageIndex}
           position="top"
         />
         <Table
@@ -478,7 +492,7 @@ const ChequesReport = () => {
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
-          current={localCurrentPage}
+          current={pageIndex}
           position="bottom"
         />
       </Box>
