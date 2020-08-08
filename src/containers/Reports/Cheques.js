@@ -47,6 +47,7 @@ const ChequesReport = () => {
   const [serialNumber, setSerialNumber] = useState();
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
+  const [startingPageIndex,setStartingPageIndex]=useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -61,7 +62,7 @@ const ChequesReport = () => {
   const queryString = require('query-string');
   const history = useHistory();
 
-  //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
+  //Burada ki useEffect'ler page index page size değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     getVariablesFromUrl(searchQuery)
     setCurrentPage(pageIndex);
@@ -71,12 +72,6 @@ const ChequesReport = () => {
     getVariablesFromUrl(searchQuery)
     setChangePageSize(pageSize);
   }, [pageSize]);
-
-  useEffect(() => {
-    getVariablesFromUrl(searchQuery)
-    setFromDate(fromDate);
-    setToDate(toDate);
-  }, [fromDate, toDate]);
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
@@ -102,14 +97,15 @@ const ChequesReport = () => {
     if (parsed.sno !== undefined) { setSerialNumber([parsed.sno]); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
+   
 
     let checkType = [];
-    if (parsed.ctype !== undefined) {
-      if (Array.isArray(parsed.ctype)) {
-        _.each(parsed.ctype, (item) => {
+    if (parsed.type !== undefined) {
+      if (Array.isArray(parsed.type)) {
+        _.each(parsed.type, (item) => {
           checkType.push(item);
         });
-      } else { checkType.push(parsed.ctype); }
+      } else { checkType.push(parsed.type); }
     }
     setSelectedCheckqueType(checkType);
     let newDealarCode = []
@@ -171,12 +167,17 @@ const ChequesReport = () => {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('sno');
+    params.delete('type');
+
 
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { params.append('pgindex', pageIndex) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    if (serialNumber) { params.append('sno', serialNumber); params.toString(); }
+    if (selectedCheckqueType.length > 0) params.append('type', selectedCheckqueType); params.toString(); 
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -206,7 +207,7 @@ const ChequesReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    if (value.length === 0) { setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }

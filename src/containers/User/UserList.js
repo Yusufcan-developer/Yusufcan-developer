@@ -73,6 +73,7 @@ const UserList = () => {
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
   const [role, setRole] = useState();
+  const [filterRole, setFilterRole] = useState();
   const [roleNames, setRoleNames] = useState();
 
   const [objectRole, setObjectRole] = useState();
@@ -176,7 +177,8 @@ const UserList = () => {
           role.push(item);
         });
       } else { role.push(parsed.rol) }
-      setRole(role);
+      // setRole(role);
+      setFilterRole(role);
       setRoleNames(role);
     }
 
@@ -203,6 +205,7 @@ const UserList = () => {
     params.delete('pgsize');
     params.delete('pgindex');
     params.delete('act');
+    params.delete('rol');
 
     _.filter(roleNames, function (item) {
       params.append('rol', item); params.toString();
@@ -343,9 +346,13 @@ const UserList = () => {
     setObjectRole(roleInfo);
     fieldRegionAndDealearVisible(roleInfo.roleName);
     modalSelectedValueClear(roleInfo.roleName);
+  }
 
+  //Filter Select Role
+  function filterRoleChange(value,roleInfo) {
     let selectedRoleName = []
     let selectedroleDescription = []
+    setFilterRole(value);
     if (roleInfo !== undefined) {
       if (Array.isArray(roleInfo)) {
         _.each(roleInfo, (item, i) => {
@@ -358,7 +365,7 @@ const UserList = () => {
     setRoleNames(selectedRoleName);
   }
 
-//Select Component Bayi Kodu değiştirme 
+  //Select Component Bayi Kodu değiştirme 
   function dealerCodeHandleChange(value) {
     if (dealerCodeSelectModSingle) { setDealerCodes([value]); } else {
       setDealerCodes(value);
@@ -502,6 +509,22 @@ function currentPageChange(current) {
 
   let columns = [
     {
+      title: "Hesap Durumu",
+      dataIndex: "isLocked",
+      key: "isLocked",
+      render: isLocked => (
+        <>
+          {isLocked ===false ? (
+                    <Tag color={'green'} key={isLocked}>
+                {'Açık'}
+              </Tag>
+                  ) : (  <Tag color={'red'} key={isLocked}>
+                {'Kapalı'}
+              </Tag>)}            
+        </>
+      ),
+    },
+    {
       title: "Adı",
       dataIndex: "firstName",
       key: "firstName",
@@ -532,13 +555,14 @@ function currentPageChange(current) {
       key: "dealerCodes",
       render: dealerCodes => (
         <>
-          {_.map(dealerCodes, (item, i) => {
-            return (
-              <Tag color={'purple'} key={item}>
+         {dealerCodes != undefined ? (
+          _.map(dealerCodes, (item, i) => {
+            return ( <Tag color={'purple'} key={item}>
                 {item}
-              </Tag>
-            );
-          })}
+              </Tag>)
+          })
+                  ) : (<Tag color={'purple'}>
+              </Tag>)}
         </>
       ),
     },
@@ -548,15 +572,16 @@ function currentPageChange(current) {
       key: "fieldCodes",
       render: fieldCodes => (
         <>
-          {_.map(fieldCodes, (item, i) => {
-            return (
-              <Tag color={'volcano'} key={item}>
+         {fieldCodes != undefined ? (
+          _.map(fieldCodes, (item, i) => {
+            return ( <Tag color={'volcano'} key={item}>
                 {item}
-              </Tag>
-            );
-          })}
+              </Tag>)
+          })
+                  ) : (<Tag color={'volcano'}>
+              </Tag>)}
         </>
-      ),
+      ),    
     },
     {
       title: "Bölge Kodu",
@@ -564,15 +589,16 @@ function currentPageChange(current) {
       key: "regionCodes",
       render: regionCodes => (
         <>
-          {_.map(regionCodes, (item, i) => {
-            return (
-              <Tag color={'cyan'} key={item}>
+         {regionCodes != undefined ? (
+          _.map(regionCodes, (item, i) => {
+            return ( <Tag color={'cyan'} key={item}>
                 {item}
-              </Tag>
-            );
-          })}
+              </Tag>)
+          })
+                  ) : (<Tag color={'cyan'}>
+              </Tag>)}
         </>
-      ),
+      ),      
     },
     {
       title: "Ünvan",
@@ -622,8 +648,8 @@ function currentPageChange(current) {
                   mode={"multiple"}
                   style={{ marginBottom: '8px', width: '250px' }}
                   placeholder="Rol seçiniz"
-                  value={role}
-                  onChange={roleHandleChange}
+                  value={filterRole}
+                  onChange={filterRoleChange}
                 >
                   {lookupRoleNameChildren}
                 </Select>
