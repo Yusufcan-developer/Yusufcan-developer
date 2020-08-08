@@ -1,34 +1,44 @@
+//React
 import React, { useState, useEffect } from "react";
+import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+
+//Components
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
-import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag, notification,message } from "antd";
-import { DownOutlined, PoweroffOutlined,UserAddOutlined } from '@ant-design/icons';
-import PageHeader from "@iso/components/utility/pageHeader";
-import Collapse from "@iso/components/uielements/collapse";
+import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag, notification, message } from "antd";
 import Input, {
   InputGroup,
 } from '@iso/components/uielements/input';
+
+//Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
-// import { usePostUser } from "@iso/lib/hooks/fetchData/usePostApiUser";
+
+//Configs
 import siteConfig from "@iso/config/site.config";
-import moment from 'moment';
-import ReportPagination from "../Reports/ReportPagination";
-import UserModel from './UserModel';
-import _, { object, values, each } from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
+import ReportPagination from "../Reports/ReportPagination";
+
+//Style
+import { DownOutlined, PoweroffOutlined, UserAddOutlined } from '@ant-design/icons';
+import UserModel from './UserModel';
+import PageHeader from "@iso/components/utility/pageHeader";
+import Collapse from "@iso/components/uielements/collapse";
+
+//Other Library
+import moment from 'moment';
+import _, { object, values, each } from 'underscore';
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { Option } = Select;
 
 const UserList = () => {
-  //******************************************************************************************************************* */
+
   const [searchKey, setSearchKey] = useState('');
   const [userId, setUserId] = useState(-1);
   const [username, setUsername] = useState();
@@ -39,20 +49,21 @@ const UserList = () => {
   const [lastName, setLastName] = useState();
   const [email, setEmail] = useState();
   const [iconLoading, setIconLoading] = useState(false);
+
+  //Modal ve Yetkilere göre Bölge,Saha kodu gizleme
   const [visible, setVisible] = useState(false);
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
   const [deleteUserVisible, setDeleteUserVisible] = useState(false);
   const [regionVisible, setRegionVisible] = useState(false);
   const [fieldVisible, setFieldVisible] = useState(false);
+
+  //Bayi Kodu Tekli veya çoklu seçim kontrolü
   const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
+
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
-
-
-  //******************************************************************************************************************* */
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -63,31 +74,102 @@ const UserList = () => {
   const [fieldCodes, setFieldCodes] = useState();
   const [role, setRole] = useState();
   const [roleNames, setRoleNames] = useState();
-  
+
   const [objectRole, setObjectRole] = useState();
   const [isLocked, setIsLocked] = useState();
-  const [isActive,setIsActive]=useState(null);
+  const [isActive, setIsActive] = useState(null);
   const [userInfoFieldCodes, setUserInfoFieldCodes] = useState();
   const [title, setTitle] = useState();
   const [componentSize, setComponentSize] = useState('default');
   const [newUrlParams, setNewUrlParams] = useState('')
+
   const location = useLocation();
-  const [filterIsLocked,setFilterIsLocked]=useState();
   const [form] = Form.useForm();
-  const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
 
+  //Component Size
   const onFormLayoutChange = ({ size }) => {
     setComponentSize(size);
   };
-  function getQueryVariable(query) {
+
+  //Page index'e göre verilerin yenilenmesi işlemi.
+  useEffect(() => {
+    console.log("currentPage!", localCurrentPage);
+    setCurrentPage(localCurrentPage);
+    getVariablesFromUrl();
+  }, [localCurrentPage]);
+
+  //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
+  const menu = (
+    <Menu onClick={handleMenuClick}>
+      <Menu.Item key="1" >Düzenle</Menu.Item>
+      <Menu.Item key="2">Parola değiştir</Menu.Item>
+      <Menu.Item key="3">Sil</Menu.Item>
+    </Menu>
+  );
+
+//Menü Secimlerine Göre Modal açma işlemleri
+  //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
+  function handleMenuClick(value) {
+    switch (value.key) {
+      case '1':
+        setVisible(true);
+        fieldRegionAndDealearVisible(objectRole.roleName);
+        break;
+      case '2':
+        setForgotPasswordVisible(true);
+        break;
+      case '3':
+        setDeleteUserVisible(true);
+        break;
+      default:
+        break;
+    }
+  }  
+
+  //Saha kodları listesi ve Lookup döndürme işlemi
+  const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.getFieldCodes}`);
+  const lookupFieldChildren = [];
+  _.each(lookupFieldTreeData, (item, i) => {
+    lookupFieldChildren.push(<Option key={item}>{item}</Option>);
+  });
+
+  //Bölge kodları listesi ve Lookup döndürme işlemi
+  const [lookupRegionTreeData, lookupFieldLoadingTree, lookupFieldSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.getRegionCodes}`);
+  const lookupRegionChildren = [];
+  _.each(lookupRegionTreeData, (item, i) => {
+    lookupRegionChildren.push(<Option key={item}>{item}</Option>);
+  });
+
+  //Bayi kodları listesi ve Lookup döndürme işlemi
+  const [lookupDealerTreeData, lookupDealerLoadingTree, lookupDealerSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.lookUpDealerCodes}`);
+  const lookupDealerChildren = [];
+  _.each(lookupDealerTreeData, (item, i) => {
+    lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
+  });
+
+  //Rol listesi ve Lookup döndürme işlemi
+  const [lookupRolesTreeData, lookupRolesLoadingTree, lookupRolesSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.security.getRoles}`);
+  const lookupRoleChildren = [];
+  const lookupRoleNameChildren = [];
+  _.each(lookupRolesTreeData, (item, i) => {
+    lookupRoleChildren.push(<Option key={item.id} roleName={item.roleName} roleDescription={item.roleDescription} id={item.id}>{item.roleDescription}</Option>);
+    lookupRoleNameChildren.push(<Option key={item.roleName} roleName={item.roleName} roleDescription={item.roleDescription} id={item.id}>{item.roleDescription}</Option>);
+  });
+
+  //Kullanıcı listesi
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,] =
+    useFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+ 
+  //Url'i çözümleme işlemi
+  function getVariablesFromUrl(query) {
     let role = []
     const parsed = queryString.parse(location.search);
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
-   
+
     if (parsed.rol !== undefined) {
       if (Array.isArray(parsed.rol)) {
         _.each(parsed.rol, (item, i) => {
@@ -97,8 +179,8 @@ const UserList = () => {
       setRole(role);
       setRoleNames(role);
     }
-    
-    if (parsed.act !== undefined) { 
+
+    if (parsed.act !== undefined) {
       switch (parsed.act) {
         case 'true':
           setIsActive(true);
@@ -111,103 +193,40 @@ const UserList = () => {
           break;
       }
     }
-    };
-    function dataSearch(selectedPageIndex, selectedPageSize) {
-      const params = new URLSearchParams(location.search)
+  };
 
-      params.delete('keyword');
-      params.delete('pgsize');
-      params.delete('pgindex');
-      params.delete('act');
+  //Get Search Data
+  function dataSearch(selectedPageIndex, selectedPageSize) {
+    const params = new URLSearchParams(location.search)
 
-      _.filter(roleNames, function (item) {
-        params.append('rol', item); params.toString();
-      });
-      params.append('act',isActive); 
-      if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-      if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setlocalCurrentPage(1);params.append('pgindex', 1) }
-      if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-      let createUrl = null;
-      if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
-      history.push(`${location.pathname}?${createUrl}`);
-  
-      return setOnChange(true);
-    }
-    
-  const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key="1" >Düzenle</Menu.Item>
-      <Menu.Item key="2">Parola değiştir</Menu.Item>
-      <Menu.Item key="3">Sil</Menu.Item>
-    </Menu>
-  );
-  
-  function handleMenuClick(value) {
-    switch (value.key) {
-      case '1':
-        setVisible(true);
-        fieldRegionAndDealearVisible(objectRole.roleName);
-        break;
-      case '2':
-        setForgotPasswordVisible(true);
-        break;
-        case '3':
-          setDeleteUserVisible(true);
-          break;
-      default:
-        break;
-    }
+    params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
+    params.delete('act');
+
+    _.filter(roleNames, function (item) {
+      params.append('rol', item); params.toString();
+    });
+    params.append('act', isActive);
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setlocalCurrentPage(1); params.append('pgindex', 1) }
+    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    let createUrl = null;
+    if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
+    history.push(`${location.pathname}?${createUrl}`);
+
+    return setOnChange(true);
   }
-
-  useEffect(() => {
-    console.log("currentPage!", localCurrentPage);
-    setCurrentPage(localCurrentPage);
-    getQueryVariable();
-  }, [localCurrentPage]);
-
-  //Saha kodları listesi ve Lookup döndürme işlemi
-  const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpFieldCode}`);
-  const lookupFieldChildren = [];
-  _.each(lookupFieldTreeData, (item, i) => {
-    lookupFieldChildren.push(<Option key={item}>{item}</Option>);
-  });
-
-  //Bölge kodları listesi ve Lookup döndürme işlemi
-  const [lookupRegionTreeData, lookupFieldLoadingTree, lookupFieldSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpRegionCode}`);
-  const lookupRegionChildren = [];
-  _.each(lookupRegionTreeData, (item, i) => {
-    lookupRegionChildren.push(<Option key={item}>{item}</Option>);
-  });
-  //Bayi kodları listesi ve Lookup döndürme işlemi
-  const [lookupDealerTreeData, lookupDealerLoadingTree, lookupDealerSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookUpDealerCode}`);
-  const lookupDealerChildren = [];
-  _.each(lookupDealerTreeData, (item, i) => {
-    lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
-  });
-  //Rol listesi ve Lookup döndürme işlemi
-  const [lookupRolesTreeData, lookupRolesLoadingTree, lookupRolesSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.roles}`);
-  const lookupRoleChildren = [];
-  const lookupRoleNameChildren = [];
-  _.each(lookupRolesTreeData, (item, i) => {
-    lookupRoleChildren.push(<Option key={item.id} roleName={item.roleName} roleDescription={item.roleDescription} id={item.id}>{item.roleDescription}</Option>);
-    lookupRoleNameChildren.push(<Option key={item.roleName} roleName={item.roleName} roleDescription={item.roleDescription} id={item.id}>{item.roleDescription}</Option>);
-  });
-  
-  //Kullanıcı listesi
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,] =
-    useFetch(`${siteConfig.api.users}`, {"keyword": searchKey,"isActive": isActive,"roleNames": roleNames,  "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
-  /*********************************************** CUSTOM HOOKS ************************************************************ */
-
+  //Search Button Event
   const searchButton = () => {
     dataSearch();
   };
-  function onOk(value) {
-    console.log("onOk: ", value);
-  }
-  
-  const handleChangeIsActive = (value) => { 
+
+  //Filtrede Bulunan hesap durumu Combobox 
+  const handleChangeIsActive = (value) => {
     setIsActive(value);
   };
+
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -217,6 +236,7 @@ const UserList = () => {
     });
   };
 
+  //Get User By Id
   async function getByUserId(userId) {
     //Get User Info
     let productInfo;
@@ -228,7 +248,7 @@ const UserList = () => {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    await fetch(`${siteConfig.api.getUser}${userId}`, requestOptions)
+    await fetch(`${siteConfig.api.security.getUser}${userId}`, requestOptions)
       .then(response => {
         if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
         return response.json();
@@ -240,6 +260,7 @@ const UserList = () => {
     return productInfo;
   }
 
+  //Kullanıcı düznleme modalına verileri gönderme işlemi Burada veriler state atılıyor ve modal aktif hale getirliyor.
   async function setModalUserInfo(record) {
     const userInfo = await getByUserId(record.id);
     setUserId(record.id);
@@ -257,52 +278,40 @@ const UserList = () => {
     // setVisible(true);
   };
 
-  /**Pagination : Tablo  pageSize'ı değiştirir*/
-  function onShowSizeChange(current, pageSize) {
-    setPageSize(pageSize);
-    setSelectedCurrentPage(current);
-    setlocalCurrentPage(current);
-    dataSearch(current, pageSize);
-  }
-
-  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current) {
-    setSelectedCurrentPage(current);
-    setlocalCurrentPage(current);
-    dataSearch(current);
-  }
-
-  function addNewUser() {
-    setVisible(true);
-  }
   //User modal events
   function showModal() {
     setVisible(true);
   };
 
+//Kullanıcı Silme işlemi
   async function handleDeleteUserOk() {
     const user = await deleteUser(userId);
 
-    if (user) { message.success('Kullanıcı başarıyla silinmiştir.');cancelAndClearValues(); setDeleteUserVisible(false); }
+    if (user) { message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false); }
     else { message.error('Kullanıcı silme işlemi başarısızdır.'); }
     return setOnChange(true);
   };
+  
+  //Kullanıcı parola değiştirme
   async function handlePasswordOk() {
     const password = await changePassword();
 
-    if (password) { message.success('Parola başarıyla değiştirilmiştir.');cancelAndClearValues(); setForgotPasswordVisible(false); }
+    if (password) { message.success('Parola başarıyla değiştirilmiştir.'); cancelAndClearValues(); setForgotPasswordVisible(false); }
     else { message.error('Parola değiştirme işlemi başarısızdır.'); }
     return setOnChange(true);
   };
-  async function handleOk() {   
+
+  //Kullanıcı Düzenleme kayıt işlemi
+  async function handleOk() {
     //Kullanıcı düzenleme işlemi
     const userInfo = await saveUser();
-    if (userInfo) { message.success('Kullanıcı başarıyla kaydedilmiştir.');cancelAndClearValues(); setVisible(false); }
-    else {message.error('Kullanıcı kaydetme işlemi başarısızdır.'); }
+    if (userInfo) { message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false); }
+    else { message.error('Kullanıcı kaydetme işlemi başarısızdır.'); }
     modalSelectedValueClear();
     return setOnChange(true);
   };
 
+  //Stateleri temizleme işlemi
   function cancelAndClearValues() {
     setVisible(false);
     setForgotPasswordVisible(false);
@@ -322,10 +331,13 @@ const UserList = () => {
     setRegionVisible(false);
     setDealerCodeSelectModSingle(false);
   }
+
+  //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
   function handleCancel() {
     cancelAndClearValues();
   };
-  
+
+  //Select Component Rol değiştirme 
   function roleHandleChange(value, roleInfo) {
     setRole(value);
     setObjectRole(roleInfo);
@@ -340,26 +352,35 @@ const UserList = () => {
           selectedroleDescription.push(item.key)
           selectedRoleName.push(item.key);
         });
-      } else { selectedRoleName.push(roleInfo.key);}
+      } else { selectedRoleName.push(roleInfo.key); }
 
     }
     setRoleNames(selectedRoleName);
   }
 
+//Select Component Bayi Kodu değiştirme 
   function dealerCodeHandleChange(value) {
     if (dealerCodeSelectModSingle) { setDealerCodes([value]); } else {
       setDealerCodes(value);
     }
   }
+
+  //Select Component Bölte Kodu değiştirme 
   function regionCodeHandleChange(value) {
     setRegionCodes(value);
   }
+
+  //Select Component Saha Kodu değiştirme 
   function fieldCodeHandleChange(value) {
     setUserInfoFieldCodes(value);
   }
+
+  //Select Component Aktiflik durumu değiştirme 
   function isLockedChange(value) {
     setIsLocked(value);
   }
+
+  //Role göre Saha veya bayi kodunun gizlenmesi
   function fieldRegionAndDealearVisible(roleName) {
 
     if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')) {
@@ -389,26 +410,26 @@ const UserList = () => {
 
   //Kullanıcı silme fetch işlemi
   async function deleteUser(userId) {
-     //Get User Info
-     let productInfo;
-     const requestOptions = {
-       method: "DELETE",
-       headers: {
-         "Content-Type": "application/json",
- 
-         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-       }
-     };
-     await fetch(`${siteConfig.api.deleteUser}${userId}`, requestOptions)
-       .then(response => {
-         if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-         return response.json();
-       })
-       .then(data => {
-         productInfo = data;
-       })
-       .catch();
-     return productInfo;
+    //Get User Info
+    let productInfo;
+    const requestOptions = {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(`${siteConfig.api.users.deleteUser}${userId}`, requestOptions)
+      .then(response => {
+        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
+        return response.json();
+      })
+      .then(data => {
+        productInfo = data;
+      })
+      .catch();
+    return productInfo;
   }
   //Parola düzenleme fetch işlemi
   async function changePassword() {
@@ -424,7 +445,7 @@ const UserList = () => {
       },
       body: JSON.stringify(reqBody)
     };
-    await fetch(siteConfig.api.changePassword, requestOptions)
+    await fetch(siteConfig.api.security.postChangePassword, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
@@ -449,7 +470,7 @@ const UserList = () => {
       },
       body: JSON.stringify(reqBody)
     };
-    await fetch(siteConfig.api.user, requestOptions)
+    await fetch(siteConfig.api.users.postUser, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
@@ -459,6 +480,25 @@ const UserList = () => {
       }).catch(error => console.log('hata', error));
     return userData;
   }
+
+  //Yeni Kullanıcı Ekleme işlemi için Modal açma
+  function addNewUser() {
+    setVisible(true);
+  }
+ /**Pagination : Tablo  pageSize'ı değiştirir*/
+ function onShowSizeChange(current, pageSize) {
+  setPageSize(pageSize);
+  setSelectedCurrentPage(current);
+  setlocalCurrentPage(current);
+  dataSearch(current, pageSize);
+}
+
+/**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+function currentPageChange(current) {
+  setSelectedCurrentPage(current);
+  setlocalCurrentPage(current);
+  dataSearch(current);
+}
 
   let columns = [
     {
@@ -490,9 +530,9 @@ const UserList = () => {
       title: "Bayi Kodu",
       dataIndex: "dealerCodes",
       key: "dealerCodes",
-      render: dealerCodes => (      
+      render: dealerCodes => (
         <>
-          { _.map(dealerCodes, (item, i) => {          
+          {_.map(dealerCodes, (item, i) => {
             return (
               <Tag color={'purple'} key={item}>
                 {item}
@@ -500,7 +540,7 @@ const UserList = () => {
             );
           })}
         </>
-      ),  
+      ),
     },
     {
       title: "Saha Kodu",
@@ -508,7 +548,7 @@ const UserList = () => {
       key: "fieldCodes",
       render: fieldCodes => (
         <>
-          { _.map(fieldCodes, (item, i) => {           
+          {_.map(fieldCodes, (item, i) => {
             return (
               <Tag color={'volcano'} key={item}>
                 {item}
@@ -516,7 +556,7 @@ const UserList = () => {
             );
           })}
         </>
-      ),     
+      ),
     },
     {
       title: "Bölge Kodu",
@@ -524,7 +564,7 @@ const UserList = () => {
       key: "regionCodes",
       render: regionCodes => (
         <>
-          { _.map(regionCodes, (item, i) => {           
+          {_.map(regionCodes, (item, i) => {
             return (
               <Tag color={'cyan'} key={item}>
                 {item}
@@ -532,7 +572,7 @@ const UserList = () => {
             );
           })}
         </>
-      ),     
+      ),
     },
     {
       title: "Ünvan",
@@ -560,7 +600,7 @@ const UserList = () => {
       <PageHeader>
         {<IntlMessages id="page.usersTitle.header" />}
       </PageHeader>
-      <Box>    
+      <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
@@ -578,22 +618,22 @@ const UserList = () => {
             </Row>
             <Row>
               <Col span={6}>
-              <Select
-              mode={"multiple"}
-              style={{ marginBottom: '8px', width: '250px' }}
-              placeholder="Rol seçiniz"
-              value={role}
-              onChange={roleHandleChange}
-            >
-              {lookupRoleNameChildren}
-            </Select>
+                <Select
+                  mode={"multiple"}
+                  style={{ marginBottom: '8px', width: '250px' }}
+                  placeholder="Rol seçiniz"
+                  value={role}
+                  onChange={roleHandleChange}
+                >
+                  {lookupRoleNameChildren}
+                </Select>
               </Col>
               <Col span={6}>
-              <Select value={isActive} defaultValue={null} style={{ width: 120 }}  style={{ marginBottom: '8px', width: '250px' }} onChange={handleChangeIsActive}>
-      <Option value={null}>Hepsi</Option>
-      <Option value={true}>Açık</Option>
-      <Option value={false}>Kapalı</Option>
-    </Select>
+                <Select value={isActive} defaultValue={null} style={{ width: 120 }} style={{ marginBottom: '8px', width: '250px' }} onChange={handleChangeIsActive}>
+                  <Option value={null}>Hepsi</Option>
+                  <Option value={true}>Açık</Option>
+                  <Option value={false}>Kapalı</Option>
+                </Select>
               </Col>
               <Col span={6}>
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
@@ -609,7 +649,7 @@ const UserList = () => {
       </Box>
       {/* Data list volume */}
       <Box>
-      <Col span={8} offset={16} align="right" >
+        <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
             icon={<UserAddOutlined />} onClick={addNewUser} >
             {<IntlMessages id="forms.button.addUser" />}
@@ -669,11 +709,11 @@ const UserList = () => {
           }}
           onValuesChange={onFormLayoutChange}
           size={componentSize}
-        > 
-              <Form.Item label="Kullanıcı adı">
+        >
+          <Form.Item label="Kullanıcı adı">
             <Input value={username} onChange={event => setUsername(event.target.value)} />
           </Form.Item>
-           
+
           <Form.Item label="Rol" onChange={event => setRole(event.target.value)}>
             <Select
               style={{ width: '100%' }}
@@ -685,8 +725,8 @@ const UserList = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Hesap" >
-          <Switch checkedChildren="Kapalı" unCheckedChildren="Açık" onChange={isLockedChange} value={isLocked} />
-        </Form.Item>
+            <Switch checkedChildren="Kapalı" unCheckedChildren="Açık" onChange={isLockedChange} value={isLocked} />
+          </Form.Item>
           <Form.Item label="Ad" onChange={event => setFirstName(event.target.value)} >
             <Input value={firstName} />
           </Form.Item>
@@ -735,7 +775,7 @@ const UserList = () => {
             {lookupFieldChildren}
           </Select>
         </Form.Item>
-        
+
       </Modal>
 
       <Modal
@@ -818,23 +858,23 @@ const UserList = () => {
           </Form.Item>
         </Form>
       </Modal>
-    
+
       <Modal
         visible={deleteUserVisible}
-        title={username + " kullanıcısı silinecektir"} 
+        title={username + " kullanıcısı silinecektir"}
         okText="Sil"
         cancelText="İptal"
         maskClosable={false}
         onCancel={handleCancel}
         onOk={handleDeleteUserOk}
       >
-      <p>{firstName +' '+ lastName + ' '+'kullanıcısını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
+        <p>{firstName + ' ' + lastName + ' ' + 'kullanıcısını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
         <Form
           form={form}
           layout="vertical"
           name="form_in_modal"
           initialValues={{
-          modifier: 'public',
+            modifier: 'public',
           }}
         >
         </Form>

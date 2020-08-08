@@ -33,8 +33,6 @@ export function* loginRequest() {
 export function* loginSuccess() {
   yield takeEvery(actions.LOGIN_SUCCESS, function*(payload) {
     yield localStorage.setItem('id_token', payload.token);
-    // localStorage.setItem('cartProductQuantity', {});
-    // localStorage.setItem('cartProducts', {});
   });
 }
 

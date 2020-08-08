@@ -86,7 +86,7 @@ const UppyDashboard = () => {
 
   //ProductListHook
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products}`, {});
+    useProductData(`${siteConfig.api.products.postProducts}`, {});
 
   const treeData = [
     {

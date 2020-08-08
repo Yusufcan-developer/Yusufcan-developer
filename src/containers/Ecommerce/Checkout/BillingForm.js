@@ -99,7 +99,7 @@ export default function () {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    await fetch(`${siteConfig.api.getUser}${userId}`, requestOptions)
+    await fetch(`${siteConfig.api.security.getUser}${userId}`, requestOptions)
       .then(response => {
         if (!response.ok) { return response.statusText; }
         return response.json();

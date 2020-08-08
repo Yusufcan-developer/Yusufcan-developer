@@ -68,7 +68,7 @@ function useOrderFollowData(url, reqBody) {
         
           orderIdgetUrlItems+=('orderNo='+orderDetailItems+'&&')
         });
-        let orderDetailUrl=siteConfig.api.orderDetail;
+        let orderDetailUrl=siteConfig.api.report.getOrderLineItems;
         return fetch(`${orderDetailUrl}/?${orderIdgetUrlItems}`, requestOrderDetailOptions) //Order Detail Fetch
         .then(response => {
           if (!response.ok) return Promise.reject(response);
