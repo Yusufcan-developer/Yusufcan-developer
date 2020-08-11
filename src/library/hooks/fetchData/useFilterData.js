@@ -16,15 +16,13 @@ function useFilterData(url) {
           Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
         }
       };
-    
+   
     await fetch(url,requestOptions)
       .then(response => {
         if (!response.ok)  {return localStorage.removeItem('id_token');}
         return response.json();
       })
       .then(data => {        
-        
-        console.log("Data :", data );
         const nullOrBlankData=_.filter(data, function (Item) {
           if (Item === null || Item === '') {
             return true;

@@ -21,10 +21,7 @@ function useDimensionsData(url) {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
-      .then(data => {        
-        
-        console.log("Data :", data );
-
+      .then(data => { 
         setData(data);
         setLoading(false);
       })

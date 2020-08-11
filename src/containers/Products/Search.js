@@ -73,6 +73,13 @@ const SearchComponent = () => {
   useEffect(() => {
     getVariablesFromUrl(searchQuery);
     setCurrentPage(pageIndex);
+    if(category===undefined){
+    setOnChangeFilter(true);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
+    }
   }, [pageIndex]);
 
   //Url'i çözümleme işlemi
@@ -220,7 +227,7 @@ const SearchComponent = () => {
   const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = useFilterData(`${siteConfig.api.lookup.getSeries}?categories=${category}`);
 
   //Get Color
-  const [colorData, loadingColorFilter, setOnChangeColorFilter] = useFilterData(`${siteConfig.api.lookup.colors}?categories=${category}`);
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = useFilterData(`${siteConfig.api.lookup.getColors}?categories=${category}`);
 
   //Get Surface
   const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = useFilterData(`${siteConfig.api.lookup.getSurfaces}?categories=${category}`);
