@@ -73,12 +73,12 @@ const SearchComponent = () => {
   useEffect(() => {
     getVariablesFromUrl(searchQuery);
     setCurrentPage(pageIndex);
-    if(category===undefined){
-    setOnChangeFilter(true);
-    setOnChangeDimensionsFilter(true);
-    setOnChangeSerieFilter(true);
-    setOnChangeColorFilter(true);
-    setOnChangeSurfaceFilter(true);
+    if (category === undefined) {
+      setOnChangeFilter(true);
+      setOnChangeDimensionsFilter(true);
+      setOnChangeSerieFilter(true);
+      setOnChangeColorFilter(true);
+      setOnChangeSurfaceFilter(true);
     }
   }, [pageIndex]);
 
@@ -246,7 +246,7 @@ const SearchComponent = () => {
   };
   const collapseProps = { accordion: true, expandIconPosition: { expandIconPosition }, style: { marginTop: '10px' } };
   const { Text } = Typography;
-  
+
   //Pagination : Tablo  pageSize'ı değiştirir
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
@@ -614,7 +614,7 @@ const SearchComponent = () => {
       dispatch(changeProductQuantity(newProductQuantity));
     }
   };
-  
+
   //Adding products to the cart
   function onAddProductCart(product) {
     inputNumberShowOrHide(product)
