@@ -527,12 +527,12 @@ const UserList = () => {
       ),
     },
     {
-      title: "Adı",
+      title: "Ad",
       dataIndex: "firstName",
       key: "firstName",
     },
     {
-      title: "Soyadı",
+      title: "Soyad",
       dataIndex: "lastName",
       key: "lastName",
     },
@@ -540,11 +540,6 @@ const UserList = () => {
       title: "Kullanıcı Adı",
       dataIndex: "username",
       key: "username",
-    },
-    {
-      title: "E-posta",
-      dataIndex: "email",
-      key: "email",
     },
     {
       title: "Rol",
@@ -607,6 +602,11 @@ const UserList = () => {
       dataIndex: "title",
       key: "title",
       ellipsis: true,
+    },
+    {
+      title: "E-posta",
+      dataIndex: "email",
+      key: "email",
     },
     {
       title: "İşlemler",
