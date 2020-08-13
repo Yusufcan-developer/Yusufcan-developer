@@ -246,7 +246,7 @@ export default function () {
       key: "dealerCode"
     },
     {
-      title: "Müşteri Ünvan",
+      title: "Unvan",
       dataIndex: "dealerName",
       key: "dealerName"
     },

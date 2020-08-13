@@ -15,6 +15,10 @@ const GlobalStyles = createGlobalStyle`
     color: #fff;
   }
 
+  .ant-table, .ant-select, .ant-pagination-item {
+    color: #000 !important;
+  }
+
   .ant-table-thead > tr.ant-table-row-hover:not(.ant-table-expanded-row) > td, .ant-table-tbody > tr.ant-table-row-hover:not(.ant-table-expanded-row) > td, .ant-table-thead > tr:hover:not(.ant-table-expanded-row) > td, .ant-table-tbody > tr:hover:not(.ant-table-expanded-row) > td {
     background: #f8f8f8!important;
   }

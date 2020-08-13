@@ -268,7 +268,7 @@ const ChequesReport = () => {
       key: "dealerCode"
     },
     {
-      title: "Müşteri Ünvan",
+      title: "Unvan",
       dataIndex: "dealerName",
       key: "dealerName"
     },
