@@ -764,16 +764,13 @@ const SearchComponent = () => {
 
           </SidebarWrapper>
           <ContentHolder>
-            <Row>
-              <Col align="center">
+            <Row style={{ marginBottom: '10px' }}>
+              <Col span={16}>
                 <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                 <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                 <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
               </Col>
-            </Row>
-
-            <Row>
-              <Col span={8} offset={16} align="right">
+              <Col span={8} align="right">
                 {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
               </Col>
             </Row>

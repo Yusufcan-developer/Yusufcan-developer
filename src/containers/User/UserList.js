@@ -683,6 +683,14 @@ const UserList = () => {
             {<IntlMessages id="forms.button.addUser" />}
           </Button>
         </Col>
+        <ReportPagination
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          pageSize={pageSize}
+          total={totalDataCount}
+          current={localCurrentPage}
+          position="top"
+        />
         <Table
           columns={columns}
           dataSource={data}
@@ -693,7 +701,6 @@ const UserList = () => {
           size="medium"
           bordered={false}
         />
-        <br></br>
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
