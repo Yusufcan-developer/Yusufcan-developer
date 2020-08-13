@@ -104,13 +104,13 @@ const UserList = () => {
   //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
   const menu = (
     <Menu onClick={handleMenuClick}>
-      <Menu.Item key="1" >Düzenle</Menu.Item>
-      <Menu.Item key="2">Parola değiştir</Menu.Item>
+      <Menu.Item key="1">Düzenle</Menu.Item>
+      <Menu.Item key="2">Parola Değiştir</Menu.Item>
       <Menu.Item key="3">Sil</Menu.Item>
     </Menu>
   );
 
-//Menü Secimlerine Göre Modal açma işlemleri
+  //Menü Secimlerine Göre Modal açma işlemleri
   //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
   function handleMenuClick(value) {
     switch (value.key) {
@@ -127,7 +127,7 @@ const UserList = () => {
       default:
         break;
     }
-  }  
+  }
 
   //Saha kodları listesi ve Lookup döndürme işlemi
   const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.getFieldCodes}`);
@@ -144,7 +144,7 @@ const UserList = () => {
   });
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
-  const [lookupDealerTreeData, lookupDealerLoadingTree, lookupDealerSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.lookUpDealerCodes}`);
+  const [lookupDealerTreeData, lookupDealerLoadingTree, lookupDealerSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
   const lookupDealerChildren = [];
   _.each(lookupDealerTreeData, (item, i) => {
     lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
@@ -162,7 +162,7 @@ const UserList = () => {
   //Kullanıcı listesi
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,] =
     useFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
- 
+
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
     let role = []
@@ -286,7 +286,7 @@ const UserList = () => {
     setVisible(true);
   };
 
-//Kullanıcı Silme işlemi
+  //Kullanıcı Silme işlemi
   async function handleDeleteUserOk() {
     const user = await deleteUser(userId);
 
@@ -294,7 +294,7 @@ const UserList = () => {
     else { message.error('Kullanıcı silme işlemi başarısızdır.'); }
     return setOnChange(true);
   };
-  
+
   //Kullanıcı parola değiştirme
   async function handlePasswordOk() {
     const password = await changePassword();
@@ -349,7 +349,7 @@ const UserList = () => {
   }
 
   //Filter Select Role
-  function filterRoleChange(value,roleInfo) {
+  function filterRoleChange(value, roleInfo) {
     let selectedRoleName = []
     let selectedroleDescription = []
     setFilterRole(value);
@@ -384,7 +384,7 @@ const UserList = () => {
 
   //Select Component Aktiflik durumu değiştirme 
   function isLockedChange(value) {
-    setIsLocked(value);
+    setIsLocked(!value);
   }
 
   //Role göre Saha veya bayi kodunun gizlenmesi
@@ -492,35 +492,37 @@ const UserList = () => {
   function addNewUser() {
     setVisible(true);
   }
- /**Pagination : Tablo  pageSize'ı değiştirir*/
- function onShowSizeChange(current, pageSize) {
-  setPageSize(pageSize);
-  setSelectedCurrentPage(current);
-  setlocalCurrentPage(current);
-  dataSearch(current, pageSize);
-}
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowSizeChange(current, pageSize) {
+    setPageSize(pageSize);
+    setSelectedCurrentPage(current);
+    setlocalCurrentPage(current);
+    dataSearch(current, pageSize);
+  }
 
-/**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-function currentPageChange(current) {
-  setSelectedCurrentPage(current);
-  setlocalCurrentPage(current);
-  dataSearch(current);
-}
+  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  function currentPageChange(current) {
+    setSelectedCurrentPage(current);
+    setlocalCurrentPage(current);
+    dataSearch(current);
+  }
 
   let columns = [
     {
-      title: "Hesap Durumu",
+      title: "Hesap",
       dataIndex: "isLocked",
       key: "isLocked",
       render: isLocked => (
         <>
-          {isLocked ===false ? (
-                    <Tag color={'green'} key={isLocked}>
-                {'Açık'}
-              </Tag>
-                  ) : (  <Tag color={'red'} key={isLocked}>
+          {!isLocked ? (
+            <Tag color={'green'} key={isLocked}>
+              {'Açık'}
+            </Tag>
+          ) : (
+              <Tag color={'red'} key={isLocked}>
                 {'Kapalı'}
-              </Tag>)}            
+              </Tag>
+            )}
         </>
       ),
     },
@@ -555,14 +557,14 @@ function currentPageChange(current) {
       key: "dealerCodes",
       render: dealerCodes => (
         <>
-         {dealerCodes != undefined ? (
-          _.map(dealerCodes, (item, i) => {
-            return ( <Tag color={'purple'} key={item}>
+          {dealerCodes != undefined ? (
+            _.map(dealerCodes, (item, i) => {
+              return (<Tag color={'purple'} key={item}>
                 {item}
               </Tag>)
-          })
-                  ) : (<Tag color={'purple'}>
-              </Tag>)}
+            })
+          ) : (<Tag color={'purple'}>
+          </Tag>)}
         </>
       ),
     },
@@ -572,16 +574,16 @@ function currentPageChange(current) {
       key: "fieldCodes",
       render: fieldCodes => (
         <>
-         {fieldCodes != undefined ? (
-          _.map(fieldCodes, (item, i) => {
-            return ( <Tag color={'volcano'} key={item}>
+          {fieldCodes != undefined ? (
+            _.map(fieldCodes, (item, i) => {
+              return (<Tag color={'volcano'} key={item}>
                 {item}
               </Tag>)
-          })
-                  ) : (<Tag color={'volcano'}>
-              </Tag>)}
+            })
+          ) : (<Tag color={'volcano'}>
+          </Tag>)}
         </>
-      ),    
+      ),
     },
     {
       title: "Bölge Kodu",
@@ -589,16 +591,16 @@ function currentPageChange(current) {
       key: "regionCodes",
       render: regionCodes => (
         <>
-         {regionCodes != undefined ? (
-          _.map(regionCodes, (item, i) => {
-            return ( <Tag color={'cyan'} key={item}>
+          {regionCodes != undefined ? (
+            _.map(regionCodes, (item, i) => {
+              return (<Tag color={'cyan'} key={item}>
                 {item}
               </Tag>)
-          })
-                  ) : (<Tag color={'cyan'}>
-              </Tag>)}
+            })
+          ) : (<Tag color={'cyan'}>
+          </Tag>)}
         </>
-      ),      
+      ),
     },
     {
       title: "Ünvan",
@@ -708,6 +710,7 @@ function currentPageChange(current) {
         onOk={handleOk}
         onCancel={handleCancel}
         maskClosable={false}
+        width={800}
         footer={[
           <Button key="back" onClick={handleCancel}>
             İptal
@@ -751,7 +754,7 @@ function currentPageChange(current) {
             </Select>
           </Form.Item>
           <Form.Item label="Hesap" >
-            <Switch checkedChildren="Kapalı" unCheckedChildren="Açık" onChange={isLockedChange} value={isLocked} />
+            <Switch checkedChildren="Açık" unCheckedChildren="Kapalı" onChange={isLockedChange} defaultChecked={!isLocked} />
           </Form.Item>
           <Form.Item label="Ad" onChange={event => setFirstName(event.target.value)} >
             <Input value={firstName} />
@@ -765,42 +768,42 @@ function currentPageChange(current) {
           <Form.Item label="Unvan" onChange={event => setTitle(event.target.value)}>
             <Input value={title} />
           </Form.Item>
+          <Form.Item label="Bayi Kodu">
+            <Select
+              mode={(dealerCodeSelectModSingle === true) ? ("single") : ("multiple")}
+              style={{ width: '100%' }}
+              placeholder="Bayi Kodu seçiniz"
+              value={dealerCodes}
+              onChange={dealerCodeHandleChange}
+            >
+              {lookupDealerChildren}
+            </Select>
+          </Form.Item>
+          <Form.Item label="Bölge Kodu">
+            <Select
+              mode="multiple"
+              disabled={regionVisible}
+              style={{ width: '100%' }}
+              placeholder="Bölge Kodu seçiniz"
+              value={regionCodes}
+              onChange={regionCodeHandleChange}
+            >
+              {lookupRegionChildren}
+            </Select>
+          </Form.Item>
+          <Form.Item label="Saha Kodu">
+            <Select
+              mode="multiple"
+              disabled={fieldVisible}
+              style={{ width: '100%' }}
+              placeholder="Saha Kodu seçiniz"
+              value={userInfoFieldCodes}
+              onChange={fieldCodeHandleChange}
+            >
+              {lookupFieldChildren}
+            </Select>
+          </Form.Item>
         </Form>
-        <Form.Item label="Bayi Kodu">
-          <Select
-            mode={(dealerCodeSelectModSingle === true) ? ("single") : ("multiple")}
-            style={{ width: '100%' }}
-            placeholder="Bayi Kodu seçiniz"
-            value={dealerCodes}
-            onChange={dealerCodeHandleChange}
-          >
-            {lookupDealerChildren}
-          </Select>
-        </Form.Item>
-        <Form.Item label="Bölge Kodu">
-          <Select
-            mode="multiple"
-            disabled={regionVisible}
-            style={{ width: '100%' }}
-            placeholder="Bölge Kodu seçiniz"
-            value={regionCodes}
-            onChange={regionCodeHandleChange}
-          >
-            {lookupRegionChildren}
-          </Select>
-        </Form.Item>
-        <Form.Item label="Saha Kodu">
-          <Select
-            mode="multiple"
-            disabled={fieldVisible}
-            style={{ width: '100%' }}
-            placeholder="Saha Kodu seçiniz"
-            value={userInfoFieldCodes}
-            onChange={fieldCodeHandleChange}
-          >
-            {lookupFieldChildren}
-          </Select>
-        </Form.Item>
 
       </Modal>
 

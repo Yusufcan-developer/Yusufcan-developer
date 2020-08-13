@@ -120,7 +120,7 @@ export default function () {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    await fetch(`${siteConfig.api.getAdress}core/accounts/${dealerCodes}/addresses`, requestOptions)
+    await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
       .then(response => {
         if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
         return response.json();

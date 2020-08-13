@@ -1,5 +1,5 @@
 const apiUrl = 'http://192.168.0.140/b2b/api/';
-//const apiUrl = 'http://localhost:5000/api/';
+// const apiUrl = 'http://localhost:5000/api/';
 
 export default {
   siteName: 'SERAMİKSAN B2B',
@@ -25,6 +25,7 @@ export default {
       getFieldCodes: apiUrl + 'core/lookup/field-codes',
       getRegionCodes: apiUrl + 'core/lookup/region-codes',
       getDealerCodes: apiUrl + 'core/lookup/dealer-codes',
+      getAddresses: apiUrl + 'core/accounts/{dealerCodes}/addresses'
     },
 
     carts: {
