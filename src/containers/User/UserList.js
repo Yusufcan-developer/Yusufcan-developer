@@ -598,7 +598,7 @@ const UserList = () => {
       ),
     },
     {
-      title: "Ünvan",
+      title: "Unvan",
       dataIndex: "title",
       key: "title",
       ellipsis: true,
