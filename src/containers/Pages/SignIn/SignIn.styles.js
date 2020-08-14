@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { palette } from 'styled-theme';
-import bgImage from '@iso/assets/images/sign.jpg';
+import bgImage from '@iso/assets/images/bg-signin2.jpg';
 import WithDirection from '@iso/lib/helpers/rtl';
 
 const SignInStyleWrapper = styled.div`
@@ -11,15 +11,16 @@ const SignInStyleWrapper = styled.div`
   justify-content: flex-end;
   align-items: center;
   position: relative;
-  background: url(${bgImage}) no-repeat center center;
-  background-size: cover;
+  background: url(${bgImage}) no-repeat;
+  background-position: right 600px top;
+  background-size: contain;
 
   &:before {
     content: '';
     width: 100%;
     height: 100%;
     display: flex;
-    background-color: rgba(0, 0, 0, 0.6);
+    ${'' /* background-color: rgba(0, 0, 0, 0.6); */}
     position: absolute;
     z-index: 1;
     top: 0;
@@ -28,7 +29,7 @@ const SignInStyleWrapper = styled.div`
   }
 
   .isoLoginContentWrapper {
-    width: 500px;
+    width: 600px;
     height: 100%;
     overflow-y: auto;
     z-index: 10;
@@ -39,7 +40,7 @@ const SignInStyleWrapper = styled.div`
     min-height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 70px 50px;
+    padding: 70px 100px;
     position: relative;
     background-color: #ffffff;
 
@@ -51,7 +52,7 @@ const SignInStyleWrapper = styled.div`
     .isoLogoWrapper {
       width: 100%;
       display: flex;
-      margin-bottom: 50px;
+      margin-bottom: 20px;
       justify-content: center;
       flex-shrink: 0;
 

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-import Input from '@iso/components/uielements/input';
+import { Input, Space } from 'antd';
+// import Input from '@iso/components/uielements/input';
 import Checkbox from '@iso/components/uielements/checkbox';
 import Button from '@iso/components/uielements/button';
 import IntlMessages from '@iso/components/utility/intlMessages';
@@ -11,6 +12,8 @@ import appAction from '@iso/redux/app/actions';
 import Modals from '@iso/components/Feedback/Modal';
 import Form from '@iso/components/uielements/form';
 import siteConfig from '@iso/config/site.config';
+import verticalLogo from '@iso/assets/images/seramiksan-logo-vertical.png';
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 
 import SignInStyleWrapper from './SignIn.styles';
 
@@ -35,9 +38,9 @@ export default function SignIn() {
     Modals.error({
       title: 'Kullanıcı Girişi',
       content:
-        'Kullanıcı adı veya şifrenizi kontrol ediniz',
-      okText: 'OK',
-      cancelText: 'Cancel',
+        'Kullanıcı adı veya parolanızı kontrol ediniz!',
+      okText: 'Tamam',
+      cancelText: 'İptal',
     });
   }
   //Kullanıcı girişi
@@ -59,7 +62,7 @@ export default function SignIn() {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
-      .then(data => {        
+      .then(data => {
         //Kullanıcı girişi başarılı oldugu durumda token değeri alınıyor ve redux'a gönderiliyor.
         //dispatch(login()) fonksiyonu redux actionlarında tanımlı değerdir.
         dispatch(login(data.token));
@@ -70,29 +73,31 @@ export default function SignIn() {
       })
       .catch(error => loginError());
   }
-  
+
   //Kullanıcı ve parola girildikten sonrasında 'enter ' tuş özelliği ayarlanması.
   const keyPress = e => {
     if (e.keyCode == 13) {
       handleLogin(e);
     }
   }
- 
+
   return (
     <SignInStyleWrapper className="isoSignInPage">
       <div className="isoLoginContentWrapper">
         <div className="isoLoginContent">
           <div className="isoLogoWrapper">
-            <Link to="/">
+            <div style={{ textAlign: 'center' }}>
+              <img src={verticalLogo} style={{ height: '150px' }} title="logo" />
+            </div>
+            {/* <div style={{ textAlign: 'center' }}>
               <IntlMessages id="page.signInTitle" />
-            </Link>
+            </div> */}
           </div>
           <div className="isoSignInForm">
             <form>
-              <div className="isoInputWrapper">
 
+              <div className="isoInputWrapper">
                 <Input
-                  controlId="username"
                   size="large"
                   placeholder="Kullanıcı Adı"
                   autoComplete="true"
@@ -101,14 +106,14 @@ export default function SignIn() {
               </div>
 
               <div className="isoInputWrapper">
-                <Input
+                <Input.Password
                   name='password'
                   size="large"
-                  type="password"
-                  placeholder="Şifre"
+                  placeholder="Parola"
                   autoComplete="false"
                   onKeyDown={keyPress}
                   onChange={event => setPassword(event.target.value)}
+                  iconRender={visible => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                 />
               </div>
 

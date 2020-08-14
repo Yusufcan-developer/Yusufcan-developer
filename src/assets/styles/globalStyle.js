@@ -15,7 +15,7 @@ const GlobalStyles = createGlobalStyle`
     color: #fff;
   }
 
-  .ant-table, .ant-select, .ant-pagination-item {
+  body, .ant-table, .ant-select, .ant-pagination-item, .ant-input, .ant-checkbox-wrapper, .ant-btn-dashed {
     color: #000 !important;
   }
 

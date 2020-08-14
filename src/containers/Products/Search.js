@@ -35,7 +35,7 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 import {
-  SortAscendingOutlined,
+  SortAscendingOutlined, ClearOutlined,
 } from '@ant-design/icons';
 
 const { Panel } = Collapse;
@@ -215,7 +215,7 @@ const SearchComponent = () => {
     useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Get Category
-  const [productGroupData] = useFilterProductCategories(`${siteConfig.api.lookup.getProductCategories}`);
+  const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.getProductCategories}`);
 
   //Get Type 
   const [productTypeData, loadingFilter, setOnChangeFilter] = useFilterData(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
@@ -663,7 +663,7 @@ const SearchComponent = () => {
               onKeyDown={keyPress} />
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Kategori" />} key="0">
-                <RadioGroup onChange={onChangeCategory} options={productGroupData}
+                <RadioGroup onChange={onChangeCategory} options={productCategories}
                   value={category}>
                 </RadioGroup>
               </Panel>
@@ -759,7 +759,10 @@ const SearchComponent = () => {
             ) : (<Collapse ></Collapse>)}
             <Button
               type="primary"
-              onClick={event => clearFilterVariables()}>{<IntlMessages id="Temizle" />}
+              icon={<ClearOutlined />}
+              onClick={event => clearFilterVariables()}
+              style={{ marginTop: '10px' }}
+              >{<IntlMessages id="Filtreleri Temizle" />}
             </Button>
 
           </SidebarWrapper>
