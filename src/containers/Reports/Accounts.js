@@ -256,7 +256,6 @@ export default function () {
       title: "Adres",
       dataIndex: "address",
       key: "address",
-      ellipsis: true
     },
     {
       title: "Email",
