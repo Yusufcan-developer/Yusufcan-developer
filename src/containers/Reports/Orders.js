@@ -551,7 +551,7 @@ const OrdersReport = () => {
 
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Ürün adı , Sipariş numarası giriniz" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>

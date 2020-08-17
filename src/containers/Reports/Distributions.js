@@ -294,7 +294,7 @@ export default function () {
       key: "addressDescription"
     },
     {
-      title: "Sipariş Numarası",
+      title: "Sipariş No",
       dataIndex: "orderNo",
       key: "orderNo",
       sorter: (a, b) => a.orderNo - b.orderNo,

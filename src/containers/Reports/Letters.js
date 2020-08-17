@@ -255,7 +255,7 @@ export default function () {
         tableOptions.sortedInfo.order
     },
     {
-      title: "Numara",
+      title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
       sorter: (a, b) => a.documentId - b.documentId,

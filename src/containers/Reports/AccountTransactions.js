@@ -255,7 +255,7 @@ export default function () {
         tableOptions.sortedInfo.order
     },
     {
-      title: "Belge numarası",
+      title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
       sorter: (a, b) => a.documentId.length - b.documentId.length,
