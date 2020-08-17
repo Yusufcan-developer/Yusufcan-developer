@@ -301,12 +301,12 @@ export default function () {
         tableOptions.sortedInfo.columnKey === "credit" &&
         tableOptions.sortedInfo.order
     },
-    {
-      title: "Para Birimi",
-      dataIndex: "currency",
-      key: "currency",
-      align: "center"
-    },
+    // {
+    //   title: "Para Birimi",
+    //   dataIndex: "currency",
+    //   key: "currency",
+    //   align: "center"
+    // },
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
