@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Descriptions } from "antd";
 
 //Fetch
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
@@ -30,7 +30,7 @@ import ReportPagination from "./ReportPagination";
 import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
-import 'moment/locale/tr' 
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -76,12 +76,6 @@ const OrdersReport = () => {
     setChangePageSize(pageSize);
     getVariablesFromUrl(searchQuery)
   }, [pageSize]);
-
-  useEffect(() => {
-    setFromDate(fromDate);
-    setToDate(toDate);
-    getVariablesFromUrl(searchQuery)
-  }, [fromDate, toDate]);
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
@@ -183,8 +177,10 @@ const OrdersReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    if (fromDate != '' & toDate != '') {
+      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -230,7 +226,7 @@ const OrdersReport = () => {
       });
     }
   };
-  
+
   //Search DailerName Tree Select Component
   function filterTreeNodeDealerCode(value, treeNode) {
     if (value && treeNode && treeNode.title) {
@@ -421,7 +417,7 @@ const OrdersReport = () => {
     {
       title: "Açıklama 1",
       dataIndex: "description1",
-      key: "description1"
+      key: "description1",
     },
     {
       title: "Açıklama 2",
@@ -504,7 +500,34 @@ const OrdersReport = () => {
   }
 
   //hide column Description 1 , Description 2 , Description 3 , Description 4
-
+    let descriptionHide = true;
+    for (let index = 1; index < 5; index++) {
+    let descriptionTitle='description'+index;
+    _.each(data, (item, i) => {
+      switch (descriptionTitle) {
+        case 'description1':
+          if (item.description1 != '') { return descriptionHide = false }
+          break;
+        case 'description2':
+          if (item.description2 != '') { return descriptionHide = false }
+          break;
+        case 'description3':
+          if (item.description3 != '') { return descriptionHide = false }
+          break;
+        case 'description4':
+          if (item.description4 != '') { return descriptionHide = false }
+          break;
+        default:
+          break;
+      }     
+    });
+    
+    if (descriptionHide===true) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: descriptionTitle
+      }));
+    }
+  }
   return (
     <LayoutWrapper>
       <PageHeader>
