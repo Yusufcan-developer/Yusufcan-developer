@@ -222,7 +222,7 @@ const OrdersReport = () => {
   //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
   const menu = (
     <Menu onClick={handleMenuClick}>
-      <Menu.Item key="1">Düzenle</Menu.Item>
+      <Menu.Item key="1">Sepet Düzenlemeyi Aktifleştir</Menu.Item>
     </Menu>
   );
    //Menü Secimlerine Göre Modal açma işlemleri
@@ -347,15 +347,16 @@ const OrdersReport = () => {
   //Cart Columns
   let columns = [
     {
-      title: "Bağlı Hesap Numarası",
-      dataIndex: "accountNo",
-      key: "accountNo",
-    },
-    {
-      title: "Sepet Id",
+      title: "Sepet No",
       dataIndex: "cartId",
       key: "cartId",
-    },  
+      render:()=> '-'
+    }, 
+    {
+      title: "Bağlı Hesap No",
+      dataIndex: "accountNo",
+      key: "accountNo",
+    }, 
     {
       title: "Tarih",
       dataIndex: "date",
@@ -366,6 +367,13 @@ const OrdersReport = () => {
         tableOptions.sortedInfo.columnKey === "date" &&
         tableOptions.sortedInfo.order,
       render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat)
+    },
+    {
+      title: "Toplam Kalem",
+      dataIndex: "items",
+      key: "items",
+      type: "items",     
+      render: (items) => items.length
     },
     {
       title: "İşlemler",
