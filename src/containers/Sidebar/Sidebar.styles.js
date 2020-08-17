@@ -6,7 +6,7 @@ import WithDirection from '@iso/lib/helpers/rtl';
 const SidebarWrapper = styled.div`
   .isomorphicSidebar {
     z-index: 1000;
-    background: ${palette('secondary', 0)};
+    background: rgb(241, 243, 246);
     width: 280px;
     flex: 0 0 280px;
 
@@ -32,6 +32,7 @@ const SidebarWrapper = styled.div`
       height: 70px;
       ${'' /* background: rgba(0, 0, 0, 0.3); */}
       background-color: #fff;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
       margin: 0;
       padding: 0 10px;
       text-align: center;
@@ -89,6 +90,7 @@ const SidebarWrapper = styled.div`
       .isoMenuHolder {
         display: flex;
         align-items: center;
+        color: #000 !important;
 
         i {
           font-size: 19px;
@@ -133,7 +135,7 @@ const SidebarWrapper = styled.div`
         &:hover {
           i,
           .nav-text {
-            color: #ffffff;
+            color: rgba(0, 0, 0, 0.6) !important;
           }
         }
       }
@@ -167,11 +169,13 @@ const SidebarWrapper = styled.div`
           }
 
           &:before {
+            background-color: #000 !important;
             transform: rotate(-45deg) translateX(3px);
           }
 
           &:after {
             transform: rotate(45deg) translateX(-3px);
+            background-color: #000 !important;
           }
 
           ${'' /* &:after {
@@ -189,7 +193,7 @@ const SidebarWrapper = styled.div`
           .ant-menu-submenu-arrow {
             &:before,
             &:after {
-              color: #ffffff;
+              color: #000000;
             }
           }
         }
@@ -210,7 +214,7 @@ const SidebarWrapper = styled.div`
 
           &:hover {
             a {
-              color: #ffffff !important;
+              color: #000000 !important;
             }
           }
         }
@@ -232,6 +236,42 @@ const SidebarWrapper = styled.div`
       .ant-menu-sub {
         box-shadow: none;
         background-color: transparent !important;
+
+        > li {
+          background-color: rgba(0, 0, 0, 0) !important;
+          > a {
+            color: #000 !important;
+          }
+
+          &:hover {
+            i,
+            .nav-text {
+              color: rgba(0, 0, 0, 0.6) !important;
+            }
+          }
+
+          &.ant-menu-item-selected {
+            background-color: rgba(0, 0, 0, 0.4) !important;
+            > a {
+              color: #fff !important;
+            }
+            
+            .anticon {
+              color: #fff;
+              ${transition()};
+            }
+
+            i {
+              color: #fff;
+              ${transition()};
+            }
+
+            .nav-text {
+              color: #fff;
+              ${transition()};
+            }
+          }
+        }
       }
     }
 
