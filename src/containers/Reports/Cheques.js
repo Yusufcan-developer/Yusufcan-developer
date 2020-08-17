@@ -47,7 +47,7 @@ const ChequesReport = () => {
   const [serialNumber, setSerialNumber] = useState();
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -97,7 +97,7 @@ const ChequesReport = () => {
     if (parsed.sno !== undefined) { setSerialNumber([parsed.sno]); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-   
+
 
     let checkType = [];
     if (parsed.type !== undefined) {
@@ -177,7 +177,7 @@ const ChequesReport = () => {
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     if (serialNumber) { params.append('sno', serialNumber); params.toString(); }
-    if (selectedCheckqueType.length > 0) params.append('type', selectedCheckqueType); params.toString(); 
+    if (selectedCheckqueType.length > 0) params.append('type', selectedCheckqueType); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -207,7 +207,7 @@ const ChequesReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    if (value.length === 0) { setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -258,34 +258,19 @@ const ChequesReport = () => {
 
   let columns = [
     {
-      title: "Türü",
-      dataIndex: "type",
-      key: "type"
-    },
-    {
-      title: "Müşteri Kodu",
+      title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode"
     },
     {
-      title: "Unvan",
+      title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName"
     },
     {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode"
-    },
-    {
-      title: "Alan Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
+      title: "Türü",
+      dataIndex: "type",
+      key: "type"
     },
     {
       title: "Tutar",
@@ -338,6 +323,32 @@ const ChequesReport = () => {
         tableOptions.sortedInfo.columnKey === "status" &&
         tableOptions.sortedInfo.order
     },
+    {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode"
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode"
+    },
+
+    {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager"
+    },
+    {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode"
+    },
+    {
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager"
+    },
   ];
 
   //Hide order table column
@@ -365,7 +376,7 @@ const ChequesReport = () => {
       }
     }
   }
-  else if (token.urole === 'dealer') {
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = ColumnOptionsConfig.CheckingReportTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {

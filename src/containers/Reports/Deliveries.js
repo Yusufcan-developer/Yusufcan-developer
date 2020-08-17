@@ -51,7 +51,7 @@ const DeliveriesReport = () => {
 
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -183,7 +183,7 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('pgsize');
 
-    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -232,46 +232,18 @@ const DeliveriesReport = () => {
   }
 
   let columns = [
-
     {
-      title: "Satıcı Kodu",
+      title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode"
     },
     {
-      title: "Satıcı Adı",
+      title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName"
     },
     {
-      title: "Satıcı Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode"
-    },
-
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager"
-    },
-    {
-      title: "Alan Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
-    },
-
-    {
-      title: "Alan Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager"
-    },
-    {
-      title: "İrsaliye Kimliği",
+      title: "İrsaliye No",
       dataIndex: "waybillId",
       key: "waybillId",
       sorter: (a, b) => a.waybillId - b.waybillId,
@@ -341,7 +313,34 @@ const DeliveriesReport = () => {
       dataIndex: "tonnage",
       key: "tonnage",
       align: "center"
-    }
+    },
+    {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode"
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode"
+    },
+
+    {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager"
+    },
+    {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode"
+    },
+
+    {
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager"
+    },
   ];
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
@@ -368,7 +367,7 @@ const DeliveriesReport = () => {
       }
     }
   }
-  else if (token.urole === 'dealer') {
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {

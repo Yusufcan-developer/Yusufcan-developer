@@ -53,7 +53,7 @@ const OrdersReport = () => {
   });
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -167,7 +167,7 @@ const OrdersReport = () => {
       bordered={false}
     />);
   };
-  
+
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
@@ -184,7 +184,7 @@ const OrdersReport = () => {
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else {setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -212,8 +212,8 @@ const OrdersReport = () => {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
-    
-    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes( fieldArrObj); setRegionCodes( regionArrObj); setDealerCodes( dealerArrObj); setSelectedDealerCode([]) }
+
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -229,6 +229,14 @@ const OrdersReport = () => {
     }
   };
 
+  function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) != -1;
+    }
+    return false;
+  }
   //Change from and To date
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
@@ -279,11 +287,6 @@ const OrdersReport = () => {
       key: "itemDescription"
     },
     {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description"
-    },
-    {
       title: "Birim",
       dataIndex: "unit",
       key: "unit",
@@ -311,13 +314,6 @@ const OrdersReport = () => {
       render: (unitPrice) => unitPrice.toFixed(2)
     },
     {
-      title: "KDV",
-      dataIndex: "vat",
-      key: "vat",
-      align: "center",
-      render: (vat) => vat.toFixed(2)
-    },
-    {
       title: "Dağıtım Önerilen Miktar",
       dataIndex: "distributionSuggestedAmount",
       key: "distributionSuggestedAmount",
@@ -343,9 +339,8 @@ const OrdersReport = () => {
 
   //Order Columns
   let columns = [
-
     {
-      title: "Bayi",
+      title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode",
     },
@@ -353,31 +348,6 @@ const OrdersReport = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
-    },
-    {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode",
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode",
-    },
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager",
-    },
-    {
-      title: "Alan Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode",
-    },
-    {
-      title: "Alan Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager",
     },
     {
       title: "Sipariş No",
@@ -424,26 +394,6 @@ const OrdersReport = () => {
       key: "deliveryAddress",
     },
     {
-      title: "Açıklama 1",
-      dataIndex: "description1",
-      key: "description1",
-    },
-    {
-      title: "Açıklama 2",
-      dataIndex: "description2",
-      key: "description2",
-    },
-    {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3",
-    },
-    {
-      title: "Açıklama 4",
-      dataIndex: "description4",
-      key: "description4",
-    },
-    {
       title: "Toplam",
       dataIndex: "total",
       key: "total",
@@ -462,6 +412,52 @@ const OrdersReport = () => {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "status" &&
         tableOptions.sortedInfo.order
+
+    },
+    {
+      title: "Açıklama 1",
+      dataIndex: "description1",
+      key: "description1"
+    },
+    {
+      title: "Açıklama 2",
+      dataIndex: "description2",
+      key: "description2",
+    },
+    {
+      title: "Açıklama 3",
+      dataIndex: "description3",
+      key: "description3",
+    },
+    {
+      title: "Açıklama 4",
+      dataIndex: "description4",
+      key: "description4",
+    },
+    {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode",
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode",
+    },
+    {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager",
+    },
+    {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode",
+    },
+    {
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager",
     },
   ];
 
@@ -491,7 +487,7 @@ const OrdersReport = () => {
       }
     }
   }
-  else if (token.urole === 'dealer') {
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -502,6 +498,9 @@ const OrdersReport = () => {
       }
     }
   }
+
+  //hide column Description 1 , Description 2 , Description 3 , Description 4
+
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -529,6 +528,7 @@ const OrdersReport = () => {
                   treeData={treeData}
                   value={selectedDealerCode}
                   onChange={onChangeDealerCode}
+                  filterTreeNode={filterTreeNodeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}

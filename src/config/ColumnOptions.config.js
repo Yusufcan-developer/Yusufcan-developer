@@ -22,30 +22,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
-
     ],
     Field: [
-      {
-        dataIndex: "dealerCode",
-      },
-      {
-        dataIndex: "dealerName",
-      },
-      {
-        dataIndex: "dealerSubCode",
-      },
+
     ],
     Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   ShippingTableHideColumns: {
@@ -70,19 +68,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
-
     ],
     Field: [
+
+    ],
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   CustomerRecordTableHideColumns: {
@@ -107,19 +114,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
-
     ],
     Field: [
+
+    ],
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   CheckingReportTableHideColumns: {
@@ -144,19 +160,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
-
     ],
     Field: [
+
+    ],
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   GuaranteeLetterTableHideColumns: {
@@ -181,19 +206,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
+    ],
+    Field: [
 
     ],
-    Area: [
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   CustomerListTableHideColumns: {
@@ -218,19 +252,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
+    ],
+    Field: [
 
     ],
-    Area: [
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   DistributionTableHideColumns: {
@@ -255,19 +298,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
+    ],
+    Field: [
 
     ],
-    Area: [
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
 };
