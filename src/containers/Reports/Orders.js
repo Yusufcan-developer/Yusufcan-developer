@@ -30,6 +30,8 @@ import ReportPagination from "./ReportPagination";
 import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
+import 'moment/locale/tr' 
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -228,7 +230,8 @@ const OrdersReport = () => {
       });
     }
   };
-
+  
+  //Search DailerName Tree Select Component
   function filterTreeNodeDealerCode(value, treeNode) {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
@@ -237,6 +240,7 @@ const OrdersReport = () => {
     }
     return false;
   }
+
   //Change from and To date
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
