@@ -370,7 +370,7 @@ const OrdersReport = () => {
       render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat)
     },
     {
-      title: "Belge Numarası",
+      title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
       sorter: (a, b) => a.documentId - b.documentId,
