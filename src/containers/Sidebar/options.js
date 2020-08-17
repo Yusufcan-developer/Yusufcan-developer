@@ -65,7 +65,10 @@ const options = [
         key: 'admin/photos/upload',
         label: 'sidebar.uploadingPhotos',
       },
-     
+      {
+        key: 'admin/carts',
+        label: 'sidebar.carts',
+      },
     ],
   },   
 ];
