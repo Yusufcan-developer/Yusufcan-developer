@@ -26,9 +26,11 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 
 //Other Library
-import moment from 'moment';
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
+import moment from 'moment';
+import 'moment/locale/tr' 
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -234,6 +236,16 @@ const ChequesReport = () => {
     setSelectedCheckqueType(value);
   }
 
+   //Search DailerName Tree Select Component
+   function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) != -1;
+    }
+    return false;
+  }
+
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -417,6 +429,7 @@ const ChequesReport = () => {
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
+                  filterTreeNode={filterTreeNodeDealerCode}
                   value={selectedDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
