@@ -23,6 +23,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 
@@ -330,6 +331,7 @@ export default function () {
       title: "Planlanan Miktar",
       dataIndex: "plannedAmount",
       key: "plannedAmount",
+      render: (plannedAmount) => numberFormat(plannedAmount),
       sorter: (a, b) => a.plannedAmount - b.plannedAmount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "plannedAmount" &&
@@ -339,6 +341,7 @@ export default function () {
       title: "Dağıtılan  Miktar",
       dataIndex: "distributedAmount",
       key: "distributedAmount",
+      render: (distributedAmount) => numberFormat(distributedAmount),
       sorter: (a, b) => a.distributedAmount - b.distributedAmount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "distributedAmount" &&
@@ -348,6 +351,7 @@ export default function () {
       title: "Kalan  Miktar",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
+      render: (remainingAmount) => numberFormat(remainingAmount),
       sorter: (a, b) => a.remainingAmount - b.remainingAmount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "remainingAmount" &&

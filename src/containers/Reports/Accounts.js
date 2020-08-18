@@ -22,6 +22,7 @@ import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import _ from 'underscore';
@@ -296,7 +297,7 @@ export default function () {
       title: "Bakiye",
       dataIndex: "balance",
       key: "balance",
-      render: (balance) => balance.toFixed(2),
+      render: (balance) => numberFormat(balance),
       sorter: (a, b) => a.balance - b.balance,
       align: "right",
       sortOrder:

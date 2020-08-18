@@ -24,6 +24,7 @@ import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterPr
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
 import { direction } from '@iso/lib/helpers/rtl';
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import _ from 'underscore';
@@ -803,7 +804,7 @@ const SearchComponent = () => {
                         <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span>
-                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{item.listPrice.toFixed(2)} {"TL"}</div>
+                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"}</div>
                         {!inputNumberShowOrHide(item) ? (
                           <Button
                             type="primary"

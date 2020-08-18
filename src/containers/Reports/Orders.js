@@ -25,6 +25,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -298,42 +299,42 @@ const OrdersReport = () => {
       dataIndex: "amount",
       key: "amount",
       align: "center",
-      render: (amount) => amount.toFixed(2)
+      render: (amount) => numberFormat(amount)
     },
     {
       title: "Kalan miktar",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
       align: "center",
-      render: (remainingAmount) => remainingAmount.toFixed(2)
+      render: (remainingAmount) => numberFormat(remainingAmount)
     },
     {
       title: "Birim fiyat",
       dataIndex: "unitPrice",
       key: "unitPrice",
       align: "right",
-      render: (unitPrice) => unitPrice.toFixed(2)
+      render: (unitPrice) => numberFormat(unitPrice)
     },
     {
       title: "Dağıtım Önerilen Miktar",
       dataIndex: "distributionSuggestedAmount",
       key: "distributionSuggestedAmount",
       align: "right",
-      render: (distributionSuggestedAmount) => distributionSuggestedAmount.toFixed(2)
+      render: (distributionSuggestedAmount) =>numberFormat(distributionSuggestedAmount)
     },
     {
       title: "Dağıtım Gerçek Tutar",
       dataIndex: "distributionActualAmount",
       key: "distributionActualAmount",
       align: "right",
-      render: (distributionActualAmount) => distributionActualAmount.toFixed(2)
+      render: (distributionActualAmount) =>numberFormat(distributionActualAmount)
     },
     {
       title: "Teslimat Tutarı",
       dataIndex: "deliveryAmount",
       key: "deliveryAmount",
       align: "right",
-      render: (deliveryAmount) => deliveryAmount.toFixed(2)
+      render: (deliveryAmount) => numberFormat(deliveryAmount)
     },
 
   ];
@@ -403,7 +404,7 @@ const OrdersReport = () => {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "total" &&
         tableOptions.sortedInfo.order,
-      render: (total) => total.toFixed(2)
+      render: (total) => numberFormat(total)
     },
     {
       title: "Durum",
@@ -617,14 +618,14 @@ const OrdersReport = () => {
           summary={pageData => {
             let totalAmount = 0;
             pageData.forEach(({ total }) => {
-              totalAmount += total;
+              totalAmount +=  total;
             });
             return (
               <>
                 <Table.Summary.Row>
                   <Table.Summary.Cell>Toplam Tutar</Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    <Text type="danger">{totalAmount}</Text>
+                    <Text type="danger">{numberFormat(totalAmount)}</Text>
                   </Table.Summary.Cell>
                 </Table.Summary.Row>
               </>

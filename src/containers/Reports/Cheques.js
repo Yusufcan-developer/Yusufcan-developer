@@ -24,6 +24,7 @@ import siteConfig from "@iso/config/site.config";
 import { DownloadOutlined } from '@ant-design/icons';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import _ from 'underscore';
@@ -289,7 +290,7 @@ const ChequesReport = () => {
       title: "Tutar",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => amount.toFixed(2),
+      render: (amount) => numberFormat(amount),
       align: "right",
       sorter: (a, b) => a.amount - b.amount,
       sortOrder:
