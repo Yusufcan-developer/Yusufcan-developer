@@ -42,6 +42,7 @@ const UserList = () => {
   const [searchKey, setSearchKey] = useState('');
   const [userId, setUserId] = useState(-1);
   const [username, setUsername] = useState();
+  const [selectedUser,setSelectedUser]=useState();
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
@@ -113,10 +114,10 @@ const UserList = () => {
   //Menü Secimlerine Göre Modal açma işlemleri
   //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
   function handleMenuClick(value) {
+    setModalUserInfo(selectedUser);
     switch (value.key) {
       case '1':
         setVisible(true);
-        fieldRegionAndDealearVisible(objectRole.roleName);
         break;
       case '2':
         setForgotPasswordVisible(true);
@@ -278,6 +279,8 @@ const UserList = () => {
     setDealerCodes(userInfo.dealerCodes);
     setRegionCodes(userInfo.regionCodes);
     setTitle(userInfo.title);
+
+    fieldRegionAndDealearVisible(userInfo.role.roleName);
     // setVisible(true);
   };
 
@@ -614,12 +617,11 @@ const UserList = () => {
       key: "title",
       fixed: "right",
       render: (text, record) => (
-        <Dropdown overlay={menu} trigger={['click']} >
-          <Button onClick={event => { setModalUserInfo(record) }}>
+        <Dropdown overlay={menu} trigger={['hover'] } onMouseLeave={event => { setSelectedUser(record) }} >
+          <Button >
             İşlemler  <DownOutlined />
           </Button>
         </Dropdown>
-
       ),
     }
   ];
