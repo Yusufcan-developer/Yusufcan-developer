@@ -4,6 +4,10 @@ import { Col, Row, Button } from "antd";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import Input from '@iso/components/uielements/input';
 
+//Redux
+import { useDispatch, useSelector } from 'react-redux';
+import ecommerceActions from '@iso/redux/ecommerce/actions';
+
 export default function ({
   price,
   quantity,
@@ -15,15 +19,27 @@ export default function ({
   productItem,
   products,
 }) {
+  const { productQuantity } = useSelector(state => state.Ecommerce);
+  const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
+  const dispatch = useDispatch();
 
-  const onChange = value => {
-    if (!isNaN(value.target.value)) {
-      if (value.target.value !== quantity) {
-        changeQuantity(productItem.itemCode, value.target.value);
+  function onChangeQuantity(event, productData) {
+    const product = productData;
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    const newProductQuantity = [];
+    productQuantity.forEach(productItem => {
+      if (productItem.itemCode !== selectedProduct.itemCode) {
+        newProductQuantity.push(productItem);
+      } else {
+        const itemCode = productItem.itemCode
+        const quantity = parseInt(event.target.value);
+        newProductQuantity.push({
+          itemCode,
+          quantity,
+        });
       }
-    } else {
-      notification('error', 'Please give valid number');
-    }
+    });
+    dispatch(changeProductQuantity(newProductQuantity));
   };
 
   const totalPrice = (productItem.listPrice * quantity).toFixed(2);
@@ -75,7 +91,7 @@ export default function ({
               defaultValue={1}
               value={quantity}
               step={1}
-              onChange={onChange}
+              onChange={event => onChangeQuantity(event, productItem)}
             />
           </Col>
           <Col span={8} style={{ width: '100%' }}>

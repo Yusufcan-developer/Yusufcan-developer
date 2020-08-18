@@ -617,7 +617,7 @@ const UserList = () => {
       key: "title",
       fixed: "right",
       render: (text, record) => (
-        <Dropdown overlay={menu} trigger={['hover'] } onMouseLeave={event => { setSelectedUser(record) }} >
+        <Dropdown overlay={menu} trigger={['hover'] } onVisibleChange={event => { setSelectedUser(record) }} >
           <Button >
             İşlemler  <DownOutlined />
           </Button>
