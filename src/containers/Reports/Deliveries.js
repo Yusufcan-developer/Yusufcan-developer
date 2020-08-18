@@ -25,6 +25,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import _ from 'underscore';
@@ -307,6 +308,7 @@ const DeliveriesReport = () => {
       dataIndex: "amount",
       key: "amount",
       align: "center",
+      render: (amount) => numberFormat(amount),
       sorter: (a, b) => a.amount - b.amount,
       sortOrder: tableOptions.sortedInfo.columnKey === 'amount' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
@@ -357,6 +359,7 @@ const DeliveriesReport = () => {
       key: "fieldManager"
     },
   ];
+  
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }

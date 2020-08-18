@@ -23,6 +23,7 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import { DownloadOutlined } from '@ant-design/icons';
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import _ from 'underscore';
@@ -196,6 +197,7 @@ export default function () {
       });
     }
   };
+
   //Change from and To date
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
@@ -287,7 +289,7 @@ export default function () {
       dataIndex: "amount",
       key: "amount",
       align: "right",
-      render: (amount) => amount.toFixed(2),
+      render: (amount) => numberFormat(amount),
       sorter: (a, b) => a.amount - b.amount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "amount" &&

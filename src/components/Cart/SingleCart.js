@@ -8,6 +8,9 @@ import Input from '@iso/components/uielements/input';
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 
+//Configs
+import numberFormat from "@iso/config/numberFormat";
+
 export default function ({
   price,
   quantity,
@@ -74,7 +77,7 @@ export default function ({
         <p>{productItem.type}</p>
       </td>
       <td className="isoItemPrice">
-        {productItem.listPrice.toFixed(2)} {"TL"}
+        {numberFormat(productItem.listPrice)} {"TL"}
       </td>
       <td className="isoItemPalet">
         <Row justify="center" align="middle">
@@ -102,9 +105,9 @@ export default function ({
         </Row>
       </td>
       <td className="isoItemQuantity">
-        {(quantity * productItem.m2Pallet).toFixed(2)}
+        {numberFormat(quantity * productItem.m2Pallet)}
       </td>
-      <td className="isoItemPriceTotal">{totalPrice} TL</td>
+      <td className="isoItemPriceTotal">{numberFormat(totalPrice)} TL</td>
     </tr>
   );
 }

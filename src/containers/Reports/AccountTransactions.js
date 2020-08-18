@@ -25,6 +25,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -287,7 +288,7 @@ export default function () {
       key: "debt",
       align: "right",
       sorter: (a, b) => a.debt - b.debt,
-      render: (debt) => debt.toFixed(2),
+      render: (debt) => numberFormat(debt),
       sortOrder:
         tableOptions.sortedInfo.columnKey === "debt" &&
         tableOptions.sortedInfo.order
@@ -297,7 +298,7 @@ export default function () {
       dataIndex: "credit",
       key: "credit",
       align: "right",
-      render: (credit) => credit.toFixed(2),
+      render: (credit) =>numberFormat(credit),
       sorter: (a, b) => a.credit - b.credit,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "credit" &&
