@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Descriptions } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography } from "antd";
 
 //Fetch
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
@@ -65,6 +65,7 @@ const OrdersReport = () => {
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
   const { searchQuery } = useParams();
+  const { Text } = Typography;
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
@@ -500,9 +501,9 @@ const OrdersReport = () => {
   }
 
   //hide column Description 1 , Description 2 , Description 3 , Description 4
-    let descriptionHide = true;
-    for (let index = 1; index < 5; index++) {
-    let descriptionTitle='description'+index;
+  let descriptionHide = true;
+  for (let index = 1; index < 5; index++) {
+    let descriptionTitle = 'description' + index;
     _.each(data, (item, i) => {
       switch (descriptionTitle) {
         case 'description1':
@@ -519,10 +520,10 @@ const OrdersReport = () => {
           break;
         default:
           break;
-      }     
+      }
     });
-    
-    if (descriptionHide===true) {
+
+    if (descriptionHide === true) {
       columns = _.without(columns, _.findWhere(columns, {
         dataIndex: descriptionTitle
       }));
@@ -613,6 +614,22 @@ const OrdersReport = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={pageData => {
+            let totalAmount = 0;
+            pageData.forEach(({ total }) => {
+              totalAmount += total;
+            });
+            return (
+              <>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell>Toplam Tutar</Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text type="danger">{totalAmount}</Text>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </>
+            );
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
