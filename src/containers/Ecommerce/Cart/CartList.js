@@ -16,21 +16,20 @@ import { Table, Row, Col, Pagination, TreeSelect,Dropdown,Menu } from "antd";
 
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
-import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 
 //Styles
-import { DownloadOutlined } from '@ant-design/icons';
 import { DownOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
-//import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 // import ReportPagination from "./ReportPagination";
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
+import 'moment/locale/tr'
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -71,7 +70,7 @@ const OrdersReport = () => {
   }, [pageIndex]);
 
   //Cart Data
-  const [cartData, loadingCartData, setOnChange] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
+  const [cartData, loadingCartData, setOnChange,cartDetailData] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
@@ -133,25 +132,25 @@ const OrdersReport = () => {
 
   //Sipariş Kalemleri Görüntüleme
   async function onExpand(expandedKeys) {
-    // setExpandedKeys(expandedKeys);
-    // setAutoExpandParent(false);
+    setExpandedKeys(expandedKeys);
+    setAutoExpandParent(false);
   };
 
-  // //Sipariş Kalemleri Expand İşlemi
-  // function expandedRow(row, index) {
-  //   let orderDetailIndex;
-  //   _.each(orderDetailData, (item, i) => {
-  //     if (item.Key === row.orderNo) { return orderDetailIndex = i }
-  //   });
-  //   return (<Table
-  //     columns={OrderDetailcolumns}
-  //     dataSource={orderDetailData[orderDetailIndex].Value}
-  //     pagination={false}
-  //     scroll={{ x: 'max-content' }}
-  //     size="medium"
-  //     bordered={false}
-  //   />);
-  // };
+  //Sepet Kalemleri Expand İşlemi
+  function expandedRow(row, index) {
+    let cartDetailIndex;
+    _.each(cartData, (item, i) => {
+      if (item.accountNo === row.accountNo) { return cartDetailIndex = i }
+    });
+    return (<Table
+      columns={CartDetailcolumns}
+      dataSource={cartData[cartDetailIndex].items}
+      pagination={false}
+      scroll={{ x: 'max-content' }}
+      size="medium"
+      bordered={false}
+    />);
+  };
   
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
@@ -260,88 +259,45 @@ const OrdersReport = () => {
     dataSearch(current);
   }
 
-  //Excel Oluşturma
-//   const exportExcelButton = () => {
-//     ExcelExport(columns, data, 'Geçmiş Siparişler');
-//   }
-  //Order Detail Columns
-  const OrderDetailcolumns = [
-    {
-      title: "Tip",
-      dataIndex: "type",
-      key: "type",
-    },
+  //Cart Detail Columns
+  const CartDetailcolumns = [
     {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
     },
     {
-      title: "Ürün Açıklaması",
-      dataIndex: "itemDescription",
-      key: "itemDescription"
+      title: "Ürün Adı",
+      dataIndex: ['item', 'description'],
+      key: "item.description",
+      align: "left",
     },
     {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description"
+      title: "Birim Fiyat",
+      dataIndex: ['item', 'listPrice'],
+      key: "item.listPrice",
+      align: "right",
     },
     {
-      title: "Birim",
-      dataIndex: "unit",
-      key: "unit",
-      align: "center"
-    },
-    {
-      title: "Miktar",
+      title: "Palet",
       dataIndex: "amount",
       key: "amount",
-      align: "center",
-      render: (amount) => amount.toFixed(2)
-    },
-    {
-      title: "Kalan miktar",
-      dataIndex: "remainingAmount",
-      key: "remainingAmount",
-      align: "center",
-      render: (remainingAmount) => remainingAmount.toFixed(2)
-    },
-    {
-      title: "Birim fiyat",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
       align: "right",
-      render: (unitPrice) => unitPrice.toFixed(2)
     },
     {
-      title: "KDV",
-      dataIndex: "vat",
-      key: "vat",
-      align: "center",
-      render: (vat) => vat.toFixed(2)
-    },
-    {
-      title: "Dağıtım Önerilen Miktar",
-      dataIndex: "distributionSuggestedAmount",
-      key: "distributionSuggestedAmount",
+      title: "Miktar (m2)",
+      dataIndex: ['item', 'm2Pallet'],
+      key: "item.m2Pallet",
       align: "right",
-      render: (distributionSuggestedAmount) => distributionSuggestedAmount.toFixed(2)
+      render:(text, record) => {return (record.amount*text).toFixed(2)}
     },
     {
-      title: "Dağıtım Gerçek Tutar",
-      dataIndex: "distributionActualAmount",
-      key: "distributionActualAmount",
+      title: "Toplam",
+      dataIndex: ['item', 'total'],
+      key: "item.total",
       align: "right",
-      render: (distributionActualAmount) => distributionActualAmount.toFixed(2)
+      render:(text, record) => {return (record.item.listPrice*record.amount).toFixed(2)}
     },
-    {
-      title: "Teslimat Tutarı",
-      dataIndex: "deliveryAmount",
-      key: "deliveryAmount",
-      align: "right",
-      render: (deliveryAmount) => deliveryAmount.toFixed(2)
-    },
-
   ];
 
   //Cart Columns
@@ -388,47 +344,8 @@ const OrdersReport = () => {
         </Dropdown>
 
       ),
-    }
-   
+    }   
   ];
-
-  //Hide order table column
-  //Get Token and Token Decode
-//   const token = jwtDecode(localStorage.getItem("id_token"));
-//   if (token.urole === 'admin') { }
-//   else if (token.urole === 'fieldmanager') {
-//     const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Field;
-//     if (getHideColumns.length > 0) {
-//       for (let index = 0; index < getHideColumns.length; index++) {
-//         columns = _.without(columns, _.findWhere(columns, {
-//           dataIndex: getHideColumns[index].dataIndex
-//         }
-//         ))
-//       }
-//     }
-//   }
-//   else if (token.urole === 'regionmanager') {
-//     const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Region;
-//     if (getHideColumns.length > 0) {
-//       for (let index = 0; index < getHideColumns.length; index++) {
-//         columns = _.without(columns, _.findWhere(columns, {
-//           dataIndex: getHideColumns[index].dataIndex
-//         }
-//         ))
-//       }
-//     }
-//   }
-//   else if (token.urole === 'dealer') {
-//     const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
-//     if (getHideColumns.length > 0) {
-//       for (let index = 0; index < getHideColumns.length; index++) {
-//         columns = _.without(columns, _.findWhere(columns, {
-//           dataIndex: getHideColumns[index].dataIndex
-//         }
-//         ))
-//       }
-//     }
-//   }
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -506,7 +423,7 @@ const OrdersReport = () => {
           dataSource={cartData}
           onChange={handleChange}
           loading={loadingCartData}
-          // expandable={{ 'expandedRowRender': expandedRow }}
+          expandable={{ 'expandedRowRender': expandedRow }}
           pagination={false}
           onExpand={onExpand}
           // scroll={{ x: 'calc(700px + 50%)' }}

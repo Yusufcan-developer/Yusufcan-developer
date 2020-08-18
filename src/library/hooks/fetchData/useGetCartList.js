@@ -5,13 +5,14 @@ import _ from 'underscore';
 
 function useCartListData(url, reqBody) {
   const [data, setData] = useState([]);
+  const [cartDetail,setCartDetail]=useState();
   const [orderDetailData, setOrderDetailData] = useState([]);//Sipariş Kalem Bilgileri Verisi
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
   const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
   const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
   const [onChange, setOnChange] = useState(false);
-  let orderIdgetUrlItems='';
+  let cartIdgetUrlItems='';
   async function fetchUrl() {
   
     const reqB = reqBody == null || reqBody==undefined ? {"pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
@@ -38,34 +39,33 @@ function useCartListData(url, reqBody) {
       .then(data => {
         if(data){    
 
-    console.log('xxxx url',data)
-        // const accountsNo = [];
-        // const value = data.data.slice();
-        // value.forEach((item, index) => {          
-        //   item.key = index;
-        //   accountsNo.push(item.accountNo);
-        // });
+        const accountsNo = [];
+        const value = data.data.slice();
+        value.forEach((item, index) => {          
+          item.key = index;
+          accountsNo.push(item.accountNo);
+          accountsNo.push('utku');
+        });
 
-       
+        
         setData(data.data);  
         // setOrderIdArray(accountsNo);
 
         setLoading(false); 
         setOnChange(false);
-        // _.each(accountsNo,(cartDetailItems,index)=> {
+        _.each(accountsNo,(item,index)=> {        
+          let cartDetailUrl=siteConfig.api.carts.getGetByAccountNo;
+        return fetch(`${cartDetailUrl}${item}`, requestCartDetailOptions) //Cart Detail Fetch
+        .then(response => {
+          if (!response.ok) return Promise.reject(response);
+          return response.json();
+        })
+        .then(data => {
+          setCartDetail(data);
+        })
+        .catch();
+        });
         
-        //   orderIdgetUrlItems+=('orderNo='+cartDetailItems+'&&')
-        // });
-        // let orderDetailUrl=siteConfig.api.report.getOrderLineItems;
-        // return fetch(`${orderDetailUrl}/?${orderIdgetUrlItems}`, requestCartDetailOptions) //Cart Detail Fetch
-        // .then(response => {
-        //   if (!response.ok) return Promise.reject(response);
-        //   return response.json();
-        // })
-        // .then(data => {
-        //   setOrderDetailData(data);
-        // })
-        // .catch();
         }
       })
       .catch();
@@ -74,7 +74,7 @@ function useCartListData(url, reqBody) {
     setLoading(true);
     fetchUrl();
   }, [ onChange]);
-  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, setOnChange];
+  return [data, loading , setOnChange,cartDetail];
 }
 
 
