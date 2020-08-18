@@ -38,6 +38,7 @@ export default function () {
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
   const [adressItem, setAdressItem] = useState();
+  const [addressFilterData,setAddressFilterData]=useState();
 
   let totalPrice;
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
@@ -133,6 +134,21 @@ export default function () {
     },
   ];
 
+  //Search Adress Filter
+  function addressFilterSearch(value) {
+    if (value) {
+      const filterTable = adress.filter(o =>
+        Object.keys(o).some(k =>
+          String(o[k])
+            .toLocaleLowerCase('tr')
+            .includes(value.toLocaleLowerCase('tr'))
+        )
+      );
+      setAddressFilterData(filterTable);
+    }
+    else{setAddressFilterData('')}
+  };
+
   //get user by id
   async function getByUserId(userId) {
     let userData;
@@ -210,9 +226,16 @@ export default function () {
                       modifier: 'public',
                     }}
                   >
+                    <Input.Search
+                      style={{ margin: "0 0 10px 0" }}
+                      placeholder="Arama yapabilirsiniz"
+                      enterButton
+                      onSearch={addressFilterSearch}
+                    />
                     <Table
                       columns={columns}
-                      dataSource={adress}
+                      dataSource={addressFilterData == null || addressFilterData=='' ? adress : addressFilterData}
+                      // dataSource={adress}
                       onRow={(record, rowIndex) => {
                         return {
                           onClick: event => { setAdressItem(record.addressTitle); setPhone(record.phone); setCity(record.city); setVisible(false) },
