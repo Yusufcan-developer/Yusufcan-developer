@@ -19,6 +19,7 @@ import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseDat
 //Configs
 import siteConfig from "@iso/config/site.config";
 import noImage from '@iso/assets/images/noImage.png';
+import numberFormat from "@iso/config/numberFormat";
 
 //Styles
 import PageHeader from '@iso/components/utility/pageHeader';
@@ -178,6 +179,7 @@ const ProductDetail = () => {
       dataIndex: "balance",
       align: "right",
       key: "balance",
+      render: (balance) => numberFormat(balance)
     },
   ];
 
@@ -248,7 +250,7 @@ const ProductDetail = () => {
                 </Row>)}
                 <Row style={{ marginTop: '30px' }}>
                   <Col align="center" span={24}>
-                    <span style={{ fontSize: '35px' }}><strong>{listPrice}</strong> {"TL"}</span>
+                    <span style={{ fontSize: '35px' }}><strong>{numberFormat(listPrice)}</strong> {"TL"}</span>
 
                   </Col>
                 </Row>

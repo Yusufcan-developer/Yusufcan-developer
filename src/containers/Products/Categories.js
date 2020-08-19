@@ -42,7 +42,6 @@ const ProductGroupList = () => {
 
   const history = useHistory();
   const [loading, setloading] = useState(false);
-
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>

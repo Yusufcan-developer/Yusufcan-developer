@@ -1,20 +1,28 @@
+//React
 import React from 'react';
 import { Link } from 'react-router-dom';
+
+//Redux
 import { useDispatch, useSelector } from 'react-redux';
+import ecommerceActions from '@iso/redux/ecommerce/actions';
+
+//Component
 import Input from '@iso/components/uielements/input';
 import Button from '@iso/components/uielements/button';
 import SingleCart from '@iso/components/Cart/SingleCart';
-import ecommerceActions from '@iso/redux/ecommerce/actions';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
 
-const { changeProductQuantity } = ecommerceActions;
+//Configs
+import numberFormat from "@iso/config/numberFormat";
 
+const { changeProductQuantity } = ecommerceActions;
 let totalPrice = 0;
 export default function CartTable({ style }) {
   const dispatch = useDispatch();
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
 
+  //Ürünlerin Getirilmesi
   function renderItems() {
     totalPrice = 0;
     if (!productQuantity || productQuantity.length === 0) {
@@ -34,6 +42,8 @@ export default function CartTable({ style }) {
       );
     });
   }
+
+  //Sepet miktarının değişikliği
   function changeQuantity(itemCode, quantity) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
@@ -49,6 +59,8 @@ export default function CartTable({ style }) {
     });
     dispatch(changeProductQuantity(newProductQuantity));
   }
+
+  //Sepetten ürünün çıkarılması
   function cancelQuantity(productItem) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
@@ -58,6 +70,7 @@ export default function CartTable({ style }) {
     });
     dispatch(changeProductQuantity(newProductQuantity));
   }
+
   const classname = style != null ? style : '';
   return (
     <ProductsTable className={`isoCartTable ${classname}`}>
@@ -83,7 +96,7 @@ export default function CartTable({ style }) {
             <td className="isoItemPrice" />
             <td className="isoItemPalet" />
             <td className="isoItemQuantity">Toplam Tutar</td>
-            <td className="isoItemPriceTotal">{totalPrice.toFixed(2)} TL</td>
+            <td className="isoItemPriceTotal">{numberFormat(totalPrice)} TL</td>
           </tr>
         </tbody>
 

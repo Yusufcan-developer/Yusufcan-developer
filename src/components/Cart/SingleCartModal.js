@@ -1,6 +1,9 @@
 import React from 'react';
 import TopbarCartWrapper from './SingleCartModal.style';
 
+//Configs
+import numberFormat from "@iso/config/numberFormat";
+
 export default function({
   price,
   quantity,
@@ -21,7 +24,7 @@ export default function({
           <a href="#!">{productItem.description}</a>
         </h3>
         <p className="isoItemPriceQuantity">          
-          <span>{productItem.listPrice} TL</span>
+          <span>{numberFormat(productItem.listPrice)} TL</span>
           <span className="itemMultiplier">X</span>
           <span className="isoItemQuantity">{quantity}</span>
         </p>

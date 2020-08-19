@@ -25,11 +25,15 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
-import moment from 'moment';
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
+import moment from 'moment';
+import 'moment/locale/tr' 
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -51,7 +55,7 @@ const DeliveriesReport = () => {
 
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -151,8 +155,10 @@ const DeliveriesReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    if (fromDate != '' & toDate != '') {
+      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -183,7 +189,7 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('pgsize');
 
-    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -203,7 +209,18 @@ const DeliveriesReport = () => {
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
+  };
+
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) != -1;
+    }
+    return false;
   }
+
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -232,46 +249,18 @@ const DeliveriesReport = () => {
   }
 
   let columns = [
-
     {
-      title: "Satıcı Kodu",
+      title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode"
     },
     {
-      title: "Satıcı Adı",
+      title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName"
     },
     {
-      title: "Satıcı Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode"
-    },
-
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager"
-    },
-    {
-      title: "Alan Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
-    },
-
-    {
-      title: "Alan Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager"
-    },
-    {
-      title: "İrsaliye Kimliği",
+      title: "İrsaliye No",
       dataIndex: "waybillId",
       key: "waybillId",
       sorter: (a, b) => a.waybillId - b.waybillId,
@@ -319,10 +308,12 @@ const DeliveriesReport = () => {
       title: "Miktar",
       dataIndex: "amount",
       key: "amount",
-      align: "center",
+      align: "right",
+      render: (amount) => numberFormat(amount),
       sorter: (a, b) => a.amount - b.amount,
       sortOrder: tableOptions.sortedInfo.columnKey === 'amount' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
+      footerKey: "amount",
     },
     {
       title: "Birim",
@@ -341,8 +332,36 @@ const DeliveriesReport = () => {
       dataIndex: "tonnage",
       key: "tonnage",
       align: "center"
-    }
+    },
+    {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode"
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode"
+    },
+
+    {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager"
+    },
+    {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode"
+    },
+
+    {
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager"
+    },
   ];
+  
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
@@ -368,7 +387,7 @@ const DeliveriesReport = () => {
       }
     }
   }
-  else if (token.urole === 'dealer') {
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -406,6 +425,7 @@ const DeliveriesReport = () => {
                   treeData={treeData}
                   value={selectedDealerCode}
                   onChange={onChangeDealerCode}
+                  filterTreeNode={filterTreeNodeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
@@ -460,6 +480,9 @@ const DeliveriesReport = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

@@ -25,11 +25,15 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
 import ExcelExport from "./ExcelExport";
-import moment from 'moment';
 import _ from 'underscore';
+import moment from 'moment';
+import 'moment/locale/tr' 
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -47,7 +51,7 @@ export default function () {
   });
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat));
   const [dealerCodes, setDealerCodes] = useState();
@@ -145,10 +149,12 @@ export default function () {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    if (fromDate != '' & toDate != '') {
+      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else {setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -177,7 +183,7 @@ export default function () {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -197,6 +203,16 @@ export default function () {
   function changeTimePicker(value, dateString) {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
+  }
+
+   //Search DailerName Tree Select Component
+   function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) != -1;
+    }
+    return false;
   }
 
   const handleChange = (pagination, filters, sorter) => {
@@ -232,26 +248,6 @@ export default function () {
       key: "dealerName"
     },
     {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode"
-    },
-    {
-      title: "Alan Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
-    },
-    {
-      title: "Bölge Müdürü",
-      dataIndex: "regionManager",
-      key: "regionManager"
-    },
-    {
       title: "Tarih",
       dataIndex: "date",
       key: "date",
@@ -263,7 +259,7 @@ export default function () {
         tableOptions.sortedInfo.order
     },
     {
-      title: "Belge numarası",
+      title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
       sorter: (a, b) => a.documentId.length - b.documentId.length,
@@ -271,50 +267,77 @@ export default function () {
         tableOptions.sortedInfo.columnKey === "documentId" &&
         tableOptions.sortedInfo.order
     },
-    {
-      title: "TR Kod",
-      dataIndex: "trCode",
-      key: "trCode",
-      align: "center"
-    },
+    // {
+    //   title: "TR Kod",
+    //   dataIndex: "trCode",
+    //   key: "trCode",
+    //   align: "center"
+    // },
     {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
       key: "transactionType"
-    },
-    {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description"
-    },
+    },    
     {
       title: "Borç",
       dataIndex: "debt",
       key: "debt",
       align: "right",
       sorter: (a, b) => a.debt - b.debt,
-      render: (debt) => debt.toFixed(2),
+      render: (debt) => numberFormat(debt),
       sortOrder:
         tableOptions.sortedInfo.columnKey === "debt" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "debt",
     },
     {
-      title: "Kredi",
+      title: "Alacak",
       dataIndex: "credit",
       key: "credit",
       align: "right",
-      render: (credit) => credit.toFixed(2),
+      render: (credit) => numberFormat(credit),
       sorter: (a, b) => a.credit - b.credit,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "credit" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "credit",
     },
     {
-      title: "Para Birimi",
-      dataIndex: "currency",
-      key: "currency",
-      align: "center"
-    }
+      title: "Açıklama",
+      dataIndex: "description",
+      key: "description"
+    },
+    // {
+    //   title: "Para Birimi",
+    //   dataIndex: "currency",
+    //   key: "currency",
+    //   align: "center"
+    // },
+    {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode",
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode",
+    },
+    {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager",
+    },
+    {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode",
+    },
+    {
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager",
+    },
   ];
 
   //Hide order table column
@@ -342,7 +365,7 @@ export default function () {
       }
     }
   }
-  else if (token.urole === 'dealer') {
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -384,6 +407,7 @@ export default function () {
                   treeData={treeData}
                   onChange={onChangeDealerCode}
                   value={selectedDealerCode}
+                  filterTreeNode={filterTreeNodeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
@@ -438,6 +462,9 @@ export default function () {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

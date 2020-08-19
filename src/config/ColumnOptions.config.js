@@ -3,49 +3,50 @@ export default {
   OrderTableHideColumns: {
     Dealer: [
       {
-        dataIndex: "dealerCode",
+        key: "dealerCode",
       },
       {
-        dataIndex: "dealerName",
+        key: "dealerName",
       },
       {
-        dataIndex: "dealerSubCode",
+        key: "dealerSubCode",
+      },
+      // {
+      //   key: "C-DBS",
+      // },
+      {
+        key: "regionCode",
       },
       {
-        dataIndex: "regionCode",
+        key: "regionName",
       },
       {
-        dataIndex: "regionName",
+        key: "fieldCode",
       },
+      {
+        key: "fieldName",
+      },
+      {
+        key: "regionManager",
+      },
+      {
+        key: "fieldManager",
+      }
+    ],
+    Field: [
+
+    ],
+    Region: [
       {
         dataIndex: "fieldCode",
       },
       {
         dataIndex: "fieldName",
-      }
+      },
 
-    ],
-    Field: [
       {
-        dataIndex: "dealerCode",
-      },
-      {
-        dataIndex: "dealerName",
-      },
-      {
-        dataIndex: "dealerSubCode",
-      },
-    ],
-    Region: [
-      {
-        dataIndex: "dealerCode",
-      },
-      {
-        dataIndex: "dealerName",
-      },
-      {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   ShippingTableHideColumns: {
@@ -70,19 +71,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
-
     ],
     Field: [
+
+    ],
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   CustomerRecordTableHideColumns: {
@@ -107,19 +117,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
-
     ],
     Field: [
+
+    ],
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   CheckingReportTableHideColumns: {
@@ -144,19 +163,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
-
     ],
     Field: [
+
+    ],
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   GuaranteeLetterTableHideColumns: {
@@ -181,32 +209,41 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
+    ],
+    Field: [
 
     ],
-    Area: [
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   CustomerListTableHideColumns: {
     Dealer: [
-      {
-        dataIndex: "dealerCode",
-      },
-      {
-        dataIndex: "dealerName",
-      },
-      {
-        dataIndex: "dealerSubCode",
-      },
+      // {
+      //   dataIndex: "dealerCode",
+      // },
+      // {
+      //   dataIndex: "dealerName",
+      // },
+      // {
+      //   dataIndex: "dealerSubCode",
+      // },
       {
         dataIndex: "regionCode",
       },
@@ -218,19 +255,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
+    ],
+    Field: [
 
     ],
-    Area: [
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
   DistributionTableHideColumns: {
@@ -255,19 +301,28 @@ export default {
       },
       {
         dataIndex: "fieldName",
+      },
+      {
+        dataIndex: "regionManager",
+      },
+      {
+        dataIndex: "fieldManager",
       }
+    ],
+    Field: [
 
     ],
-    Area: [
+    Region: [
       {
-        dataIndex: "dealerCode",
+        dataIndex: "fieldCode",
       },
       {
-        dataIndex: "dealerName",
+        dataIndex: "fieldName",
       },
+
       {
-        dataIndex: "dealerSubCode",
-      },
+        dataIndex: "fieldManager",
+      }
     ]
   },
 };

@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag } from "antd";
 
 //Fetch
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
@@ -25,11 +25,15 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import renderFooter from "./ReportSummary";
+import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
 import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
+import 'moment/locale/tr'
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -53,7 +57,7 @@ const OrdersReport = () => {
   });
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -63,6 +67,7 @@ const OrdersReport = () => {
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
   const { searchQuery } = useParams();
+  const { Text } = Typography;
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
@@ -74,12 +79,6 @@ const OrdersReport = () => {
     setChangePageSize(pageSize);
     getVariablesFromUrl(searchQuery)
   }, [pageSize]);
-
-  useEffect(() => {
-    setFromDate(fromDate);
-    setToDate(toDate);
-    getVariablesFromUrl(searchQuery)
-  }, [fromDate, toDate]);
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
@@ -157,7 +156,7 @@ const OrdersReport = () => {
     let orderDetailIndex;
     _.each(orderDetailData, (item, i) => {
       if (item.Key === row.orderNo) { return orderDetailIndex = i }
-    });
+    });   
     return (<Table
       columns={OrderDetailcolumns}
       dataSource={orderDetailData[orderDetailIndex].Value}
@@ -165,9 +164,12 @@ const OrdersReport = () => {
       scroll={{ x: 'max-content' }}
       size="medium"
       bordered={false}
+      summary={() => {
+            return renderFooter(OrderDetailcolumns, orderDetailData[orderDetailIndex].Value)
+          }}
     />);
   };
-  
+
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
@@ -181,10 +183,12 @@ const OrdersReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    if (fromDate != '' & toDate != '') {
+      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else {setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -212,8 +216,8 @@ const OrdersReport = () => {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
-    
-    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes( fieldArrObj); setRegionCodes( regionArrObj); setDealerCodes( dealerArrObj); setSelectedDealerCode([]) }
+
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -228,6 +232,16 @@ const OrdersReport = () => {
       });
     }
   };
+
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) != -1;
+    }
+    return false;
+  }
 
   //Change from and To date
   function changeTimePicker(value, dateString) {
@@ -264,11 +278,6 @@ const OrdersReport = () => {
   //Order Detail Columns
   const OrderDetailcolumns = [
     {
-      title: "Tip",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
@@ -279,9 +288,12 @@ const OrdersReport = () => {
       key: "itemDescription"
     },
     {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description"
+      title: "Miktar",
+      dataIndex: "amount",
+      key: "amount",
+      align: "right",
+      render: (amount) => numberFormat(amount),
+      footerKey: "amount",
     },
     {
       title: "Birim",
@@ -290,62 +302,51 @@ const OrdersReport = () => {
       align: "center"
     },
     {
-      title: "Miktar",
-      dataIndex: "amount",
-      key: "amount",
-      align: "center",
-      render: (amount) => amount.toFixed(2)
-    },
-    {
       title: "Kalan miktar",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
-      align: "center",
-      render: (remainingAmount) => remainingAmount.toFixed(2)
+      align: "right",
+      render: (remainingAmount) => numberFormat(remainingAmount),
+      footerKey: "remainingAmount",
     },
     {
       title: "Birim fiyat",
       dataIndex: "unitPrice",
       key: "unitPrice",
       align: "right",
-      render: (unitPrice) => unitPrice.toFixed(2)
-    },
-    {
-      title: "KDV",
-      dataIndex: "vat",
-      key: "vat",
-      align: "center",
-      render: (vat) => vat.toFixed(2)
+      render: (unitPrice) => numberFormat(unitPrice)
     },
     {
       title: "Dağıtım Önerilen Miktar",
       dataIndex: "distributionSuggestedAmount",
       key: "distributionSuggestedAmount",
       align: "right",
-      render: (distributionSuggestedAmount) => distributionSuggestedAmount.toFixed(2)
+      render: (distributionSuggestedAmount) => numberFormat(distributionSuggestedAmount),
+      footerKey: "distributionSuggestedAmount",
     },
     {
       title: "Dağıtım Gerçek Tutar",
       dataIndex: "distributionActualAmount",
       key: "distributionActualAmount",
       align: "right",
-      render: (distributionActualAmount) => distributionActualAmount.toFixed(2)
+      render: (distributionActualAmount) => numberFormat(distributionActualAmount),
+      footerKey: "distributionActualAmount",
     },
     {
       title: "Teslimat Tutarı",
       dataIndex: "deliveryAmount",
       key: "deliveryAmount",
       align: "right",
-      render: (deliveryAmount) => deliveryAmount.toFixed(2)
+      render: (deliveryAmount) => numberFormat(deliveryAmount),
+      footerKey: "deliveryAmount",
     },
 
   ];
 
   //Order Columns
   let columns = [
-
     {
-      title: "Bayi",
+      title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode",
     },
@@ -353,31 +354,6 @@ const OrdersReport = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
-    },
-    {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode",
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode",
-    },
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager",
-    },
-    {
-      title: "Alan Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode",
-    },
-    {
-      title: "Alan Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager",
     },
     {
       title: "Sipariş No",
@@ -397,16 +373,34 @@ const OrdersReport = () => {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "orderDate" &&
         tableOptions.sortedInfo.order,
-      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat)
+      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat),
     },
     {
-      title: "Belge Numarası",
+      title: "Cari/DBS",
+      dataIndex: "dealerSubCode",
+      key: "C-DBS",
+      render: dealerSubCode => (
+        <>
+          {!dealerSubCode.endsWith('D') ? (
+            <Tag color={'green'} key={dealerSubCode}>
+              {'CARİ'}
+            </Tag>
+          ) : (
+              <Tag color={'geekblue'} key={dealerSubCode}>
+                {'DBS'}
+              </Tag>
+            )}
+        </>
+      ),
+    },
+    {
+      title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
       sorter: (a, b) => a.documentId - b.documentId,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
     },
     {
       title: "Ödeme",
@@ -422,6 +416,27 @@ const OrdersReport = () => {
       title: "Teslimat Adresi",
       dataIndex: "deliveryAddress",
       key: "deliveryAddress",
+    },
+    {
+      title: "Toplam",
+      dataIndex: "total",
+      key: "total",
+      align: "right",
+      sorter: (a, b) => a.total - b.total,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "total" &&
+        tableOptions.sortedInfo.order,
+      render: (total) => numberFormat(total),
+      footerKey: "total",
+    },
+    {
+      title: "Durum",
+      dataIndex: "status",
+      key: "status",
+      sorter: (a, b) => a.status - b.status,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "status" &&
+        tableOptions.sortedInfo.order,
     },
     {
       title: "Açıklama 1",
@@ -444,24 +459,29 @@ const OrdersReport = () => {
       key: "description4",
     },
     {
-      title: "Toplam",
-      dataIndex: "total",
-      key: "total",
-      align: "right",
-      sorter: (a, b) => a.total - b.total,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "total" &&
-        tableOptions.sortedInfo.order,
-      render: (total) => total.toFixed(2)
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode",
     },
     {
-      title: "Durum",
-      dataIndex: "status",
-      key: "status",
-      sorter: (a, b) => a.status - b.status,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "status" &&
-        tableOptions.sortedInfo.order
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode",
+    },
+    {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager",
+    },
+    {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode",
+    },
+    {
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager",
     },
   ];
 
@@ -491,15 +511,45 @@ const OrdersReport = () => {
       }
     }
   }
-  else if (token.urole === 'dealer') {
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
+          key: getHideColumns[index].key
         }
         ))
       }
+    }
+  }
+
+  //hide column Description 1 , Description 2 , Description 3 , Description 4
+  let descriptionHide = true;
+  for (let index = 1; index < 5; index++) {
+    let descriptionTitle = 'description' + index;
+    _.each(data, (item, i) => {
+      switch (descriptionTitle) {
+        case 'description1':
+          if (item.description1 != '') { return descriptionHide = false }
+          break;
+        case 'description2':
+          if (item.description2 != '') { return descriptionHide = false }
+          break;
+        case 'description3':
+          if (item.description3 != '') { return descriptionHide = false }
+          break;
+        case 'description4':
+          if (item.description4 != '') { return descriptionHide = false }
+          break;
+        default:
+          break;
+      }
+    });
+
+    if (descriptionHide === true) {
+      columns = _.without(columns, _.findWhere(columns, {
+        dataIndex: descriptionTitle
+      }));
     }
   }
   return (
@@ -529,6 +579,7 @@ const OrdersReport = () => {
                   treeData={treeData}
                   value={selectedDealerCode}
                   onChange={onChangeDealerCode}
+                  filterTreeNode={filterTreeNodeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
@@ -547,7 +598,7 @@ const OrdersReport = () => {
 
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Ürün adı , Sipariş numarası giriniz" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
@@ -586,6 +637,9 @@ const OrdersReport = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data, true)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

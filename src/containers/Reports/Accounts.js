@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Tag } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
@@ -22,12 +22,16 @@ import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ReportPagination from "./ReportPagination";
+import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
-import moment from 'moment';
 import _ from 'underscore';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ExcelExport from "./ExcelExport";
+import moment from 'moment';
+import 'moment/locale/tr' 
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
@@ -47,7 +51,7 @@ export default function () {
   });
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState();
@@ -146,10 +150,12 @@ export default function () {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    if (fromDate != '' & toDate != '') {
+      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else {setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -178,7 +184,7 @@ export default function () {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -200,6 +206,16 @@ export default function () {
     setToDate(dateString[1]);
   }
 
+   //Search DailerName Tree Select Component
+   function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) != -1;
+    }
+    return false;
+  }
+  
   const handleChange = (pagination, filters, sorter) => {
     setState({
       ...tableOptions,
@@ -233,9 +249,22 @@ export default function () {
       key: "dealerName"
     },
     {
-      title: "Bayi Alt Kodu",
+      title: "Cari/DBS",
       dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
+      key: "dealerSubCode",
+      render: dealerSubCode => (
+        <>
+          {!dealerSubCode.endsWith('D') ? (
+            <Tag color={'green'} key={dealerSubCode}>
+              {'CARİ'}
+            </Tag>
+          ) : (
+              <Tag color={'geekblue'} key={dealerSubCode}>
+                {'DBS'}
+              </Tag>
+            )}
+        </>
+      ),
     },
     {
       title: "Bölge Kodu",
@@ -243,15 +272,46 @@ export default function () {
       key: "regionCode"
     },
     {
-      title: "Alan Kodu",
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager"
+    },
+    {
+      title: "Saha Kodu",
       dataIndex: "fieldCode",
       key: "fieldCode"
     },
     {
-      title: "Bölge Müdürü",
-      dataIndex: "regionManager",
-      key: "regionManager"
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager"
+    },   
+    {
+      title: "Bakiye",
+      dataIndex: "balance",
+      key: "balance",
+      render: (balance) => numberFormat(balance),
+      sorter: (a, b) => a.balance - b.balance,
+      align: "right",
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "balance" &&
+        tableOptions.sortedInfo.order,
+      footerKey: "balance"
     },
+    {
+      title: "Bakiye Durumu",
+      dataIndex: "balanceStatus",
+      key: "balanceStatus",
+      sorter: (a, b) => a.balanceStatus.length - b.balanceStatus.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "balanceStatus" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "HK Durumu",
+      dataIndex: "financialStatus",
+      key: "financialStatus"
+    },    
     {
       title: "Adres",
       dataIndex: "address",
@@ -273,29 +333,9 @@ export default function () {
       key: "phone"
     },
     {
-      title: "Bakiye",
-      dataIndex: "balance",
-      key: "balance",
-      render: (balance) => balance.toFixed(2),
-      sorter: (a, b) => a.balance - b.balance,
-      align: "right",
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "balance" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "Bakiye Durumu",
-      dataIndex: "balanceStatus",
-      key: "balanceStatus",
-      sorter: (a, b) => a.balanceStatus.length - b.balanceStatus.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "balanceStatus" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "HK Durumu",
-      dataIndex: "financialStatus",
-      key: "financialStatus"
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode"
     }
   ];
   //Hide order table column
@@ -324,7 +364,7 @@ export default function () {
       }
     }
   }
-  else if (token.urole === 'dealer') {
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = ColumnOptionsConfig.CustomerListTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
@@ -367,6 +407,7 @@ export default function () {
                   treeData={treeData}
                   onChange={onChangeDealerCode}
                   value={selectedDealerCode}
+                  filterTreeNode={filterTreeNodeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
@@ -421,6 +462,9 @@ export default function () {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

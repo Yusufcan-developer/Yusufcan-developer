@@ -9,28 +9,27 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
-import Input from '@iso/components/uielements/input';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
+import Input from '@iso/components/uielements/input';
+import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu } from "antd";
 
 //Fetch
-import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 
-//Config
+//Styles
+import { DownOutlined } from '@ant-design/icons';
+
+//Configs
 import siteConfig from "@iso/config/site.config";
-import ColumnOptionsConfig from "../../config/ColumnOptions.config";
-import ReportPagination from "./ReportPagination";
-import { DownloadOutlined } from '@ant-design/icons';
-import numberFormat from "@iso/config/numberFormat";
-import renderFooter from "./ReportSummary";
+import renderFooter from "..//../Reports/ReportSummary";
+// import ReportPagination from "./ReportPagination";
 
 //Other Library
+// import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
-import ExcelExport from "./ExcelExport";
 import moment from 'moment';
-import 'moment/locale/tr' 
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -38,13 +37,17 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
-export default function () {
+const OrdersReport = () => {
+
+  const queryString = require('query-string');
+  const history = useHistory();
+
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = React.useState();
-  const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState([]);
-  const [iconLoading, setIconLoading] = React.useState(false);
+  const [expandedKeys, setExpandedKeys] = useState();
+  const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [checkedKeys, setCheckedKeys] = useState();
+  const [selectedKeys, setSelectedKeys] = useState([]);
+  const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -56,36 +59,24 @@ export default function () {
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
-  const [fieldCodes, setFieldCodes] = useState()
+  const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
-
   const location = useLocation();
   const { searchQuery } = useParams();
-  const queryString = require('query-string');
-  const history = useHistory();
 
-  //Burada ki useEffect'ler page index page size  hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
+  //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
-    setCurrentPage(pageIndex);
+    // getVariablesFromUrl(searchQuery)
   }, [pageIndex]);
 
-  useEffect(() => {
-    console.log("pageSize!", pageSize);
-    getVariablesFromUrl(searchQuery)
-    setChangePageSize(pageSize);
-  }, [pageSize]);
-
-  //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postLetters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
-  //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+  //Cart Data
+  const [cartData, loadingCartData, setOnChange, cartDetailData] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
 
+    //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
@@ -95,6 +86,7 @@ export default function () {
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     let newDealarCode = []
 
+    //Field url data
     if (parsed.fic !== undefined) {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
@@ -103,6 +95,7 @@ export default function () {
       } else { newDealarCode.push(parsed.fic) }
     }
 
+    //RegionCode url data
     if (parsed.rec !== undefined) {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
@@ -111,6 +104,7 @@ export default function () {
       } else { newDealarCode.push(parsed.rec) }
     }
 
+    //Dealar url data
     if (parsed.dec !== undefined) {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
@@ -136,6 +130,32 @@ export default function () {
       }
     });
   }
+
+  //Sipariş Kalemleri Görüntüleme
+  async function onExpand(expandedKeys) {
+    setExpandedKeys(expandedKeys);
+    setAutoExpandParent(false);
+  };
+
+  //Sepet Kalemleri Expand İşlemi
+  function expandedRow(row, index) {
+    let cartDetailIndex;
+    _.each(cartData, (item, i) => {
+      if (item.accountNo === row.accountNo) { return cartDetailIndex = i }
+    });
+    return (<Table
+      columns={CartDetailcolumns}
+      dataSource={cartData[cartDetailIndex].items}
+      pagination={false}
+      scroll={{ x: 'max-content' }}
+      size="medium"
+      bordered={false}
+      summary={() => {
+        return renderFooter(CartDetailcolumns, cartData[cartDetailIndex].items)
+      }}
+    />);
+  };
+
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
@@ -149,10 +169,8 @@ export default function () {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    if (fromDate != '' & toDate != '') {
-      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    }
+    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -162,7 +180,6 @@ export default function () {
 
     return setOnChange(true);
   }
-
   //Search Button Event
   const searchButton = () => {
     dataSearch();
@@ -170,6 +187,7 @@ export default function () {
 
   //Change DealerCode
   function onChangeDealerCode(value) {
+
     let fieldArrObj = [];
     let regionArrObj = [];
     let dealerArrObj = [];
@@ -204,17 +222,25 @@ export default function () {
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }
+  //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
+  const menu = (
+    <Menu onClick={handleMenuClick}>
+      <Menu.Item key="1">Sepet Düzenlemeyi Aktifleştir</Menu.Item>
+    </Menu>
+  );
+  //Menü Secimlerine Göre Modal açma işlemleri
+  //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
+  function handleMenuClick(value) {
+    switch (value.key) {
+      case '1':
+        // setVisible(true);
+        // fieldRegionAndDealearVisible(objectRole.roleName);
+        break;
 
-   //Search DailerName Tree Select Component
-   function filterTreeNodeDealerCode(value, treeNode) {
-    if (value && treeNode && treeNode.title) {
-      const filterValue = value.toLocaleLowerCase('tr')
-      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) != -1;
+      default:
+        break;
     }
-    return false;
   }
-
   const handleChange = (pagination, filters, sorter) => {
     console.log('Various parameters', pagination, filters, sorter);
     setState({
@@ -223,165 +249,121 @@ export default function () {
       ["filteredInfo"]: filters
     });
   };
+
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
+
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current) {
     setPageIndex(current);
     dataSearch(current);
   }
-  //Excel Oluştur
-  const exportExcelButton = () => {
-    ExcelExport(columns, data, 'Teminat Mektubu');
-  }
-  let columns = [
+
+  //Cart Detail Columns
+  const CartDetailcolumns = [
     {
-      title: "Bayi Kodu",
-      dataIndex: "dealerCode",
-      key: "dealerCode"
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
     },
     {
-      title: "Bayi Adı",
-      dataIndex: "dealerName",
-      key: "dealerName"
+      title: "Ürün Adı",
+      dataIndex: ['item', 'description'],
+      key: "item.description",
+      align: "left",
     },
     {
-      title: "Bitiş Tarihi",
-      dataIndex: "toDate",
-      key: "toDate",
-      render: (toDate) => moment(toDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.toDate - b.toDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "toDate" &&
-        tableOptions.sortedInfo.order
+      title: "Birim Fiyat",
+      dataIndex: ['item', 'listPrice'],
+      key: "item.listPrice",
+      align: "right",
     },
     {
-      title: "Belge No",
-      dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => a.documentId - b.documentId,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "Başlangıç Tarihi",
-      dataIndex: "fromDate",
-      key: "fromDate",
-      type: "date",
-      render: (fromDate) => moment(fromDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.fromDate - b.fromDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "fromDate" &&
-        tableOptions.sortedInfo.order
-    },
-    {
-      title: "TR Kodu",
-      dataIndex: "trCode",
-      key: "trCode",
-      align: "center"
-    },
-    {
-      title: "Tutar",
+      title: "Palet",
       dataIndex: "amount",
       key: "amount",
       align: "right",
-      render: (amount) => numberFormat(amount),
-      sorter: (a, b) => a.amount - b.amount,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "amount" &&
-        tableOptions.sortedInfo.order,
       footerKey: "amount"
     },
     {
-      title: "Banka",
-      dataIndex: "bank",
-      key: "bank"
+      title: "Miktar (m2)",
+      dataIndex: ['item', 'm2Pallet'],
+      key: "item.m2Pallet",
+      align: "right",
+      footerKey: "item.m2Pallet",
+      render: (m2Pallet, record) => { return (record.amount * m2Pallet).toFixed(2) }
     },
     {
-      title: "Şube",
-      dataIndex: "branch",
-      key: "branch"
-    },
-    {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode"
-    },
-
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager"
-    },
-    {
-      title: "Saha Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
-    },
-
-    {
-      title: "Saha Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager"
+      title: "Toplam",
+      dataIndex: ['item', 'total'],
+      key: "item.total",
+      align: "right",
+      footerKey: ['item', 'total'],
+      render: (text, record) => { return (record.item.listPrice * record.amount).toFixed(2) }
     },
   ];
-  //Hide order table column
-  const token = jwtDecode(localStorage.getItem("id_token"));
-  if (token.urole === 'admin') { }
-  else if (token.urole === 'fieldmanager') {
-    const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Field;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
+
+  //Cart Columns
+  let columns = [
+    {
+      title: "Sepet No",
+      dataIndex: "cartId",
+      key: "cartId",
+      render: () => '-'
+    },
+    {
+      title: "Bağlı Hesap No",
+      dataIndex: "accountNo",
+      key: "accountNo",
+    },
+    {
+      title: "Tarih",
+      dataIndex: "date",
+      key: "date",
+      type: "date",
+      sorter: (a, b) => a.orderDate - b.orderDate,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "date" &&
+        tableOptions.sortedInfo.order,
+      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat)
+    },
+    {
+      title: "Toplam Kalem",
+      dataIndex: "items",
+      key: "items",
+      type: "items",
+      render: (items) => items.length
+    },
+    {
+      title: "İşlemler",
+      dataIndex: "title",
+      key: "title",
+      fixed: "right",
+      render: (text, record) => (
+        <Dropdown overlay={menu} trigger={['click']} >
+          <Button onClick={event => { console.log('xxxx') }}>
+            İşlemler  <DownOutlined />
+          </Button>
+        </Dropdown>
+
+      ),
     }
-  }
-  else if (token.urole === 'regionmanager') {
-    const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Region;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
-    }
-  }
-  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    const getHideColumns = ColumnOptionsConfig.GuaranteeLetterTableHideColumns.Dealer;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
-    }
-  }
+  ];
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.GuaranteeLetterTitle.header" />}
+        {<IntlMessages id="page.ActiveCarts.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
               <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
               </Col>
               <Col span={6} >
                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
@@ -395,13 +377,12 @@ export default function () {
             <Row>
               <Col span={6}>
                 <TreeSelect
-                  treeData={treeData}
-                  onChange={onChangeDealerCode}
+                  // treeData={{}}
                   value={selectedDealerCode}
-                  filterTreeNode={filterTreeNodeDealerCode}
+                  onChange={onChangeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  placeholder={"Bayi Kodu Seçiniz"}
+                  placeholder={"Hesap Kodu Seçiniz"}
                   showSearch={true}
                   style={{ marginBottom: '8px', width: '250px' }}
                   dropdownMatchSelectWidth={500}
@@ -414,9 +395,10 @@ export default function () {
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
+
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
@@ -428,44 +410,45 @@ export default function () {
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box>
+      <Box >
         <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+          {/* <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
-          </Button>
+          </Button> */}
         </Col>
-        <ReportPagination
+        {/* <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
           current={pageIndex}
           position="top"
-        />
+        /> */}
         <Table
           columns={columns}
-          dataSource={data}
+          dataSource={cartData}
           onChange={handleChange}
-          loading={loading}
+          loading={loadingCartData}
+          expandable={{ 'expandedRowRender': expandedRow }}
           pagination={false}
+          onExpand={onExpand}
           // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
-          summary={() => {
-            return renderFooter(columns, data)
-          }}
         />
-        <ReportPagination
+        {/* <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
           current={pageIndex}
           position="bottom"
-        />
+        /> */}
       </Box>
     </LayoutWrapper>
   );
 }
+
+export default OrdersReport;
