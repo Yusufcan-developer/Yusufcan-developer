@@ -266,22 +266,17 @@ export default function () {
         tableOptions.sortedInfo.columnKey === "documentId" &&
         tableOptions.sortedInfo.order
     },
-    {
-      title: "TR Kod",
-      dataIndex: "trCode",
-      key: "trCode",
-      align: "center"
-    },
+    // {
+    //   title: "TR Kod",
+    //   dataIndex: "trCode",
+    //   key: "trCode",
+    //   align: "center"
+    // },
     {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
       key: "transactionType"
-    },
-    {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description"
-    },
+    },    
     {
       title: "Borç",
       dataIndex: "debt",
@@ -303,6 +298,11 @@ export default function () {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "credit" &&
         tableOptions.sortedInfo.order
+    },
+    {
+      title: "Açıklama",
+      dataIndex: "description",
+      key: "description"
     },
     // {
     //   title: "Para Birimi",

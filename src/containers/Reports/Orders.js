@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag } from "antd";
 
 //Fetch
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
@@ -274,11 +274,6 @@ const OrdersReport = () => {
   //Order Detail Columns
   const OrderDetailcolumns = [
     {
-      title: "Tip",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
@@ -287,19 +282,19 @@ const OrdersReport = () => {
       title: "Ürün Açıklaması",
       dataIndex: "itemDescription",
       key: "itemDescription"
-    },
-    {
-      title: "Birim",
-      dataIndex: "unit",
-      key: "unit",
-      align: "center"
-    },
+    },    
     {
       title: "Miktar",
       dataIndex: "amount",
       key: "amount",
       align: "center",
       render: (amount) => numberFormat(amount)
+    },
+    {
+      title: "Birim",
+      dataIndex: "unit",
+      key: "unit",
+      align: "center"
     },
     {
       title: "Kalan miktar",
@@ -372,6 +367,24 @@ const OrdersReport = () => {
       render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat)
     },
     {
+      title: "Cari/DBS",
+      dataIndex: "dealerSubCode",
+      key: "C-DBS",
+      render: dealerSubCode => (
+        <>
+          {!dealerSubCode.endsWith('D') ? (
+            <Tag color={'green'} key={dealerSubCode}>
+              {'CARİ'}
+            </Tag>
+          ) : (
+              <Tag color={'geekblue'} key={dealerSubCode}>
+                {'DBS'}
+              </Tag>
+            )}
+        </>
+      ),
+    },
+    {
       title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
@@ -414,7 +427,6 @@ const OrdersReport = () => {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "status" &&
         tableOptions.sortedInfo.order
-
     },
     {
       title: "Açıklama 1",
@@ -494,7 +506,7 @@ const OrdersReport = () => {
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
+          key: getHideColumns[index].key
         }
         ))
       }

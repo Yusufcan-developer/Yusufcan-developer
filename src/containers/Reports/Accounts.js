@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Tag } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
@@ -248,9 +248,22 @@ export default function () {
       key: "dealerName"
     },
     {
-      title: "Bayi Alt Kodu",
+      title: "Cari/DBS",
       dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
+      key: "dealerSubCode",
+      render: dealerSubCode => (
+        <>
+          {!dealerSubCode.endsWith('D') ? (
+            <Tag color={'green'} key={dealerSubCode}>
+              {'CARİ'}
+            </Tag>
+          ) : (
+              <Tag color={'geekblue'} key={dealerSubCode}>
+                {'DBS'}
+              </Tag>
+            )}
+        </>
+      ),
     },
     {
       title: "Bölge Kodu",
@@ -267,12 +280,31 @@ export default function () {
       dataIndex: "fieldCode",
       key: "fieldCode"
     },
-
     {
       title: "Saha Yöneticisi",
       dataIndex: "fieldManager",
       key: "fieldManager"
+    },   
+    {
+      title: "Bakiye",
+      dataIndex: "balance",
+      key: "balance",
+      render: (balance) => numberFormat(balance),
+      sorter: (a, b) => a.balance - b.balance,
+      align: "right",
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "balance" &&
+        tableOptions.sortedInfo.order
     },
+    {
+      title: "Bakiye Durumu",
+      dataIndex: "balanceStatus",
+      key: "balanceStatus",
+      sorter: (a, b) => a.balanceStatus.length - b.balanceStatus.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "balanceStatus" &&
+        tableOptions.sortedInfo.order
+    },    
     {
       title: "Adres",
       dataIndex: "address",
@@ -294,25 +326,10 @@ export default function () {
       key: "phone"
     },
     {
-      title: "Bakiye",
-      dataIndex: "balance",
-      key: "balance",
-      render: (balance) => numberFormat(balance),
-      sorter: (a, b) => a.balance - b.balance,
-      align: "right",
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "balance" &&
-        tableOptions.sortedInfo.order
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode"
     },
-    {
-      title: "Bakiye Durumu",
-      dataIndex: "balanceStatus",
-      key: "balanceStatus",
-      sorter: (a, b) => a.balanceStatus.length - b.balanceStatus.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "balanceStatus" &&
-        tableOptions.sortedInfo.order
-    }
   ];
   //Hide order table column
 
