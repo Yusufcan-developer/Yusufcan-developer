@@ -3,31 +3,34 @@ export default {
   OrderTableHideColumns: {
     Dealer: [
       {
-        dataIndex: "dealerCode",
+        key: "dealerCode",
       },
       {
-        dataIndex: "dealerName",
+        key: "dealerName",
       },
       {
-        dataIndex: "dealerSubCode",
+        key: "dealerSubCode",
       },
       {
-        dataIndex: "regionCode",
+        key: "C-DBS",
       },
       {
-        dataIndex: "regionName",
+        key: "regionCode",
       },
       {
-        dataIndex: "fieldCode",
+        key: "regionName",
       },
       {
-        dataIndex: "fieldName",
+        key: "fieldCode",
       },
       {
-        dataIndex: "regionManager",
+        key: "fieldName",
       },
       {
-        dataIndex: "fieldManager",
+        key: "regionManager",
+      },
+      {
+        key: "fieldManager",
       }
     ],
     Field: [
@@ -232,15 +235,15 @@ export default {
   },
   CustomerListTableHideColumns: {
     Dealer: [
-      {
-        dataIndex: "dealerCode",
-      },
-      {
-        dataIndex: "dealerName",
-      },
-      {
-        dataIndex: "dealerSubCode",
-      },
+      // {
+      //   dataIndex: "dealerCode",
+      // },
+      // {
+      //   dataIndex: "dealerName",
+      // },
+      // {
+      //   dataIndex: "dealerSubCode",
+      // },
       {
         dataIndex: "regionCode",
       },
