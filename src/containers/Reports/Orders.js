@@ -25,6 +25,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
+import renderFooter from "./ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
@@ -155,7 +156,7 @@ const OrdersReport = () => {
     let orderDetailIndex;
     _.each(orderDetailData, (item, i) => {
       if (item.Key === row.orderNo) { return orderDetailIndex = i }
-    });
+    });   
     return (<Table
       columns={OrderDetailcolumns}
       dataSource={orderDetailData[orderDetailIndex].Value}
@@ -163,6 +164,9 @@ const OrdersReport = () => {
       scroll={{ x: 'max-content' }}
       size="medium"
       bordered={false}
+      summary={() => {
+            return renderFooter(OrderDetailcolumns, orderDetailData[orderDetailIndex].Value)
+          }}
     />);
   };
 
@@ -282,13 +286,14 @@ const OrdersReport = () => {
       title: "Ürün Açıklaması",
       dataIndex: "itemDescription",
       key: "itemDescription"
-    },    
+    },
     {
       title: "Miktar",
       dataIndex: "amount",
       key: "amount",
-      align: "center",
-      render: (amount) => numberFormat(amount)
+      align: "right",
+      render: (amount) => numberFormat(amount),
+      footerKey: "amount",
     },
     {
       title: "Birim",
@@ -300,8 +305,9 @@ const OrdersReport = () => {
       title: "Kalan miktar",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
-      align: "center",
-      render: (remainingAmount) => numberFormat(remainingAmount)
+      align: "right",
+      render: (remainingAmount) => numberFormat(remainingAmount),
+      footerKey: "remainingAmount",
     },
     {
       title: "Birim fiyat",
@@ -315,21 +321,24 @@ const OrdersReport = () => {
       dataIndex: "distributionSuggestedAmount",
       key: "distributionSuggestedAmount",
       align: "right",
-      render: (distributionSuggestedAmount) =>numberFormat(distributionSuggestedAmount)
+      render: (distributionSuggestedAmount) => numberFormat(distributionSuggestedAmount),
+      footerKey: "distributionSuggestedAmount",
     },
     {
       title: "Dağıtım Gerçek Tutar",
       dataIndex: "distributionActualAmount",
       key: "distributionActualAmount",
       align: "right",
-      render: (distributionActualAmount) =>numberFormat(distributionActualAmount)
+      render: (distributionActualAmount) => numberFormat(distributionActualAmount),
+      footerKey: "distributionActualAmount",
     },
     {
       title: "Teslimat Tutarı",
       dataIndex: "deliveryAmount",
       key: "deliveryAmount",
       align: "right",
-      render: (deliveryAmount) => numberFormat(deliveryAmount)
+      render: (deliveryAmount) => numberFormat(deliveryAmount),
+      footerKey: "deliveryAmount",
     },
 
   ];
@@ -364,7 +373,7 @@ const OrdersReport = () => {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "orderDate" &&
         tableOptions.sortedInfo.order,
-      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat)
+      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat),
     },
     {
       title: "Cari/DBS",
@@ -391,7 +400,7 @@ const OrdersReport = () => {
       sorter: (a, b) => a.documentId - b.documentId,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
     },
     {
       title: "Ödeme",
@@ -417,7 +426,8 @@ const OrdersReport = () => {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "total" &&
         tableOptions.sortedInfo.order,
-      render: (total) => numberFormat(total)
+      render: (total) => numberFormat(total),
+      footerKey: "total",
     },
     {
       title: "Durum",
@@ -426,7 +436,7 @@ const OrdersReport = () => {
       sorter: (a, b) => a.status - b.status,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "status" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
     },
     {
       title: "Açıklama 1",
@@ -627,21 +637,8 @@ const OrdersReport = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
-          summary={pageData => {
-            let totalAmount = 0;
-            pageData.forEach(({ total }) => {
-              totalAmount +=  total;
-            });
-            return (
-              <>
-                <Table.Summary.Row>
-                  <Table.Summary.Cell>Toplam Tutar</Table.Summary.Cell>
-                  <Table.Summary.Cell>
-                    <Text type="danger">{numberFormat(totalAmount)}</Text>
-                  </Table.Summary.Cell>
-                </Table.Summary.Row>
-              </>
-            );
+          summary={() => {
+            return renderFooter(columns, data, true)
           }}
         />
         <ReportPagination

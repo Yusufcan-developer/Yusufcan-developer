@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect,Dropdown,Menu } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu } from "antd";
 
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
@@ -22,6 +22,7 @@ import { DownOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
+import renderFooter from "..//../Reports/ReportSummary";
 // import ReportPagination from "./ReportPagination";
 
 //Other Library
@@ -53,7 +54,7 @@ const OrdersReport = () => {
   });
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
-  const [startingPageIndex,setStartingPageIndex]=useState(1);
+  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -70,7 +71,7 @@ const OrdersReport = () => {
   }, [pageIndex]);
 
   //Cart Data
-  const [cartData, loadingCartData, setOnChange,cartDetailData] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
+  const [cartData, loadingCartData, setOnChange, cartDetailData] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
@@ -149,9 +150,12 @@ const OrdersReport = () => {
       scroll={{ x: 'max-content' }}
       size="medium"
       bordered={false}
+      summary={() => {
+        return renderFooter(CartDetailcolumns, cartData[cartDetailIndex].items)
+      }}
     />);
   };
-  
+
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
@@ -168,7 +172,7 @@ const OrdersReport = () => {
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
-    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else {setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
+    if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -196,8 +200,8 @@ const OrdersReport = () => {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
-    
-    if (value.length === 0) {setNewUrlParams(''); params.delete('fic');params.delete('rec'); params.delete('dec'); setFieldCodes( fieldArrObj); setRegionCodes( regionArrObj); setDealerCodes( dealerArrObj); setSelectedDealerCode([]) }
+
+    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
         if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
@@ -224,7 +228,7 @@ const OrdersReport = () => {
       <Menu.Item key="1">Sepet Düzenlemeyi Aktifleştir</Menu.Item>
     </Menu>
   );
-   //Menü Secimlerine Göre Modal açma işlemleri
+  //Menü Secimlerine Göre Modal açma işlemleri
   //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
   function handleMenuClick(value) {
     switch (value.key) {
@@ -232,7 +236,7 @@ const OrdersReport = () => {
         // setVisible(true);
         // fieldRegionAndDealearVisible(objectRole.roleName);
         break;
-    
+
       default:
         break;
     }
@@ -283,20 +287,23 @@ const OrdersReport = () => {
       dataIndex: "amount",
       key: "amount",
       align: "right",
+      footerKey: "amount"
     },
     {
       title: "Miktar (m2)",
       dataIndex: ['item', 'm2Pallet'],
       key: "item.m2Pallet",
       align: "right",
-      render:(text, record) => {return (record.amount*text).toFixed(2)}
+      footerKey: "item.m2Pallet",
+      render: (m2Pallet, record) => { return (record.amount * m2Pallet).toFixed(2) }
     },
     {
       title: "Toplam",
       dataIndex: ['item', 'total'],
       key: "item.total",
       align: "right",
-      render:(text, record) => {return (record.item.listPrice*record.amount).toFixed(2)}
+      footerKey: ['item', 'total'],
+      render: (text, record) => { return (record.item.listPrice * record.amount).toFixed(2) }
     },
   ];
 
@@ -306,13 +313,13 @@ const OrdersReport = () => {
       title: "Sepet No",
       dataIndex: "cartId",
       key: "cartId",
-      render:()=> '-'
-    }, 
+      render: () => '-'
+    },
     {
       title: "Bağlı Hesap No",
       dataIndex: "accountNo",
       key: "accountNo",
-    }, 
+    },
     {
       title: "Tarih",
       dataIndex: "date",
@@ -328,7 +335,7 @@ const OrdersReport = () => {
       title: "Toplam Kalem",
       dataIndex: "items",
       key: "items",
-      type: "items",     
+      type: "items",
       render: (items) => items.length
     },
     {
@@ -338,13 +345,13 @@ const OrdersReport = () => {
       fixed: "right",
       render: (text, record) => (
         <Dropdown overlay={menu} trigger={['click']} >
-          <Button onClick={event => { console.log('xxxx')}}>
+          <Button onClick={event => { console.log('xxxx') }}>
             İşlemler  <DownOutlined />
           </Button>
         </Dropdown>
 
       ),
-    }   
+    }
   ];
   return (
     <LayoutWrapper>

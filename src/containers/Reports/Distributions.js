@@ -24,6 +24,7 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
 
@@ -333,29 +334,35 @@ export default function () {
       key: "plannedAmount",
       render: (plannedAmount) => numberFormat(plannedAmount),
       sorter: (a, b) => a.plannedAmount - b.plannedAmount,
+      align: "right",
       sortOrder:
         tableOptions.sortedInfo.columnKey === "plannedAmount" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "plannedAmount"
     },
     {
       title: "Dağıtılan  Miktar",
       dataIndex: "distributedAmount",
       key: "distributedAmount",
+      align: "right",
       render: (distributedAmount) => numberFormat(distributedAmount),
       sorter: (a, b) => a.distributedAmount - b.distributedAmount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "distributedAmount" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "distributedAmount"
     },
     {
       title: "Kalan  Miktar",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
+      align: "right",
       render: (remainingAmount) => numberFormat(remainingAmount),
       sorter: (a, b) => a.remainingAmount - b.remainingAmount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "remainingAmount" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "remainingAmount"
     },
     {
       title: "Bayi Alt Kodu",
@@ -508,6 +515,9 @@ export default function () {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

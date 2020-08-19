@@ -23,6 +23,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
 import _ from 'underscore';
@@ -294,7 +295,8 @@ export default function () {
       align: "right",
       sortOrder:
         tableOptions.sortedInfo.columnKey === "balance" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "balance"
     },
     {
       title: "Bakiye Durumu",
@@ -455,6 +457,9 @@ export default function () {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
