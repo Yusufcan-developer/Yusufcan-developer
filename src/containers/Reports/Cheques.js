@@ -25,12 +25,13 @@ import { DownloadOutlined } from '@ant-design/icons';
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 import moment from 'moment';
-import 'moment/locale/tr' 
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -238,8 +239,8 @@ const ChequesReport = () => {
     setSelectedCheckqueType(value);
   }
 
-   //Search DailerName Tree Select Component
-   function filterTreeNodeDealerCode(value, treeNode) {
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
@@ -295,7 +296,8 @@ const ChequesReport = () => {
       sorter: (a, b) => a.amount - b.amount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "amount" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "amount"
     },
     {
       title: "Vade",
@@ -513,6 +515,9 @@ const ChequesReport = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

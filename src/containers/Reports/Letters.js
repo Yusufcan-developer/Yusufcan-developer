@@ -24,6 +24,7 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import { DownloadOutlined } from '@ant-design/icons';
 import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
 import _ from 'underscore';
@@ -293,7 +294,8 @@ export default function () {
       sorter: (a, b) => a.amount - b.amount,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "amount" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "amount"
     },
     {
       title: "Banka",
@@ -451,6 +453,9 @@ export default function () {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

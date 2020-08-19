@@ -26,6 +26,7 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -286,18 +287,20 @@ export default function () {
       render: (debt) => numberFormat(debt),
       sortOrder:
         tableOptions.sortedInfo.columnKey === "debt" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "debt",
     },
     {
       title: "Alacak",
       dataIndex: "credit",
       key: "credit",
       align: "right",
-      render: (credit) =>numberFormat(credit),
+      render: (credit) => numberFormat(credit),
       sorter: (a, b) => a.credit - b.credit,
       sortOrder:
         tableOptions.sortedInfo.columnKey === "credit" &&
-        tableOptions.sortedInfo.order
+        tableOptions.sortedInfo.order,
+      footerKey: "credit",
     },
     {
       title: "Açıklama",
@@ -459,6 +462,9 @@ export default function () {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

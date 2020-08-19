@@ -26,6 +26,7 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "./ReportSummary";
 
 //Other Library
 import _ from 'underscore';
@@ -307,11 +308,12 @@ const DeliveriesReport = () => {
       title: "Miktar",
       dataIndex: "amount",
       key: "amount",
-      align: "center",
+      align: "right",
       render: (amount) => numberFormat(amount),
       sorter: (a, b) => a.amount - b.amount,
       sortOrder: tableOptions.sortedInfo.columnKey === 'amount' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
+      footerKey: "amount",
     },
     {
       title: "Birim",
@@ -478,6 +480,9 @@ const DeliveriesReport = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          summary={() => {
+            return renderFooter(columns, data)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
