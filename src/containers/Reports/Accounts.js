@@ -291,6 +291,11 @@ export default function () {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "balanceStatus" &&
         tableOptions.sortedInfo.order
+    },
+    {
+      title: "HK Durumu",
+      dataIndex: "financialStatus",
+      key: "financialStatus"
     }
   ];
   //Hide order table column
