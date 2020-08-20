@@ -310,7 +310,20 @@ export default function () {
     {
       title: "HK Durumu",
       dataIndex: "financialStatus",
-      key: "financialStatus"
+      key: "financialStatus",
+      render: (financialStatus) => (
+        <>
+          {financialStatus === 9 ? (
+               (<Tag color={'Red'} key={financialStatus}>
+                {financialStatus}
+              </Tag>)
+            
+          ) : (
+            <Tag color={'Grey'} key={financialStatus}>
+                {financialStatus}
+              </Tag>)}
+        </>
+      ),
     },    
     {
       title: "Adres",

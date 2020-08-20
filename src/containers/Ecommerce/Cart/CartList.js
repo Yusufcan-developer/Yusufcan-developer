@@ -23,6 +23,7 @@ import { DownOutlined } from '@ant-design/icons';
 //Configs
 import siteConfig from "@iso/config/site.config";
 import renderFooter from "..//../Reports/ReportSummary";
+import numberFormat from "@iso/config/numberFormat";
 // import ReportPagination from "./ReportPagination";
 
 //Other Library
@@ -291,19 +292,19 @@ const OrdersReport = () => {
     },
     {
       title: "Miktar (m2)",
-      dataIndex: ['item', 'm2Pallet'],
-      key: "item.m2Pallet",
+      dataIndex: "totalM2Pallet",
+      key: "totalM2Pallet",
       align: "right",
-      footerKey: "item.m2Pallet",
-      render: (m2Pallet, record) => { return (record.amount * m2Pallet).toFixed(2) }
+      footerKey: "totalM2Pallet",
+      render: (totalM2Pallet) => { return numberFormat(totalM2Pallet)}
     },
     {
       title: "Toplam",
-      dataIndex: ['item', 'total'],
-      key: "item.total",
+      dataIndex: "totalCost",
+      key: "totalCost",
       align: "right",
-      footerKey: ['item', 'total'],
-      render: (text, record) => { return (record.item.listPrice * record.amount).toFixed(2) }
+      footerKey:"totalCost",
+      render: (totalCost) => { return numberFormat(totalCost) }
     },
   ];
 
