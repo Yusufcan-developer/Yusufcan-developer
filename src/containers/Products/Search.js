@@ -18,6 +18,7 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 //Fetch
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
+import { usePostFilter } from "@iso/lib/hooks/fetchData/usePostFilterData";
 import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterProductCategories";
 
 //Configs
@@ -216,25 +217,30 @@ const SearchComponent = () => {
     useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Get Category
-  const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.getProductCategories}`);
+  const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`,{});
 
   //Get Type 
-  const [productTypeData, loadingFilter, setOnChangeFilter] = useFilterData(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
+  // const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
+  //Post Type
+  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Get Dimension
-  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = useFilterData(`${siteConfig.api.lookup.getDimensions}?categories=${category}`);
+  // const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.getDimensions}?categories=${category}`);
+  
+  //Post Dimension
+  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
-  //Get Series
-  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = useFilterData(`${siteConfig.api.lookup.getSeries}?categories=${category}`);
+  //Post Series
+  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
-  //Get Color
-  const [colorData, loadingColorFilter, setOnChangeColorFilter] = useFilterData(`${siteConfig.api.lookup.getColors}?categories=${category}`);
+  //Post Color
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
-  //Get Surface
-  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = useFilterData(`${siteConfig.api.lookup.getSurfaces}?categories=${category}`);
+  //Post Surface
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Get Quality
-  // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = useFilterData(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
+  // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
 
   //Style
   const listClass = `isoSingleCard card grid`;
@@ -322,6 +328,7 @@ const SearchComponent = () => {
     params.toString();
 
     history.push(`${location.pathname}?${params.toString()}`);
+    
     return setOnChange(true);
   }
   //Type Filter Event
@@ -340,6 +347,11 @@ const SearchComponent = () => {
       });
     }
     history.push(`${location.pathname}?${params.toString()}`);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
+
     return setOnChange(true);
   };
   //Quality Filter Event
@@ -363,14 +375,12 @@ const SearchComponent = () => {
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
     const dimensionNewArray = _.map(checkedDimensionValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
-
     const nullOrBlankData = _.filter(dimensionNewArray, function (Item) {
       if (Item === null || Item === '') {
         return true;
       }
     });
-    if ((nullOrBlankData) && (dimensionNewArray.length > 0)) { dimensionNewArray.push(''); }
-
+    if ((nullOrBlankData) && (dimensionNewArray.length > 0)) { dimensionNewArray.push(''); }  
     setDimension(dimensionNewArray)
     const params = new URLSearchParams(location.search);
     params.delete('dm');
@@ -385,6 +395,10 @@ const SearchComponent = () => {
       }
     })
     history.push(`${location.pathname}?${params.toString()}`);
+    setOnChangeFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
     return setOnChange(true);
   };
   //Series Filter Event
@@ -397,7 +411,6 @@ const SearchComponent = () => {
       }
     });
     if ((nullOrBlankData) && (serieNewArray.length > 0)) { serieNewArray.push(''); }
-
     setSeries(serieNewArray)
 
     const params = new URLSearchParams(location.search);
@@ -413,6 +426,10 @@ const SearchComponent = () => {
       }
     });
     history.push(`${location.pathname}?${params.toString()}`);
+    setOnChangeFilter(true);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
     return setOnChange(true);
   };
   //Color Filter Event
@@ -437,6 +454,10 @@ const SearchComponent = () => {
       else { params.append('clr', item); }
     });
     history.push(`${location.pathname}?${params.toString()}`);
+    setOnChangeFilter(true);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeSurfaceFilter(true);
     return setOnChange(true);
   }
   //Surface Filter Event
@@ -462,6 +483,7 @@ const SearchComponent = () => {
       else { params.append('sfc', item); params.toString(); }
     });
     history.push(`${location.pathname}?${params.toString()}`);
+    setOnChangeSurfaceFilter(true);
     return setOnChange(true);
   }
 
@@ -692,7 +714,7 @@ const SearchComponent = () => {
                 />
               </Panel>
             </Collapse> */}
-            {(productTypeData.length != 1 && productTypeData != null) ? (
+            {(productTypeData.length != 0 && productTypeData != null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Ürün Tipi" />} key="2">
                   <CheckboxGroup
@@ -705,27 +727,27 @@ const SearchComponent = () => {
               </Collapse>
             ) : (<Collapse ></Collapse>)}
 
-            {(dimensionData.length != 1 && dimensionData != null) ? (
+            {(dimensionData.length != 0 && dimensionData != null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Ebat" />} key="3">
                   <CheckboxGroup
                     options={
-                      dimensionData.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                      dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeDimension}
-                    value={dimension.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                    value={dimension.map(e => e === null  ? siteConfig.nullOrEmptySearchItem : e)}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel>
               </Collapse>
             ) : (<Collapse ></Collapse>)}
-            {(serieData.length != 1 && serieData != null) ? (
+            {(serieData.length != 0 && serieData != null) ? (
 
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Seriler" />} key="4">
                   <CheckboxGroup
-                    value={series.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                    value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      serieData.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                      serieData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeSerie}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -733,26 +755,26 @@ const SearchComponent = () => {
               </Collapse>
             ) : (<Collapse ></Collapse>)}
 
-            {(colorData.length != 1 && colorData != null) ? (
+            {(colorData.length != 0 && colorData != null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Renkler" />} key="5">
                   <CheckboxGroup
-                    value={color.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                    value={color.map(e => e === null? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      colorData.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                      colorData.map(e => e === null? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeColor}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel></Collapse>
             ) : (<Collapse ></Collapse>)}
 
-            {(surfaceData.length != 1 && surfaceData != null) ? (
+            {(surfaceData.length != 0 && surfaceData != null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Yüzeyler" />} key="6">
                   <CheckboxGroup
-                    value={surface.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                    value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      surfaceData.map(e => e === null || e === 'null' ? siteConfig.nullOrEmptySearchItem : e)}
+                      surfaceData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeSurface}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
