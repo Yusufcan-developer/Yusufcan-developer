@@ -25,7 +25,16 @@ export default {
       getFieldCodes: apiUrl + 'core/lookup/field-codes',
       getRegionCodes: apiUrl + 'core/lookup/region-codes',
       getDealerCodes: apiUrl + 'core/lookup/dealer-codes',
-      getAddresses: apiUrl + 'core/accounts/{dealerCodes}/addresses'
+      getAddresses: apiUrl + 'core/accounts/{dealerCodes}/addresses',
+      postProductCategories: apiUrl + 'b2b/lookup/product-categories',
+      postProductTypes: apiUrl + 'b2b/lookup/product-types',
+      postSeries: apiUrl + 'b2b/lookup/product-series',
+      postColors: apiUrl + 'b2b/lookup/product-colors',
+      postSurfaces: apiUrl + 'b2b/lookup/product-surfaces',
+      postProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
+      postproductionStatusData: apiUrl + 'b2b/lookup/product-production-status',
+      postDimensions: apiUrl + 'b2b/lookup/product-dimensions',
+
     },
 
     carts: {

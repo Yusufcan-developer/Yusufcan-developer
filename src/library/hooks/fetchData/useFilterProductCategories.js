@@ -1,28 +1,30 @@
 // hooks.js
 import { useState, useEffect } from "react";
 
-function useFilterProductCategories(url) {
+function useFilterProductCategories(url, reqBody) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [onChange, setOnChange] = useState(false);
 
   async function fetchUrl() {
 
+    const reqB = reqBody == null || reqBody==undefined ? { } : reqBody; 
+   
     const requestOptions = {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-        }
-      };
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
     
     await fetch(url,requestOptions)
       .then(response => {
         if (!response.ok) {return localStorage.removeItem('id_token');}
         return response.json();
       })
-      .then(data => {  
-        
+      .then(data => {
         setData(data);
         setLoading(false);
       })
