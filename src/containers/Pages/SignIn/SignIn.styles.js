@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { palette } from 'styled-theme';
-import bgImage from '@iso/assets/images/bg-signin2.jpg';
+import bgImage from '@iso/assets/images/bg-signin3.jpg';
 import WithDirection from '@iso/lib/helpers/rtl';
 
 const SignInStyleWrapper = styled.div`
@@ -12,7 +12,7 @@ const SignInStyleWrapper = styled.div`
   align-items: center;
   position: relative;
   background: url(${bgImage}) no-repeat;
-  background-position: right 600px top;
+  background-position: right 0px top;
   background-size: contain;
 
   &:before {
