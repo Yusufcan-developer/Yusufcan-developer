@@ -153,7 +153,7 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
@@ -230,9 +230,10 @@ export default function () {
     dataSearch(current, pageSize);
   }
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current) {
+  function currentPageChange(current,pageSize) {
+    setPageSize(pageSize);
     setPageIndex(current);
-    dataSearch(current);
+    dataSearch(current, pageSize);
   }
   //Excel Oluştur
   const exportExcelButton = () => {

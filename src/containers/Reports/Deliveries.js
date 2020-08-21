@@ -77,9 +77,8 @@ const DeliveriesReport = () => {
   }, [pageIndex]);
 
   useEffect(() => {
-    console.log("pageSize!", pageSize);
     getVariablesFromUrl(searchQuery)
-    setChangePageSize(pageSize);
+    // setChangePageSize(pageSize);
   }, [pageSize]);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
@@ -159,7 +158,7 @@ const DeliveriesReport = () => {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
@@ -238,9 +237,10 @@ const DeliveriesReport = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current) {
+  function currentPageChange(current, pageSize) {
     setPageIndex(current);
-    dataSearch(current);
+    setPageSize(pageSize);
+    dataSearch(current,pageSize);
   }
 
   //Excel Oluşturma

@@ -25,7 +25,6 @@ function useFetch(url, reqBody) {
 
       body: JSON.stringify(reqBody)
     };
-    console.log('xxxx reqUser',reqBody);
     await fetch(url, requestOptions)
       .then(response => {
         if (!response.ok) throw Error(response.statusText);

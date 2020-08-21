@@ -97,7 +97,6 @@ const UserList = () => {
 
   //Page index'e göre verilerin yenilenmesi işlemi.
   useEffect(() => {
-    console.log("currentPage!", localCurrentPage);
     setCurrentPage(localCurrentPage);
     getVariablesFromUrl();
   }, [localCurrentPage]);
@@ -212,7 +211,7 @@ const UserList = () => {
       params.append('rol', item); params.toString();
     });
     params.append('act', isActive);
-    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setlocalCurrentPage(1); params.append('pgindex', 1) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
@@ -504,10 +503,11 @@ const UserList = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current) {
+  function currentPageChange(current,pageSize) {
+    setPageSize(pageSize);
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
-    dataSearch(current);
+    dataSearch(current, pageSize);
   }
 
   let columns = [

@@ -12,10 +12,16 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu } from "antd";
-
+import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu,Alert } from "antd";
+import TopbarAlert from '../../Topbar/TopbarAlert';
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
+
+//Redux
+import { useDispatch, useSelector } from 'react-redux';
+import Actions from '@iso/redux/themeSwitcher/actions';
+import config  from '@iso/redux/ecommerce/config'
+import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Styles
 import { DownOutlined } from '@ant-design/icons';
@@ -24,7 +30,7 @@ import { DownOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import renderFooter from "..//../Reports/ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
-// import ReportPagination from "./ReportPagination";
+import ReportPagination from "../../Reports/ReportPagination";
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -38,11 +44,21 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
+
 const OrdersReport = () => {
 
   const queryString = require('query-string');
   const history = useHistory();
 
+  const { switchActivation, changeTheme } = Actions;
+  const { isActivated, topbarTheme, sidebarTheme, layoutTheme } = useSelector(
+    state => state.ThemeSwitcher
+  );
+  const { productQuantity, products } = useSelector(state => state.Ecommerce);
+  const { addToCart, changeViewTopbarCart, changeProductQuantity,otherCart } = ecommerceActions;
+  const dispatch = useDispatch();
+  
+  const styleButton = { background: sidebarTheme.buttonColor };
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
@@ -54,8 +70,9 @@ const OrdersReport = () => {
     filteredInfo: ""
   });
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize, setPageSize] = useState(1)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
+  const [selectedCart,setSelectedCart]=useState();
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
@@ -72,7 +89,7 @@ const OrdersReport = () => {
   }, [pageIndex]);
 
   //Cart Data
-  const [cartData, loadingCartData, setOnChange, cartDetailData] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
+  const [cartData, loadingCartData, setOnChange, cartDetailData,totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
@@ -80,56 +97,9 @@ const OrdersReport = () => {
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
 
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    let newDealarCode = []
-
-    //Field url data
-    if (parsed.fic !== undefined) {
-      if (Array.isArray(parsed.fic)) {
-        _.each(parsed.fic, (item, i) => {
-          newDealarCode.push(item);
-        });
-      } else { newDealarCode.push(parsed.fic) }
-    }
-
-    //RegionCode url data
-    if (parsed.rec !== undefined) {
-      if (Array.isArray(parsed.rec)) {
-        _.each(parsed.rec, (item, i) => {
-          newDealarCode.push(item);
-        });
-      } else { newDealarCode.push(parsed.rec) }
-    }
-
-    //Dealar url data
-    if (parsed.dec !== undefined) {
-      if (Array.isArray(parsed.dec)) {
-        _.each(parsed.dec, (item, i) => {
-          newDealarCode.push(item);
-        });
-      } else { newDealarCode.push(parsed.dec) }
-    }
-    setSelectedDealerCode(newDealarCode);
-
-    //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
-    let fieldArrObj = [];
-    let regionArrObj = [];
-    let dealerArrObj = [];
-
-    if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
-    _.filter(newDealarCode, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
-      else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
-      }
-      else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
-      }
-    });
   }
 
   //Sipariş Kalemleri Görüntüleme
@@ -161,18 +131,11 @@ const OrdersReport = () => {
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
 
-    params.delete('dec');
-    params.delete('rec');
-    params.delete('fic');
-    params.delete('from')
-    params.delete('to');
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
 
-    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    if (selectedPageSize) { params.append('pgsize', selectedPageSize) } else { params.append('pgsize', pageSize) }
+    if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
@@ -184,60 +147,23 @@ const OrdersReport = () => {
   //Search Button Event
   const searchButton = () => {
     dataSearch();
-  };
-
-  //Change DealerCode
-  function onChangeDealerCode(value) {
-
-    let fieldArrObj = [];
-    let regionArrObj = [];
-    let dealerArrObj = [];
-    const params = new URLSearchParams(location.search);
-    params.delete('dec');
-    params.delete('rec');
-    params.delete('fic');
-    params.delete('from')
-    params.delete('to');
-    params.delete('keyword');
-    params.delete('pgsize');
-    params.delete('pgindex');
-
-    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
-    else {
-      _.filter(value, function (item) {
-        if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
-        else if (item.split("|").length === 2) {
-          regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
-        }
-        else {
-          dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
-        }
-        setSelectedDealerCode(value)
-        setNewUrlParams(params.toString());
-      });
-    }
-  };
-
-  //Change from and To date
-  function changeTimePicker(value, dateString) {
-    setFromDate(dateString[0]);
-    setToDate(dateString[1]);
   }
+
+ 
   //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
   const menu = (
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="1">Sepet Düzenlemeyi Aktifleştir</Menu.Item>
     </Menu>
-  );
+  ); 
+
   //Menü Secimlerine Göre Modal açma işlemleri
-  //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
   function handleMenuClick(value) {
     switch (value.key) {
       case '1':
-        // setVisible(true);
-        // fieldRegionAndDealearVisible(objectRole.roleName);
+        localStorage.setItem('activeUser',selectedCart.accountNo)
+        window.location.reload(false);
         break;
-
       default:
         break;
     }
@@ -259,9 +185,10 @@ const OrdersReport = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current) {
+  function currentPageChange(current,pageSize) {
+    setPageSize(pageSize);
     setPageIndex(current);
-    dataSearch(current);
+    dataSearch(current, pageSize);
   }
 
   //Cart Detail Columns
@@ -345,17 +272,17 @@ const OrdersReport = () => {
       key: "title",
       fixed: "right",
       render: (text, record) => (
-        <Dropdown overlay={menu} trigger={['click']} >
-          <Button onClick={event => { console.log('xxxx') }}>
+        <Dropdown overlay={menu} trigger={['hover'] } onVisibleChange={event => {setSelectedCart(record) }} >
+          <Button >
             İşlemler  <DownOutlined />
           </Button>
         </Dropdown>
-
       ),
     }
   ];
   return (
-    <LayoutWrapper>
+    
+    <LayoutWrapper>    
       <PageHeader>
         {<IntlMessages id="page.ActiveCarts.header" />}
       </PageHeader>
@@ -365,9 +292,6 @@ const OrdersReport = () => {
             <Row>
               <Col span={6}>
                 <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
               </Col>
               <Col span={6} >
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
@@ -380,7 +304,6 @@ const OrdersReport = () => {
                 <TreeSelect
                   // treeData={{}}
                   value={selectedDealerCode}
-                  onChange={onChangeDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Hesap Kodu Seçiniz"}
@@ -388,15 +311,6 @@ const OrdersReport = () => {
                   style={{ marginBottom: '8px', width: '250px' }}
                   dropdownMatchSelectWidth={500}
                 />
-              </Col>
-              <Col span={6}>
-                <RangePicker
-                  format={siteConfig.dateFormat}
-                  onChange={changeTimePicker}
-                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: '250px' }}
-                />
-
               </Col>
               <Col span={6}>
                 <Input size="small" placeholder="" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
@@ -418,14 +332,14 @@ const OrdersReport = () => {
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button> */}
         </Col>
-        {/* <ReportPagination
+        <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
           current={pageIndex}
           position="top"
-        /> */}
+        />
         <Table
           columns={columns}
           dataSource={cartData}
@@ -439,14 +353,14 @@ const OrdersReport = () => {
           size="medium"
           bordered={false}
         />
-        {/* <ReportPagination
+        <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
           current={pageIndex}
           position="bottom"
-        /> */}
+        />
       </Box>
     </LayoutWrapper>
   );

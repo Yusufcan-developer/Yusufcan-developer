@@ -6,7 +6,7 @@ import _ from 'underscore';
 import siteConfig from "@iso/config/site.config";
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-
+var jwtDecode = require('jwt-decode');
 
 export function* changedCard() {
   yield takeEvery(actions.CHANGE_CARDS, function* () { });
@@ -40,8 +40,11 @@ export function* updateData({ products, productQuantity }) {
     item['amount'] = item['quantity'];
     delete item['quantity'];
   });
-
-  const reqBody = { "items": sendDatabaseProductList };
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser = localStorage.getItem("activeUser")
+  let account = token.uname;
+  if (activeUser != undefined) { account = activeUser }
+  const reqBody = { "items": sendDatabaseProductList,"accountNo": account };
   const requestOptions = {
     method: "POST",
     headers: {

@@ -30,7 +30,6 @@ function useProductData(url, reqBody) {
   
     const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"salesStatus": salesStatus, "surfaces":surface, "colors":color, "dimensions":dimension, "productStatus":productStatus, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize, "sortingField": sortingField,"sortingOrder": sortingOrder } : reqBody; 
    
-   console.log('xxxx req',reqB)
     const requestOptions = {
       method: "POST",
       headers: {
