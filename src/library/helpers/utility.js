@@ -1,7 +1,9 @@
 import { Map } from 'immutable';
 
 export function clearToken() {
-  localStorage.removeItem('id_token');
+  localStorage.clear();
+  // localStorage.removeItem('id_token');
+  // localStorage.removeItem('activeUser');
   // localStorage.removeItem('cartProducts');
   // localStorage.removeItem('cartProductQuantity');
 }

@@ -555,11 +555,14 @@ const SearchComponent = () => {
 
   //Quantity input number Show/Hide
   function inputNumberShowOrHide(value) {
+    if(productQuantity!==null){
     var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
     if (selectedProduct === undefined) {
       return false;
     }
     else { return true; }
+  }
+  else {return false;}
   }
 
   //Input Number return quantity value
@@ -575,7 +578,6 @@ const SearchComponent = () => {
 
   //Redux product quantity change event
   function onChangeQuantity(event, productData) {
-
     const product = productData;
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
@@ -619,7 +621,6 @@ const SearchComponent = () => {
   //Adding products to the cart
   function onAddProductCart(product) {
     inputNumberShowOrHide(product)
-
     if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) {
       dispatch(addToCart(product, 1));
       notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });

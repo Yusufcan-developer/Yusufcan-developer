@@ -1,12 +1,13 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Layout } from 'antd';
+import { Layout,Alert } from 'antd';
 import appActions from '@iso/redux/app/actions';
 import TopbarNotification from './TopbarNotification';
 import TopbarSearch from './TopbarSearch';
 import TopbarUser from './TopbarUser';
 import TopbarAddtoCart from './TopbarAddToCart';
 import TopbarWrapper from './Topbar.styles';
+import TopbarAlert from './TopbarAlert';
 var jwtDecode = require('jwt-decode');
 
 
@@ -23,7 +24,9 @@ export default function Topbar() {
   ]);
   const isCollapsed = collapsed && !openDrawer;
   const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser=localStorage.getItem("activeUser");
   const username = token.uname;
+  
   const styling = {
     background: customizedTheme.backgroundColor,
     position: 'fixed',
@@ -37,7 +40,7 @@ export default function Topbar() {
         className={
           isCollapsed ? 'isomorphicTopbar collapsed' : 'isomorphicTopbar'
         }
-      >
+      >      
         <div className="isoLeft">
           <button
             className={
@@ -45,18 +48,19 @@ export default function Topbar() {
             }
             style={{ color: customizedTheme.textColor }}
             onClick={handleToggle}
-          />
+          />      
         </div>
+        <div className="isoLeft">
+          {activeUser != undefined & activeUser!=username ? (
+            <TopbarAlert showAlert={true} username={activeUser} />
 
-        <ul className="isoRight">
-          <li className="isoSearch">
-            <TopbarSearch />
-          </li>
+          ) : (<TopbarAlert showAlert={false}/>)}
 
+          </div>
+        <ul className="isoRight">       
           <li
             onClick={() => setSelectedItem('notification')}
-            className={selectedItem ? 'isoNotify active' : 'isoNotify'}
-          >
+            className={selectedItem ? 'isoNotify active' : 'isoNotify'}          >
             <TopbarNotification />
           </li>
           <li onClick={() => setSelectedItem('addToCart')} className="isoCart">

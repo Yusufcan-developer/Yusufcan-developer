@@ -35,13 +35,17 @@ const categories = [
   },
 
 ];
-
 const { Meta } = Card;
-
 const ProductGroupList = () => {
-
   const history = useHistory();
   const [loading, setloading] = useState(false);
+  let products = localStorage.getItem('cartProducts');
+  if (products === null)
+    window.location.reload(false);
+  useEffect(() => {
+    if (products === null)
+      window.location.reload(false);
+  });
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>

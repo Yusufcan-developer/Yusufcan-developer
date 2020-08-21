@@ -69,7 +69,7 @@ export default function SignIn() {
         dispatch(clearMenu());
 
         //Kullanıcı girişinden sonra ürün kategorileri sayfasına yönlendiriyoruz.
-        history.push('/products/categories');
+        history.push('/products/categories');        
       })
       .catch(error => loginError());
   }
@@ -89,9 +89,6 @@ export default function SignIn() {
             <div style={{ textAlign: 'center' }}>
               <img src={verticalLogo} style={{ height: '150px' }} title="logo" />
             </div>
-            {/* <div style={{ textAlign: 'center' }}>
-              <IntlMessages id="page.signInTitle" />
-            </div> */}
           </div>
           <div className="isoSignInForm">
             <form>

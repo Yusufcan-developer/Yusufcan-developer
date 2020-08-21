@@ -12,6 +12,7 @@ function useCartListData(url, reqBody) {
   const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
   const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
   const [onChange, setOnChange] = useState(false);
+  const [totalDataCount, setTotalDataCount] = useState();
   let cartIdgetUrlItems='';
   async function fetchUrl() {
   
@@ -49,7 +50,7 @@ function useCartListData(url, reqBody) {
 
         
         setData(data.data);  
-        // setOrderIdArray(accountsNo);
+        setTotalDataCount(data.data.totalDataCount);
 
         setLoading(false); 
         setOnChange(false);
@@ -74,7 +75,7 @@ function useCartListData(url, reqBody) {
     setLoading(true);
     fetchUrl();
   }, [ onChange]);
-  return [data, loading , setOnChange,cartDetail];
+  return [data, loading , setOnChange,cartDetail,totalDataCount];
 }
 
 

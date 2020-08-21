@@ -34,7 +34,6 @@ export default function () {
   //Change Company Name
   const onChangeCompanyName = e => {
     setCompanyName(e.target.value);
-    localStorage.setItem("companyName", e.target.value);
   }
   //Change Company Name 
   const onChangeEmail = e => {

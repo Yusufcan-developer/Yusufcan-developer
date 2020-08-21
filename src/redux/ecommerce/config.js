@@ -22,8 +22,12 @@ async function getDatabaseProductInfo() {
     }
   };
   const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser = localStorage.getItem("activeUser")
+  let uname = token.uname;
+  if (activeUser != undefined) { uname = activeUser }
   if (!token.uname) { return 'Unauthorized' }
-  await fetch(`${siteConfig.api.carts.getGetByAccountNo}${token.uname}`, requestOptions)
+
+  await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
     .then(response => {
       if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
       return response.json();
@@ -48,18 +52,20 @@ async function getInitData() {
         item['quantity'] = item['amount'];
         delete item['amount'];
       });
-      sendReduxProductList.forEach(product => {
-        productQuantity.push({
-          itemCode: product.itemCode,
-          quantity: product.quantity,
+      if (sendReduxProductList) {
+        sendReduxProductList.forEach(product => {
+          productQuantity.push({
+            itemCode: product.itemCode,
+            quantity: product.quantity,
+          });
+          products[product.itemCode] = product.item;
         });
-        products[product.itemCode] = product.item;
-      });
-    } else { }
-  }
+      }
 
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
   localStorage.setItem('cartProducts', JSON.stringify(products));
+    } else { }
+  }
   return { productQuantity, products };
 }
 
