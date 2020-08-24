@@ -9,6 +9,8 @@ import appActions from '@iso/redux/app/actions';
 import Logo from '@iso/components/utility/logo';
 import SidebarWrapper from './Sidebar.styles';
 import SidebarMenu from './SidebarMenu';
+import _ from 'underscore';
+var jwtDecode = require('jwt-decode');
 const { Sider } = Layout;
 
 const {
@@ -19,6 +21,8 @@ const {
 } = appActions;
 
 export default function Sidebar() {
+  let newColumn;
+  const token = jwtDecode(localStorage.getItem("id_token"));
   const dispatch = useDispatch();
   var url = window.location.href.toString().slice(0,16);
   const {
@@ -131,6 +135,27 @@ export default function Sidebar() {
     </SidebarWrapper>
   );
 }else 
+  //Get Token and Token Decode
+  
+  if (token.urole === 'admin') { newColumn=options
+  }
+  else if (token.urole === 'fieldmanager') {
+    newColumn=options  
+  }
+  else if (token.urole === 'regionmanager') {
+    newColumn=options
+  }
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    const getHideColumns = options;
+
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        newColumn = _.without(options, _.findWhere(options, {
+          key: 'systemAdministrator'
+        }
+        ))
+      }
+    }}
  { return (
     <SidebarWrapper>
       <Sider
@@ -154,7 +179,7 @@ export default function Sidebar() {
             selectedKeys={current}
             onOpenChange={onOpenChange}
           >
-            {options.map(singleOption => (
+            {newColumn.map(singleOption => (
               <SidebarMenu
                 key={singleOption.key}
                 submenuStyle={submenuStyle}

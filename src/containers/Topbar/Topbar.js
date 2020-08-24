@@ -60,7 +60,7 @@ export default function Topbar() {
         <ul className="isoRight">       
           <li
             onClick={() => setSelectedItem('notification')}
-            className={selectedItem ? 'isoNotify active' : 'isoNotify'}          >
+            className={selectedItem ? 'isoNotify active' : 'isoNotify'}>
             <TopbarNotification />
           </li>
           <li onClick={() => setSelectedItem('addToCart')} className="isoCart">

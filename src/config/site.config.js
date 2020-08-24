@@ -41,8 +41,8 @@ export default {
       postCart: apiUrl + 'b2b/carts',
       cartGetDefault: apiUrl + 'b2b/carts/default',
       getGetByAccountNo: apiUrl + 'b2b/carts/account/',
-      //Kayıtlı sepetlerin listelenmesi
-      cartGetAll: apiUrl + 'b2b/carts/all',                                  //Tüm sepetlerin listelenmesi
+      cartGetAll: apiUrl + 'b2b/carts/all',
+      deleteCart: apiUrl + 'b2b/carts/account/',
     },
     report: {
       postOrders: apiUrl + 'core/report/orders',
