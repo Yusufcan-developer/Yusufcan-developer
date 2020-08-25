@@ -597,9 +597,13 @@ const SearchComponent = () => {
       return selectedProduct.quantity;
     }
   }
-
+  //Miktar girilen text alanında tüm değerleri seçiyor
+  function onSelectAll(id) {
+    document.getElementById(id).select();
+  }
   //Redux product quantity change event
   function onChangeQuantity(event, productData) {
+    if(event.target.value>0){
     const product = productData;
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
@@ -616,6 +620,7 @@ const SearchComponent = () => {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
+  }
   };
 
   //removing items from the cart
@@ -842,6 +847,8 @@ const SearchComponent = () => {
                               </Col>
                               <Col span={8} align="middle">
                                 <Input
+                                id={item.itemCode}
+                                  onClick={event => onSelectAll(item.itemCode)}
                                   onChange={event => onChangeQuantity(event, item)}
                                   style={{ textAlign: "right" }}
                                   maxLength={25}

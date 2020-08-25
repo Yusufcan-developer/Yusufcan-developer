@@ -142,25 +142,32 @@ const ProductDetail = () => {
       return selectedProduct.quantity;
     }
   }
+  //Miktar girilen text alanında tüm değerleri seçiyor
+  function onSelectAll(id) {
+    document.getElementById(id).select();
+  }
   //Redux product quantity change event
   function onChangeQuantity(event, productItem) {
-    const product = productItem;
-    var selectedProduct = productQuantity.find(item => item.itemCode == productId);
-    const newProductQuantity = [];
-    setQuantity(event)
-    productQuantity.forEach(productItem => {
-      if (productItem.itemCode !== selectedProduct.itemCode) {
-        newProductQuantity.push(productItem);
-      } else {
-        const itemCode = productItem.itemCode
-        const quantity = event;
-        newProductQuantity.push({
-          itemCode,
-          quantity,
-        });
-      }
-    });
-    dispatch(changeProductQuantity(newProductQuantity));
+    if (event.target.value > 0) {
+      const product = productItem;
+    
+      var selectedProduct = productQuantity.find(item => item.itemCode == productId);
+      const newProductQuantity = [];
+      setQuantity(event.target.value)
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode;
+          const quantity =parseInt(event.target.value);
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
   };
 
   let columns = [
@@ -269,12 +276,14 @@ const ProductDetail = () => {
                           </Col>
                           <Col span={8}>
                             <Input
+                              id={'quantityText'}
                               min={1}
                               max={1000}
                               defaultValue={1}
                               value={inputNumberQuantityValue(productItem)}
                               step={1}
                               style={{ textAlign: "right" }}
+                              onClick={event => onSelectAll('quantityText')}
                               onChange={event => onChangeQuantity(event, productItem)}
                             />
                           </Col>

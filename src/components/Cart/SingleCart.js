@@ -26,7 +26,13 @@ export default function ({
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
   const dispatch = useDispatch();
 
+  //Miktar girilen text alanında tüm değerleri seçiyor
+  function onSelectAll(id) {
+    document.getElementById(id).select();
+  }
+
   function onChangeQuantity(event, productData) {
+    if(event.target.value>0){
     const product = productData;
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const newProductQuantity = [];
@@ -43,6 +49,7 @@ export default function ({
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
+  }
   };
 
   const totalPrice = (productItem.listPrice * quantity).toFixed(2);
@@ -89,11 +96,13 @@ export default function ({
           <Col span={8}>
             <Input
               min={1}
+              id={productItem.itemCode}
               style={{ textAlign: "right" }}
               max={1000}
               defaultValue={1}
               value={quantity}
               step={1}
+              onClick={event => onSelectAll(productItem.itemCode)}
               onChange={event => onChangeQuantity(event, productItem)}
             />
           </Col>
