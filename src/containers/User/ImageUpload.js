@@ -6,18 +6,19 @@ import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 import turkishLocale from '@uppy/locales/lib/tr_TR';
 import * as _ from 'underscore';
-import Scrollbar from 'react-scrollbars-custom';
 import { ReactSortable } from "react-sortablejs";
-
 import { Form } from 'antd';
 import { Input, Card, Modal, Button, Row, Col, Select, message, Divider, Popconfirm, Tag, Badge } from 'antd';
 import { DeleteFilled, DragOutlined, CloseOutlined } from '@ant-design/icons';
+import Box from "@iso/components/utility/box";
+import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
+import PageHeader from "@iso/components/utility/pageHeader";
+import IntlMessages from "@iso/components/utility/intlMessages";
+import siteConfig from "@iso/config/site.config";
 import './Image.css';
 
 const { TextArea } = Input;
 const { Option } = Select;
-
-const apiBaseUrl = 'http://localhost:5000/api/images';
 
 class ImageUpload extends React.Component {
     constructor(props) {
@@ -116,7 +117,14 @@ class ImageUpload extends React.Component {
     }
 
     getProducts = () => {
-        fetch(apiBaseUrl + '/products-for-images')
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            }
+        };
+        fetch(siteConfig.api.image.getProductsOfImages, requestOptions)
             .then(response => response.json())
             .then(products => {
                 this.setState({ productList: products })
@@ -124,7 +132,14 @@ class ImageUpload extends React.Component {
     }
 
     getImageTypes = () => {
-        fetch(apiBaseUrl + '/types')
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            }
+        };
+        fetch(siteConfig.api.image.getTypes, requestOptions)
             .then(response => response.json())
             .then(imageTypes => {
                 this.setState({ imageTypes: imageTypes })
@@ -133,8 +148,15 @@ class ImageUpload extends React.Component {
 
     getProductImages = async productCode => {
         const { imageTypes } = this.state;
-        await fetch(apiBaseUrl + '/products/' + productCode + '/images', {
-        }).then(response => response.json())
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            }
+        };
+        await fetch(siteConfig.api.image.getProductImages.replace('{productCode}', productCode), requestOptions)
+            .then(response => response.json())
             .then(images => {
                 var categoricalImages = [];
                 _.each(imageTypes, function (imageType) {
@@ -160,10 +182,13 @@ class ImageUpload extends React.Component {
         if (filesToSend.length > 0) {
             for (var i in filesToSend) {
                 var ImageUploadModel = filesToSend[i];
-                await fetch(apiBaseUrl + '/upload',
+                await fetch(siteConfig.api.image.uploadImage,
                     {
                         method: 'POST',
-                        headers: { 'Content-type': 'application/json' },
+                        headers: {
+                            'Content-type': 'application/json',
+                            'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
+                        },
                         body: JSON.stringify(ImageUploadModel)
                     })
                     .then((data) => setTimeout(() => {
@@ -213,9 +238,12 @@ class ImageUpload extends React.Component {
         const key = 'delete';
         message.loading({ content: 'Siliniyor...', key })
 
-        await fetch(apiBaseUrl + '/delete/' + value, {
+        await fetch(siteConfig.api.image.deleteImage + value, {
             method: 'DELETE',
-            headers: { 'Content-type': 'application/json' },
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
+            }
         })
             .then(data => setTimeout(() => {
                 message.success({ content: 'Fotoğraf başarıyla silindi', key, duration: 2 })
@@ -246,14 +274,17 @@ class ImageUpload extends React.Component {
     setAsMainImage = async imageId => {
         const { productList, productCode } = this.state;
         var productObject = productList.find(item => item.productCode === productCode);
-        productObject.mainImageID = imageId;
+        productObject.mainImageId = imageId;
 
         const key = 'update';
         message.loading({ content: 'Kaydediliyor...', key })
-        await fetch(apiBaseUrl + '/products/update',
+        await fetch(siteConfig.api.image.updateProduct,
             {
                 method: 'POST',
-                headers: { 'Content-type': 'application/json' },
+                headers: {
+                    'Content-type': 'application/json',
+                    'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
+                },
                 body: JSON.stringify(productObject)
             })
             .then((data) => setTimeout(() => {
@@ -278,7 +309,7 @@ class ImageUpload extends React.Component {
     onFinishUpdateForm = async values => {
         const { dialogImageId } = this.state;
         var productImagesModel = {
-            ImageID: dialogImageId,
+            ImageId: dialogImageId,
             Description: values.imageDescription,
             ImageTypeId: values.imageTypeId
         }
@@ -286,10 +317,13 @@ class ImageUpload extends React.Component {
         const key = 'update';
         message.loading({ content: 'Güncelleniyor...', key })
 
-        await fetch(apiBaseUrl + '/update-info',
+        await fetch(siteConfig.api.image.updateImageInfo,
             {
                 method: 'POST',
-                headers: { 'Content-type': 'application/json' },
+                headers: {
+                    'Content-type': 'application/json',
+                    'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
+                },
                 body: JSON.stringify(productImagesModel)
             })
             .then((data) => setTimeout(() => {
@@ -314,13 +348,16 @@ class ImageUpload extends React.Component {
         for (var item in categoricalImageList) {
             for (var i in categoricalImageList[item]) {
                 var imagePriorityModel = {
-                    ImageID: categoricalImageList[item][i].imageID,
+                    ImageId: categoricalImageList[item][i].imageId,
                     ImageOrder: ++count
                 }
-                await fetch(apiBaseUrl + '/update/order',
+                await fetch(siteConfig.api.image.updateOrder,
                     {
                         method: 'POST',
-                        headers: { 'Content-type': 'application/json' },
+                        headers: {
+                            'Content-type': 'application/json',
+                            'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
+                        },
                         body: JSON.stringify(imagePriorityModel)
                     })
                     .then((data) => setTimeout(() => {
@@ -374,73 +411,76 @@ class ImageUpload extends React.Component {
     render() {
         const { productList, productImages, imageTypes, btnUpdateOrder, isDialogOpen, dialogImageId, categoricalImageList } = this.state;
         return (
-            <div>
-                <Row>
-                    {/* select product, search */}
-                    <Col style={{ padding: '25px' }} span={10}>
-                        <Form initialValues={{ remember: true }} ref={this.formRef} onFinish={this.sendImagesThrottled}>
-                            <Form.Item name="product" rules={[{ required: true, message: 'Lütfen bir ürün seçiniz!' }]}>
-                                <Select showSearch
-                                    ref="productCode"
-                                    placeholder="Ürün Seçiniz"
-                                    optionFilterProp="children"
-                                    onChange={this.getProductImages}
-                                    filterOption={(input, option) =>
-                                        option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                    }>
-                                    {productList.map(list =>
-                                        <Option key={list.productCode} value={list.productCode}>{list.productCode} - {list.productName} - {list.productDescription}</Option>
-                                    )}
-                                </Select>
-                            </Form.Item>
-                            {/* image upload */}
-                            <Form.Item  >
-                                <Dashboard height={400} uppy={this.uppy} plugins={['Dahsboard']} inline={true} />
-                            </Form.Item>
-                            {/* image type */}
-                            <Form.Item name="imageType" rules={[{ required: true, message: 'Lütfen bir fotoğraf tipi seçiniz!' }]}>
-                                <Select placeholder="Fotoğraf Tipi Seçiniz" >
-                                    {imageTypes.map(list =>
-                                        <Option key={list.imageTypeId} value={list.imageTypeId}>{list.imageTypeName}</Option>
-                                    )}
-                                </Select>
-                            </Form.Item>
-                            {/* description */}
-                            <Form.Item name="description" rules={[{ required: false, message: 'Lütfen bir açıklama giriniz!' }]}>
-                                <TextArea placeholder="Fotoğraflar için bir açıklama giriniz..." allowClear />
-                            </Form.Item>
-                            <Row >
-                                <Col style={{ textAlign: 'left' }} span={12}>
-                                    <Form.Item>
-                                        <Button style={{ width: '75%' }} type="primary" htmlType="submit">KAYDET</Button>
-                                    </Form.Item>
-                                </Col>
-                                <Col style={{ textAlign: 'right' }} span={12}>
-                                    <Form.Item >
-                                        <Button style={{ width: '75%' }} onClick={this.onReset}>İPTAL</Button>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-                        </Form>
-                    </Col>
+            <LayoutWrapper>
+                <PageHeader>
+                    {<IntlMessages id="Ürün Fotoğrafları" />}
+                </PageHeader>
+                <Box>
+                    <Row>
+                        {/* select product, search */}
+                        <Col style={{ padding: '25px' }} span={10}>
+                            <Form initialValues={{ remember: true }} ref={this.formRef} onFinish={this.sendImagesThrottled}>
+                                <Form.Item name="product" rules={[{ required: true, message: 'Lütfen bir ürün seçiniz!' }]}>
+                                    <Select showSearch
+                                        ref="productCode"
+                                        placeholder="Ürün Seçiniz"
+                                        optionFilterProp="children"
+                                        onChange={this.getProductImages}
+                                        filterOption={(input, option) =>
+                                            option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                        }>
+                                        {productList.map(list =>
+                                            <Option key={list.productCode} value={list.productCode}>{list.productCode} - {list.productName} - {list.productDescription}</Option>
+                                        )}
+                                    </Select>
+                                </Form.Item>
+                                {/* image upload */}
+                                <Form.Item  >
+                                    <Dashboard height={400} uppy={this.uppy} plugins={['Dahsboard']} inline={true} />
+                                </Form.Item>
+                                {/* image type */}
+                                <Form.Item name="imageType" rules={[{ required: true, message: 'Lütfen bir fotoğraf tipi seçiniz!' }]}>
+                                    <Select placeholder="Fotoğraf Tipi Seçiniz" >
+                                        {imageTypes.map(list =>
+                                            <Option key={list.imageTypeId} value={list.imageTypeId}>{list.imageTypeName}</Option>
+                                        )}
+                                    </Select>
+                                </Form.Item>
+                                {/* description */}
+                                <Form.Item name="description" rules={[{ required: false, message: 'Lütfen bir açıklama giriniz!' }]}>
+                                    <TextArea placeholder="Fotoğraflar için bir açıklama giriniz..." allowClear />
+                                </Form.Item>
+                                <Row >
+                                    <Col style={{ textAlign: 'left' }} span={12}>
+                                        <Form.Item>
+                                            <Button style={{ width: '75%' }} type="primary" htmlType="submit">KAYDET</Button>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col style={{ textAlign: 'right' }} span={12}>
+                                        <Form.Item >
+                                            <Button style={{ width: '75%' }} onClick={this.onReset}>İPTAL</Button>
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                            </Form>
+                        </Col>
 
-                    {/* image display , delete, update, sort*/}
-                    <Col span={14}>
-                        <div style={{ margin: '35px' }}>
-                            {productImages.length > 0 ?
-                                <div>
-                                    <Row className="topRow" style={{ height: 40 }} >
-                                        <Col span={18}>
-                                            <h4>Bu ürüne ait toplam {productImages.length} fotoğraf vardır.</h4>
-                                        </Col>
-                                        <Col span={6}>
-                                            {btnUpdateOrder ?
-                                                <Button style={{ float: 'right', zIndex: 3 }} type="primary" onClick={this.updateSortedImagesThrottled}>Güncel Sıralamayı Kaydet</Button>
-                                                : ''
-                                            }
-                                        </Col>
-                                    </Row>
-                                    <Scrollbar style={{ width: 815, height: 640 }} >
+                        {/* image display , delete, update, sort*/}
+                        <Col span={14}>
+                            <div style={{ margin: '35px' }}>
+                                {productImages.length > 0 ?
+                                    <div>
+                                        <Row className="topRow" style={{ height: 40 }} >
+                                            <Col span={18}>
+                                                <h4>Bu ürüne ait toplam {productImages.length} fotoğraf vardır.</h4>
+                                            </Col>
+                                            <Col span={6}>
+                                                {btnUpdateOrder ?
+                                                    <Button style={{ float: 'right', zIndex: 3 }} type="primary" onClick={this.updateSortedImagesThrottled}>Güncel Sıralamayı Kaydet</Button>
+                                                    : ''
+                                                }
+                                            </Col>
+                                        </Row>
                                         {categoricalImageList.map((imageList, index) =>
                                             <div key={index}>
                                                 {imageList.length > 0 ?
@@ -451,17 +491,17 @@ class ImageUpload extends React.Component {
                                                     {
                                                         imageList.map(image =>
                                                             <Col span={6}
-                                                                key={image.imageID}
-                                                                style={{ padding: '10px', order: productList.some(item => item.mainImageID === image.imageID) ? -1 : 1 }}
+                                                                key={image.imageId}
+                                                                style={{ padding: '10px', order: productList.some(item => item.mainImageId === image.imageId) ? -1 : 1 }}
                                                                 onDrop={this.handleDrop}
                                                                 onDragStart={this.handleDragStart}>
-                                                                <Card key={image.imageID}
+                                                                <Card key={image.imageId}
                                                                     className="imageCard"
                                                                     hoverable
                                                                     style={{ width: '100%', height: '100%', margin: '10px' }}
                                                                     cover={
                                                                         <div className="divWrapper" >
-                                                                            {productList.some(item => item.mainImageID === image.imageID) ?
+                                                                            {productList.some(item => item.mainImageId === image.imageId) ?
                                                                                 <div className="imageBadge">
                                                                                     <Badge count={'Ana Foto'} />
                                                                                 </div>
@@ -470,7 +510,7 @@ class ImageUpload extends React.Component {
                                                                             <DragOutlined className="handle dragIcon" />
                                                                             <div className="image">
                                                                                 <img style={{ width: '170px' }} alt="Fotoğraf Bulunamadı" draggable="false" src={image.imagePath}
-                                                                                    onClick={() => this.handleShowDialog(image.imageID)}
+                                                                                    onClick={() => this.handleShowDialog(image.imageId)}
                                                                                 />
                                                                             </div>
                                                                         </div>
@@ -481,7 +521,7 @@ class ImageUpload extends React.Component {
                                                                                 <Col span={8}>
                                                                                     <Popconfirm
                                                                                         title="Bu fotoğrafı silmek istediğinizden emin misiniz?"
-                                                                                        onConfirm={() => this.deleteImage(image.imageID)}
+                                                                                        onConfirm={() => this.deleteImage(image.imageId)}
                                                                                         okText="Evet"
                                                                                         cancelText="Hayır"
                                                                                     >
@@ -490,10 +530,10 @@ class ImageUpload extends React.Component {
                                                                                 </Col>
                                                                                 <Col span={16}>
                                                                                     {_.any(imageList, (item) => item.canBeMainImage) ?
-                                                                                        _.any(productList, (item) => item.mainImageID === image.imageID) ?
+                                                                                        _.any(productList, (item) => item.mainImageId === image.imageId) ?
                                                                                             <Button className="buttonMainImage" disabled>Ana Foto. Yap</Button>
                                                                                             :
-                                                                                            <Button className="buttonMainImage" draggable="false" onClick={() => this.setAsMainImage(image.imageID)} >Ana Foto. Yap</Button>
+                                                                                            <Button className="buttonMainImage" draggable="false" onClick={() => this.setAsMainImage(image.imageId)} >Ana Foto. Yap</Button>
                                                                                         : null}
                                                                                 </Col>
                                                                             </Row>
@@ -509,7 +549,7 @@ class ImageUpload extends React.Component {
                                                                         <i>{image.imageUploadDateStr}</i>
                                                                     </div>
                                                                 </Card>
-                                                                {isDialogOpen && image.imageID == dialogImageId ?
+                                                                {isDialogOpen && image.imageId == dialogImageId ?
                                                                     <Modal visible={isDialogOpen} title="Fotoğraf Güncelleme" okText="Güncelle" cancelText="İptal" closable footer={null} onCancel={this.handleShowDialog}>
                                                                         <img
                                                                             draggable="false"
@@ -537,13 +577,14 @@ class ImageUpload extends React.Component {
                                                     }
                                                 </ReactSortable>
                                             </div>)}
-                                    </Scrollbar>
-                                </div> : (<div className="message"><h3 >Gösterilecek fotoğraf yok...</h3></div>)}
+                                    </div> : (<div className="message"><h3 >Gösterilecek fotoğraf yok...</h3></div>)}
 
-                        </div>
-                    </Col>
-                </Row>
-            </div>
+                            </div>
+                        </Col>
+                    </Row>
+                </Box>
+            </LayoutWrapper>
+
         )
     }
 }

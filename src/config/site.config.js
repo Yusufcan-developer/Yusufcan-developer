@@ -1,5 +1,5 @@
-// const apiUrl = 'http://192.168.0.140/b2b/api/';
-const apiUrl = 'http://localhost:5000/api/';
+const apiUrl = 'http://192.168.0.140/b2b/api/';
+// const apiUrl = 'http://localhost:5000/api/';
 
 export default {
   siteName: 'SERAMİKSAN B2B',
@@ -65,6 +65,16 @@ export default {
       getUser: apiUrl + 'security/users/',
       postAuthenticate: apiUrl + 'security/authenticate',
       postChangePassword: apiUrl + 'security/change-password',
+    },
+    image: {
+      getProductsOfImages: apiUrl + 'images/products-for-images',
+      getTypes: apiUrl + 'images/types',
+      getProductImages: apiUrl + 'images/products/{productCode}/images',
+      uploadImage: apiUrl + 'images/upload',
+      deleteImage: apiUrl + 'images/delete/',
+      updateProduct: apiUrl + 'images/products/update',
+      updateImageInfo: apiUrl + 'images/update/info',
+      updateOrder: apiUrl + 'images/update/order'
     },
     warehouse: apiUrl + 'b2b/warehouse-balances/',
 
