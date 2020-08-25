@@ -62,7 +62,7 @@ const options = [
         label: 'sidebar.userList',
       },    
       {
-        key: 'admin/photos/upload',
+        key: 'admin/products/photos',
         label: 'sidebar.uploadingPhotos',
       },
       {

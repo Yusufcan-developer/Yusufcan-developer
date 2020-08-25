@@ -303,18 +303,6 @@ const routes = [
     ),
   },
   {
-    path: 'admin/photos/upload',
-    component: lazy(() => import('@iso/containers/AdvancedUI/Uppy/Uppy')),
-  },
-  {
-    path: 'admin/users',
-    component: lazy(() => import('@iso/containers/User/UserList')),
-  },
-  {
-    path: 'admin/saveUser',
-    component: lazy(() => import('@iso/containers/User/SaveUser')),
-  },
-  {
     path: 'dropzone',
     component: lazy(() =>
       import('@iso/containers/AdvancedUI/Dropzone/Dropzone')
@@ -390,10 +378,22 @@ const routes = [
     component: lazy(() => import('@iso/containers/Products/ProductDetail')),
     exact: false
   },
-   {
+  {
     path: 'products/categories',
     component: lazy(() => import('@iso/containers/Products/Categories')),
-   },
+  },
+  {
+    path: 'admin/products/photos',
+    component: lazy(() => import('@iso/containers/User/ImageUpload')),
+  },
+  {
+    path: 'admin/users',
+    component: lazy(() => import('@iso/containers/User/UserList')),
+  },
+  {
+    path: 'admin/saveUser',
+    component: lazy(() => import('@iso/containers/User/SaveUser')),
+  }
 ];
 
 export default function AppRouter() {

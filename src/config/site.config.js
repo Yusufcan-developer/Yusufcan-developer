@@ -1,5 +1,5 @@
-const apiUrl = 'http://192.168.0.140/b2b/api/';
-// const apiUrl = 'http://localhost:5000/api/';
+// const apiUrl = 'http://192.168.0.140/b2b/api/';
+const apiUrl = 'http://localhost:5000/api/';
 
 export default {
   siteName: 'SERAMİKSAN B2B',

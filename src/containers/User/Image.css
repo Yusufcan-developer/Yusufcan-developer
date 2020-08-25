@@ -1,0 +1,121 @@
+.message {
+  text-align: center;
+  margin: 200px;
+  padding: 50px;
+  border: 1px solid #1890ff;
+  border-radius: 4px;
+}
+.cardRow {
+  margin: 5px 10px !important;
+}
+.topRow {
+  margin-left: 25px !important;
+}
+.uppy-StatusBar-actionBtn--upload {
+  display: none;
+}
+.buttonMainImage {
+  font-size: 11px !important;
+}
+.buttonDelete {
+  font-size: 11px !important;
+}
+.buttonDelete {
+  color: lightcoral !important;
+  border-color: lightcoral !important;
+}
+.buttonDelete:hover {
+  color: red !important;
+  border-color: red !important;
+}
+.buttonDelete:focus {
+  color: red !important;
+  border-color: red !important;
+}
+.message h3 {
+  color: rgb(86, 83, 83);
+}
+.ant-card-cover {
+  height: 130px;
+  max-height: 130px;
+  overflow: hidden;
+}
+.ant-card-body {
+  padding: 10px 0px 10px 10px !important;
+}
+.imageType {
+  text-align: right;
+}
+.imageDescription {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.divWrapper {
+  position: relative;
+}
+.imageBadge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+.dragIcon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  font-size: 20px;
+  background-color: whitesmoke !important;
+}
+.dialog {
+  position: relative;
+  box-shadow: 0 8px 6px -6px;
+  border-color: rgb(185, 186, 187);
+  position: static;
+  padding-top: 32px;
+  left: 30%;
+  top: 20%;
+  z-index: 5;
+}
+.closeButton {
+  position: absolute;
+  border-color: transparent;
+  outline: none;
+  top: 0;
+  right: 0;
+  padding: 2px 7px 3px 8px;
+  color: rgb(247, 78, 78);
+  background-color: transparent;
+  /* z-index: 3 !important; */
+  float: right;
+}
+.closeButton:hover {
+  outline: none;
+  background-color: rgb(247, 78, 78);
+  color: whitesmoke;
+}
+.imageDialog {
+  width: 400px;
+}
+.image {
+  text-align: center;
+}
+.ant-badge-count {
+  background-color: mediumslateblue !important;
+  color: whitesmoke !important;
+  font-size: 10px !important;
+}
+.imageCard {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  cursor: move;
+}
+.imageDate {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 10px;
+  color: rgb(164, 155, 155);
+}
