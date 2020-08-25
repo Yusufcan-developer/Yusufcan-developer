@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu,Alert } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Alert, Modal, message } from "antd";
 import TopbarAlert from '../../Topbar/TopbarAlert';
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
@@ -20,7 +20,7 @@ import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
 import Actions from '@iso/redux/themeSwitcher/actions';
-import config  from '@iso/redux/ecommerce/config'
+import config from '@iso/redux/ecommerce/config'
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Styles
@@ -49,15 +49,16 @@ const OrdersReport = () => {
 
   const queryString = require('query-string');
   const history = useHistory();
+  const [form] = Form.useForm();
 
   const { switchActivation, changeTheme } = Actions;
   const { isActivated, topbarTheme, sidebarTheme, layoutTheme } = useSelector(
     state => state.ThemeSwitcher
   );
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  const { addToCart, changeViewTopbarCart, changeProductQuantity,otherCart } = ecommerceActions;
+  const { addToCart, changeViewTopbarCart, changeProductQuantity, otherCart } = ecommerceActions;
   const dispatch = useDispatch();
-  
+
   const styleButton = { background: sidebarTheme.buttonColor };
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
@@ -65,6 +66,7 @@ const OrdersReport = () => {
   const [checkedKeys, setCheckedKeys] = useState();
   const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
+  const [deleteCartVisible, setDeleteCartVisible] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -72,12 +74,13 @@ const OrdersReport = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(1)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [selectedCart,setSelectedCart]=useState();
+  const [selectedCart, setSelectedCart] = useState();
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState();
+  const [accountNo, setAccountNo] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
@@ -89,7 +92,7 @@ const OrdersReport = () => {
   }, [pageIndex]);
 
   //Cart Data
-  const [cartData, loadingCartData, setOnChange, cartDetailData,totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
+  const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
@@ -149,20 +152,24 @@ const OrdersReport = () => {
     dataSearch();
   }
 
- 
   //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
   const menu = (
     <Menu onClick={handleMenuClick}>
       <Menu.Item key="1">Sepet Düzenlemeyi Aktifleştir</Menu.Item>
+      <Menu.Item key="2">Sil</Menu.Item>
     </Menu>
-  ); 
+  );
 
   //Menü Secimlerine Göre Modal açma işlemleri
   function handleMenuClick(value) {
     switch (value.key) {
       case '1':
-        localStorage.setItem('activeUser',selectedCart.accountNo)
+        localStorage.setItem('activeUser', selectedCart.accountNo);
         window.location.reload(false);
+        break;
+      case '2':
+        setAccountNo(selectedCart.accountNo)
+        setDeleteCartVisible(true);
         break;
       default:
         break;
@@ -185,12 +192,47 @@ const OrdersReport = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
+  //Kullanıcı silme fetch işlemi
+  async function deleteCart(accountNo) {
+    //Get User Info
+    let cart;
+    const requestOptions = {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
 
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(`${siteConfig.api.carts.deleteCart}${accountNo}`, requestOptions)
+      .then(response => {
+        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
+        return response.json();
+      })
+      .then(data => {
+        cart = data;
+      })
+      .catch();
+    return cart;
+  }
+  //Sepet Silme işlemi
+  async function handleCartDeleteOk() {
+    const cart = await deleteCart(selectedCart.accountNo);
+
+    if (cart) { message.success('Sepet başarıyla silinmiştir.'); setDeleteCartVisible(false); }
+    else { message.error('Sepet silme işlemi başarısızdır.'); }
+    return setOnChange(true);
+  };
+
+  //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
+  function handleCancel() {
+    setDeleteCartVisible(false);
+  };
   //Cart Detail Columns
   const CartDetailcolumns = [
     {
@@ -223,14 +265,14 @@ const OrdersReport = () => {
       key: "totalM2Pallet",
       align: "right",
       footerKey: "totalM2Pallet",
-      render: (totalM2Pallet) => { return numberFormat(totalM2Pallet)}
+      render: (totalM2Pallet) => { return numberFormat(totalM2Pallet) }
     },
     {
       title: "Toplam",
       dataIndex: "totalCost",
       key: "totalCost",
       align: "right",
-      footerKey:"totalCost",
+      footerKey: "totalCost",
       render: (totalCost) => { return numberFormat(totalCost) }
     },
   ];
@@ -247,6 +289,11 @@ const OrdersReport = () => {
       title: "Bağlı Hesap No",
       dataIndex: "accountNo",
       key: "accountNo",
+    },
+    {
+      title: "Açıklama",
+      dataIndex: "accountDescription",
+      key: "accountDescription",
     },
     {
       title: "Tarih",
@@ -272,7 +319,7 @@ const OrdersReport = () => {
       key: "title",
       fixed: "right",
       render: (text, record) => (
-        <Dropdown overlay={menu} trigger={['hover'] } onVisibleChange={event => {setSelectedCart(record) }} >
+        <Dropdown overlay={menu} trigger={['hover']} onVisibleChange={event => { setSelectedCart(record) }} >
           <Button >
             İşlemler  <DownOutlined />
           </Button>
@@ -281,8 +328,8 @@ const OrdersReport = () => {
     }
   ];
   return (
-    
-    <LayoutWrapper>    
+
+    <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.ActiveCarts.header" />}
       </PageHeader>
@@ -361,6 +408,26 @@ const OrdersReport = () => {
           current={pageIndex}
           position="bottom"
         />
+        <Modal
+          visible={deleteCartVisible}
+          title={accountNo + " sepeti silinecektir"}
+          okText="Sil"
+          cancelText="İptal"
+          maskClosable={false}
+          onCancel={handleCancel}
+          onOk={handleCartDeleteOk}
+        >
+          <p>{accountNo + 'kullanıcısının sepet silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
+          <Form
+            form={form}
+            layout="vertical"
+            name="form_in_modal"
+            initialValues={{
+              modifier: 'public',
+            }}
+          >
+          </Form>
+        </Modal>
       </Box>
     </LayoutWrapper>
   );

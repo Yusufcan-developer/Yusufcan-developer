@@ -184,7 +184,7 @@ export default function () {
     };
     await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
+        if (!response.ok) { return response.statusText; }
         return response.json();
       })
       .then(data => {
