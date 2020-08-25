@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag, Select } from "antd";
 
 //Fetch
 import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
@@ -39,12 +39,13 @@ var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
-
+const { Option } = Select;
 const OrdersReport = () => {
 
   const queryString = require('query-string');
   const history = useHistory();
 
+  const [lookupAddressChildren,setLookupAddressChildren] = useState();
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
@@ -64,7 +65,8 @@ const OrdersReport = () => {
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
-  const [newUrlParams, setNewUrlParams] = useState('')
+  const [newUrlParams, setNewUrlParams] = useState('');
+  const [adress, setAdress] = useState();
   const location = useLocation();
   const { searchQuery } = useParams();
   const { Text } = Typography;
@@ -202,7 +204,7 @@ const OrdersReport = () => {
   };
 
   //Change DealerCode
-  function onChangeDealerCode(value) {
+  async function onChangeDealerCode(value) {
 
     let fieldArrObj = [];
     let regionArrObj = [];
@@ -230,6 +232,8 @@ const OrdersReport = () => {
         setSelectedDealerCode(value)
         setNewUrlParams(params.toString());
       });
+
+   await getAdress(dealerArrObj);
     }
   };
 
@@ -270,6 +274,35 @@ const OrdersReport = () => {
     setPageIndex(current);
     setPageSize(pageSize);
     dataSearch(current,pageSize);
+  }
+ //Select Component Rol değiştirme 
+ function addressHandleChange(value) {
+  setAdress(value);
+}
+  //Get adress
+  async function getAdress(dealerCodes) {
+    //Get User Info  
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
+      .then(response => {
+        if (!response.ok) { return response.statusText; }
+        return response.json();
+      })
+      .then(data => {
+        const addressChildren=[];
+        _.each(data, (item, i) => {
+          addressChildren.push(<Option key={item.addressCode}>{item.addressTitle}</Option>);
+        });
+        setLookupAddressChildren(addressChildren)
+      })
+      .catch();
+    return data;
   }
 
   //Excel Oluşturma
@@ -571,6 +604,7 @@ const OrdersReport = () => {
               <Col span={6} >
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
               </Col>
+             
               <Col span={5} offset={1}>
               </Col>
             </Row>
@@ -599,13 +633,34 @@ const OrdersReport = () => {
 
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz"   style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
+            </Row>
+            <Row>
+              <Col span={5} >
+                <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+              </Col>
+              <Col span={6} offset={2}>
+              </Col>
+            </Row>
+            <Row>
+            <Select
+              mode={"multiple"}
+              style={{ width: '100%' }}
+              placeholder="Sevk Adresi Seçiniz"
+              style={{ marginBottom: '8px', width: '250px' }}
+              value={adress}
+              dropdownMatchSelectWidth={500}
+              onChange={addressHandleChange}
+            >
+          {lookupAddressChildren}
+            </Select>
+           
             </Row>
           </Panel>
         </Collapse>
