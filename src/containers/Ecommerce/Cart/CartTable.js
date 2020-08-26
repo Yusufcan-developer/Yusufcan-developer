@@ -1,6 +1,6 @@
 //React
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,15 +12,43 @@ import Button from '@iso/components/uielements/button';
 import SingleCart from '@iso/components/Cart/SingleCart';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
+import {  Menu, Dropdown } from "antd";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 
+//Style
+import { DownOutlined } from '@ant-design/icons';
+
 const { changeProductQuantity } = ecommerceActions;
 let totalPrice = 0;
+
 export default function CartTable({ style }) {
+  
+  let history = useHistory();
   const dispatch = useDispatch();
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
+
+  //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
+const menu = (
+  <Menu onClick={handleMenuClick}>
+    <Menu.Item key="1">Tümünü Sipariş Oluştur</Menu.Item>
+    <Menu.Item key="2">Parçalı Sipariş</Menu.Item>
+  </Menu>
+);
+ //Menü Secimlerine Göre Modal açma işlemleri
+  //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
+  function handleMenuClick(value) {
+    switch (value.key) {
+      case '1':
+        history.push('/checkout');
+        break;
+      case '2':
+        break;
+      default:
+        break;
+    }
+  }
 
   //Ürünlerin Getirilmesi
   function renderItems() {
@@ -121,9 +149,14 @@ export default function CartTable({ style }) {
               <Button>Uygula</Button>
             </td>
             <td>
-              <Button type="primary">
-                <Link to={'/checkout'}>Sipariş Oluştur</Link>
-              </Button>
+            <Dropdown overlay={menu} trigger={['hover'] }  >
+          <Button >
+            İşlemler  <DownOutlined />
+          </Button>
+        </Dropdown>
+              {/* <Button type="primary">
+               
+              </Button> */}
             </td>
           </tr>
         </tfoot>
