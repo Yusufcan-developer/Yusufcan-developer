@@ -17,7 +17,7 @@ export default function({
   return (
     <TopbarCartWrapper className="isoCartItems">
       <div className="isoItemImage">
-        <img alt="#" src={productItem.imageUrl} />
+        <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} />
       </div>
       <div className="isoCartDetails">
         <h3>
