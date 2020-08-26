@@ -479,6 +479,7 @@
   "page.serialNumber": "Seri No",
   "page.orderFollowUp.header": "Geçmiş Siparişler",
   "page.ActiveCarts.header": "Aktif Sepetler",
+  "page.CartToOrder": "Sipariş Oluştur",
   "page.GuaranteeLetterTitle.header": "Teminat Mektupları",
   "page.customerRecordTitle.header": "Cari Hareketler",
   "page.customerRecordDataList": "Cari Hareketler Listesi",

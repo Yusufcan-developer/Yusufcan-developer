@@ -45,7 +45,7 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
 
-const OrdersReport = () => {
+const CartList = () => {
 
   const queryString = require('query-string');
   const history = useHistory();
@@ -433,4 +433,4 @@ const OrdersReport = () => {
   );
 }
 
-export default OrdersReport;
+export default CartList;
