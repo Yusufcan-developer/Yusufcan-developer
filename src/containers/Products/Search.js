@@ -284,8 +284,9 @@ const SearchComponent = () => {
     const params = new URLSearchParams(location.search);
     params.delete('keyword');
     params.delete('pgindex');
-    if (keyword.length > 0) {
 
+    if (keyword.length > 0) {
+      setPageIndex(1);
       params.append('keyword', keyword);
       params.append('pgindex', 1);
       params.toString();
