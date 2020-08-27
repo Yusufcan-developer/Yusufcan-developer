@@ -8,7 +8,7 @@ import turkishLocale from '@uppy/locales/lib/tr_TR';
 import * as _ from 'underscore';
 import { ReactSortable } from "react-sortablejs";
 import { Form } from 'antd';
-import { Input, Card, Modal, Button, Row, Col, Select, message, Divider, Popconfirm, Tag, Badge } from 'antd';
+import { Input, Card, Modal, Button, Row, Col, Select, message, Divider, Popconfirm, Tag, Badge, Alert } from 'antd';
 import { DeleteFilled, DragOutlined, CloseOutlined } from '@ant-design/icons';
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
@@ -417,6 +417,16 @@ class ImageUpload extends React.Component {
                 </PageHeader>
                 <Box>
                     <Row>
+                        <Col span={24} style={{ padding: '0 25px' }}>
+                            <Alert
+                                message="Fotoğraf Yükleme Yardım"
+                                description="Sol bölümdeki ürün listesinden kod ya da adla arama yaparak ürün seçiniz. 'Gözat' ile yüklemek istediğiniz görseli seçiniz. Fotoğraf tipini seçerek Kaydet'e tıklayınız. Eğer mevcut görsellerde silme işlemi yapmak istiyorsanız, sağ bölümde listenen görsel üzerindeki Çöp Tenekesi ikonuna basarak silme yapabilirsiniz. Düzenleme yapmak için, görsel üzerine tıklayınız ve açılan pencerede fotoğraf tipini/açıklamasını değiştirebilirsiniz."
+                                type="info"
+                                showIcon closable
+                            />
+                        </Col>
+                    </Row>
+                    <Row>
                         {/* select product, search */}
                         <Col style={{ padding: '25px' }} span={10}>
                             <Form initialValues={{ remember: true }} ref={this.formRef} onFinish={this.sendImagesThrottled}>
@@ -583,7 +593,7 @@ class ImageUpload extends React.Component {
                         </Col>
                     </Row>
                 </Box>
-            </LayoutWrapper>
+            </LayoutWrapper >
 
         )
     }

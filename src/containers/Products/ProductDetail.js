@@ -18,7 +18,7 @@ import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseDat
 
 //Configs
 import siteConfig from "@iso/config/site.config";
-import noImage from '@iso/assets/images/noImage.png';
+// import noImage from '@iso/assets/images/noImage.png';
 import numberFormat from "@iso/config/numberFormat";
 
 //Styles
@@ -209,7 +209,7 @@ const ProductDetail = () => {
             <SwiperWithCustomNav navigationControl={false} >
               <img
                 key={`customnav-slider--key${imageUrl}`}
-                src={imageUrl === undefined ? noImage : imageUrl}
+                src={imageUrl}
                 height="500px"
               />
             </SwiperWithCustomNav>
@@ -221,16 +221,16 @@ const ProductDetail = () => {
               <Col span={12}>
                 <Form {...layout}>
                   <Form.Item label="Ürün Kodu">
-                    <span className="ant-form-text">{itemCode === null ? '-' : itemCode}</span>
+                    <span className="ant-form-text">{itemCode || '-'}</span>
                   </Form.Item>
                   <Form.Item label="Seri">
-                    <span className="ant-form-text">{series === null ? '-' : series}</span>
+                    <span className="ant-form-text">{series || '-'}</span>
                   </Form.Item>
                   <Form.Item label="Renk">
-                    <span className="ant-form-text">{color === null ? '-' : color}</span>
+                    <span className="ant-form-text">{color || '-'}</span>
                   </Form.Item>
                   <Form.Item label="Ebat">
-                    <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
+                    <span className="ant-form-text">{dimension || '-'}</span>
                   </Form.Item>
                   {notes != undefined ? (
                     <Form.Item label="Not">

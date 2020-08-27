@@ -32,24 +32,24 @@ export default function ({
   }
 
   function onChangeQuantity(event, productData) {
-    if(event.target.value>0){
-    const product = productData;
-    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-    const newProductQuantity = [];
-    productQuantity.forEach(productItem => {
-      if (productItem.itemCode !== selectedProduct.itemCode) {
-        newProductQuantity.push(productItem);
-      } else {
-        const itemCode = productItem.itemCode
-        const quantity = parseInt(event.target.value);
-        newProductQuantity.push({
-          itemCode,
-          quantity,
-        });
-      }
-    });
-    dispatch(changeProductQuantity(newProductQuantity));
-  }
+    if (event.target.value > 0) {
+      const product = productData;
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      const newProductQuantity = [];
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode
+          const quantity = parseInt(event.target.value);
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
   };
 
   const totalPrice = (productItem.listPrice * quantity).toFixed(2);
@@ -77,7 +77,7 @@ export default function ({
         </a>
       </td>
       <td className="isoItemImage">
-        <img alt="#" src={productItem.imageUrl} />
+        <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
       </td>
       <td className="isoItemName">
         <h3>{productItem.description}</h3>

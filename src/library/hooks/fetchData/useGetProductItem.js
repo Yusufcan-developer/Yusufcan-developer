@@ -2,23 +2,23 @@
 import { useState, useEffect } from "react";
 
 function useGetProductItem(url) {
-  const [productItem,setProductItem]=useState()
+  const [productItem, setProductItem] = useState()
   const [loading, setLoading] = useState(true);
   const [onChange, setOnChange] = useState(false);
   const [description, setDescription] = useState();
   const [itemCode, setItemCode] = useState();
   const [series, setSeries] = useState();
-  const [productionStatus,setProductionStatus]=useState();
-  const [surface,setSurface]=useState();
-  const [color,setColor]=useState();
-  const [dimension,setDimension]=useState();
-  const [type,setType]=useState();
-  const [rectifying,setRectifying]=useState();
-  const [listPrice,setListPrice]=useState();
-  const [unit,setUnit]=useState();
-  const [imageUrl,setImageUrl]=useState();
-  const [canBeSoldPartially,setCanBeSoldPartially]=useState();
-  const [notes,setNotes]=useState();
+  const [productionStatus, setProductionStatus] = useState();
+  const [surface, setSurface] = useState();
+  const [color, setColor] = useState();
+  const [dimension, setDimension] = useState();
+  const [type, setType] = useState();
+  const [rectifying, setRectifying] = useState();
+  const [listPrice, setListPrice] = useState();
+  const [unit, setUnit] = useState();
+  const [imageUrl, setImageUrl] = useState();
+  const [canBeSoldPartially, setCanBeSoldPartially] = useState();
+  const [notes, setNotes] = useState();
   async function fetchUrl() {
 
     const requestOptions = {
@@ -48,7 +48,7 @@ function useGetProductItem(url) {
         setType(data.type);
         setRectifying(data.rectifying);
         setListPrice(data.listPrice);
-        setImageUrl(data.imageUrl);
+        setImageUrl(data.imageLargeBaseUrl + data.imageMainFileName);
         setUnit(data.unit);
         setCanBeSoldPartially(data.canBeSoldPartially);
         setNotes(data.notes);
@@ -56,15 +56,15 @@ function useGetProductItem(url) {
       .catch();
 
 
-    
+
     setLoading(false);
   }
 
   useEffect(() => {
     setLoading(true);
     fetchUrl();
-  }, [ onChange]);
-  return [ loading , description,itemCode,series,productionStatus,surface,color,dimension,productItem,type,rectifying,listPrice,imageUrl,unit,canBeSoldPartially,notes, setOnChange];
+  }, [onChange]);
+  return [loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, setOnChange];
 }
 
 
