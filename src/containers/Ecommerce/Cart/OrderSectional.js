@@ -10,7 +10,6 @@ import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import Input from '@iso/components/uielements/input';
 import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Alert, Modal, message, InputNumber,Popconfirm,Form ,Popover,Space} from "antd";
 import TopbarAlert from '../../Topbar/TopbarAlert';
 
@@ -56,6 +55,7 @@ const OrderSectional = () => {
   const [modalVisible,setModalVisible]=useState(true);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [quantity,setQuantity]=useState();
+  const [productItem,setProductItem]=useState();
   const [cartData,setCartData]=useState();
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
@@ -144,9 +144,49 @@ function handleVisibleChange() {
   };
   const edit = record => {
     setQuantity(record.amount);
-    setModalVisible(true)
+    setModalVisible(true);
+    setProductItem(record);
     setEditingKey(record.itemCode);
   };
+  function InputNumberOnchange(value) {
+    setQuantity(value);
+  }
+  function productItemOrder() {
+    let products = localStorage.getItem('cartProducts');
+    let productQuantity = localStorage.getItem('cartProductQuantity');
+    products = JSON.parse(products);
+    productQuantity = JSON.parse(productQuantity);
+
+    //Redux product code and product quantity send database //Redux product code and product quantity send database  
+  let sendDatabaseProductList = _.each(productQuantity, (item) => {
+    item['amount'] = item['quantity'];
+    delete item['quantity'];
+    if(item.itemCode===productItem.itemCode){item.orderAmount=quantity}
+  });
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let account = token.uname;
+    if (activeUser != undefined) { account = activeUser }
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    fetch(siteConfig.api.carts.postCart, requestOptions)
+      .then(response => {
+        if (!response.ok) console.log('xxxx res',response);
+        return response.json();
+      })
+      .then(data => {
+        console.log('xxxx gelen data',data)
+        window.location.reload(false);
+      })
+      .catch();
+  }
   //Cart Columns
   const CartColumns = [
     {
@@ -183,8 +223,9 @@ function handleVisibleChange() {
       render: (totalM2Pallet) => { return numberFormat(totalM2Pallet) }
     },
     {
-        title: 'operation',
+        title: 'İşlemler',
         dataIndex: 'operation',
+        fixed: "right",
         render: (_, record) => {
           const editable = isEditing(record);
           return editable ? (
@@ -192,8 +233,8 @@ function handleVisibleChange() {
               <Popover
         content={
           <div>
-            {<Input value={quantity} onChange={event => setQuantity(event.target.value)}/>}
-            <Button type="primary">Onayla</Button>
+            {<InputNumber min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange}/>}
+            <Button type="primary" onClick={productItemOrder}>Onayla</Button>
           </div>
         }
         placement="left" 
@@ -201,7 +242,6 @@ function handleVisibleChange() {
         visible={modalVisible}
         trigger="click"
         onVisibleChange={handleVisibleChange}
-        // onVisibleChange={this.handleVisibleChange}
       >
       </Popover>
             </span>
@@ -217,7 +257,75 @@ function handleVisibleChange() {
         },
       },
   ];
- 
+  const CartToOrderColumns = [
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    }, 
+
+    {
+      title: "Birim Fiyat",
+      dataIndex: ['item', 'listPrice'],
+      key: "item.listPrice",
+      align: "right",
+    },
+    {
+      title: "Palet",
+      dataIndex: "amount",
+      key: "amount",
+      align: "right",
+      footerKey: "amount",
+      editable:true,
+    },
+    {
+      title: "Miktar (m2)",
+      dataIndex: "totalM2Pallet",
+      key: "totalM2Pallet",
+      align: "right",
+      footerKey: "totalM2Pallet",
+      render: (totalM2Pallet) => { return numberFormat(totalM2Pallet) }
+    },
+    {
+      title: "Sipariş Miktarı",
+      dataIndex: "orderAmount",
+      key: "orderAmount",
+      align: "right",
+      footerKey: "orderAmount",
+      render: (orderAmount) => { return numberFormat(orderAmount) }
+    },
+    {
+        title: 'İşlemler',
+        dataIndex: 'operation',
+        fixed: "right",
+      //   render: (_, record) => {
+      //     const editable = isEditing(record);
+      //     return editable ? (
+      //       <span>           
+      //         <Popover
+      //   content={
+      //     <div>
+      //       {<Input value={quantity} onChange={event => setQuantity(event.target.value)}/>}
+      //       <Button type="primary">Onayla</Button>
+      //     </div>
+      //   }
+      //   placement="left" 
+      //   title="Sipariş Miktarı"
+      //   visible={modalVisible}
+      //   trigger="click"
+      //   onVisibleChange={handleVisibleChange}
+      //   // onVisibleChange={this.handleVisibleChange}
+      // >
+      // </Popover>
+      //       </span>
+      //     ) : (
+      //           <a disabled={editingKey !== ''} >
+      //            İptal
+      //       </a>
+      //     );
+      //   },
+      },
+  ];
   return (
 
     <LayoutWrapper>
@@ -228,25 +336,8 @@ function handleVisibleChange() {
       <Box >
         <Col span={8} offset={16} align="right" >         
         </Col>
-        <ReportPagination
-          onShowSizeChange={onShowSizeChange}
-          onChange={currentPageChange}
-          pageSize={pageSize}
-        //   total={totalDataCount}
-          current={pageIndex}
-          position="top"
-        />
-        <Table
-          columns={CartColumns}
-          dataSource={cartData}
-          onChange={handleChange}
-        //   loading={loadingCartData}
-          pagination={false}
-          scroll={{ x: 'max-content' }}
-          size="medium"
-          bordered={false}
-        />
-          {/* <Box ></Box>
+       
+          <Space>
           <Table
           columns={CartColumns}
           dataSource={cartData}
@@ -255,15 +346,18 @@ function handleVisibleChange() {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
-        /> */}
-        <ReportPagination
-          onShowSizeChange={onShowSizeChange}
-          onChange={currentPageChange}
-          pageSize={pageSize}
-        //   total={totalDataCount}
-          current={pageIndex}
-          position="bottom"
         />
+            <Table
+          columns={CartToOrderColumns}
+          dataSource={cartData}
+          onChange={handleChange}
+          pagination={false}
+          scroll={{ x: 'max-content' }}
+          size="medium"
+          bordered={false}
+        />          
+          </Space>
+        
       </Box>
     </LayoutWrapper>
   );

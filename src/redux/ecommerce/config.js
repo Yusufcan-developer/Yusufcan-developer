@@ -57,6 +57,7 @@ async function getInitData() {
           productQuantity.push({
             itemCode: product.itemCode,
             quantity: product.quantity,
+            orderAmount:product.orderAmount
           });
           products[product.itemCode] = product.item;
         });
