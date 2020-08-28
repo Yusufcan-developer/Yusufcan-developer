@@ -275,8 +275,8 @@ const routes = [
     component: lazy(() => import('@iso/containers/Ecommerce/Cart/Cart')),
   },
   {
-    path: 'orderSectional',
-    component: lazy(() => import('@iso/containers/Ecommerce/Cart/OrderSectional')),
+    path: 'orderPartial',
+    component: lazy(() => import('@iso/containers/Ecommerce/Cart/OrderPartial')),
   },
   {
     path: 'admin/carts',
