@@ -160,6 +160,9 @@ const OrderPartial = () => {
   function InputNumberOnchange(value) {
     setQuantity(value);
   }
+  function nextOrderPage() {
+    history.push('/checkout');
+  }
   async function productItemOrder(allAmountItem, errorMessageType) {
     let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
@@ -384,16 +387,14 @@ const OrderPartial = () => {
       <PageHeader>
         {<IntlMessages id="page.CartToOrder" />}
       </PageHeader>
-
       <Box >
         <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
+          <Button type="primary" size="small" onClick={nextOrderPage} style={{ marginBottom: '5px' }}
             >
             {<IntlMessages id="forms.button.next" /> }
             {<RightOutlined />} 
           </Button>
         </Col>
-
         <Space size={50}>      
           <Table
           title={() => "Sepetim"}
@@ -405,7 +406,7 @@ const OrderPartial = () => {
             size="medium"
             bordered={false}
             // rowClassName={'table-item'}
-            rowClassName={(record, index) => (record.amount === record.orderAmount ? 'table-item' : "green")}
+            rowClassName={(record, index) => (record.amount === record.orderAmount ? 'initial' : "black")}
           />
           <Table
           title={() => "Siparişim"}
@@ -419,7 +420,6 @@ const OrderPartial = () => {
             rowClassName={(record, index) => (record.orderAmount > 0 ? "black" : "initial")}
           />
         </Space>
-
       </Box>
     </LayoutWrapper>
   );

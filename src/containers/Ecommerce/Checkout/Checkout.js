@@ -17,10 +17,11 @@ import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper, InputBoxWrapper } from './Checkout.styles';
 import { useGetCustomerInfo } from "@iso/lib/hooks/fetchData/useGetCustomerInfo";
 import siteConfig from "@iso/config/site.config";
-import { Col, Row, Modal, Table, Input } from "antd";
+import { Col, Row, Modal, Table, Input, Space } from "antd";
 import Form from "@iso/components/uielements/form";
 
 //Other Library
+import _ from 'underscore';
 var jwtDecode = require('jwt-decode');
 const Option = SelectOption;
 
@@ -51,7 +52,16 @@ export default function () {
 
   //Get Products
   function renderProducts() {
+    let products = localStorage.getItem('cartProducts');
+    let productQuantity = localStorage.getItem('cartProductQuantity');
+    products = JSON.parse(products);
+    productQuantity = JSON.parse(productQuantity);
     totalPrice = 0;
+    productQuantity = _.filter(productQuantity, function (item) {
+      if (item.orderAmount > 0) {
+        return true
+      }
+    });
     return productQuantity.map(product => {
       totalPrice += product.quantity * products[product.itemCode].listPrice;
       return (
@@ -199,6 +209,82 @@ export default function () {
     const userData = await getByUserId(userId);
     const adress = await getAdress(userData.dealerCodes[0]);
   }
+  async function clearOrder() {
+    let sendDatabaseProductList
+    let products = localStorage.getItem('cartProducts');
+    let productQuantity = localStorage.getItem('cartProductQuantity');
+    products = JSON.parse(products);
+    productQuantity = JSON.parse(productQuantity);
+      sendDatabaseProductList = _.each(productQuantity, (item) => {
+        item['amount'] = 0;
+        // delete item['quantity'];
+        item.orderAmount = item.amount;
+      }); 
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let account = token.uname;
+    if (activeUser != undefined) { account = activeUser }
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+   await fetch(siteConfig.api.carts.postCart, requestOptions)
+      .then(response => {
+        switch (response.status) {
+          case 201:
+            return response.json();
+            break;
+          case 400:
+            return response.json();
+            break;
+          case 401:
+            // Go to login
+            break;
+          case 404:
+            // Show 404 page
+            break;
+          case 500:
+            // Serveur Error redirect to 500
+            break;
+          default:
+            // Unknow Error
+            break;
+        }
+      })
+      .then(data => {
+        if (data) {
+          if (data !== 'Unauthorized') {
+            products = {};
+            productQuantity = [];
+            // Verileri Redux'a gönderme işlemi  
+            let sendReduxProductList = _.each(data.items, (item) => {
+              item['quantity'] = item['amount'];
+            });
+            if (sendReduxProductList) {
+              sendReduxProductList.forEach(product => {
+                productQuantity.push({
+                  itemCode: product.itemCode,
+                  quantity: product.quantity,
+                  orderAmount: product.orderAmount
+                });
+                products[product.itemCode] = product.item;
+              });
+            }
+            localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
+            localStorage.setItem('cartProducts', JSON.stringify(products));
+          }
+        }
+        else {
+        
+        }
+      })
+      .catch();
+  }
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -248,17 +334,12 @@ export default function () {
                   </Form>
                 </Modal>
                 <div className="isoInputFieldset horizontal">
-                  <InputBox
-                    label={<IntlMessages id="checkout.billingform.address" />}
-                    disabled={true}
+                <Input.Search
                     value={adressItem}
                     important
-                  />
-                  <Button type="primary" onClick={handleShowModal}>
-                    {<IntlMessages id="Seç" />}
-                  </Button>
+                    onSearch={handleShowModal}
+                    />                  
                 </div>
-
                 <div className="isoInputFieldset">
                   <InputBox label={<IntlMessages id="checkout.billingform.company" />}
                     onChange={onChangeCompanyName}
@@ -317,10 +398,14 @@ export default function () {
                     <span>Toplam</span>
                     <span>{totalPrice.toFixed(2)} TL</span>
                   </div>
-
+                  <Space size={50}>
                   <Button type="primary" className="isoOrderBtn" >
                     Sipariş Oluştur
         </Button>
+        <Button type="primary" onClick={clearOrder} className="isoOrderBtn" >
+                    Sipariş Temizle
+        </Button>
+       </Space>
                 </div>
               </OrderTable>
             </div>

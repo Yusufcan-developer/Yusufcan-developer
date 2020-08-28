@@ -16,9 +16,14 @@ import {  Menu, Dropdown } from "antd";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
+import siteConfig from "@iso/config/site.config";
 
 //Style
 import { DownOutlined } from '@ant-design/icons';
+
+//Other Library
+import _ from 'underscore';
+var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
 let totalPrice = 0;
@@ -36,11 +41,14 @@ const menu = (
     <Menu.Item key="2">Parçalı Sipariş</Menu.Item>
   </Menu>
 );
+
  //Menü Secimlerine Göre Modal açma işlemleri
   //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
-  function handleMenuClick(value) {
+  async function handleMenuClick(value) {
     switch (value.key) {
       case '1':
+        //Sepette ki miktarların sipariş miktarına dönüştürülmesi
+        await allCartItemChangeOrderAmount();
         history.push('/checkout');
         break;
       case '2':
@@ -49,6 +57,82 @@ const menu = (
       default:
         break;
     }
+  }
+  async function allCartItemChangeOrderAmount() {
+    let sendDatabaseProductList
+    let products = localStorage.getItem('cartProducts');
+    let productQuantity = localStorage.getItem('cartProductQuantity');
+    products = JSON.parse(products);
+    productQuantity = JSON.parse(productQuantity);
+      sendDatabaseProductList = _.each(productQuantity, (item) => {
+        item['amount'] = item['quantity'];
+        // delete item['quantity'];
+        item.orderAmount = item.amount;
+      }); 
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let account = token.uname;
+    if (activeUser != undefined) { account = activeUser }
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+   await fetch(siteConfig.api.carts.postCart, requestOptions)
+      .then(response => {
+        switch (response.status) {
+          case 201:
+            return response.json();
+            break;
+          case 400:
+            return response.json();
+            break;
+          case 401:
+            // Go to login
+            break;
+          case 404:
+            // Show 404 page
+            break;
+          case 500:
+            // Serveur Error redirect to 500
+            break;
+          default:
+            // Unknow Error
+            break;
+        }
+      })
+      .then(data => {
+        if (data) {
+          if (data !== 'Unauthorized') {
+            products = {};
+            productQuantity = [];
+            // Verileri Redux'a gönderme işlemi  
+            let sendReduxProductList = _.each(data.items, (item) => {
+              item['quantity'] = item['amount'];
+            });
+            if (sendReduxProductList) {
+              sendReduxProductList.forEach(product => {
+                productQuantity.push({
+                  itemCode: product.itemCode,
+                  quantity: product.quantity,
+                  orderAmount: product.orderAmount
+                });
+                products[product.itemCode] = product.item;
+              });
+            }
+            localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
+            localStorage.setItem('cartProducts', JSON.stringify(products));
+          }
+        }
+        else {
+        
+        }
+      })
+      .catch();
   }
 
   //Ürünlerin Getirilmesi
@@ -155,9 +239,6 @@ const menu = (
             İşlemler  <DownOutlined />
           </Button>
         </Dropdown>
-              {/* <Button type="primary">
-               
-              </Button> */}
             </td>
           </tr>
         </tfoot>
