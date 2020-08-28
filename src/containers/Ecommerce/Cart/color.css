@@ -1,0 +1,15 @@
+.red{
+    color: red;
+  }
+  .green {
+    color :green;
+  }
+  .black {
+      color: black;
+  }
+  .initial{
+      color: #ededed;
+  }
+  .table-item  {
+    text-decoration: line-through;
+  }

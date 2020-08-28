@@ -44,7 +44,7 @@ const menu = (
         history.push('/checkout');
         break;
       case '2':
-        history.push('/orderSectional');
+        history.push('/orderPartial');
         break;
       default:
         break;
