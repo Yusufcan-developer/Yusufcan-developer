@@ -218,7 +218,6 @@ export default function () {
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['orderAmount'] = 0;
         // delete item['quantity'];
-        item.orderAmount = item.amount;
       }); 
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
