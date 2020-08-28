@@ -216,7 +216,7 @@ export default function () {
     products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
       sendDatabaseProductList = _.each(productQuantity, (item) => {
-        item['amount'] = 0;
+        item['orderAmount'] = 0;
         // delete item['quantity'];
         item.orderAmount = item.amount;
       }); 
