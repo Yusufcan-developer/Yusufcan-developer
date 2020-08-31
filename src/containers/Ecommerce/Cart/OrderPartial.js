@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 
 //Components
 import Box from "@iso/components/utility/box";
@@ -10,15 +10,8 @@ import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Alert, Modal, message, InputNumber, Popconfirm, Form, Popover, Space } from "antd";
-import TopbarAlert from '../../Topbar/TopbarAlert';
+import { Table, Row, Col,  message, InputNumber, Popconfirm, Form, Popover, Space } from "antd";
 import Popconfirms from '@iso/components/Feedback/Popconfirm';
-
-//Redux
-import { useDispatch, useSelector } from 'react-redux';
-import Actions from '@iso/redux/themeSwitcher/actions';
-import config from '@iso/redux/ecommerce/config'
-import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Styles
 import { DownOutlined } from '@ant-design/icons';
@@ -27,9 +20,7 @@ import { RightOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
-import renderFooter from "../../Reports/ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
-import ReportPagination from "../../Reports/ReportPagination";
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -45,59 +36,31 @@ const { RangePicker } = DatePicker;
 
 const OrderPartial = () => {
 
-  const queryString = require('query-string');
   const history = useHistory();
   const [form] = Form.useForm();
-
-  const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  const { addToCart, changeViewTopbarCart, changeProductQuantity, otherCart } = ecommerceActions;
-  const dispatch = useDispatch();
-
-  const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(1);
   const [modalVisible, setModalVisible] = useState(true);
-  const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [quantity, setQuantity] = useState();
   const [productItem, setProductItem] = useState();
   const [cartData, setCartData] = useState();
   const [orderData, setOrderData] = useState();
-  const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
   const [editingKey, setEditingKey] = useState('');
-
   const isEditing = record => record.itemCode === editingKey;
-  const [newUrlParams, setNewUrlParams] = useState('')
-  const location = useLocation();
-  const { searchQuery } = useParams();
 
-  //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     getCartList();
   }, []);
 
-  //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
-
-    //Url değerini alıyoruz.
-    const parsed = queryString.parse(location.search);
-
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-  }
-
   //Get Cart Listesi
   async function getCartList() {
-    //Get Database to Redux Product Info
     let productInfo;
     const requestOptions = {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
@@ -128,25 +91,16 @@ const OrderPartial = () => {
       ["filteredInfo"]: filters
     });
   };
+
   function handleVisibleChange() {
     setModalVisible(false);
     setEditingKey('');
-  }
-  /**Pagination : Tablo  pageSize'ı değiştirir*/
-  function onShowSizeChange(current, pageSize) {
-    setPageSize(pageSize);
-    setPageIndex(current);
-  }
-
-  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current, pageSize) {
-    setPageSize(pageSize);
-    setPageIndex(current);
   }
 
   const cancel = () => {
     setEditingKey('');
   };
+
   async function allAmountOrder(record) {
     await productItemOrder(record);
   }
@@ -157,9 +111,11 @@ const OrderPartial = () => {
     }
     setProductItem(record, deleteAmount);
   };
+
   function InputNumberOnchange(value) {
     setQuantity(value);
   }
+  
   function nextOrderPage() {
     history.push('/checkout');
   }
@@ -243,6 +199,8 @@ const OrderPartial = () => {
             localStorage.setItem('cartProducts', JSON.stringify(products));
             setOrderData(data.items);
             setCartData(data.items);
+            setModalVisible(false);
+            setEditingKey('');
           }
         }
         else {
@@ -262,6 +220,7 @@ const OrderPartial = () => {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
+      render: (text, record) => <Link to={'products/detail/' + record.itemCode}>{text}</Link>
     },
     {
       title: "Ürün Adı",
@@ -282,7 +241,7 @@ const OrderPartial = () => {
       align: "right",
       footerKey: "amount",
       editable: true,
-    },    
+    },
     {
       title: "Miktar (m2)",
       dataIndex: "totalM2Pallet",
@@ -297,7 +256,7 @@ const OrderPartial = () => {
       key: "remaining",
       align: "right",
       footerKey: "remaining",
-      render: (record, item) => { return numberFormat(item.amount-item.orderAmount ); }
+      render: (record, item) => { return (item.amount - item.orderAmount); }
       //render: (record, item) => { return numberFormat(item.amount*item.totalM2Pallet-item.totalM2Pallet*item.orderAmount ); }
     },
     {
@@ -311,8 +270,10 @@ const OrderPartial = () => {
             <Popover
               content={
                 <div>
+                <Space size={10}>
                   {<InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />}
                   <Button type="primary" onClick={productItemOrder}>Onayla</Button>
+                  </Space>
                 </div>
               }
               placement="left"
@@ -343,7 +304,7 @@ const OrderPartial = () => {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
-    },   
+    },
     {
       title: "Palet",
       dataIndex: "orderAmount",
@@ -357,9 +318,9 @@ const OrderPartial = () => {
       key: "totalM2Pallet",
       align: "right",
       footerKey: "totalM2Pallet",
-      render: (record,item) => { return numberFormat(item.totalM2Pallet*item.orderAmount) }
+      render: (record, item) => { return numberFormat(item.totalM2Pallet * item.orderAmount) }
     },
-   
+
     {
       title: 'İşlemler',
       dataIndex: 'operation',
@@ -381,8 +342,8 @@ const OrderPartial = () => {
       },
     }
   ];
-  return (
 
+  return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.CartToOrder" />}
@@ -390,14 +351,14 @@ const OrderPartial = () => {
       <Box >
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" onClick={nextOrderPage} style={{ marginBottom: '5px' }}
-            >
-            {<IntlMessages id="forms.button.next" /> }
-            {<RightOutlined />} 
+          >
+            {<IntlMessages id="forms.button.next" />}
+            {<RightOutlined />}
           </Button>
         </Col>
-        <Space size={50}>      
+        <Space size={50}>
           <Table
-          title={() => "Sepetim"}
+            title={() => "Sepetim"}
             columns={CartColumns}
             dataSource={cartData}
             onChange={handleChange}
@@ -409,7 +370,7 @@ const OrderPartial = () => {
             rowClassName={(record, index) => (record.amount === record.orderAmount ? 'initial' : "black")}
           />
           <Table
-          title={() => "Siparişim"}
+            title={() => "Siparişim"}
             columns={CartToOrderColumns}
             dataSource={orderData}
             onChange={handleChange}
