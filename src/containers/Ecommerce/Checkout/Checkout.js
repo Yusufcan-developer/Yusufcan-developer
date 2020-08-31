@@ -210,6 +210,7 @@ export default function () {
     const adress = await getAdress(userData.dealerCodes[0]);
   }
   async function clearOrder() {
+    debugger
     let sendDatabaseProductList
     let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
@@ -262,14 +263,14 @@ export default function () {
             productQuantity = [];
             // Verileri Redux'a gönderme işlemi  
             let sendReduxProductList = _.each(data.items, (item) => {
-              item['quantity'] = item['amount'];
+              // item['quantity'] = item['amount'];
             });
             if (sendReduxProductList) {
               sendReduxProductList.forEach(product => {
                 productQuantity.push({
                   itemCode: product.itemCode,
                   quantity: product.quantity,
-                  orderAmount: product.orderAmount
+                  orderAmount: 0
                 });
                 products[product.itemCode] = product.item;
               });
