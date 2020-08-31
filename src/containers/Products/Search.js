@@ -9,7 +9,7 @@ import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import Input, { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
 
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography } from "antd";
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Checkbox } from "antd";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -833,6 +833,14 @@ const SearchComponent = () => {
                         <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span>
+                        {
+                          item.canBeSoldPartially===true ?
+                            <Row>
+                              <Col span={24} align="right" >
+                                <Checkbox >Parçalı Ekle</Checkbox>
+                              </Col>
+                            </Row>
+                            :null}                                             
                         <div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"}</div>
                         {!inputNumberShowOrHide(item) ? (
                           <Button
