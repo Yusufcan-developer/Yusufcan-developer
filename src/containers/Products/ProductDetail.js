@@ -10,7 +10,9 @@ import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
-import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag } from 'antd';
+import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space } from 'antd';
+import { ReactSortable } from "react-sortablejs";
+import _ from 'underscore';
 
 //Fetch
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
@@ -25,6 +27,7 @@ import numberFormat from "@iso/config/numberFormat";
 import PageHeader from '@iso/components/utility/pageHeader';
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
+import { DeleteFilled, DragOutlined, CloseOutlined } from '@ant-design/icons';
 
 const { TabPane } = Tabs;
 
@@ -32,6 +35,8 @@ const ProductDetail = () => {
 
   const dispatch = useDispatch();
   const { productId } = useParams();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogImageId, setDialogImageId] = useState(0);
 
   //Style States
   const { rowStyle, colStyle, gutter } = basicStyle;
@@ -41,13 +46,18 @@ const ProductDetail = () => {
     wrapperCol: { span: 16 },
   };
 
+  const contentStyle = {
+    height: '250px',
+    color: '#FF5733',
+    textAlign: 'center',
+  };
   //Redux States
   const [quantity, setQuantity] = useState(1)
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -150,7 +160,7 @@ const ProductDetail = () => {
   function onChangeQuantity(event, productItem) {
     if (event.target.value > 0) {
       const product = productItem;
-    
+
       var selectedProduct = productQuantity.find(item => item.itemCode == productId);
       const newProductQuantity = [];
       setQuantity(event.target.value)
@@ -159,7 +169,7 @@ const ProductDetail = () => {
           newProductQuantity.push(productItem);
         } else {
           const itemCode = productItem.itemCode;
-          const quantity =parseInt(event.target.value);
+          const quantity = parseInt(event.target.value);
           newProductQuantity.push({
             itemCode,
             quantity,
@@ -169,7 +179,14 @@ const ProductDetail = () => {
       dispatch(changeProductQuantity(newProductQuantity));
     }
   };
-
+  function handleShowDialog(e, value) {
+    console.log('e.key', e)
+    setIsDialogOpen(true);
+    setDialogImageId(e);
+  }
+  function handleShowDialogOk(e) {
+    setIsDialogOpen(false);
+  }
   let columns = [
     {
       title: "Ambar Kodu",
@@ -206,13 +223,24 @@ const ProductDetail = () => {
         <PageHeader>{itemCode + " - " + description}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
+          
             <SwiperWithCustomNav navigationControl={false} >
-              <img
+              <Image
                 key={`customnav-slider--key${imageUrl}`}
                 src={imageUrl}
                 height="500px"
               />
             </SwiperWithCustomNav>
+
+            {
+                      _.map(campaignImages, (imagePathName) =>
+                      <Space size={20}>                    
+                         <Image preview={false}
+                              style={{ width: '100%', height: '100%', margin: '10px' }}
+                              src={imageThumbBaseUrl + imagePathName} onClick={console.log('xxxx test')}
+                            />
+                        </Space>)}
+           
           </Box>
         </Col>
         <Col md={12} sm={12} xs={24} style={colStyle}>
@@ -328,10 +356,51 @@ const ProductDetail = () => {
                     <Form.Item label="Kenar">
                       <span className="ant-form-text">{rectifying === null ? '-' : rectifying}</span>
                     </Form.Item>
+                    {
+                      _.map(campaignImages, (imagePathName) =>
+                        <Col span={6}
+                          key={imagePathName}
+                        >
+                         <Image
+                              style={{ width: '100%', height: '100%', margin: '10px' }}
+                              src={imageMediumBaseUrl + imagePathName}
+                            />
+                        </Col>)}
                   </TabPane>
-                  <TabPane tab="Kampanya" key="3">
-                    Kampanya
-                    </TabPane>
+                  <TabPane tab="Kampanya" key="3">{
+                    _.map(campaignImages, (imagePathName) =>
+                      <Col span={6}
+                        key={imagePathName}
+                      >
+                        <Card key={imagePathName}
+                          className="imageCard"
+                          hoverable
+                          style={{ width: '100%', height: '100%', margin: '10px' }}
+                          cover={
+                            <Image
+                              src={imageMediumBaseUrl + imagePathName}
+                            />
+                          }
+                        >
+
+                        </Card>
+                        {isDialogOpen ?
+                          <Modal visible={isDialogOpen} title="Fotoğraf Görüntüleme" okText="Tamam" maskClosable={true}
+                            onOk={event => handleShowDialogOk()}>
+                            <img
+                              draggable="false"
+                              className="imageDialog"
+                              src={imageMediumBaseUrl + dialogImageId}
+                              alt="Fotoğraf Bulunamadı"
+                              style={{ width: '99%' }}
+                            />
+                            <Form style={{ marginTop: '15px' }} >
+                            </Form>
+                          </Modal>
+                          : null}
+                      </Col>)}
+
+                  </TabPane>
                 </Tabs>
               </Col>
             </Row>
