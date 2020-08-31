@@ -34,30 +34,6 @@ export default function CartTable({ style }) {
   const dispatch = useDispatch();
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
 
-  //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
-const menu = (
-  <Menu onClick={handleMenuClick}>
-    <Menu.Item key="1">Tümünü Sipariş Oluştur</Menu.Item>
-    <Menu.Item key="2">Parçalı Sipariş</Menu.Item>
-  </Menu>
-);
-
- //Menü Secimlerine Göre Modal açma işlemleri
-  //3 Adet Modal bulunmaktadır.Bunlar işlemler menüsü secimlerine göre Kullanıcı Düzenleme,Parola yenileme ve Kullanıcı silme modalları
-  async function handleMenuClick(value) {
-    switch (value.key) {
-      case '1':
-        //Sepette ki miktarların sipariş miktarına dönüştürülmesi
-        await allCartItemChangeOrderAmount();
-        history.push('/checkout');
-        break;
-      case '2':
-        history.push('/orderPartial');
-        break;
-      default:
-        break;
-    }
-  }
   async function allCartItemChangeOrderAmount() {
     let sendDatabaseProductList
     let products = localStorage.getItem('cartProducts');
@@ -184,6 +160,17 @@ const menu = (
     dispatch(changeProductQuantity(newProductQuantity));
   }
 
+  //Sepetteki ürünlerin siparişe hazırlanması
+  async function allProductToOrder() {
+    //Sepette ki miktarların sipariş miktarına dönüştürülmesi
+    await allCartItemChangeOrderAmount();
+    history.push('/checkout');
+  }
+
+  //Parçalı siparişlerin hazırlanması
+  function orderPartial() {
+    history.push('/orderPartial');
+  }
   const classname = style != null ? style : '';
   return (
     <ProductsTable className={`isoCartTable ${classname}`}>
@@ -223,7 +210,6 @@ const menu = (
                 paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
               }}
             >
-              <Input size="large" placeholder="Kampanya Kodu" />
             </td>
             <td
               style={{
@@ -231,14 +217,16 @@ const menu = (
                 paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
               }}
             >
-              <Button>Uygula</Button>
             </td>
             <td>
-            <Dropdown overlay={menu} trigger={['hover'] }  >
-          <Button >
-            İşlemler  <DownOutlined />
+          <Button onClick={allProductToOrder}>
+            Tümünü Sipariş Oluştur
           </Button>
-        </Dropdown>
+            </td>
+            <td>
+          <Button onClick={orderPartial} >
+            Parçalı Sipariş Oluştur
+          </Button>
             </td>
           </tr>
         </tfoot>
