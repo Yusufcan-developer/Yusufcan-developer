@@ -40,6 +40,7 @@ export default function () {
   const [adress, setAdress] = useState();
   const [adressItem, setAdressItem] = useState();
   const [addressFilterData,setAddressFilterData]=useState();
+  const [loadingButton,setLoadingButton]=useState(false);
 
   let totalPrice;
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
@@ -210,7 +211,7 @@ export default function () {
     const adress = await getAdress(userData.dealerCodes[0]);
   }
   async function clearOrder() {
-    debugger
+    setLoadingButton(true);
     let sendDatabaseProductList
     let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
@@ -218,6 +219,7 @@ export default function () {
     productQuantity = JSON.parse(productQuantity);
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['orderAmount'] = 0;
+        item['amount']=item['quantity'];
         // delete item['quantity'];
       }); 
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -263,7 +265,7 @@ export default function () {
             productQuantity = [];
             // Verileri Redux'a gönderme işlemi  
             let sendReduxProductList = _.each(data.items, (item) => {
-              // item['quantity'] = item['amount'];
+              item['quantity'] = item['amount'];
             });
             if (sendReduxProductList) {
               sendReduxProductList.forEach(product => {
@@ -284,6 +286,7 @@ export default function () {
         }
       })
       .catch();
+      setLoadingButton(false);
   }
   return (
     <CheckoutContents>
@@ -402,7 +405,7 @@ export default function () {
                   <Button type="primary" className="isoOrderBtn" >
                     Sipariş Oluştur
         </Button>
-        <Button type="primary" onClick={clearOrder} className="isoOrderBtn" >
+        <Button type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
                     Sipariş Temizle
         </Button>
        </Space>
