@@ -19,6 +19,9 @@ function useGetProductItem(url) {
   const [imageUrl, setImageUrl] = useState();
   const [canBeSoldPartially, setCanBeSoldPartially] = useState();
   const [notes, setNotes] = useState();
+  const [campaign,setCampaign]=useState();
+  const [imageThumbBaseUrl,setImageThumbBaseUrl]=useState();
+  const [imageMediumBaseUrl,setImageMediumBaseUrl]=useState();
   async function fetchUrl() {
 
     const requestOptions = {
@@ -35,8 +38,6 @@ function useGetProductItem(url) {
         return response.json();
       })
       .then(data => {
-        console.log("Get : ", `${url}`);
-        console.log("useGetProductItem Data :", data);
         setDescription(data.description)
         setItemCode(data.itemCode)
         setSeries(data.series)
@@ -52,10 +53,11 @@ function useGetProductItem(url) {
         setUnit(data.unit);
         setCanBeSoldPartially(data.canBeSoldPartially);
         setNotes(data.notes);
+        setCampaign(data.imageCampaignFileNames);
+        setImageThumbBaseUrl(data.imageThumbBaseUrl);
+        setImageMediumBaseUrl(data.imageMediumBaseUrl);
       })
       .catch();
-
-
 
     setLoading(false);
   }
@@ -64,7 +66,7 @@ function useGetProductItem(url) {
     setLoading(true);
     fetchUrl();
   }, [onChange]);
-  return [loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, setOnChange];
+  return [loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaign,imageThumbBaseUrl,imageMediumBaseUrl, setOnChange];
 }
 
 
