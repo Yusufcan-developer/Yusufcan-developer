@@ -39,10 +39,11 @@ export default function () {
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
   const [adressItem, setAdressItem] = useState();
-  const [addressFilterData,setAddressFilterData]=useState();
-  const [loadingButton,setLoadingButton]=useState(false);
+  const [addressFilterData, setAddressFilterData] = useState();
+  const [loadingButton, setLoadingButton] = useState(false);
 
   let totalPrice;
+  let totalPallet=0;
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
@@ -63,8 +64,13 @@ export default function () {
         return true
       }
     });
+    _.each(productQuantity, (item, i) => {
+      totalPallet+=item.quantity;
+    });
+    productQuantity.push({'itemCode':'M99999900','quantity':totalPallet});
+    products['M99999900'] = {'description':'AHŞAP PALET BEDELİ ','listPrice':20};
     return productQuantity.map(product => {
-      totalPrice += product.quantity * products[product.itemCode].listPrice;
+        totalPrice += product.quantity * products[product.itemCode].listPrice;
       return (
         <SingleOrderInfo
           key={product.objectID}
@@ -77,7 +83,6 @@ export default function () {
   }
   //Change First Name 
   function saveOrder(event) {
-
   };
 
   //Change Company Name
@@ -99,7 +104,7 @@ export default function () {
   const onChangeCity = e => {
     setCity(e.target.value);
   };
-  
+
   //Adres Modal iptal işlemi
   function handleCancel() {
     setVisible(false);
@@ -156,7 +161,7 @@ export default function () {
       );
       setAddressFilterData(filterTable);
     }
-    else{setAddressFilterData('')}
+    else { setAddressFilterData('') }
   };
 
   //get user by id
@@ -210,6 +215,7 @@ export default function () {
     const userData = await getByUserId(userId);
     const adress = await getAdress(userData.dealerCodes[0]);
   }
+
   async function clearOrder() {
     setLoadingButton(true);
     let sendDatabaseProductList
@@ -217,11 +223,11 @@ export default function () {
     let productQuantity = localStorage.getItem('cartProductQuantity');
     products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
-      sendDatabaseProductList = _.each(productQuantity, (item) => {
-        item['orderAmount'] = 0;
-        item['amount']=item['quantity'];
-        // delete item['quantity'];
-      }); 
+    sendDatabaseProductList = _.each(productQuantity, (item) => {
+      item['orderAmount'] = 0;
+      item['amount'] = item['quantity'];
+      // delete item['quantity'];
+    });
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let account = token.uname;
@@ -235,7 +241,7 @@ export default function () {
       },
       body: JSON.stringify(reqBody)
     };
-   await fetch(siteConfig.api.carts.postCart, requestOptions)
+    await fetch(siteConfig.api.carts.postCart, requestOptions)
       .then(response => {
         switch (response.status) {
           case 201:
@@ -282,11 +288,11 @@ export default function () {
           }
         }
         else {
-        
+
         }
       })
       .catch();
-      setLoadingButton(false);
+    setLoadingButton(false);
   }
   return (
     <CheckoutContents>
@@ -322,7 +328,7 @@ export default function () {
                     />
                     <Table
                       columns={columns}
-                      dataSource={addressFilterData == null || addressFilterData=='' ? adress : addressFilterData}
+                      dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       // dataSource={adress}
                       onRow={(record, rowIndex) => {
                         return {
@@ -337,11 +343,11 @@ export default function () {
                   </Form>
                 </Modal>
                 <div className="isoInputFieldset horizontal">
-                <Input.Search
+                  <Input.Search
                     value={adressItem}
                     important
                     onSearch={handleShowModal}
-                    />                  
+                  />
                 </div>
                 <div className="isoInputFieldset">
                   <InputBox label={<IntlMessages id="checkout.billingform.company" />}
@@ -402,13 +408,13 @@ export default function () {
                     <span>{totalPrice.toFixed(2)} TL</span>
                   </div>
                   <Space size={50}>
-                  <Button type="primary" className="isoOrderBtn" >
-                    Sipariş Oluştur
+                    <Button type="primary" className="isoOrderBtn" >
+                      Sipariş Oluştur
         </Button>
-        <Button type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
-                    Sipariş Temizle
+                    <Button type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
+                      Sipariş Temizle
         </Button>
-       </Space>
+                  </Space>
                 </div>
               </OrderTable>
             </div>
