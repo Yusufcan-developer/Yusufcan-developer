@@ -68,7 +68,7 @@ export default function () {
       totalPallet+=item.quantity;
     });
     productQuantity.push({'itemCode':'M99999900','quantity':totalPallet});
-    products['M99999900'] = {'description':'AHŞAP PALET BEDELİ ','listPrice':20};
+    products['M99999900'] = {'description':'AHŞAP PALET BEDELİ ','listPrice':20,'itemCode':'M99999900'};
     return productQuantity.map(product => {
         totalPrice += product.quantity * products[product.itemCode].listPrice;
       return (
@@ -83,6 +83,7 @@ export default function () {
   }
   //Change First Name 
   function saveOrder(event) {
+    console.log('xxxx sip productQuantity',products);
   };
 
   //Change Company Name
@@ -342,7 +343,8 @@ export default function () {
                     />
                   </Form>
                 </Modal>
-                <div className="isoInputFieldset horizontal">
+                <label>{<IntlMessages id="page.addressTitle" />}</label>
+                <div className="isoInputFieldset">
                   <Input.Search
                     value={adressItem}
                     important
@@ -408,7 +410,7 @@ export default function () {
                     <span>{totalPrice.toFixed(2)} TL</span>
                   </div>
                   <Space size={50}>
-                    <Button type="primary" className="isoOrderBtn" >
+                    <Button type="primary" className="isoOrderBtn" onClick={saveOrder} >
                       Sipariş Oluştur
         </Button>
                     <Button type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >

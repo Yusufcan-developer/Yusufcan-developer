@@ -7,6 +7,8 @@ export default function({ price, quantity, _highlightResult,productItem }) {
   return (
     <div className="isoSingleOrderInfo">
       <p>
+      <span>{productItem.itemCode}</span>
+      <span>-</span>
         <span>{trimName}</span>
         <span>x</span>
         <span className="isoQuantity">{quantity}</span>
