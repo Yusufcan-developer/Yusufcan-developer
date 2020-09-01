@@ -10,7 +10,7 @@ import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import { Table, Row, Col,  message, InputNumber, Popconfirm, Form, Popover, Space } from "antd";
+import { Table, Row, Col,  message, InputNumber, Popconfirm, Form, Popover, Space, Tag } from "antd";
 import Popconfirms from '@iso/components/Feedback/Popconfirm';
 
 //Styles
@@ -256,7 +256,20 @@ const OrderPartial = () => {
       key: "remaining",
       align: "right",
       footerKey: "remaining",
-      render: (record, item) => { return (item.amount - item.orderAmount); }
+      render: (record, item) => 
+      //{ return (item.amount - item.orderAmount);
+      {return(
+        <>
+        {item.amount>item.amount - item.orderAmount  ? (
+           <Tag color={'red'} key={item}>
+            {item.amount - item.orderAmount}
+          </Tag>
+        ) : (<Tag color={'green'}>
+        {item.amount - item.orderAmount}
+        </Tag>)}
+      </>)
+      }
+      
       //render: (record, item) => { return numberFormat(item.amount*item.totalM2Pallet-item.totalM2Pallet*item.orderAmount ); }
     },
     {
