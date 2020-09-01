@@ -37,6 +37,7 @@ const ProductDetail = () => {
   const { productId } = useParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogImageId, setDialogImageId] = useState(0);
+  const [sliderImageUrl, setSliderImageUrl] = useState();
 
   //Style States
   const { rowStyle, colStyle, gutter } = basicStyle;
@@ -57,7 +58,7 @@ const ProductDetail = () => {
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -88,6 +89,7 @@ const ProductDetail = () => {
       }
     };
   };
+
   //removing items from the cart
   function onRemoveProductCart(product) {
     inputNumberShowOrHide(product)
@@ -206,7 +208,6 @@ const ProductDetail = () => {
       render: (balance) => numberFormat(balance)
     },
   ];
-
   return (
     <LayoutWrapper>
       <Breadcrumb>
@@ -223,24 +224,21 @@ const ProductDetail = () => {
         <PageHeader>{itemCode + " - " + description}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
-          
             <SwiperWithCustomNav navigationControl={false} >
-              <Image
-                key={`customnav-slider--key${imageUrl}`}
-                src={imageUrl}
+              {<Image
+                key={`customnav-slider--key${sliderImageUrl || imageUrl}`}
+                src={sliderImageUrl || imageUrl}
                 height="500px"
-              />
+              />}
             </SwiperWithCustomNav>
-
             {
-                      _.map(campaignImages, (imagePathName) =>
-                      <Space size={20}>                    
-                         <Image preview={false}
-                              style={{ width: '100%', height: '100%', margin: '10px' }}
-                              src={imageThumbBaseUrl + imagePathName} onClick={console.log('xxxx test')}
-                            />
-                        </Space>)}
-           
+              _.map(imageGeneralFileNames, (imagePathName) =>
+                <Space size={20}>
+                  <Image preview={false} align={"center"}
+                    style={{ width: '100%', height: '100%', margin: '10px' }}
+                    src={imageThumbBaseUrl + imagePathName} onClick={event => setSliderImageUrl(imageMediumBaseUrl + imagePathName)}
+                  />
+                </Space>)}
           </Box>
         </Col>
         <Col md={12} sm={12} xs={24} style={colStyle}>
@@ -268,9 +266,7 @@ const ProductDetail = () => {
                     </Form.Item>
                   ) : (<Form.Item> </Form.Item>)}
                 </Form>
-
               </Col>
-
               <Col span={12}>
                 {productionStatus === 'OUTLET' ? (
                   <Row >
@@ -281,7 +277,6 @@ const ProductDetail = () => {
                     </Col>
                   </Row>
                 ) : (<Row >
-
                 </Row>)}
                 <Row style={{ marginTop: '30px' }}>
                   <Col align="center" span={24}>
@@ -361,10 +356,10 @@ const ProductDetail = () => {
                         <Col span={6}
                           key={imagePathName}
                         >
-                         <Image
-                              style={{ width: '100%', height: '100%', margin: '10px' }}
-                              src={imageMediumBaseUrl + imagePathName}
-                            />
+                          <Image
+                            style={{ width: '100%', height: '100%', margin: '10px' }}
+                            src={imageMediumBaseUrl + imagePathName}
+                          />
                         </Col>)}
                   </TabPane>
                   <TabPane tab="Kampanya" key="3">{

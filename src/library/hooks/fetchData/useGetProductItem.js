@@ -20,6 +20,7 @@ function useGetProductItem(url) {
   const [canBeSoldPartially, setCanBeSoldPartially] = useState();
   const [notes, setNotes] = useState();
   const [campaign,setCampaign]=useState();
+  const [imageGeneralFileNames,setImageGeneralFileNames]=useState();
   const [imageThumbBaseUrl,setImageThumbBaseUrl]=useState();
   const [imageMediumBaseUrl,setImageMediumBaseUrl]=useState();
   async function fetchUrl() {
@@ -56,6 +57,7 @@ function useGetProductItem(url) {
         setCampaign(data.imageCampaignFileNames);
         setImageThumbBaseUrl(data.imageThumbBaseUrl);
         setImageMediumBaseUrl(data.imageMediumBaseUrl);
+        setImageGeneralFileNames(data.imageGeneralFileNames);
       })
       .catch();
 
@@ -66,7 +68,7 @@ function useGetProductItem(url) {
     setLoading(true);
     fetchUrl();
   }, [onChange]);
-  return [loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaign,imageThumbBaseUrl,imageMediumBaseUrl, setOnChange];
+  return [loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaign,imageThumbBaseUrl,imageMediumBaseUrl,imageGeneralFileNames, setOnChange];
 }
 
 
