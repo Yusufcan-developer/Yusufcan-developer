@@ -86,6 +86,9 @@ export default function ({
       <td className="isoItemPrice">
         {numberFormat(productItem.listPrice)} {"TL"}
       </td>
+      <td className="isoItemUnit">
+        {productItem.unit}
+      </td>
       <td className="isoItemPalet">
         <Row justify="center" align="middle">
           <Col span={8} style={{ width: '100%' }} align="right">

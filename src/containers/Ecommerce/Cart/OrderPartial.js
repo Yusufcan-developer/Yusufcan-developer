@@ -235,6 +235,11 @@ const OrderPartial = () => {
       align: "right",
     },
     {
+      title: "Birimi",
+      dataIndex: ['item', 'unit'],
+      key: "item.unit",
+    },
+    {
       title: "Palet",
       dataIndex: "amount",
       key: "amount",
@@ -324,6 +329,11 @@ const OrderPartial = () => {
       key: "orderAmount",
       align: "right",
       footerKey: "orderAmount",
+    },
+    {
+      title: "Birimi",
+      dataIndex: ['item', 'unit'],
+      key: "item.unit",
     },
     {
       title: "Sipariş Miktarı (m2)",
