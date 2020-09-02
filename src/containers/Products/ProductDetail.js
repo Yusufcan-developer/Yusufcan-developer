@@ -339,18 +339,21 @@ const ProductDetail = () => {
             />
             <Row style={{ ...rowStyle, marginTop: '10px' }} gutter={gutter} justify="start">
               <Col span={24} style={colStyle}>
-                <Tabs defaultActiveKey="1" type="card" size={"small"}>
-                  <TabPane tab="Ürün Açıklaması" key="1">
+                <Tabs defaultActiveKey="2" type="card" size={"small"}>
+                  {/* <TabPane tab="Ürün Açıklaması" key="1">
                     Ürün Açıklaması
+                    </TabPane> */}
+                  {imageTechnicalFileNames!=null > 0 ?
+                    <TabPane tab="Teknik Özellik" key="2">
+                      {
+                        _.map(imageTechnicalFileNames, (imagePathName) =>
+                          <Image
+                            style={{ width: '100%', margin: '10px' }}
+                            src={imageLargeBaseUrl + imagePathName}
+                          />)}
                     </TabPane>
-                  <TabPane tab="Teknik Özellik" key="2">
-                    {
-                      _.map(imageTechnicalFileNames, (imagePathName) =>
-                        <Image
-                          style={{ width: '100%', margin: '10px' }}
-                          src={imageLargeBaseUrl + imagePathName}
-                        />)}
-                  </TabPane>
+                    : null}
+                    {campaignImages!=null > 0 ?
                   <TabPane tab="Kampanya" key="3">{
                     _.map(campaignImages, (imagePathName) =>
                       <Image
@@ -358,6 +361,7 @@ const ProductDetail = () => {
                         src={imageLargeBaseUrl + imagePathName}
                       />)}
                   </TabPane>
+                  : null}
                 </Tabs>
               </Col>
             </Row>

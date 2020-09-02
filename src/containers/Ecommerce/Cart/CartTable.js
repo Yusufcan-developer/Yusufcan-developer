@@ -183,7 +183,7 @@ export default function CartTable({ style }) {
             <th className="isoItemPrice">Birim Fiyat</th>
             <th className="isoItemUnit">Birimi</th>
             <th className="isoItemPalet">Palet</th>
-            <th className="isoItemQuantity">Miktar (m2)</th>
+            <th className="isoItemQuantity">Miktar</th>
             <th className="isoItemPriceTotal">Toplam</th>
           </tr>
         </thead>

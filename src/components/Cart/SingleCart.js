@@ -51,8 +51,10 @@ export default function ({
       dispatch(changeProductQuantity(newProductQuantity));
     }
   };
-
-  const totalPrice = (productItem.listPrice * quantity).toFixed(2);
+  let totalPrice;
+if(productItem.unit==='AD'){totalPrice = (productItem.listPrice * quantity).toFixed(2);}
+else{totalPrice = ((productItem.listPrice * quantity)*productItem.m2Pallet).toFixed(2);}
+  
 
   function onRemoveBox(product) {
     if (quantity !== 1) {
@@ -117,7 +119,7 @@ export default function ({
         </Row>
       </td>
       <td className="isoItemQuantity">
-        {numberFormat(quantity * productItem.m2Pallet)}
+        {numberFormat(quantity * productItem.m2Pallet)} {'('+productItem.unit+')'}
       </td>
       <td className="isoItemPriceTotal">{numberFormat(totalPrice)} TL</td>
     </tr>
