@@ -10,7 +10,7 @@ import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
-import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space } from 'antd';
+import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge } from 'antd';
 import { ReactSortable } from "react-sortablejs";
 import _ from 'underscore';
 
@@ -27,7 +27,7 @@ import numberFormat from "@iso/config/numberFormat";
 import PageHeader from '@iso/components/utility/pageHeader';
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
-import { DeleteFilled, DragOutlined, CloseOutlined } from '@ant-design/icons';
+import { LinkOutlined} from '@ant-design/icons';
 
 const { TabPane } = Tabs;
 
@@ -38,7 +38,8 @@ const ProductDetail = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogImageId, setDialogImageId] = useState(0);
   const [sliderImageUrl, setSliderImageUrl] = useState();
-
+  const history = useHistory();
+  
   //Style States
   const { rowStyle, colStyle, gutter } = basicStyle;
   const style = { zIndex: 100 - 90 };
@@ -58,7 +59,7 @@ const ProductDetail = () => {
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl,imageLargeBaseUrl] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -133,7 +134,6 @@ const ProductDetail = () => {
         }
       });
       dispatch(changeProductQuantity(newProductQuantity));
-
     }
   };
 
@@ -208,6 +208,7 @@ const ProductDetail = () => {
       render: (balance) => numberFormat(balance)
     },
   ];
+   
   return (
     <LayoutWrapper>
       <Breadcrumb>
@@ -223,14 +224,16 @@ const ProductDetail = () => {
       <Row style={rowStyle} gutter={gutter} justify="start">
         <PageHeader>{itemCode + " - " + description}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
-          <Box>
+          <Box>          
             <SwiperWithCustomNav navigationControl={false} >
-              {<Image
+            <Card >
+             {<Image
                 key={`customnav-slider--key${sliderImageUrl || imageUrl}`}
                 src={sliderImageUrl || imageUrl}
                 height="500px"
               />}
-            </SwiperWithCustomNav>
+              </Card>
+            </SwiperWithCustomNav>        
             {
               _.map(imageGeneralFileNames, (imagePathName) =>
                 <Space size={20}>
@@ -239,6 +242,11 @@ const ProductDetail = () => {
                     src={imageThumbBaseUrl + imagePathName} onClick={event => setSliderImageUrl(imageOriginalBaseUrl + imagePathName)}
                   />
                 </Space>)}
+                <Col span={8} offset={16} align="right" >
+          <Button  size="small" style={{ marginBottom: '5px' }  } onClick={event =>   history.push(`${'/admin/products/photos'}/${productId}`)}
+            icon={<LinkOutlined />} >
+          </Button>
+        </Col>
           </Box>
         </Col>
         <Col md={12} sm={12} xs={24} style={colStyle}>
@@ -336,65 +344,19 @@ const ProductDetail = () => {
                     Ürün Açıklaması
                     </TabPane>
                   <TabPane tab="Teknik Özellik" key="2">
-                    <Form.Item label="Ebat">
-                      <span className="ant-form-text">{dimension === null ? '-' : dimension}</span>
-                    </Form.Item>
-                    <Form.Item label="Yüzey">
-                      <span className="ant-form-text">{surface === null ? '-' : surface}</span>
-                    </Form.Item>
-                    <Form.Item label="Renk">
-                      <span className="ant-form-text">{color === null ? '-' : color}</span>
-                    </Form.Item>
-                    <Form.Item label="Tipi">
-                      <span className="ant-form-text">{type === null ? '-' : type}</span>
-                    </Form.Item>
-                    <Form.Item label="Kenar">
-                      <span className="ant-form-text">{rectifying === null ? '-' : rectifying}</span>
-                    </Form.Item>
                     {
                       _.map(imageTechnicalFileNames, (imagePathName) =>
-                        <Col span={6}
-                          key={imagePathName}
-                        >
-                          <Image
-                            style={{ width: '100%', height: '100%', margin: '10px' }}
-                            src={imageOriginalBaseUrl + imagePathName}
-                          />
-                        </Col>)}
+                        <Image
+                          style={{ width: '100%', margin: '10px' }}
+                          src={imageLargeBaseUrl + imagePathName}
+                        />)}
                   </TabPane>
                   <TabPane tab="Kampanya" key="3">{
                     _.map(campaignImages, (imagePathName) =>
-                      <Col span={6}
-                        key={imagePathName}
-                      >
-                        <Card key={imagePathName}
-                          className="imageCard"
-                          hoverable
-                          style={{ width: '100%', height: '100%', margin: '10px' }}
-                          cover={
-                            <Image
-                              src={imageOriginalBaseUrl + imagePathName}
-                            />
-                          }
-                        >
-
-                        </Card>
-                        {isDialogOpen ?
-                          <Modal visible={isDialogOpen} title="Fotoğraf Görüntüleme" okText="Tamam" maskClosable={true}
-                            onOk={event => handleShowDialogOk()}>
-                            <img
-                              draggable="false"
-                              className="imageDialog"
-                              src={imageMediumBaseUrl + dialogImageId}
-                              alt="Fotoğraf Bulunamadı"
-                              style={{ width: '99%' }}
-                            />
-                            <Form style={{ marginTop: '15px' }} >
-                            </Form>
-                          </Modal>
-                          : null}
-                      </Col>)}
-
+                      <Image
+                        style={{ width: '100%', margin: '10px' }}
+                        src={imageLargeBaseUrl + imagePathName}
+                      />)}
                   </TabPane>
                 </Tabs>
               </Col>
