@@ -70,7 +70,7 @@ function useGetProductItem(url) {
     setLoading(true);
     fetchUrl();
   }, [onChange]);
-  return [loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaign,imageThumbBaseUrl,imageMediumBaseUrl,imageGeneralFileNames,imageTechnicalFileNames setOnChange];
+  return [loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaign,imageThumbBaseUrl,imageMediumBaseUrl,imageGeneralFileNames,imageTechnicalFileNames, setOnChange];
 }
 
 
