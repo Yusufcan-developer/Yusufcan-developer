@@ -58,7 +58,7 @@ const ProductDetail = () => {
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -236,7 +236,7 @@ const ProductDetail = () => {
                 <Space size={20}>
                   <Image preview={false} align={"center"}
                     style={{ width: '100%', height: '100%', margin: '10px' }}
-                    src={imageThumbBaseUrl + imagePathName} onClick={event => setSliderImageUrl(imageMediumBaseUrl + imagePathName)}
+                    src={imageThumbBaseUrl + imagePathName} onClick={event => setSliderImageUrl(imageOriginalBaseUrl + imagePathName)}
                   />
                 </Space>)}
           </Box>
@@ -358,7 +358,7 @@ const ProductDetail = () => {
                         >
                           <Image
                             style={{ width: '100%', height: '100%', margin: '10px' }}
-                            src={imageMediumBaseUrl + imagePathName}
+                            src={imageOriginalBaseUrl + imagePathName}
                           />
                         </Col>)}
                   </TabPane>
@@ -373,7 +373,7 @@ const ProductDetail = () => {
                           style={{ width: '100%', height: '100%', margin: '10px' }}
                           cover={
                             <Image
-                              src={imageMediumBaseUrl + imagePathName}
+                              src={imageOriginalBaseUrl + imagePathName}
                             />
                           }
                         >

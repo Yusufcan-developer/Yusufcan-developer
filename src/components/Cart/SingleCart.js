@@ -80,7 +80,7 @@ export default function ({
         <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
       </td>
       <td className="isoItemName">
-        <h3>{productItem.description}</h3>
+        <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
         <p>{productItem.type}</p>
       </td>
       <td className="isoItemPrice">
