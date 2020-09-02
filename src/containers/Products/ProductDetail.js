@@ -58,7 +58,7 @@ const ProductDetail = () => {
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
+  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
@@ -352,7 +352,7 @@ const ProductDetail = () => {
                       <span className="ant-form-text">{rectifying === null ? '-' : rectifying}</span>
                     </Form.Item>
                     {
-                      _.map(campaignImages, (imagePathName) =>
+                      _.map(imageTechnicalFileNames, (imagePathName) =>
                         <Col span={6}
                           key={imagePathName}
                         >
