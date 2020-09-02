@@ -1,5 +1,12 @@
 
 import React from 'react';
+import queryString from 'query-string';
+import {
+    BrowserRouter as Router,
+    Switch,
+    useLocation
+  } from "react-router-dom";
+  
 import Uppy from '@uppy/core';
 import { Dashboard, ProgressBar } from '@uppy/react';
 import "@uppy/core/dist/style.css";
@@ -143,6 +150,7 @@ class ImageUpload extends React.Component {
             .then(response => response.json())
             .then(imageTypes => {
                 this.setState({ imageTypes: imageTypes })
+                this.getVariablesFromUrl();
             }).catch(error => console.log(error));
     }
 
@@ -170,6 +178,11 @@ class ImageUpload extends React.Component {
                     productCode: productCode
                 });
             }).catch(error => console.log(error));
+    }
+
+    getVariablesFromUrl() {
+        let query = window.location.search.substring(1);
+        if(query!==''){let productItemCode = query.split("&"); this.setState({productCode:productItemCode[0]}); this.getProductImages(productItemCode[0]);}        
     }
 
     //api' ye dosya gönderme
@@ -409,7 +422,7 @@ class ImageUpload extends React.Component {
     }
 
     render() {
-        const { productList, productImages, imageTypes, btnUpdateOrder, isDialogOpen, dialogImageId, categoricalImageList } = this.state;
+        const { productList, productImages, imageTypes, btnUpdateOrder, isDialogOpen, dialogImageId, categoricalImageList, productCode } = this.state;
         return (
             <LayoutWrapper>
                 <PageHeader>
@@ -436,6 +449,7 @@ class ImageUpload extends React.Component {
                                         placeholder="Ürün Seçiniz"
                                         optionFilterProp="children"
                                         onChange={this.getProductImages}
+                                        value={productCode}
                                         filterOption={(input, option) =>
                                             option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }>

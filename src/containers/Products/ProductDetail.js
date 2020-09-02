@@ -243,7 +243,7 @@ const ProductDetail = () => {
                   />
                 </Space>)}
                 <Col span={8} offset={16} align="right" >
-          <Button  size="small" style={{ marginBottom: '5px' }  } onClick={event =>   history.push(`${'/admin/products/photos'}/${productId}`)}
+          <Button  size="small" style={{ marginBottom: '5px' }  } onClick={event =>   history.push(`${'/admin/products/photos'}/?${productId}`)}
             icon={<LinkOutlined />} >
           </Button>
         </Col>
