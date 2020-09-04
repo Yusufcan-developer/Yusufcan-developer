@@ -3,13 +3,15 @@ import React, { useState, useEffect } from "react";
 import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 
 //Components
+import Form from "@iso/components/uielements/form";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import Input, { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Checkbox } from "antd";
+import LayoutWrapper from '@iso/components/utility/layoutWrapper';
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Checkbox, Tooltip, Space, Popover, InputNumber, Image, Tag, Descriptions } from "antd";
+import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,8 +39,9 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 import {
-  SortAscendingOutlined, ClearOutlined,
+  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined
 } from '@ant-design/icons';
+import Modal from "antd/lib/modal/Modal";
 
 const { Panel } = Collapse;
 
@@ -71,6 +74,9 @@ const SearchComponent = () => {
   const [itemRefButtonType, setItemRefButtonType] = useState('dashed');
   const [listPriceLowestButtonType, setListPriceLowestButtonType] = useState('dashed');
   const [listPriceHighestButtonType, setListPriceHighestButtonType] = useState('dashed');
+  const [partialQuantity, setPartialQuantity] = useState(false);
+  const [selectedItemCode, setSelectedItemCode] = useState();
+  const [form] = Form.useForm();
 
   useEffect(() => {
     getVariablesFromUrl(searchQuery);
@@ -217,7 +223,7 @@ const SearchComponent = () => {
     useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Get Category
-  const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`,{});
+  const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
 
   //Get Type 
   // const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
@@ -226,18 +232,18 @@ const SearchComponent = () => {
 
   //Get Dimension
   // const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.getDimensions}?categories=${category}`);
-  
+
   //Post Dimension
-  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Post Series
-  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Post Color
-  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Post Surface
-  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`,{ "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
   //Get Quality
   // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
@@ -329,7 +335,7 @@ const SearchComponent = () => {
     params.toString();
 
     history.push(`${location.pathname}?${params.toString()}`);
-    
+
     return setOnChange(true);
   }
   //Type Filter Event
@@ -381,7 +387,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if ((nullOrBlankData) && (dimensionNewArray.length > 0)) { dimensionNewArray.push(''); }  
+    if ((nullOrBlankData) && (dimensionNewArray.length > 0)) { dimensionNewArray.push(''); }
     setDimension(dimensionNewArray)
     const params = new URLSearchParams(location.search);
     params.delete('dm');
@@ -578,20 +584,21 @@ const SearchComponent = () => {
 
   //Quantity input number Show/Hide
   function inputNumberShowOrHide(value) {
-    if(productQuantity!==null){
-    var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
-    if (selectedProduct === undefined) {
-      return false;
+    if (productQuantity !== null) {
+      var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
+      if (selectedProduct === undefined) {
+        return false;
+      }
+      else { return true; }
     }
-    else { return true; }
-  }
-  else {return false;}
+    else { return false; }
   }
 
   //Input Number return quantity value
   function inputNumberQuantityValue(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     if (selectedProduct === undefined) {
+      if (partialQuantity) { return 0 }
       return 1
     }
     else {
@@ -604,24 +611,27 @@ const SearchComponent = () => {
   }
   //Redux product quantity change event
   function onChangeQuantity(event, productData) {
-    if(event.target.value>0){
-    const product = productData;
-    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-    const newProductQuantity = [];
-    productQuantity.forEach(productItem => {
-      if (productItem.itemCode !== selectedProduct.itemCode) {
-        newProductQuantity.push(productItem);
-      } else {
-        const itemCode = productItem.itemCode
-        const quantity = parseInt(event.target.value);
-        newProductQuantity.push({
-          itemCode,
-          quantity,
+    if (event.target.value > 0) {
+      if ((partialQuantity) && (event.target.value === 1)) { return onAddProductCart(productData, true) }
+      else {
+        const product = productData;
+        var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+        const newProductQuantity = [];
+        productQuantity.forEach(productItem => {
+          if (productItem.itemCode !== selectedProduct.itemCode) {
+            newProductQuantity.push(productItem);
+          } else {
+            const itemCode = productItem.itemCode
+            const quantity = parseInt(event.target.value);
+            newProductQuantity.push({
+              itemCode,
+              quantity,
+            });
+          }
         });
+        dispatch(changeProductQuantity(newProductQuantity));
       }
-    });
-    dispatch(changeProductQuantity(newProductQuantity));
-  }
+    }
   };
 
   //removing items from the cart
@@ -647,31 +657,37 @@ const SearchComponent = () => {
   };
 
   //Adding products to the cart
-  function onAddProductCart(product) {
-    inputNumberShowOrHide(product)
-    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) {
-      dispatch(addToCart(product, 1));
-      notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
-    }
+  function onAddProductCart(product, orderPartialAddTobox = false) {
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
-      const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-      const newProductQuantity = [];
-      productQuantity.forEach(productItem => {
-        if (productItem.itemCode !== selectedProduct.itemCode) {
-          newProductQuantity.push(productItem);
-        } else {
-          const itemCode = productItem.itemCode;
-          const quantity = productItem.quantity + 1;
-          newProductQuantity.push({
-            itemCode,
-            quantity,
-          });
-        }
-      });
-      dispatch(changeProductQuantity(newProductQuantity));
+      inputNumberShowOrHide(product)
+      if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) {
+        dispatch(addToCart(product, 1));
+        notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+      }
+      else {
+        const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+        const newProductQuantity = [];
+        productQuantity.forEach(productItem => {
+          if (productItem.itemCode !== selectedProduct.itemCode) {
+            newProductQuantity.push(productItem);
+          } else {
+            const itemCode = productItem.itemCode;
+            const quantity = productItem.quantity + 1;
+            newProductQuantity.push({
+              itemCode,
+              quantity,
+            });
+          }
+        });
+        dispatch(changeProductQuantity(newProductQuantity));
+      }
     }
   };
-
+  //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
+  function handleCancel() {
+    setPartialQuantity(false);
+  };
   return (
     <React.Fragment>
       {/* <Breadcrumb>
@@ -740,14 +756,13 @@ const SearchComponent = () => {
                     options={
                       dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeDimension}
-                    value={dimension.map(e => e === null  ? siteConfig.nullOrEmptySearchItem : e)}
+                    value={dimension.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel>
               </Collapse>
             ) : (<Collapse ></Collapse>)}
             {(serieData.length != 0 && serieData != null) ? (
-
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Seriler" />} key="4">
                   <CheckboxGroup
@@ -760,14 +775,13 @@ const SearchComponent = () => {
                 </Panel>
               </Collapse>
             ) : (<Collapse ></Collapse>)}
-
             {(colorData.length != 0 && colorData != null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Renkler" />} key="5">
                   <CheckboxGroup
-                    value={color.map(e => e === null? siteConfig.nullOrEmptySearchItem : e)}
+                    value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      colorData.map(e => e === null? siteConfig.nullOrEmptySearchItem : e)}
+                      colorData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeColor}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -792,10 +806,10 @@ const SearchComponent = () => {
               icon={<ClearOutlined />}
               onClick={event => clearFilterVariables()}
               style={{ marginTop: '10px' }}
-              >{<IntlMessages id="Filtreleri Temizle" />}
+            >{<IntlMessages id="Filtreleri Temizle" />}
             </Button>
-
           </SidebarWrapper>
+
           <ContentHolder>
             <Row style={{ marginBottom: '10px' }}>
               <Col span={16}>
@@ -810,14 +824,21 @@ const SearchComponent = () => {
             <Box>
               <Spin spinning={loading}>
                 <Row gutter={[24, 16]}>
-
                   {data.map((item) => (
-                    <SingleCardWrapper className={listClass} style={style} >
-                      <div className="isoCardImage">
+                    <SingleCardWrapper className={listClass} style={style}>
+                      {item.canBeSoldPartially === true ? (
+                        <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange'>
+                          <div className="isoCardImage">
+                            <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                              <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} onMouseOver={e => console.log(e)} />
+                            </Link>{' '}
+                          </div>
+                        </Badge.Ribbon>
+                      ) : (<div className="isoCardImage">
                         <Link to={`${'/products/detail'}/${item.itemCode}`}>
                           <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} onMouseOver={e => console.log(e)} />
                         </Link>{' '}
-                      </div>
+                      </div>)}
                       <div className="isoCardContent">
                         <Row>
                           <Col span={6} >
@@ -833,15 +854,106 @@ const SearchComponent = () => {
                         <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span>
-                        {
-                          item.canBeSoldPartially===true ?
-                            <Row>
-                              <Col span={24} align="right" >
-                                <Checkbox >Parçalı Ekle</Checkbox>
-                              </Col>
-                            </Row>
-                            :null}                                             
-                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"}</div>
+                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
+                          <Tooltip title={<div>1 Palet: {item.m2Pallet} {item.unit}<br />Sepete palet bazında ekleme yapılacaktır</div>} color={"lime"} key={'lime'}>
+                            <Button type='link' size="small"
+                              icon={<InfoCircleOutlined />} >
+                            </Button>
+                          </Tooltip>
+                        </div>
+                        {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
+                        {partialQuantity === true & item.itemCode === selectedItemCode ? (
+                          <Modal
+                            title={item.itemCode + ' - ' + item.description}
+                            visible={true}
+                            width={700}
+                            // onOk={handleOk}
+                            onCancel={handleCancel}
+                            maskClosable={false}
+                            footer={[
+                              <Button key="back" onClick={handleCancel}>
+                                İptal
+          </Button>,
+                              <Button
+                                key="submit"
+                                type="primary"
+                              // onClick={handleOk}
+                              >
+                                Tamam
+          </Button>
+                            ]}>
+                            <Card >
+                              {<Image
+                                key={`customnav-slider--key${item.imageUrl}`}
+                                src={item.imageMediumBaseUrl + item.imageMainFileName}
+                              />}
+                            </Card>
+                            <Descriptions>
+                              <Descriptions.Item label="Paletli Satış (PALET)"> <Row>
+                                <Col span={4} align="right">
+                                  <Button type="primary" onClick={event => onRemoveProductCart(item)}>
+                                    {<IntlMessages id="-" />}
+                                  </Button>
+                                </Col>
+                                <Col span={4} align="middle">
+                                  <Input
+                                    id={'Paletli' + item.itemCode}
+                                    onClick={event => onSelectAll('Paletli' + item.itemCode)}
+                                    onChange={event => onChangeQuantity(event, item)}
+                                    style={{ textAlign: "right" }}
+                                    maxLength={25}
+                                    defaultValue={0}
+                                    step={1}
+                                    value={inputNumberQuantityValue(item)}
+                                  />
+                                </Col>
+                                <Col span={4} >
+                                  <Button type="primary" onClick={event => onAddProductCart(item, true)}>
+                                    {<IntlMessages id="+" />}
+                                  </Button>
+                                </Col>
+                                <Tag color="green">
+                                  1 Palet:{item.m2Pallet} {item.unit}
+                                </Tag>
+                              </Row>                           </Descriptions.Item>
+
+                            </Descriptions>
+                            {
+                              <Form.Item label='Parçalı Satış (KUTU)'>
+                                <Row>
+                                  {/* <div>Parçalı Satış 1 Kutu: {item.m2Box} {item.unit}</div> */}
+                                  <Col span={4} align="right">
+                                    <Button type="primary" onClick={event => onRemoveProductCart(item)}>
+                                      {<IntlMessages id="-" />}
+                                    </Button>
+                                  </Col>
+                                  <Col span={4} align="middle">
+                                    <Input
+                                      id={'Parçalı' + item.itemCode}
+                                      onClick={event => onSelectAll('Parçalı' + item.itemCode)}
+                                      onChange={event => onChangeQuantity(event, item)}
+                                      style={{ textAlign: "right" }}
+                                      maxLength={25}
+                                      defaultValue={1}
+                                      step={1}
+                                      value={inputNumberQuantityValue(item)}
+                                    />
+                                  </Col>
+                                  <Col span={4} style={{ width: '100%' }}>
+                                    <Button type="primary" onClick={event => onAddProductCart(item)}>
+                                      {<IntlMessages id="+" />}
+                                    </Button>
+                                  </Col>
+                                  <Tag color="green">
+                                    1 Kutu :{item.m2Box} {item.unit}
+                                  </Tag>
+                                </Row>
+                              </Form.Item>
+
+                            }
+                          </Modal>
+
+                        ) : (null)}
                         {!inputNumberShowOrHide(item) ? (
                           <Button
                             type="primary"
@@ -856,7 +968,7 @@ const SearchComponent = () => {
                               </Col>
                               <Col span={8} align="middle">
                                 <Input
-                                id={item.itemCode}
+                                  id={item.itemCode}
                                   onClick={event => onSelectAll(item.itemCode)}
                                   onChange={event => onChangeQuantity(event, item)}
                                   style={{ textAlign: "right" }}
