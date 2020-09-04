@@ -20,24 +20,26 @@ export default function ({
   changeQuantity,
   _highlightResult,
   productItem,
+  isPartial,
   products,
+  inputId,
 }) {
   const { productQuantity } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
   const dispatch = useDispatch();
-
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();
   }
 
-  function onChangeQuantity(event, productData) {
+  //Redux product quantity change event
+  function onChangeQuantity(event, productData, isPartial = false) {
     if (event.target.value > 0) {
       const product = productData;
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
       const newProductQuantity = [];
       productQuantity.forEach(productItem => {
-        if (productItem.itemCode !== selectedProduct.itemCode) {
+        if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
           newProductQuantity.push(productItem);
         } else {
           const itemCode = productItem.itemCode
@@ -45,6 +47,7 @@ export default function ({
           newProductQuantity.push({
             itemCode,
             quantity,
+            isPartial,
           });
         }
       });
@@ -52,18 +55,17 @@ export default function ({
     }
   };
   let totalPrice;
-if(productItem.unit==='AD'){totalPrice = (productItem.listPrice * quantity).toFixed(2);}
-else{totalPrice = ((productItem.listPrice * quantity)*productItem.m2Pallet).toFixed(2);}
-  
+  if (productItem.unit === 'AD') { totalPrice = (productItem.listPrice * quantity).toFixed(2); }
+  else { totalPrice = ((productItem.listPrice * quantity) * productItem.m2Pallet).toFixed(2); }
 
   function onRemoveBox(product) {
     if (quantity !== 1) {
-      changeQuantity(productItem.itemCode, quantity - 1);
+      changeQuantity(productItem.itemCode, quantity - 1, isPartial);
     }
   };
 
   function onAddBox(product) {
-    changeQuantity(productItem.itemCode, quantity + 1);
+    changeQuantity(productItem.itemCode, quantity + 1, isPartial);
   };
 
   return (
@@ -101,14 +103,14 @@ else{totalPrice = ((productItem.listPrice * quantity)*productItem.m2Pallet).toFi
           <Col span={8}>
             <Input
               min={1}
-              id={productItem.itemCode}
+              id={inputId}
               style={{ textAlign: "right" }}
               max={1000}
               defaultValue={1}
               value={quantity}
               step={1}
-              onClick={event => onSelectAll(productItem.itemCode)}
-              onChange={event => onChangeQuantity(event, productItem)}
+              onClick={event => onSelectAll(inputId)}
+              onChange={event => onChangeQuantity(event, productItem, isPartial)}
             />
           </Col>
           <Col span={8} style={{ width: '100%' }}>
@@ -119,7 +121,7 @@ else{totalPrice = ((productItem.listPrice * quantity)*productItem.m2Pallet).toFi
         </Row>
       </td>
       <td className="isoItemQuantity">
-        {numberFormat(quantity * productItem.m2Pallet)} {'('+productItem.unit+')'}
+        {numberFormat(quantity * productItem.m2Pallet)} {'(' + productItem.unit + ')'}
       </td>
       <td className="isoItemPriceTotal">{numberFormat(totalPrice)} TL</td>
     </tr>

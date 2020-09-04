@@ -620,17 +620,19 @@ const SearchComponent = () => {
   function addCardButtonTitle(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode );
     let title='';
+    let titleArray=[]
     if (selectedProduct === undefined) {    
       return 'Sepete Ekle'
     }
     else {
       productQuantity.forEach(productItem => {
         if (productItem.itemCode === selectedProduct.itemCode) {
-          if (productItem.isPartial === true) { title += (productItem.quantity + ' Kutu') }
-          else { title += productItem.quantity + ' Palet' }
+          if (productItem.isPartial === true) { titleArray.push(productItem.quantity + ' Kutu');  }
+          else { titleArray.push(productItem.quantity + ' Palet') }
         }
-      });    
+      });
     }
+    title=titleArray.join("+")
     return title;
   }
   //Miktar girilen text alanında tüm değerleri seçiyor

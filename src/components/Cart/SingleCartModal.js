@@ -15,7 +15,6 @@ export default function({
   productItem,
   _highlightResult,
 }) {
-  console.log('xxxx productItem',productItem)
   return (
     <TopbarCartWrapper className="isoCartItems">
       <div className="isoItemImage">
@@ -31,6 +30,7 @@ export default function({
           <span className="isoItemQuantity">{productItem.unit}</span>
           <span className="itemMultiplier">(</span>
           <span className="isoItemQuantity">{quantity}</span>
+          <span className="itemMultiplier"> </span>
           <span className="isoItemQuantity">{isPartial===true?' Kutu':' Palet'}</span>
           <span className="itemMultiplier">)</span>
         </p>

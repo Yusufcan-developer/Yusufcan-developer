@@ -12,7 +12,7 @@ import Button from '@iso/components/uielements/button';
 import SingleCart from '@iso/components/Cart/SingleCart';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
-import {  Menu, Dropdown } from "antd";
+import { Menu, Dropdown } from "antd";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
@@ -29,7 +29,7 @@ const { changeProductQuantity } = ecommerceActions;
 let totalPrice = 0;
 
 export default function CartTable({ style }) {
-  
+
   let history = useHistory();
   const dispatch = useDispatch();
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
@@ -40,11 +40,11 @@ export default function CartTable({ style }) {
     let productQuantity = localStorage.getItem('cartProductQuantity');
     products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
-      sendDatabaseProductList = _.each(productQuantity, (item) => {
-        item['amount'] = item['quantity'];
-        // delete item['quantity'];
-        item.orderAmount = item.amount;
-      }); 
+    sendDatabaseProductList = _.each(productQuantity, (item) => {
+      item['amount'] = item['quantity'];
+      // delete item['quantity'];
+      item.orderAmount = item.amount;
+    });
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let account = token.uname;
@@ -58,7 +58,7 @@ export default function CartTable({ style }) {
       },
       body: JSON.stringify(reqBody)
     };
-   await fetch(siteConfig.api.carts.postCart, requestOptions)
+    await fetch(siteConfig.api.carts.postCart, requestOptions)
       .then(response => {
         switch (response.status) {
           case 201:
@@ -105,12 +105,21 @@ export default function CartTable({ style }) {
           }
         }
         else {
-        
+
         }
       })
       .catch();
   }
-
+  function renderGrandTotal() {
+    let grandTotal = 0;
+    if (!productQuantity || productQuantity.length === 0) {
+      return <tr className="isoNoItemMsg">Ürün Bulunamadı</tr>;
+    }
+    _.each(productQuantity, (product) => {
+      grandTotal += (product.quantity * products[product.itemCode].listPrice) * products[product.itemCode].m2Pallet;
+    });
+    return numberFormat(grandTotal);
+  }
   //Ürünlerin Getirilmesi
   function renderItems() {
     totalPrice = 0;
@@ -126,6 +135,8 @@ export default function CartTable({ style }) {
           changeQuantity={changeQuantity}
           cancelQuantity={event => cancelQuantity(product)}
           productItem={products[product.itemCode]}
+          isPartial={product.isPartial}
+          inputId={product.isPartial === true ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode}
           {...products[product.itemCode]}
         />
       );
@@ -133,16 +144,16 @@ export default function CartTable({ style }) {
   }
 
   //Sepet miktarının değişikliği
-  function changeQuantity(itemCode, quantity) {
+  function changeQuantity(itemCode, quantity, isPartial) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
-      if (product.itemCode !== itemCode) {
-        
+      if (product.itemCode !== itemCode || product.isPartial !== isPartial) {
         newProductQuantity.push(product);
       } else {
         newProductQuantity.push({
           itemCode,
           quantity,
+          isPartial,
         });
       }
     });
@@ -198,7 +209,7 @@ export default function CartTable({ style }) {
             <th className="isoItemUnit" />
             <td className="isoItemPalet" />
             <td className="isoItemQuantity">Toplam Tutar</td>
-            <td className="isoItemPriceTotal">{numberFormat(totalPrice)} TL</td>
+            <td className="isoItemPriceTotal">{renderGrandTotal()} TL</td>
           </tr>
         </tbody>
 
@@ -206,7 +217,7 @@ export default function CartTable({ style }) {
           <tr>
             <td
               style={{
-                border:'1px',
+                border: '1px',
                 width: '100%',
                 paddingRight: `${direction === 'rtl' ? '0' : '25px'}`,
                 paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
@@ -221,13 +232,13 @@ export default function CartTable({ style }) {
             >
             </td>
             <td>
-          <Button onClick={allProductToOrder}>
-            Tümünü Sipariş Oluştur
+              <Button onClick={allProductToOrder}>
+                Tümünü Sipariş Oluştur
           </Button>
             </td>
             <td>
-          <Button onClick={orderPartial} >
-            Parçalı Sipariş Oluştur
+              <Button onClick={orderPartial} >
+                Parçalı Sipariş Oluştur
           </Button>
             </td>
           </tr>
