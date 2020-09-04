@@ -605,43 +605,77 @@ const SearchComponent = () => {
       return selectedProduct.quantity;
     }
   }
+   //Input Number return partial quantity value
+  function inputNumberPartialQuantityValue(product,isPartial=false) {
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial===isPartial);
+    if (selectedProduct === undefined) {
+      if (partialQuantity) { return 0 }
+      return 1
+    }
+    else {
+      return selectedProduct.quantity;
+    }
+  }
+  //Parçalı ürün sepete ekle butonunda ki değerlerin belirlenmesi
+  function addCardButtonTitle(product) {
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode );
+    let title='';
+    if (selectedProduct === undefined) {    
+      return 'Sepete Ekle'
+    }
+    else {
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode === selectedProduct.itemCode) {
+          if (productItem.isPartial === true) { title += (productItem.quantity + ' Kutu') }
+          else { title += productItem.quantity + ' Palet' }
+        }
+      });    
+    }
+    return title;
+  }
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();
   }
   //Redux product quantity change event
-  function onChangeQuantity(event, productData) {
+  function onChangeQuantity(event, productData, isPartial = false) {
     if (event.target.value > 0) {
-      if ((partialQuantity) && (event.target.value === 1)) { return onAddProductCart(productData, true) }
+      if ((partialQuantity) && (!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { return onAddProductCart(productData, true, isPartial) }
       else {
-        const product = productData;
-        var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-        const newProductQuantity = [];
-        productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode) {
-            newProductQuantity.push(productItem);
-          } else {
-            const itemCode = productItem.itemCode
-            const quantity = parseInt(event.target.value);
-            newProductQuantity.push({
-              itemCode,
-              quantity,
-            });
-          }
-        });
-        dispatch(changeProductQuantity(newProductQuantity));
+        if ((partialQuantity === true) && (event.target.value === 1)) { return onAddProductCart(productData, true, isPartial) }
+        else {
+          const product = productData;
+          var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+          const newProductQuantity = [];
+          productQuantity.forEach(productItem => {
+            if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+              newProductQuantity.push(productItem);
+            } else {
+              const itemCode = productItem.itemCode
+              const quantity = parseInt(event.target.value);
+              newProductQuantity.push({
+                itemCode,
+                quantity,
+                isPartial,
+              });
+            }
+          });
+          dispatch(changeProductQuantity(newProductQuantity));
+        }
       }
     }
   };
 
   //removing items from the cart
-  function onRemoveProductCart(product) {
+  function onRemoveProductCart(product, orderPartialAddTobox = false,isPartial=false) {
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    else {
     inputNumberShowOrHide(product)
-    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial==isPartial);
     if (selectedProduct.quantity !== 1) {
       const newProductQuantity = [];
       productQuantity.forEach(productItem => {
-        if (productItem.itemCode !== selectedProduct.itemCode) {
+        if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial!==isPartial) {
           newProductQuantity.push(productItem);
         } else {
           const itemCode = productItem.itemCode
@@ -649,27 +683,28 @@ const SearchComponent = () => {
           newProductQuantity.push({
             itemCode,
             quantity,
+            isPartial,
           });
         }
       });
       dispatch(changeProductQuantity(newProductQuantity));
+      }
     }
   };
-
   //Adding products to the cart
-  function onAddProductCart(product, orderPartialAddTobox = false) {
+  function onAddProductCart(product, orderPartialAddTobox = false,isPartial=false) {
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
-      if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) {
-        dispatch(addToCart(product, 1));
+      if (productQuantity.find(item => item.itemCode == product.itemCode &&item.isPartial == isPartial) === undefined )  {
+        dispatch(addToCart(product, 1,isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
       }
       else {
-        const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+        const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial==isPartial);
         const newProductQuantity = [];
         productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode) {
+          if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial!==isPartial) {
             newProductQuantity.push(productItem);
           } else {
             const itemCode = productItem.itemCode;
@@ -677,6 +712,7 @@ const SearchComponent = () => {
             newProductQuantity.push({
               itemCode,
               quantity,
+              isPartial,
             });
           }
         });
@@ -891,7 +927,7 @@ const SearchComponent = () => {
                             <Descriptions>
                               <Descriptions.Item label="Paletli Satış (PALET)"> <Row>
                                 <Col span={4} align="right">
-                                  <Button type="primary" onClick={event => onRemoveProductCart(item)}>
+                                  <Button type="primary" onClick={event => onRemoveProductCart(item, true,false)}>
                                     {<IntlMessages id="-" />}
                                   </Button>
                                 </Col>
@@ -904,11 +940,11 @@ const SearchComponent = () => {
                                     maxLength={25}
                                     defaultValue={0}
                                     step={1}
-                                    value={inputNumberQuantityValue(item)}
+                                    value={inputNumberPartialQuantityValue(item)}
                                   />
                                 </Col>
                                 <Col span={4} >
-                                  <Button type="primary" onClick={event => onAddProductCart(item, true)}>
+                                  <Button type="primary" onClick={event => onAddProductCart(item, true,false)}>
                                     {<IntlMessages id="+" />}
                                   </Button>
                                 </Col>
@@ -923,7 +959,7 @@ const SearchComponent = () => {
                                 <Row>
                                   {/* <div>Parçalı Satış 1 Kutu: {item.m2Box} {item.unit}</div> */}
                                   <Col span={4} align="right">
-                                    <Button type="primary" onClick={event => onRemoveProductCart(item)}>
+                                    <Button type="primary" onClick={event => onRemoveProductCart(item,true,true)}>
                                       {<IntlMessages id="-" />}
                                     </Button>
                                   </Col>
@@ -931,16 +967,16 @@ const SearchComponent = () => {
                                     <Input
                                       id={'Parçalı' + item.itemCode}
                                       onClick={event => onSelectAll('Parçalı' + item.itemCode)}
-                                      onChange={event => onChangeQuantity(event, item)}
+                                      onChange={event => onChangeQuantity(event, item,true)}
                                       style={{ textAlign: "right" }}
                                       maxLength={25}
                                       defaultValue={1}
                                       step={1}
-                                      value={inputNumberQuantityValue(item)}
+                                      value={inputNumberPartialQuantityValue(item,true)}
                                     />
                                   </Col>
                                   <Col span={4} style={{ width: '100%' }}>
-                                    <Button type="primary" onClick={event => onAddProductCart(item)}>
+                                    <Button type="primary" onClick={event => onAddProductCart(item,true,true)}>
                                       {<IntlMessages id="+" />}
                                     </Button>
                                   </Col>
@@ -954,12 +990,12 @@ const SearchComponent = () => {
                           </Modal>
 
                         ) : (null)}
-                        {!inputNumberShowOrHide(item) ? (
+                        {!inputNumberShowOrHide(item)||(item.canBeSoldPartially===true) ? (
                           <Button
                             type="primary"
-                            onClick={event => onAddProductCart(item)}>{<IntlMessages id="Sepete Ekle" />}
+                            onClick={event => onAddProductCart(item)}>{<IntlMessages id={item.canBeSoldPartially===true ? addCardButtonTitle(item): 'Sepete Ekle'}  />}
                           </Button>
-                        ) : (
+                        ) : (                     
                             <Row justify="center" align="middle">
                               <Col span={4} style={{ width: '100%' }} align="right">
                                 <Button type="primary" onClick={event => onRemoveProductCart(item)}>

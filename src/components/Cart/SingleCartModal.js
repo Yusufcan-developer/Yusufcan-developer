@@ -11,9 +11,11 @@ export default function({
   objectID,
   cancelQuantity,
   name,
+  isPartial,
   productItem,
   _highlightResult,
 }) {
+  console.log('xxxx productItem',productItem)
   return (
     <TopbarCartWrapper className="isoCartItems">
       <div className="isoItemImage">
@@ -25,8 +27,12 @@ export default function({
         </h3>
         <p className="isoItemPriceQuantity">          
           <span>{numberFormat(productItem.listPrice)} TL</span>
-          <span className="itemMultiplier">X</span>
+          <span className="itemMultiplier">/</span>
+          <span className="isoItemQuantity">{productItem.unit}</span>
+          <span className="itemMultiplier">(</span>
           <span className="isoItemQuantity">{quantity}</span>
+          <span className="isoItemQuantity">{isPartial===true?' Kutu':' Palet'}</span>
+          <span className="itemMultiplier">)</span>
         </p>
       </div>
       <a

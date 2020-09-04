@@ -57,7 +57,8 @@ async function getInitData() {
           productQuantity.push({
             itemCode: product.itemCode,
             quantity: product.quantity,
-            orderAmount:product.orderAmount
+            orderAmount:product.orderAmount,
+            isPartial:product.isPartial
           });
           products[product.itemCode] = product.item;
         });

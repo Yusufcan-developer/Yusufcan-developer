@@ -16,6 +16,7 @@ import TopbarDropdownWrapper from './TopbarDropdown.styles';
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
+import _ from 'underscore';
 
 const {
   initData,
@@ -69,6 +70,7 @@ export default function TopbarAddtoCart() {
           changeQuantity={changeQuantity}
           cancelQuantity={event => cancelQuantity(product)}
           productItem={products[product.itemCode]}
+          isPartial={product.isPartial}
           {...products[product.itemCode]}
         />
       );
@@ -93,13 +95,14 @@ export default function TopbarAddtoCart() {
 
   //Ürün iptal etme işlemi
   function cancelQuantity(productItem) {
+    debugger
     const newProductQuantity = [];
-    productQuantity.forEach(product => {
-      if (product.itemCode !== productItem.itemCode) {
-        newProductQuantity.push(product);
+    _.each(productQuantity, (product, i) => {
+      if ((product.itemCode === productItem.itemCode) && (product.isPartial === productItem.isPartial)) {       
       }
+      else{ newProductQuantity.push(product);}
     });
-    dispatch(changeProductQuantity(newProductQuantity));
+    dispatch(changeProductQuantity(newProductQuantity));    
   }
 
   const content = (
