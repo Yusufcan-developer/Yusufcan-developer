@@ -62,7 +62,7 @@ export default function TopbarAddtoCart() {
       );
     }
     return productQuantity.map(product => {
-      totalPrice += product.quantity * products[product.itemCode].listPrice;
+      totalPrice += (product.quantity * products[product.itemCode].listPrice)*products[product.itemCode].m2Pallet
       return (
         <SingleCart
           key={product.itemCode}
@@ -78,7 +78,7 @@ export default function TopbarAddtoCart() {
   }
 
   //Miktar değişikliği
-  function changeQuantity(objectID, quantity) {
+  function changeQuantity(objectID, quantity,isPartial) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
       if (product.itemCode !== objectID) {
