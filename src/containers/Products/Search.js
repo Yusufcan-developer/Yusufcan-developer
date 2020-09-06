@@ -619,8 +619,7 @@ const SearchComponent = () => {
   //Parçalı ürün sepete ekle butonunda ki değerlerin belirlenmesi
   function addCardButtonTitle(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-    let title = '';
-    let titleArray = []
+    const titleArray = []
     if (selectedProduct === undefined) {
       return 'Sepete Ekle'
     }
@@ -632,8 +631,7 @@ const SearchComponent = () => {
         }
       });
     }
-    title = titleArray.join(" + ")
-    return title;
+    return titleArray.join(" + ")
   }
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
