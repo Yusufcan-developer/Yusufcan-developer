@@ -8,7 +8,7 @@ import {
 import WithDirection from '@iso/lib/helpers/rtl';
 
 const WDSidebarWrapper = styled.div`
-  width: 340px;
+  width: 280px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;

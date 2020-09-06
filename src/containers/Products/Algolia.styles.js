@@ -21,7 +21,7 @@ const WDAlgoliaSearchPageWrapper = styled.div`
   }
 
   .isoAlgoliaSidebar {
-    padding-top: 20px;
+    padding-top: 42px;
   }
 
   &.sidebarOpen {
