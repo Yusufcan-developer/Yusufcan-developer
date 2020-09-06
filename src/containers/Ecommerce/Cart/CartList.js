@@ -273,7 +273,7 @@ const CartList = () => {
       key: "totalCost",
       align: "right",
       footerKey: "totalCost",
-      render: (totalCost) => { return numberFormat(totalCost) }
+      render: (totalCost,item) => { return numberFormat(item.totalCost*item.totalM2Pallet) }
     },
   ];
 

@@ -22,6 +22,7 @@ import Form from "@iso/components/uielements/form";
 
 //Other Library
 import _ from 'underscore';
+import numberFormat from "@iso/config/numberFormat";
 var jwtDecode = require('jwt-decode');
 const Option = SelectOption;
 
@@ -68,9 +69,10 @@ export default function () {
       totalPallet+=item.quantity;
     });
     productQuantity.push({'itemCode':'M99999900','quantity':totalPallet});
-    products['M99999900'] = {'description':'AHŞAP PALET BEDELİ ','listPrice':20,'itemCode':'M99999900'};
+    products['M99999900'] = {'description':'AHŞAP PALET BEDELİ ','listPrice':20,'itemCode':'M99999900','m2Pallet':1};
     return productQuantity.map(product => {
-        totalPrice += product.quantity * products[product.itemCode].listPrice;
+        totalPrice +=(product.quantity * products[product.itemCode].listPrice) * products[product.itemCode].m2Pallet;
+        
       return (
         <SingleOrderInfo
           key={product.objectID}
@@ -407,7 +409,7 @@ export default function () {
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
                     <span>Toplam</span>
-                    <span>{totalPrice.toFixed(2)} TL</span>
+                    <span>{numberFormat(totalPrice)} TL</span>
                   </div>
                   <Space size={50}>
                     <Button type="primary" className="isoOrderBtn" onClick={saveOrder} >
