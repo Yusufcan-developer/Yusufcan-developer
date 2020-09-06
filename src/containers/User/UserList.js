@@ -274,9 +274,9 @@ const UserList = () => {
     setRole(String(userInfo.role.id));
     setObjectRole(userInfo.role);
     setIsLocked(userInfo.isLocked);
-    setUserInfoFieldCodes(userInfo.fieldCodes)
-    setDealerCodes(userInfo.dealerCodes);
-    setRegionCodes(userInfo.regionCodes);
+    setUserInfoFieldCodes(userInfo.fieldCodes || [])
+    setDealerCodes(userInfo.dealerCodes || []);
+    setRegionCodes(userInfo.regionCodes || []);
     setTitle(userInfo.title);
 
     fieldRegionAndDealearVisible(userInfo.role.roleName);
@@ -469,7 +469,7 @@ const UserList = () => {
     let userData;
     const reqBody = {
       "Id": userId, "firstName": firstName, "lastName": lastName,
-      "username": username, "isLocked": isLocked, "email": email, "role": objectRole, "dealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": userInfoFieldCodes
+      "username": username, "isLocked": isLocked, "email": email, "role": objectRole, "title": title, "dealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": userInfoFieldCodes
     }
     const requestOptions = {
       method: "POST",
@@ -555,7 +555,7 @@ const UserList = () => {
       key: "dealerCodes",
       render: dealerCodes => (
         <>
-          {dealerCodes != undefined ? (
+          {dealerCodes && dealerCodes.length > 0 ? (
             _.map(dealerCodes, (item, i) => {
               return (<Tag color={'purple'} key={item}>
                 {item}
@@ -572,7 +572,7 @@ const UserList = () => {
       key: "fieldCodes",
       render: fieldCodes => (
         <>
-          {fieldCodes != undefined ? (
+          {fieldCodes && fieldCodes.length > 0 ? (
             _.map(fieldCodes, (item, i) => {
               return (<Tag color={'volcano'} key={item}>
                 {item}
@@ -589,7 +589,7 @@ const UserList = () => {
       key: "regionCodes",
       render: regionCodes => (
         <>
-          {regionCodes != undefined ? (
+          {regionCodes && regionCodes.length > 0 ? (
             _.map(regionCodes, (item, i) => {
               return (<Tag color={'cyan'} key={item}>
                 {item}
