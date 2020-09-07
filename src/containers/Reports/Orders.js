@@ -160,21 +160,23 @@ const OrdersReport = () => {
     _.each(orderDetailData, (item, i) => {
       if (item.Key === row.orderNo) { return orderDetailIndex = i }
     });
-    _.each(orderDetailData[orderDetailIndex].Value, (item) => {
-      expandUnitCount.push(item.unit);
-    });
-    const expandTableWithUnit = _.uniq(expandUnitCount);
+   
+  const partialUnitData=  _.groupBy(orderDetailData[orderDetailIndex].Value, function(item){ return item.unit; });
+  const r =   _.map(partialUnitData, (item) => {     
     return (<Table
       columns={OrderDetailcolumns}
-      dataSource={orderDetailData[orderDetailIndex].Value}
+      dataSource={item}
       pagination={false}
       scroll={{ x: 'max-content' }}
       size="medium"
       bordered={false}
       summary={() => {
-            return renderFooter(OrderDetailcolumns, orderDetailData[orderDetailIndex].Value)
+            return renderFooter(OrderDetailcolumns, item,false)
           }}
     />);
+        });
+
+        return (<React.Fragment>{r}</React.Fragment>);
   };
 
   //Get Search Data
@@ -324,7 +326,8 @@ const OrdersReport = () => {
     {
       title: "Ürün Açıklaması",
       dataIndex: "itemDescription",
-      key: "itemDescription"
+      key: "itemDescription",
+      ellipsis: true,
     },
     {
       title: "Miktar",

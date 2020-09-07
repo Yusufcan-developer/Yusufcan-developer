@@ -13,6 +13,8 @@ function useFetch(url, reqBody) {
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
   const [serialNumber, setSerialNumber] = useState();
+  const[code,setCode]= useState();
+  const [name,setName]=useState();
   const [selectedCheckqueType, setSelectedCheckqueType]=useState();
   const [from, setFrom] = useState();
   const [to, setTo] = useState();
@@ -39,6 +41,8 @@ function useFetch(url, reqBody) {
         const value = data.data.slice();
         value.forEach((item, index) => {          
           item.key = index;
+          setCode(item.dealerCode);
+          setName(item.dealerName)
         });
         const totalPages = data.totalPages;
         const dataCount = data.totalDataCount;
@@ -61,7 +65,7 @@ function useFetch(url, reqBody) {
     setLoading(true);
     fetchUrl();
   }, [currentPage, changePageSize,onChange]);
-  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
+  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,code,name];
 }
 
 

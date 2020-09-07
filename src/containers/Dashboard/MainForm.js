@@ -17,8 +17,9 @@ import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag,
 //Fetch
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { usePostDBSTotal1 } from "@iso/lib/hooks/fetchData/usePostDBSTotal";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 //Styles
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -100,6 +101,9 @@ const MainForm = () => {
   const [cariToplamlarData, cariToplamlarloading, cariToplamlarcurrentPage, setCurrentPageCariToplamlar, CariToplamlarchangePageSize, setChangePageSizeCariToplamlar, CariToplamlartotalDataCount, CariToplamlarsetOnChange] =
   usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "pageIndex": pageIndexCariToplamlar - 1, "pageCount": pageSizeCariToplamlar });
 
+    //Rapor
+    const [userDATA, userloading, usercurrentPage, usersetCurrentPage, userchangePageSize, usersetChangePageSize, usertotalDataCount, usersetOnChange,code,name] =
+    useFetch(`${siteConfig.api.security.postAccounts}`, {  });
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
 
@@ -436,7 +440,14 @@ const MainForm = () => {
       <PageHeader>
         {<IntlMessages id="page.mainForm.header" />}
       </PageHeader>
-      {/* Data list volume */}
+      <Col span={12}>
+      <Form.Item label="Bayi Kodu">
+        <span className="ant-form-text">{code}</span>
+      </Form.Item>
+      <Form.Item label="Unvanı">
+        <span className="ant-form-text">{name}</span>
+      </Form.Item>
+      </Col>
       <Box >
       <ReportPagination
           onShowSizeChange={onShowSizeChange}

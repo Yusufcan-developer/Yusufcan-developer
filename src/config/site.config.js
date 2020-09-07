@@ -59,6 +59,7 @@ export default {
       postUsers: apiUrl + 'security/users/search',
       postUser: apiUrl + 'security/users',
       deleteUser: apiUrl + 'security/users/',
+    
     },
     security: {
       postAccounts: apiUrl + 'core/accounts',
