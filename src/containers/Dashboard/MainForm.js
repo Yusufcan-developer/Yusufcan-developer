@@ -44,7 +44,7 @@ const MainForm = () => {
   const queryString = require('query-string');
   const history = useHistory();
 
-  const [lookupAddressChildren,setLookupAddressChildren] = useState();
+  const [lookupAddressChildren, setLookupAddressChildren] = useState();
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
@@ -95,10 +95,10 @@ const MainForm = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
-  usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "pageIndex": pageIndex - 1, "pageCount": pageSize });
 
   const [cariToplamlarData, cariToplamlarloading, cariToplamlarcurrentPage, setCurrentPageCariToplamlar, CariToplamlarchangePageSize, setChangePageSizeCariToplamlar, CariToplamlartotalDataCount, CariToplamlarsetOnChange] =
-  usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "pageIndex": pageIndexCariToplamlar - 1, "pageCount": pageSizeCariToplamlar });
+    usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "pageIndex": pageIndexCariToplamlar - 1, "pageCount": pageSizeCariToplamlar });
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
@@ -161,7 +161,7 @@ const MainForm = () => {
     });
   }
 
- 
+
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
@@ -260,29 +260,29 @@ const MainForm = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageIndex(current);
     setPageSize(pageSize);
     // dataSearch(current,pageSize);
   }
 
- /**Pagination : Tablo  pageSize'ı değiştirir*/
- function onShowCariToplamlarSizeChange(current, pageSize) {
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowCariToplamlarSizeChange(current, pageSize) {
     setPageSizeCariToplamlar(pageSize);
     setPageIndexCariToplamlar(current);
     // dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentCariToplamlarPageChange(current,pageSize) {
+  function currentCariToplamlarPageChange(current, pageSize) {
     setPageIndexCariToplamlar(current);
     setPageSizeCariToplamlar(pageSize);
     //  dataSearch(current,pageSize);
   }
- //Select Component Rol değiştirme 
- function addressHandleChange(value) {
-  setAdress(value);
-}
+  //Select Component Rol değiştirme 
+  function addressHandleChange(value) {
+    setAdress(value);
+  }
   //DBS Toplamlar Columns
   let columns = [
     {
@@ -294,75 +294,91 @@ const MainForm = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
-    },  
+    },
     {
       title: "Güncel DBS Bakiyesi",
       dataIndex: "currentDbsBalance",
       key: "currentDbsBalance",
+      render: (currentDbsBalance) => numberFormat(currentDbsBalance),
+      align: "right",
     },
     {
       title: "Güncel DBS Risk Toplamı",
       dataIndex: "currentDbsRiskTotal",
       key: "currentDbsRiskTotal",
+      render: (currentDbsRiskTotal) => numberFormat(currentDbsRiskTotal),
+      align: "right",
     },
     {
       title: "Onaysız Siparişler",
       dataIndex: "unapprovedOrders",
       key: "unapprovedOrders",
+      render: (unapprovedOrders) => numberFormat(unapprovedOrders),
+      align: "right",
     },
-      {
-          title: "Bayi DBS Limiti",
-          dataIndex: "dealerDbsLimit",
-          key: "dealerDbsLimit",
-      },      
+    {
+      title: "Bayi DBS Limiti",
+      dataIndex: "dealerDbsLimit",
+      key: "dealerDbsLimit",
+      render: (dealerDbsLimit) => numberFormat(dealerDbsLimit),
+      align: "right",
+    },
   ];
 
-  let CariToplamlarColumns=[
+  let CariToplamlarColumns = [
     {
-        title: "Bayi Kodu",
-        dataIndex: "dealerCode",
-        key: "dealerCode",
-      },
-      {
-        title: "Bayi Adı",
-        dataIndex: "dealerName",
-        key: "dealerName",
-      },  
-      {
-        title: "Güncel Bayi Bakiye",
-        dataIndex: "currentAccountBalance",
-        key: "currentAccountBalance",
-      },
-      {
-        title: "Güncel Hesap Toplamı",
-        dataIndex: "currentAccountTotals",
-        key: "currentAccountTotals",
-      },
-      {
-        title: "Güncel Hesap Kesim Tutarı",
-        dataIndex: "currentAccountCutOffTotals",
-        key: "currentAccountCutOffTotals",
-      },
-        {
-            title: "Son Hesap Kesim Tutarı",
-            dataIndex: "lastAccountCutOffTotals",
-            key: "lastAccountCutOffTotals",
-        },   
-        {
-            title: "Son Hesap Kesim Tarihi",
-            dataIndex: "lastAccountCutOffDate",
-            key: "lastAccountCutOffDate",
-            sorter: (a, b) => a.lastAccountCutOffDate - b.lastAccountCutOffDate,
-            sortOrder:
-              tableOptions.sortedInfo.columnKey === "lastAccountCutOffDate" &&
-              tableOptions.sortedInfo.order,
-            render: (lastAccountCutOffDate) => moment(lastAccountCutOffDate).format(siteConfig.dateFormat),
-        }, 
-        {
-            title: "Hesap Kesim Durumu",
-            dataIndex: "accountStatus",
-            key: "accountStatus",
-        },    
+      title: "Bayi Kodu",
+      dataIndex: "dealerCode",
+      key: "dealerCode",
+    },
+    {
+      title: "Bayi Adı",
+      dataIndex: "dealerName",
+      key: "dealerName",
+    },
+    {
+      title: "Güncel Bayi Bakiye",
+      dataIndex: "currentAccountBalance",
+      key: "currentAccountBalance",
+      render: (currentAccountBalance) => numberFormat(currentAccountBalance),
+      align: "right",
+    },
+    {
+      title: "Güncel Hesap Toplamı",
+      dataIndex: "currentAccountTotals",
+      key: "currentAccountTotals",
+      render: (currentAccountTotals) => numberFormat(currentAccountTotals),
+      align: "right",
+    },
+    {
+      title: "Güncel Hesap Kesim Tutarı",
+      dataIndex: "currentAccountCutOffTotals",
+      key: "currentAccountCutOffTotals",
+      render: (currentAccountCutOffTotals) => numberFormat(currentAccountCutOffTotals),
+      align: "right",
+    },
+    {
+      title: "Son Hesap Kesim Tutarı",
+      dataIndex: "lastAccountCutOffTotals",
+      key: "lastAccountCutOffTotals",
+      render: (lastAccountCutOffTotals) => numberFormat(lastAccountCutOffTotals),
+      align: "right",
+    },
+    {
+      title: "Son Hesap Kesim Tarihi",
+      dataIndex: "lastAccountCutOffDate",
+      key: "lastAccountCutOffDate",
+      sorter: (a, b) => a.lastAccountCutOffDate - b.lastAccountCutOffDate,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "lastAccountCutOffDate" &&
+        tableOptions.sortedInfo.order,
+      render: (lastAccountCutOffDate) => moment(lastAccountCutOffDate).format(siteConfig.dateFormat),
+    },
+    {
+      title: "Hesap Kesim Durumu",
+      dataIndex: "accountStatus",
+      key: "accountStatus",
+    },
   ];
   //Hide order table column
   //Get Token and Token Decode
@@ -438,16 +454,16 @@ const MainForm = () => {
       </PageHeader>
       {/* Data list volume */}
       <Box >
-      <ReportPagination
+        <h2 style={{ marginBottom: '10px' }}>DBS Toplamları</h2>
+        {/* <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
           current={pageIndex}
           position="top"
-        />
+        /> */}
         <Table
-          title={() => "DBS Toplamları"}
           columns={columns}
           dataSource={data}
           loading={loading}
@@ -456,9 +472,9 @@ const MainForm = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
-       
+
         />
-         <ReportPagination
+        <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
@@ -468,27 +484,28 @@ const MainForm = () => {
         />
       </Box>
       <Box >
-      <ReportPagination
+        <h2 style={{ marginBottom: '10px' }}>Cari Toplamları</h2>
+        {/* <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
           onChange={currentCariToplamlarPageChange}
           pageSize={pageSizeCariToplamlar}
           total={CariToplamlartotalDataCount}
           current={pageIndexCariToplamlar}
           position="top"
+        /> */}
+        <Table
+          title={() => "Cari Toplamlar"}
+          columns={CariToplamlarColumns}
+          dataSource={cariToplamlarData}
+          loading={loading}
+          pagination={false}
+          // scroll={{ x: 'calc(700px + 50%)' }}
+          scroll={{ x: 'max-content' }}
+          size="medium"
+          bordered={false}
+
         />
-     <Table
-       title={() => "Cari Toplamlar"}
-       columns={CariToplamlarColumns}
-       dataSource={cariToplamlarData}
-       loading={loading}
-       pagination={false}
-       // scroll={{ x: 'calc(700px + 50%)' }}
-       scroll={{ x: 'max-content' }}
-       size="medium"
-       bordered={false}
-    
-     />
-      <ReportPagination
+        <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
           onChange={currentCariToplamlarPageChange}
           pageSize={pageSizeCariToplamlar}
@@ -496,7 +513,7 @@ const MainForm = () => {
           current={pageIndexCariToplamlar}
           position="bottom"
         />
-   </Box>
+      </Box>
     </LayoutWrapper>
   );
 }
