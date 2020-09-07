@@ -336,7 +336,10 @@ const routes = [
     path: 'chat',
     component: lazy(() => import('@iso/containers/Chat/Chat')),
   },
-
+  {
+    path: 'dashboard/mainForm',
+    component: lazy(() => import('@iso/containers/Dashboard/MainForm')),
+  },
   {
     path: 'githubSearch',
     component: lazy(() => import('@iso/containers/GithubSearch/GithubSearch')),

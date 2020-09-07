@@ -1,8 +1,13 @@
 const options = [
+    // {
+    //   key: 'dashboard',
+    //   label: 'sidebar.dashboard',
+    //   leftIcon: 'ion-clipboard',
+    // },
     {
-      key: 'dashboard',
-      label: 'sidebar.dashboard',
-      leftIcon: 'ion-clipboard',
+      key: "dashboard/mainForm",
+      label: "sidebar.mainForm",
+      leftIcon: "ion-bag"
     },
     {
       key: "reportTable",

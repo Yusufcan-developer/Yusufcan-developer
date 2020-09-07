@@ -52,6 +52,8 @@ export default {
       postCheques: apiUrl + 'core/report/cheques',
       postLetters: apiUrl + 'core/report/letters',
       postTransactions: apiUrl + 'core/report/transactions',
+      postDBSTotal:apiUrl+'core/report/dbs-totals',
+      postCariTotal:apiUrl+'core/report/account-balances',
     },
     users: {
       postUsers: apiUrl + 'security/users/search',

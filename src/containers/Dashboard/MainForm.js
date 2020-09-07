@@ -15,24 +15,23 @@ import Input from '@iso/components/uielements/input';
 import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag, Select } from "antd";
 
 //Fetch
-import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
-
+import { usePostDBSTotal1 } from "@iso/lib/hooks/fetchData/usePostDBSTotal";
 //Styles
 import { DownloadOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
-import ReportPagination from "./ReportPagination";
-import renderFooter from "./ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
-import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr'
+import { usePostDBSTotalReport } from "../../library/hooks/fetchData/usePostDBSTotal";
+import { usePostCariToplamlarReport } from "../../library/hooks/fetchData/usePostCariToplamlar";
+import ReportPagination from "../Reports//ReportPagination";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -40,7 +39,7 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
-const OrdersReport = () => {
+const MainForm = () => {
 
   const queryString = require('query-string');
   const history = useHistory();
@@ -58,6 +57,8 @@ const OrdersReport = () => {
   });
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
+  const [pageIndexCariToplamlar, setPageIndexCariToplamlar] = useState(1);
+  const [pageSizeCariToplamlar, setPageSizeCariToplamlar] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
@@ -74,17 +75,30 @@ const OrdersReport = () => {
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     setCurrentPage(pageIndex);
-    getVariablesFromUrl(searchQuery)
+    // getVariablesFromUrl(searchQuery)
   }, [pageIndex]);
 
   useEffect(() => {
     setChangePageSize(pageSize);
-    getVariablesFromUrl(searchQuery)
+    // getVariablesFromUrl(searchQuery)
   }, [pageSize]);
+
+  useEffect(() => {
+    setCurrentPageCariToplamlar(pageIndexCariToplamlar);
+    // getVariablesFromUrl(searchQuery)
+  }, [pageIndexCariToplamlar]);
+
+  useEffect(() => {
+    setChangePageSizeCariToplamlar(pageSizeCariToplamlar);
+    // getVariablesFromUrl(searchQuery)
+  }, [pageSizeCariToplamlar]);
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
-    useOrderFollowData(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+  usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "pageIndex": pageIndex - 1, "pageCount": pageSize });
+
+  const [cariToplamlarData, cariToplamlarloading, cariToplamlarcurrentPage, setCurrentPageCariToplamlar, CariToplamlarchangePageSize, setChangePageSizeCariToplamlar, CariToplamlartotalDataCount, CariToplamlarsetOnChange] =
+  usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "pageIndex": pageIndexCariToplamlar - 1, "pageCount": pageSizeCariToplamlar });
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
@@ -147,35 +161,7 @@ const OrdersReport = () => {
     });
   }
 
-  //Sipariş Kalemleri Görüntüleme
-  async function onExpand(expandedKeys) {
-    setExpandedKeys(expandedKeys);
-    setAutoExpandParent(false);
-  };
-
-  //Sipariş Kalemleri Expand İşlemi
-  function expandedRow(row, index) {
-    let orderDetailIndex;
-    let expandUnitCount = []
-    _.each(orderDetailData, (item, i) => {
-      if (item.Key === row.orderNo) { return orderDetailIndex = i }
-    });
-    _.each(orderDetailData[orderDetailIndex].Value, (item) => {
-      expandUnitCount.push(item.unit);
-    });
-    const expandTableWithUnit = _.uniq(expandUnitCount);
-    return (<Table
-      columns={OrderDetailcolumns}
-      dataSource={orderDetailData[orderDetailIndex].Value}
-      pagination={false}
-      scroll={{ x: 'max-content' }}
-      size="medium"
-      bordered={false}
-      summary={() => {
-            return renderFooter(OrderDetailcolumns, orderDetailData[orderDetailIndex].Value)
-          }}
-    />);
-  };
+ 
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
@@ -238,7 +224,6 @@ const OrdersReport = () => {
         setNewUrlParams(params.toString());
       });
 
-   await getAdress(dealerArrObj);
     }
   };
 
@@ -271,118 +256,34 @@ const OrdersReport = () => {
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
-    dataSearch(current, pageSize);
+    // dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current,pageSize) {
     setPageIndex(current);
     setPageSize(pageSize);
-    dataSearch(current,pageSize);
+    // dataSearch(current,pageSize);
+  }
+
+ /**Pagination : Tablo  pageSize'ı değiştirir*/
+ function onShowCariToplamlarSizeChange(current, pageSize) {
+    setPageSizeCariToplamlar(pageSize);
+    setPageIndexCariToplamlar(current);
+    // dataSearch(current, pageSize);
+  }
+
+  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  function currentCariToplamlarPageChange(current,pageSize) {
+    setPageIndexCariToplamlar(current);
+    setPageSizeCariToplamlar(pageSize);
+    //  dataSearch(current,pageSize);
   }
  //Select Component Rol değiştirme 
  function addressHandleChange(value) {
   setAdress(value);
 }
-  //Get adress
-  async function getAdress(dealerCodes) {
-    //Get User Info  
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      }
-    };
-    await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
-      .then(response => {
-        if (!response.ok) { return response.statusText; }
-        return response.json();
-      })
-      .then(data => {
-        const addressChildren=[];
-        _.each(data, (item, i) => {
-          addressChildren.push(<Option key={item.addressCode}>{item.addressTitle}</Option>);
-        });
-        setLookupAddressChildren(addressChildren)
-      })
-      .catch();
-    return data;
-  }
-
-  //Excel Oluşturma
-  const exportExcelButton = () => {
-    ExcelExport(columns, data, 'Geçmiş Siparişler');
-  }
-  //Order Detail Columns
-  const OrderDetailcolumns = [
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Açıklaması",
-      dataIndex: "itemDescription",
-      key: "itemDescription"
-    },
-    {
-      title: "Miktar",
-      dataIndex: "amount",
-      key: "amount",
-      align: "right",
-      render: (amount) => numberFormat(amount),
-      footerKey: "amount",
-    },
-    {
-      title: "Birim",
-      dataIndex: "unit",
-      key: "unit",
-      align: "center"
-    },
-    {
-      title: "Kalan miktar",
-      dataIndex: "remainingAmount",
-      key: "remainingAmount",
-      align: "right",
-      render: (remainingAmount) => numberFormat(remainingAmount),
-      footerKey: "remainingAmount",
-    },
-    {
-      title: "Birim fiyat",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
-      align: "right",
-      render: (unitPrice) => numberFormat(unitPrice)
-    },
-    {
-      title: "Dağıtım Önerilen Miktar",
-      dataIndex: "distributionSuggestedAmount",
-      key: "distributionSuggestedAmount",
-      align: "right",
-      render: (distributionSuggestedAmount) => numberFormat(distributionSuggestedAmount),
-      footerKey: "distributionSuggestedAmount",
-    },
-    {
-      title: "Dağıtım Gerçek Tutar",
-      dataIndex: "distributionActualAmount",
-      key: "distributionActualAmount",
-      align: "right",
-      render: (distributionActualAmount) => numberFormat(distributionActualAmount),
-      footerKey: "distributionActualAmount",
-    },
-    {
-      title: "Teslimat Tutarı",
-      dataIndex: "deliveryAmount",
-      key: "deliveryAmount",
-      align: "right",
-      render: (deliveryAmount) => numberFormat(deliveryAmount),
-      footerKey: "deliveryAmount",
-    },
-
-  ];
-
-  //Order Columns
+  //DBS Toplamlar Columns
   let columns = [
     {
       title: "Bayi Kodu",
@@ -393,137 +294,76 @@ const OrdersReport = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
+    },  
+    {
+      title: "Güncel DBS Bakiyesi",
+      dataIndex: "currentDbsBalance",
+      key: "currentDbsBalance",
     },
     {
-      title: "Sipariş No",
-      dataIndex: "orderNo",
-      key: "orderNo",
-      defaultSortOrder: 'descend',
-      sorter: (a, b) => a.orderNo - b.orderNo,
-      sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
+      title: "Güncel DBS Risk Toplamı",
+      dataIndex: "currentDbsRiskTotal",
+      key: "currentDbsRiskTotal",
     },
     {
-      title: "Sipariş Tarihi",
-      dataIndex: "orderDate",
-      key: "orderDate",
-      type: "date",
-      sorter: (a, b) => a.orderDate - b.orderDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "orderDate" &&
-        tableOptions.sortedInfo.order,
-      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat),
+      title: "Onaysız Siparişler",
+      dataIndex: "unapprovedOrders",
+      key: "unapprovedOrders",
     },
-    {
-      title: "Cari/DBS",
-      dataIndex: "dealerSubCode",
-      key: "C-DBS",
-      render: dealerSubCode => (
-        <>
-          {!dealerSubCode.endsWith('D') ? (
-            <Tag color={'green'} key={dealerSubCode}>
-              {'CARİ'}
-            </Tag>
-          ) : (
-              <Tag color={'geekblue'} key={dealerSubCode}>
-                {'DBS'}
-              </Tag>
-            )}
-        </>
-      ),
-    },
-    {
-      title: "Belge No",
-      dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => a.documentId - b.documentId,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order,
-    },
-    {
-      title: "Ödeme",
-      dataIndex: "payment",
-      key: "payment",
-    },
-    {
-      title: "Adres Kodu",
-      dataIndex: "addressCode",
-      key: "addressCode",
-    },
-    {
-      title: "Teslimat Adresi",
-      dataIndex: "deliveryAddress",
-      key: "deliveryAddress",
-    },
-    {
-      title: "Toplam",
-      dataIndex: "total",
-      key: "total",
-      align: "right",
-      sorter: (a, b) => a.total - b.total,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "total" &&
-        tableOptions.sortedInfo.order,
-      render: (total) => numberFormat(total),
-      footerKey: "total",
-    },
-    {
-      title: "Durum",
-      dataIndex: "status",
-      key: "status",
-      sorter: (a, b) => a.status - b.status,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "status" &&
-        tableOptions.sortedInfo.order,
-    },
-    {
-      title: "Açıklama 1",
-      dataIndex: "description1",
-      key: "description1",
-    },
-    {
-      title: "Açıklama 2",
-      dataIndex: "description2",
-      key: "description2",
-    },
-    {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3",
-    },
-    {
-      title: "Açıklama 4",
-      dataIndex: "description4",
-      key: "description4",
-    },
-    {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode",
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode",
-    },
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager",
-    },
-    {
-      title: "Saha Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode",
-    },
-    {
-      title: "Saha Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager",
-    },
+      {
+          title: "Bayi DBS Limiti",
+          dataIndex: "dealerDbsLimit",
+          key: "dealerDbsLimit",
+      },      
   ];
 
+  let CariToplamlarColumns=[
+    {
+        title: "Bayi Kodu",
+        dataIndex: "dealerCode",
+        key: "dealerCode",
+      },
+      {
+        title: "Bayi Adı",
+        dataIndex: "dealerName",
+        key: "dealerName",
+      },  
+      {
+        title: "Güncel Bayi Bakiye",
+        dataIndex: "currentAccountBalance",
+        key: "currentAccountBalance",
+      },
+      {
+        title: "Güncel Hesap Toplamı",
+        dataIndex: "currentAccountTotals",
+        key: "currentAccountTotals",
+      },
+      {
+        title: "Güncel Hesap Kesim Tutarı",
+        dataIndex: "currentAccountCutOffTotals",
+        key: "currentAccountCutOffTotals",
+      },
+        {
+            title: "Son Hesap Kesim Tutarı",
+            dataIndex: "lastAccountCutOffTotals",
+            key: "lastAccountCutOffTotals",
+        },   
+        {
+            title: "Son Hesap Kesim Tarihi",
+            dataIndex: "lastAccountCutOffDate",
+            key: "lastAccountCutOffDate",
+            sorter: (a, b) => a.lastAccountCutOffDate - b.lastAccountCutOffDate,
+            sortOrder:
+              tableOptions.sortedInfo.columnKey === "lastAccountCutOffDate" &&
+              tableOptions.sortedInfo.order,
+            render: (lastAccountCutOffDate) => moment(lastAccountCutOffDate).format(siteConfig.dateFormat),
+        }, 
+        {
+            title: "Hesap Kesim Durumu",
+            dataIndex: "accountStatus",
+            key: "accountStatus",
+        },    
+  ];
   //Hide order table column
   //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
@@ -594,91 +434,11 @@ const OrdersReport = () => {
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.orderFollowUp.header" />}
+        {<IntlMessages id="page.mainForm.header" />}
       </PageHeader>
-      <Box>
-        <Collapse accordion>
-          <Panel header={<IntlMessages id="page.filtered" />} key="0">
-            <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-             
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={6}>
-                <TreeSelect
-                  treeData={treeData}
-                  value={selectedDealerCode}
-                  onChange={onChangeDealerCode}
-                  filterTreeNode={filterTreeNodeDealerCode}
-                  treeCheckable={true}
-                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  placeholder={"Bayi Kodu Seçiniz"}
-                  showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth={500}
-                />
-              </Col>
-              <Col span={6}>
-                <RangePicker
-                  format={siteConfig.dateFormat}
-                  onChange={changeTimePicker}
-                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: '250px' }}
-                />
-
-              </Col>
-              <Col span={6}>
-                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz"   style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
-              </Col>
-              <Col span={5} offset={1}>
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
-                  {<IntlMessages id="forms.button.label_Search" />}
-                </Button>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={5} >
-                <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
-              </Col>
-              <Col span={6} offset={2}>
-              </Col>
-            </Row>
-            <Row>
-            <Select
-              mode={"multiple"}
-              style={{ width: '100%' }}
-              placeholder="Sevk Adresi Seçiniz"
-              style={{ marginBottom: '8px', width: '250px' }}
-              value={adress}
-              dropdownMatchSelectWidth={500}
-              onChange={addressHandleChange}
-            >
-          {lookupAddressChildren}
-            </Select>
-           
-            </Row>
-          </Panel>
-        </Collapse>
-      </Box>
       {/* Data list volume */}
       <Box >
-        <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
-            icon={<DownloadOutlined />} onClick={exportExcelButton}>
-            {<IntlMessages id="forms.button.exportExcel" />}
-          </Button>
-        </Col>
-        <ReportPagination
+      <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
@@ -687,22 +447,18 @@ const OrdersReport = () => {
           position="top"
         />
         <Table
+          title={() => "DBS Toplamları"}
           columns={columns}
           dataSource={data}
-          onChange={handleChange}
           loading={loading}
-          expandable={{ 'expandedRowRender': expandedRow }}
           pagination={false}
-          onExpand={onExpand}
           // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
-          summary={() => {
-            return renderFooter(columns, data, true)
-          }}
+       
         />
-        <ReportPagination
+         <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
@@ -711,8 +467,38 @@ const OrdersReport = () => {
           position="bottom"
         />
       </Box>
+      <Box >
+      <ReportPagination
+          onShowSizeChange={onShowCariToplamlarSizeChange}
+          onChange={currentCariToplamlarPageChange}
+          pageSize={pageSizeCariToplamlar}
+          total={CariToplamlartotalDataCount}
+          current={pageIndexCariToplamlar}
+          position="top"
+        />
+     <Table
+       title={() => "Cari Toplamlar"}
+       columns={CariToplamlarColumns}
+       dataSource={cariToplamlarData}
+       loading={loading}
+       pagination={false}
+       // scroll={{ x: 'calc(700px + 50%)' }}
+       scroll={{ x: 'max-content' }}
+       size="medium"
+       bordered={false}
+    
+     />
+      <ReportPagination
+          onShowSizeChange={onShowCariToplamlarSizeChange}
+          onChange={currentCariToplamlarPageChange}
+          pageSize={pageSizeCariToplamlar}
+          total={CariToplamlartotalDataCount}
+          current={pageIndexCariToplamlar}
+          position="bottom"
+        />
+   </Box>
     </LayoutWrapper>
   );
 }
 
-export default OrdersReport;
+export default MainForm;
