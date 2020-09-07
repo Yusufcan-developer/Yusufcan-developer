@@ -52,14 +52,15 @@ export default {
       postCheques: apiUrl + 'core/report/cheques',
       postLetters: apiUrl + 'core/report/letters',
       postTransactions: apiUrl + 'core/report/transactions',
-      postDBSTotal:apiUrl+'core/report/dbs-totals',
-      postCariTotal:apiUrl+'core/report/account-balances',
+      postDBSTotal: apiUrl + 'core/report/dbs-totals',
+      postCariTotal: apiUrl + 'core/report/account-balances',
+      postRegionalGoals: apiUrl + 'core/report/regional-goals',
     },
     users: {
       postUsers: apiUrl + 'security/users/search',
       postUser: apiUrl + 'security/users',
       deleteUser: apiUrl + 'security/users/',
-    
+
     },
     security: {
       postAccounts: apiUrl + 'core/accounts',

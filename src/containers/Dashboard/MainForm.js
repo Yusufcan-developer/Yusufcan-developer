@@ -16,7 +16,6 @@ import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag,
 
 //Fetch
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
-import { usePostDBSTotal1 } from "@iso/lib/hooks/fetchData/usePostDBSTotal";
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 //Styles
 import { DownloadOutlined, UserDeleteOutlined } from '@ant-design/icons';
@@ -32,6 +31,7 @@ import moment from 'moment';
 import 'moment/locale/tr'
 import { usePostDBSTotalReport } from "../../library/hooks/fetchData/usePostDBSTotal";
 import { usePostCariToplamlarReport } from "../../library/hooks/fetchData/usePostCariToplamlar";
+import { usePostRegionalGoalsReport } from "../../library/hooks/fetchData/usePostRegionalGoals";
 import ReportPagination from "../Reports//ReportPagination";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -59,7 +59,9 @@ const MainForm = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [pageIndexCariToplamlar, setPageIndexCariToplamlar] = useState(1);
-  const [pageSizeCariToplamlar, setPageSizeCariToplamlar] = useState(20)
+  const [pageSizeCariToplamlar, setPageSizeCariToplamlar] = useState(20);
+  const [pageIndexRegionalGoals, setPageIndexRegionalGoals] = useState(1);
+  const [pageSizeRegionalGoals, setPageSizeRegionalGoals] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
   const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
@@ -76,23 +78,27 @@ const MainForm = () => {
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     setCurrentPage(pageIndex);
-    // getVariablesFromUrl(searchQuery)
   }, [pageIndex]);
 
   useEffect(() => {
     setChangePageSize(pageSize);
-    // getVariablesFromUrl(searchQuery)
   }, [pageSize]);
 
   useEffect(() => {
     setCurrentPageCariToplamlar(pageIndexCariToplamlar);
-    // getVariablesFromUrl(searchQuery)
   }, [pageIndexCariToplamlar]);
 
   useEffect(() => {
     setChangePageSizeCariToplamlar(pageSizeCariToplamlar);
-    // getVariablesFromUrl(searchQuery)
   }, [pageSizeCariToplamlar]);
+
+  useEffect(() => {
+    setCurrentPageRegionalGoals(pageIndexRegionalGoals);
+  }, [pageIndexRegionalGoals]);
+
+  useEffect(() => {
+    setChangePageSizeRegionalGoals(pageSizeRegionalGoals);
+  }, [pageSizeRegionalGoals]);
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
@@ -100,6 +106,9 @@ const MainForm = () => {
 
   const [cariToplamlarData, cariToplamlarloading, cariToplamlarcurrentPage, setCurrentPageCariToplamlar, CariToplamlarchangePageSize, setChangePageSizeCariToplamlar, CariToplamlartotalDataCount, CariToplamlarsetOnChange] =
     usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "pageIndex": pageIndexCariToplamlar - 1, "pageCount": pageSizeCariToplamlar });
+
+  const [regionalGoalsData, regionalGoalsLoading, regionalGoalsCurrentPage, setCurrentPageRegionalGoals, regionalGoalsChangePageSize, setChangePageSizeRegionalGoals, regionalGoalsTotalDataCount, regionalGoalsSetOnChange] =
+    usePostRegionalGoalsReport(`${siteConfig.api.report.postRegionalGoals}`, { "pageIndex": pageIndexRegionalGoals - 1, "pageCount": pageSizeRegionalGoals });
 
   //Rapor
   const [userDATA, userloading, usercurrentPage, usersetCurrentPage, userchangePageSize, usersetChangePageSize, usertotalDataCount, usersetOnChange, code, name] =
@@ -283,6 +292,19 @@ const MainForm = () => {
     setPageSizeCariToplamlar(pageSize);
     //  dataSearch(current,pageSize);
   }
+  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  function onShowRegionalGoalsSizeChange(current, pageSize) {
+    setPageSizeRegionalGoals(pageSize);
+    setPageIndexRegionalGoals(current);
+    // dataSearch(current, pageSize);
+  }
+
+  /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
+  function currentRegionalGoalsPageChange(current, pageSize) {
+    setPageIndexRegionalGoals(current);
+    setPageSizeRegionalGoals(pageSize);
+    //  dataSearch(current,pageSize);
+  }
   //Select Component Rol değiştirme 
   function addressHandleChange(value) {
     setAdress(value);
@@ -383,6 +405,26 @@ const MainForm = () => {
       dataIndex: "accountStatus",
       key: "accountStatus",
     },
+  ];
+
+  let RegionalGoalsColumns = [
+    {
+      title: "Yıl",
+      dataIndex: "year",
+      key: "year",
+    },
+    {
+      title: "Ay",
+      dataIndex: "month",
+      key: "month",
+    },
+    {
+      title: "Aylık Toplam",
+      dataIndex: "monthlyTotal",
+      key: "monthlyTotal",
+      render: (monthlyTotal) => numberFormat(monthlyTotal),
+      align: "right",
+    }
   ];
   //Hide order table column
   //Get Token and Token Decode
@@ -515,9 +557,8 @@ const MainForm = () => {
         <Table
           columns={CariToplamlarColumns}
           dataSource={cariToplamlarData}
-          loading={loading}
+          loading={cariToplamlarloading}
           pagination={false}
-          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
@@ -529,6 +570,28 @@ const MainForm = () => {
           pageSize={pageSizeCariToplamlar}
           total={CariToplamlartotalDataCount}
           current={pageIndexCariToplamlar}
+          position="bottom"
+        />
+      </Box>
+      <Box >
+        <h2 style={{ marginBottom: '10px' }}>Bölgesel Hedefler</h2>
+        <Table
+          columns={RegionalGoalsColumns}
+          dataSource={regionalGoalsData}
+          loading={loading}
+          pagination={false}
+          // scroll={{ x: 'calc(700px + 50%)' }}
+          scroll={{ x: 'max-content' }}
+          size="small"
+          bordered={false}
+
+        />
+        <ReportPagination
+          onShowSizeChange={onShowRegionalGoalsSizeChange}
+          onChange={currentRegionalGoalsPageChange}
+          pageSize={pageSizeRegionalGoals}
+          total={regionalGoalsTotalDataCount}
+          current={pageIndexRegionalGoals}
           position="bottom"
         />
       </Box>
