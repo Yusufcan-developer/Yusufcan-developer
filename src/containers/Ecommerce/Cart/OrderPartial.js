@@ -249,11 +249,11 @@ const OrderPartial = () => {
     },
     {
       title: "Miktar (m2)",
-      dataIndex: "totalM2Pallet",
-      key: "totalM2Pallet",
+      dataIndex: "totalM2",
+      key: "totalM2",
       align: "right",
-      footerKey: "totalM2Pallet",
-      render: (totalM2Pallet) => { return numberFormat(totalM2Pallet) }
+      footerKey: "totalM2",
+      render: (totalM2) => { return numberFormat(totalM2) }
     },
     {
       title: "Kalan Miktar",
@@ -337,11 +337,11 @@ const OrderPartial = () => {
     },
     {
       title: "Sipariş Miktarı (m2)",
-      dataIndex: "totalM2Pallet",
-      key: "totalM2Pallet",
+      dataIndex: "orderM2",
+      key: "orderM2",
       align: "right",
-      footerKey: "totalM2Pallet",
-      render: (record, item) => { return numberFormat(item.totalM2Pallet * item.orderAmount) }
+      footerKey: "orderM2",
+      render: (record, item) => { return numberFormat(item.orderM2) }
     },
 
     {
