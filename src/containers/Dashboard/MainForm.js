@@ -101,9 +101,9 @@ const MainForm = () => {
   const [cariToplamlarData, cariToplamlarloading, cariToplamlarcurrentPage, setCurrentPageCariToplamlar, CariToplamlarchangePageSize, setChangePageSizeCariToplamlar, CariToplamlartotalDataCount, CariToplamlarsetOnChange] =
     usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "pageIndex": pageIndexCariToplamlar - 1, "pageCount": pageSizeCariToplamlar });
 
-    //Rapor
-    const [userDATA, userloading, usercurrentPage, usersetCurrentPage, userchangePageSize, usersetChangePageSize, usertotalDataCount, usersetOnChange,code,name] =
-    useFetch(`${siteConfig.api.security.postAccounts}`, {  });
+  //Rapor
+  const [userDATA, userloading, usercurrentPage, usersetCurrentPage, userchangePageSize, usersetChangePageSize, usertotalDataCount, usersetOnChange, code, name] =
+    useFetch(`${siteConfig.api.security.postAccounts}`, {});
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
 
@@ -341,7 +341,7 @@ const MainForm = () => {
       key: "dealerName",
     },
     {
-      title: "Güncel Bayi Bakiye",
+      title: "Güncel Cari Bakiye",
       dataIndex: "currentAccountBalance",
       key: "currentAccountBalance",
       render: (currentAccountBalance) => numberFormat(currentAccountBalance),
@@ -387,40 +387,40 @@ const MainForm = () => {
   //Hide order table column
   //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
-  if (token.urole === 'admin') { }
-  else if (token.urole === 'fieldmanager') {
-    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Field;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
-    }
-  }
-  else if (token.urole === 'regionmanager') {
-    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Region;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
-    }
-  }
-  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          key: getHideColumns[index].key
-        }
-        ))
-      }
-    }
-  }
+  // if (token.urole === 'admin') { }
+  // else if (token.urole === 'fieldmanager') {
+  //   const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Field;
+  //   if (getHideColumns.length > 0) {
+  //     for (let index = 0; index < getHideColumns.length; index++) {
+  //       columns = _.without(columns, _.findWhere(columns, {
+  //         dataIndex: getHideColumns[index].dataIndex
+  //       }
+  //       ))
+  //     }
+  //   }
+  // }
+  // else if (token.urole === 'regionmanager') {
+  //   const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Region;
+  //   if (getHideColumns.length > 0) {
+  //     for (let index = 0; index < getHideColumns.length; index++) {
+  //       columns = _.without(columns, _.findWhere(columns, {
+  //         dataIndex: getHideColumns[index].dataIndex
+  //       }
+  //       ))
+  //     }
+  //   }
+  // }
+  // else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+  //   const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
+  //   if (getHideColumns.length > 0) {
+  //     for (let index = 0; index < getHideColumns.length; index++) {
+  //       columns = _.without(columns, _.findWhere(columns, {
+  //         key: getHideColumns[index].key
+  //       }
+  //       ))
+  //     }
+  //   }
+  // }
 
   //hide column Description 1 , Description 2 , Description 3 , Description 4
   let descriptionHide = true;
@@ -451,19 +451,27 @@ const MainForm = () => {
       }));
     }
   }
+
+  let infoHeader = null;
+  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    infoHeader = (
+      <Col span={12}>
+        <Form.Item label="Bayi Kodu">
+          <span className="ant-form-text">{code}</span>
+        </Form.Item>
+        <Form.Item label="Unvanı">
+          <span className="ant-form-text">{name}</span>
+        </Form.Item>
+      </Col>
+    );
+  }
+
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.mainForm.header" />}
       </PageHeader>
-      <Col span={12}>
-      <Form.Item label="Bayi Kodu">
-        <span className="ant-form-text">{code}</span>
-      </Form.Item>
-      <Form.Item label="Unvanı">
-        <span className="ant-form-text">{name}</span>
-      </Form.Item>
-      </Col>
+      {infoHeader}
       <Box >
         <h2 style={{ marginBottom: '10px' }}>DBS Toplamları</h2>
         {/* <ReportPagination
@@ -505,7 +513,6 @@ const MainForm = () => {
           position="top"
         /> */}
         <Table
-          title={() => "Cari Toplamlar"}
           columns={CariToplamlarColumns}
           dataSource={cariToplamlarData}
           loading={loading}
