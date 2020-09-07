@@ -419,6 +419,16 @@ const MainForm = () => {
       key: "month",
     },
     {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode",
+    },
+    {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode",
+    },
+    {
       title: "Aylık Toplam",
       dataIndex: "monthlyTotal",
       key: "monthlyTotal",
@@ -573,14 +583,13 @@ const MainForm = () => {
           position="bottom"
         />
       </Box>
-      <Box >
+      {/* <Box >
         <h2 style={{ marginBottom: '10px' }}>Bölgesel Hedefler</h2>
         <Table
           columns={RegionalGoalsColumns}
           dataSource={regionalGoalsData}
           loading={loading}
           pagination={false}
-          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="small"
           bordered={false}
@@ -594,7 +603,7 @@ const MainForm = () => {
           current={pageIndexRegionalGoals}
           position="bottom"
         />
-      </Box>
+      </Box> */}
     </LayoutWrapper>
   );
 }
