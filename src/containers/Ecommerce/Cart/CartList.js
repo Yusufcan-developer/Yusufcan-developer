@@ -197,9 +197,8 @@ const CartList = () => {
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
-  //Kullanıcı silme fetch işlemi
+  //Cart silme fetch işlemi
   async function deleteCart(accountNo) {
-    //Get User Info
     let cart;
     const requestOptions = {
       method: "DELETE",
@@ -261,11 +260,11 @@ const CartList = () => {
     },
     {
       title: "Miktar (m2)",
-      dataIndex: "totalM2Pallet",
-      key: "totalM2Pallet",
+      dataIndex: "totalM2",
+      key: "totalM2",
       align: "right",
-      footerKey: "totalM2Pallet",
-      render: (totalM2Pallet) => { return numberFormat(totalM2Pallet) }
+      footerKey: "totalM2",
+      render: (totalM2) => { return numberFormat(totalM2) }
     },
     {
       title: "Toplam",
@@ -273,7 +272,7 @@ const CartList = () => {
       key: "totalCost",
       align: "right",
       footerKey: "totalCost",
-      render: (totalCost,item) => { return numberFormat(item.totalCost*item.totalM2Pallet) }
+      render: (totalCost,item) => { return numberFormat(totalCost) }
     },
   ];
 

@@ -26,8 +26,9 @@ import numberFormat from "@iso/config/numberFormat";
 var jwtDecode = require('jwt-decode');
 const Option = SelectOption;
 
+let totalPrice;
 export default function () {
-
+  const [cartData, setCartData] = useState();
   const [userName, setUserName] = useState();
   const [lastName, setLastName] = useState();
   const [companyName, setCompanyName] = useState();
@@ -43,7 +44,6 @@ export default function () {
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
 
-  let totalPrice;
   let totalPallet=0;
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
 
@@ -52,14 +52,41 @@ export default function () {
     const token = jwtDecode(localStorage.getItem("id_token"));
     getInitData(token.uid);
   }, []);
+//Get Cart
+async function getCartList() {
+  let productInfo;
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+    }
+  };
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser = localStorage.getItem("activeUser")
+  let uname = token.uname;
+  if (activeUser != undefined) { uname = activeUser }
+  if (!token.uname) { return 'Unauthorized' }
 
+  await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
+    .then(response => {
+      if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
+      return response.json();
+    })
+    .then(data => {
+      setCartData(data.items);
+      totalPrice = data.totalCost;
+    })
+    .catch();
+  return productInfo;
+}
   //Get Products
-  function renderProducts() {
+   function renderProducts() {
+    getCartList();
     let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
     products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
-    totalPrice = 0;
     productQuantity = _.filter(productQuantity, function (item) {
       if (item.orderAmount > 0) {
         return true
@@ -70,8 +97,8 @@ export default function () {
     });
     productQuantity.push({'itemCode':'M99999900','quantity':totalPallet});
     products['M99999900'] = {'description':'AHŞAP PALET BEDELİ ','listPrice':20,'itemCode':'M99999900','m2Pallet':1};
-    return productQuantity.map(product => {
-        totalPrice +=(product.quantity * products[product.itemCode].listPrice) * products[product.itemCode].m2Pallet;
+    return productQuantity.map(product => {      
+        //totalPrice +=(product.quantity * products[product.itemCode].listPrice) * products[product.itemCode].m2Pallet;
         
       return (
         <SingleOrderInfo
