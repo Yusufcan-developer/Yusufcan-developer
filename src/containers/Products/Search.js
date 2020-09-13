@@ -891,6 +891,8 @@ const SearchComponent = () => {
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span>
                         <div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
+                        {item.canBeSoldPartially===true ?(<div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"} {'/'} {'KUTU'}</div>):
+                        (null)}
                           <Tooltip title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />
@@ -902,8 +904,8 @@ const SearchComponent = () => {
                             <Button type='link' size="small"
                               icon={<InfoCircleOutlined />} >
                             </Button>
-                          </Tooltip>
-                        </div>
+                          </Tooltip>  
+                        </div> 
                         {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
                         {partialQuantity === true & item.itemCode === selectedItemCode ? (
                           <Modal
