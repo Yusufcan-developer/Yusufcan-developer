@@ -19,6 +19,21 @@ import { useGetCustomerInfo } from "@iso/lib/hooks/fetchData/useGetCustomerInfo"
 import siteConfig from "@iso/config/site.config";
 import { Col, Row, Modal, Table, Input, Space } from "antd";
 import Form from "@iso/components/uielements/form";
+import Textarea from '@iso/components/uielements/input';
+
+//Styles
+import { PlusOutlined } from '@ant-design/icons';
+import {
+  ActionBtn,
+  Fieldset,
+  Label,
+  TitleWrapper,
+  ButtonHolders,
+  ActionWrapper,
+  ComponentTitle,
+  TableWrapper,
+  StatusTag,
+} from '../../FirestoreCRUD/Article/Article.styles';
 
 //Other Library
 import _ from 'underscore';
@@ -43,8 +58,15 @@ export default function () {
   const [adressItem, setAdressItem] = useState();
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
+  const [createAddress, setCreateAddress]=useState(false);
 
-  let totalPallet=0;
+  const [addressCode,setAddressCode]=useState();
+  const [addressTitle,setAddressTitle]=useState();
+  const [address1,setAddress1]=useState();
+  const [address2,setAddress2]=useState();
+  const [addressCity,setAddressCity]=useState();
+
+  let totalPallet = 0;
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
@@ -52,36 +74,36 @@ export default function () {
     const token = jwtDecode(localStorage.getItem("id_token"));
     getInitData(token.uid);
   }, []);
-//Get Cart
-async function getCartList() {
-  let productInfo;
-  const requestOptions = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-    }
-  };
-  const token = jwtDecode(localStorage.getItem("id_token"));
-  const activeUser = localStorage.getItem("activeUser")
-  let uname = token.uname;
-  if (activeUser != undefined) { uname = activeUser }
-  if (!token.uname) { return 'Unauthorized' }
+  //Get Cart
+  async function getCartList() {
+    let productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let uname = token.uname;
+    if (activeUser != undefined) { uname = activeUser }
+    if (!token.uname) { return 'Unauthorized' }
 
-  await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
-    .then(response => {
-      if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-      return response.json();
-    })
-    .then(data => {
-      setCartData(data.items);
-      totalPrice = data.totalCost;
-    })
-    .catch();
-  return productInfo;
-}
+    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
+      .then(response => {
+        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
+        return response.json();
+      })
+      .then(data => {
+        setCartData(data.items);
+        totalPrice = data.totalCost;
+      })
+      .catch();
+    return productInfo;
+  }
   //Get Products
-   function renderProducts() {
+  function renderProducts() {
     getCartList();
     let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
@@ -93,13 +115,13 @@ async function getCartList() {
       }
     });
     _.each(productQuantity, (item, i) => {
-      totalPallet+=item.quantity;
+      totalPallet += item.quantity;
     });
-    productQuantity.push({'itemCode':'M99999900','quantity':totalPallet});
-    products['M99999900'] = {'description':'AHŞAP PALET BEDELİ ','listPrice':20,'itemCode':'M99999900','m2Pallet':1};
-    return productQuantity.map(product => {      
-        //totalPrice +=(product.quantity * products[product.itemCode].listPrice) * products[product.itemCode].m2Pallet;
-        
+    productQuantity.push({ 'itemCode': 'M99999900', 'quantity': totalPallet });
+    products['M99999900'] = { 'description': 'AHŞAP PALET BEDELİ ', 'listPrice': 20, 'itemCode': 'M99999900', 'm2Pallet': 1 };
+    return productQuantity.map(product => {
+      //totalPrice +=(product.quantity * products[product.itemCode].listPrice) * products[product.itemCode].m2Pallet;
+
       return (
         <SingleOrderInfo
           key={product.objectID}
@@ -112,7 +134,7 @@ async function getCartList() {
   }
   //Change First Name 
   function saveOrder(event) {
-    console.log('xxxx sip productQuantity',products);
+    console.log('xxxx sip productQuantity', products);
   };
 
   //Change Company Name
@@ -144,6 +166,31 @@ async function getCartList() {
   function handleShowModal() {
     setVisible(true);
   };
+
+  //Yeni Adres Oluşturma Bölümü
+  const onChangeAddressCode = e => {
+    setAddressCode(e.target.value);
+  }
+
+  const onChangeAddressTitle = e => {
+    setAddressTitle(e.target.value);
+  }
+
+  const onChangeAddress1 = e => {
+    setAddress1(e.target.value);
+  }
+
+  const onChangeAddress2 = e => {
+    setAddress2(e.target.value);
+  }
+
+  const onChangeAddressCity = e => {
+    setAddressCity(e.target.value);
+  }
+
+  function onCreateAddress() {
+    setCreateAddress(true);
+  }
   let columns = [
     {
       title: "Adres Kodu",
@@ -350,6 +397,12 @@ async function getCartList() {
                       modifier: 'public',
                     }}
                   >
+                    <Col span={8} offset={16} align="right" >
+                      <Button type="primary" size="small" style={{ marginBottom: '5px' }}
+                        icon={<PlusOutlined />} onClick={onCreateAddress}>
+                        {<IntlMessages id="forms.button.createAddress" />} 
+                      </Button>
+                    </Col>
                     <Input.Search
                       style={{ margin: "0 0 10px 0" }}
                       placeholder="Arama yapabilirsiniz"
@@ -370,6 +423,68 @@ async function getCartList() {
                       size="medium"
                       bordered={false}
                     />
+                  </Form>
+                </Modal>
+                {/* Yeni Adres oluşturma işlemi */}
+                <Modal
+                  visible={createAddress}
+                  onClose={() => setCreateAddress(false)}
+                  title={'Yeni Adress Oluşturma'}
+                  okText={'Tamam'}
+                  onOk={() => setCreateAddress(false)}
+                  onCancel={() => setCreateAddress(false)}
+                >
+                  <Form>
+                    <Fieldset>
+                      <Label>Adres Kodu</Label>
+                      <Input
+                        label="Description"
+                        placeholder="Adres Kodu Giriniz"
+                        value={addressCode}
+                        onChange={event => onChangeAddressCode(event)}
+                      />
+                    </Fieldset>
+
+                    <Fieldset>
+                      <Label>Adres Başlığı</Label>
+                      <Textarea
+                        label="Description"
+                        placeholder="Adres Başlığı Giriniz"
+                        rows={5}
+                        value={addressTitle}
+                        onChange={event => onChangeAddressTitle(event)}
+                      />
+                    </Fieldset>
+
+                    <Fieldset>
+                      <Label>Adres 1</Label>
+                      <Textarea
+                        label="Address1"
+                        rows={5}
+                        placeholder="Adres 1 Giriniz"
+                        value={address1}
+                        onChange={event => onChangeAddress1(event)}
+                      />
+                    </Fieldset>
+
+                    <Fieldset>
+                      <Label>Adres 2</Label>
+                      <Textarea
+                        label="Address2"
+                        placeholder="Adres 2 Giriniz"
+                        value={address2}
+                        onChange={event => onChangeAddress2(event)}
+                      />
+                    </Fieldset>
+                    <Fieldset>
+                      <Label>Şehir</Label>
+                      <Input
+                        label="city"
+                        placeholder="Şehir Giriniz"
+                        value={city}
+                        onChange={event => onChangeAddressCity(event)}
+                      />
+                    </Fieldset>
                   </Form>
                 </Modal>
                 <label>{<IntlMessages id="page.addressTitle" />}</label>
