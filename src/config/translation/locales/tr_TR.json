@@ -42,6 +42,7 @@
   "forms.button.next": "Devam",
   "forms.button.label_Search": "Ara",
   "forms.button.exportExcel": "Excel",
+  "forms.button.createAddress": "Yeni Adres",
   "forms.button.createOrder": "Sipariş Oluştur",
   "forms.button.addUser": "Yeni Kullanıcı",
   "sidebar.formsWithValidation": "Forms With Validation",
