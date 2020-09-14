@@ -42,16 +42,21 @@ import {
   SortAscendingOutlined, ClearOutlined, InfoCircleOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
+var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
 
 const SearchComponent = () => {
 
+  const productId='';
   //Hook States
   const history = useHistory();
   const { searchQuery } = useParams();
   const queryString = require('query-string');
   const location = useLocation();
+  const [warehouseData,setWarehouseData]=useState();
+  const [partialAmount,setPartialAmount]=useState(0);
+  const [palletAmount,setPalletAmount]=useState(0);
 
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
@@ -408,6 +413,7 @@ const SearchComponent = () => {
     setOnChangeSurfaceFilter(true);
     return setOnChange(true);
   };
+
   //Series Filter Event
   function onChangeSerie(checkedSerieValue) {
     const serieNewArray = _.map(checkedSerieValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
@@ -439,6 +445,7 @@ const SearchComponent = () => {
     setOnChangeSurfaceFilter(true);
     return setOnChange(true);
   };
+
   //Color Filter Event
   function onChangeColor(checkedColorValue) {
     const colorNewArray = _.map(checkedColorValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
@@ -467,6 +474,7 @@ const SearchComponent = () => {
     setOnChangeSurfaceFilter(true);
     return setOnChange(true);
   }
+
   //Surface Filter Event
   function onChangeSurface(checkedSurfaceValue) {
     const surfaceNewArray = _.map(checkedSurfaceValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
@@ -668,7 +676,7 @@ const SearchComponent = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
-    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) {setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
@@ -693,7 +701,7 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false) {
-    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode);setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
@@ -724,6 +732,46 @@ const SearchComponent = () => {
   function handleCancel() {
     setPartialQuantity(false);
   };
+  //Get Warehouse Amount Data
+  async function getWarehouseList(itemCode) {
+    let productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let uname = token.uname;
+    if (activeUser != undefined) { uname = activeUser }
+    if (!token.uname) { return 'Unauthorized' }
+
+    await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
+      .then(response => {
+        if (!response.ok) { return response.statusText; }
+        return response.json();
+      })
+      .then(data => {
+        setWarehouseData((data && data.balances) || [])
+        // const warehouseGroupData=  _.groupBy(data.balances, function(item){ return item.warehouseName; });
+        let palletQuantity=0;
+        let partialQuantity=0;
+        if(data.balances.length>0){
+          _.each(data.balances, (item) => {
+            if(item.warehouseName==='PALETLİ SATIŞ AMBARI'){palletQuantity+=item.balance}else{
+              partialQuantity+=item.balance;
+            }
+          });
+          setPalletAmount(palletQuantity);
+          setPartialAmount(partialQuantity);
+        }
+        
+      })
+      .catch();
+    return productInfo;
+  }
   return (
     <React.Fragment>
       {/* <Breadcrumb>
@@ -881,7 +929,7 @@ const SearchComponent = () => {
                             <h3 className="isoCardTitle">{item.itemCode}</h3>
                           </Col>
                           <Col span={18} align="right" >
-                            <Text mark style={{ fontSize: '80%' }}>{item.type}</Text>
+                            <Text mark style={{ fontSize: '80%' }}>{item.salableBalance ? ('Stok Miktarı: ' +numberFormat(item.salableBalance) + ' ' + item.unit) : 'Stok Yok'}{}</Text>
                           </Col>
                         </Row>
                         <span className="isoCardDate">
@@ -951,11 +999,18 @@ const SearchComponent = () => {
                                     {<IntlMessages id="+" />}
                                   </Button>
                                 </Col>
+                                <Space size={2}>
                                 <Col span={4}>
                                   <Tag color="green">
                                     1 Palet:{item.m2Pallet} {item.unit}
                                   </Tag>
                                 </Col>
+                                <Col span={4}>
+                                  <Tag color="green">
+                                  Miktar:{numberFormat(palletAmount)} {item.unit}
+                                  </Tag>
+                                </Col>   
+                                </Space> 
                               </Row>
                             </Form.Item>
                             <Form.Item label='Parçalı Satış (KUTU)'>
@@ -983,11 +1038,18 @@ const SearchComponent = () => {
                                     {<IntlMessages id="+" />}
                                   </Button>
                                 </Col>
+                                <Space size={5}>
                                 <Col span={4}>
                                   <Tag color="green">
                                     1 Kutu :{item.m2Box} {item.unit}
                                   </Tag>
                                 </Col>
+                                <Col span={4}>
+                                  <Tag color="green">
+                                  Miktar:{numberFormat(partialAmount)} {item.unit}
+                                  </Tag>
+                                </Col>       
+                                </Space>                               
                               </Row>
                             </Form.Item>
                           </Modal>
