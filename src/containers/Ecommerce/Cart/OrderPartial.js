@@ -48,7 +48,8 @@ const OrderPartial = () => {
     filteredInfo: ""
   });
   const [editingKey, setEditingKey] = useState('');
-  const isEditing = record => record.itemCode === editingKey;
+  const [isPartial, setIsPartial] = useState();
+  const isEditing = record => record.itemCode === editingKey &record.isPartial===isPartial;
 
   useEffect(() => {
     getCartList();
@@ -108,6 +109,7 @@ const OrderPartial = () => {
     if (deleteAmount) { setQuantity(0); } else {
       setQuantity(record.amount); setModalVisible(true);
       setEditingKey(record.itemCode);
+      setIsPartial(record.isPartial);
     }
     setProductItem(record, deleteAmount);
   };
@@ -130,14 +132,14 @@ const OrderPartial = () => {
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['amount'] = item['quantity'];
         delete item['quantity'];
-        if (item.itemCode === allAmountItem.itemCode) { item.orderAmount = allAmountItem.amount }
+        if (item.itemCode === allAmountItem.itemCode && item.isPartial===allAmountItem.isPartial)  { item.orderAmount = allAmountItem.amount }
       });
     }
     else {//Girilmiş olan sipariş miktarını alır
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['amount'] = item['quantity'];
         delete item['quantity'];
-        if (item.itemCode === productItem.itemCode) { item.orderAmount = quantity }
+        if (item.itemCode === productItem.itemCode && item.isPartial===productItem.isPartial) { item.orderAmount = quantity }
       });
     }
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -190,7 +192,8 @@ const OrderPartial = () => {
                 productQuantity.push({
                   itemCode: product.itemCode,
                   quantity: product.quantity,
-                  orderAmount: product.orderAmount
+                  orderAmount: product.orderAmount,
+                  isPartial:product.isPartial
                 });
                 products[product.itemCode] = product.item;
               });
@@ -238,6 +241,13 @@ const OrderPartial = () => {
       title: "Birimi",
       dataIndex: ['item', 'unit'],
       key: "item.unit",
+      render:(unit,record) =>  {return(
+        <>
+        {record.isPartial===true  ? (
+          'Kutu'
+        ) : (unit)}
+      </>)
+      }
     },
     {
       title: "Palet",
@@ -334,6 +344,13 @@ const OrderPartial = () => {
       title: "Birimi",
       dataIndex: ['item', 'unit'],
       key: "item.unit",
+      render:(unit,record) =>  {return(
+        <>
+        {record.isPartial===true  ? (
+          'Kutu'
+        ) : (unit)}
+      </>)
+      }
     },
     {
       title: "Sipariş Miktarı (m2)",
