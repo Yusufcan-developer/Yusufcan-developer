@@ -156,7 +156,7 @@ export default function TopbarAddtoCart() {
 
         <h3>
           <IntlMessages id="topbar.totalPrice" />:{' '}
-          <span>{numberFormat(totalPrice)}  TL</span>
+          <span>{numberFormat(totalPrice)} TL</span>
         </h3>
       </div>
     </TopbarDropdownWrapper>

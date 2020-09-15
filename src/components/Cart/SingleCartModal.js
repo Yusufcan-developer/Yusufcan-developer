@@ -4,7 +4,7 @@ import TopbarCartWrapper from './SingleCartModal.style';
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 
-export default function({
+export default function ({
   price,
   quantity,
   image,
@@ -24,15 +24,12 @@ export default function({
         <h3>
           <a href="#!">{productItem.description}</a>
         </h3>
-        <p className="isoItemPriceQuantity">          
+        <p className="isoItemPriceQuantity">
           <span>{numberFormat(productItem.listPrice)} TL</span>
           <span className="itemMultiplier">/</span>
           <span className="isoItemQuantity">{productItem.unit}</span>
-          <span className="itemMultiplier">(</span>
-          <span className="isoItemQuantity">{quantity}</span>
           <span className="itemMultiplier"> </span>
-          <span className="isoItemQuantity">{isPartial===true?' Kutu':' Palet'}</span>
-          <span className="itemMultiplier">)</span>
+          <span className="isoItemQuantity">{'('}{quantity} {isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
         </p>
       </div>
       <a

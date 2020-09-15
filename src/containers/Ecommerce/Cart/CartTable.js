@@ -207,12 +207,12 @@ export default function CartTable({ style }) {
           <tr>
             <th className="isoItemRemove" />
             <th className="isoItemImage" />
-            <th className="isoItemName">Ürün Adı</th>
+            <th className="isoItemName">Ürün</th>
             <th className="isoItemPrice">Birim Fiyat</th>
-            <th className="isoItemUnit">Birimi</th>
-            <th className="isoItemPalet">Palet</th>
+            <th className="isoItemUnit">Birim</th>
+            <th className="isoItemPalet">Sepete Eklenen</th>
             <th className="isoItemQuantity">Miktar</th>
-            <th className="isoItemPriceTotal">Toplam</th>
+            <th className="isoItemPriceTotal">Tutar</th>
           </tr>
         </thead>
 
@@ -250,13 +250,13 @@ export default function CartTable({ style }) {
             </td>
             <td>
               <Button onClick={allProductToOrder}>
-                Tümünü Sipariş Oluştur
-          </Button>
+                Tümünden Sipariş Oluştur
+              </Button>
             </td>
             <td>
               <Button onClick={orderPartial} >
-                Parçalı Sipariş Oluştur
-          </Button>
+                Kısmi Sipariş Oluştur
+              </Button>
             </td>
           </tr>
         </tfoot>

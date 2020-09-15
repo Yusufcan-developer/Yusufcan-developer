@@ -55,8 +55,11 @@ export default function ({
     }
   };
   let totalPrice;
-  if (productItem.unit === 'AD') { totalPrice = (productItem.listPrice * quantity).toFixed(2); }
-  else { totalPrice = ((productItem.listPrice * quantity) * productItem.m2Pallet).toFixed(2); }
+  if (productItem.unit === 'AD') {
+    totalPrice = (productItem.listPrice * quantity).toFixed(2);
+  } else {
+    totalPrice = ((productItem.listPrice * quantity) * productItem.m2Pallet).toFixed(2);
+  }
 
   function onRemoveBox(product) {
     if (quantity !== 1) {
@@ -94,17 +97,18 @@ export default function ({
         {productItem.unit}
       </td>
       <td className="isoItemPalet">
-        <Row justify="center" align="middle">
+        <Row justify="center" align="bottom">
           <Col span={8} style={{ width: '100%' }} align="right">
-            <Button type="primary" onClick={event => onRemoveBox(productItem)}>
-              {<IntlMessages id="-" />}
+            <Button type="primary" onClick={event => onRemoveBox(productItem)} style={{ color: 'white' }}>
+              -
             </Button>
           </Col>
           <Col span={8}>
+            <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{isPartial ? 'Kutu/Adet' : 'Palet'}</span>
             <Input
               min={1}
               id={inputId}
-              style={{ textAlign: "right" }}
+              style={{ textAlign: "right", maxHeight: "32px" }}
               max={1000}
               defaultValue={1}
               value={quantity}
@@ -114,8 +118,8 @@ export default function ({
             />
           </Col>
           <Col span={8} style={{ width: '100%' }}>
-            <Button type="primary" onClick={event => onAddBox(productItem)}>
-              {<IntlMessages id="+" />}
+            <Button type="primary" onClick={event => onAddBox(productItem)} style={{ color: 'white' }}>
+              +
             </Button>
           </Col>
         </Row>
