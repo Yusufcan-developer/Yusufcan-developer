@@ -133,7 +133,7 @@ export default function CartTable({ style }) {
         return response.json();
       })
       .then(data => {
-        setCartData(data.items);
+        // setCartData(data.items);
         totalCost = data.totalCost;
       })
       .catch();

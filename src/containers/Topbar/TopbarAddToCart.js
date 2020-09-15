@@ -77,7 +77,7 @@ export default function TopbarAddtoCart() {
         return response.json();
       })
       .then(data => {
-        setCartData(data.items);
+        // setCartData(data.items);
         totalPrice = data.totalCost;
       })
       .catch();
