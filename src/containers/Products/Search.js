@@ -1055,23 +1055,28 @@ const SearchComponent = () => {
 
                         ) : (null)}
                         {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) ? (
-                          <Button
-                            type="primary" style={{}}
-                            onClick={event => onAddProductCart(item)}>{<IntlMessages id={item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'} />}
-                          </Button>
+                          <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
+                            <Col span={20} align="middle">
+                              <Button
+                                type="primary" style={{ width: '100%' }}
+                                onClick={event => onAddProductCart(item)}>{<IntlMessages id={item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'} />}
+                              </Button>
+                            </Col>
+                          </Row>
                         ) : (
-                            <Row justify="center" align="middle">
+                            <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                               <Col span={4} style={{ width: '100%' }} align="right">
                                 <Button type="primary" onClick={event => onRemoveProductCart(item)}>
                                   {<IntlMessages id="-" />}
                                 </Button>
                               </Col>
                               <Col span={8} align="middle">
+                                <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{'Palet'}</span>
                                 <Input
                                   id={item.itemCode}
                                   onClick={event => onSelectAll(item.itemCode)}
                                   onChange={event => onChangeQuantity(event, item)}
-                                  style={{ textAlign: "right" }}
+                                  style={{ textAlign: "right", maxHeight: '32px' }}
                                   maxLength={25}
                                   defaultValue={1}
                                   step={1}
