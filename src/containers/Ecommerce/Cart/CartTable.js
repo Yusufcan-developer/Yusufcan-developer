@@ -26,7 +26,7 @@ import _ from 'underscore';
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
-let totalPrice = 0;
+let totalCost = 0;
 
 export default function CartTable({ style }) {
   const [cartData, setCartData] = useState();
@@ -41,7 +41,7 @@ export default function CartTable({ style }) {
     products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
     sendDatabaseProductList = _.each(productQuantity, (item) => {
-      item['amount'] = item['quantity'];
+      item.amount = item.quantity;
       // delete item['quantity'];
       item.orderAmount = item.amount;
     });
@@ -88,7 +88,7 @@ export default function CartTable({ style }) {
             productQuantity = [];
             // Verileri Redux'a gönderme işlemi  
             let sendReduxProductList = _.each(data.items, (item) => {
-              item['quantity'] = item['amount'];
+              item.quantity = item.amount;
             });
             if (sendReduxProductList) {
               sendReduxProductList.forEach(product => {
@@ -133,7 +133,7 @@ export default function CartTable({ style }) {
       })
       .then(data => {
         setCartData(data.items);
-        totalPrice = data.totalCost;
+        totalCost = data.totalCost;
       })
       .catch();
     return productInfo;
@@ -145,15 +145,17 @@ export default function CartTable({ style }) {
       return <tr className="isoNoItemMsg">Ürün Bulunamadı</tr>;
     }
     return productQuantity.map(product => {
+      const key = product.itemCode + (product.isPartial ? '-partial' : null);
+      const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
       return (
         <SingleCart
-          key={product.itemCode}
+          key={key}
           quantity={product.quantity}
           changeQuantity={changeQuantity}
           cancelQuantity={event => cancelQuantity(product)}
           productItem={products[product.itemCode]}
           isPartial={product.isPartial}
-          inputId={product.isPartial === true ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode}
+          inputId={inputId}
           {...products[product.itemCode]}
         />
       );
@@ -226,7 +228,7 @@ export default function CartTable({ style }) {
             <th className="isoItemUnit" />
             <td className="isoItemPalet" />
             <td className="isoItemQuantity">Toplam Tutar</td>
-            <td className="isoItemPriceTotal">{numberFormat(totalPrice)} TL</td>
+            <td className="isoItemPriceTotal">{numberFormat(totalCost)} TL</td>
           </tr>
         </tbody>
 

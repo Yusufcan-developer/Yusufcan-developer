@@ -54,12 +54,13 @@ export default function ({
       dispatch(changeProductQuantity(newProductQuantity));
     }
   };
-  let totalPrice;
-  if (productItem.unit === 'AD') {
-    totalPrice = (productItem.listPrice * quantity).toFixed(2);
-  } else {
-    totalPrice = ((productItem.listPrice * quantity) * productItem.m2Pallet).toFixed(2);
-  }
+  // let totalPrice;
+  // if (productItem.unit === 'AD') {
+  //   totalPrice = (productItem.listPrice * quantity).toFixed(2);
+  // } else {
+  //   totalPrice = ((productItem.listPrice * quantity) * productItem.m2Pallet).toFixed(2);
+  // }
+  const totalCost = ((!isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice) * quantity).toFixed(2);
 
   function onRemoveBox(product) {
     if (quantity !== 1) {
@@ -87,8 +88,8 @@ export default function ({
         <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
       </td>
       <td className="isoItemName">
+        <p style={{ marginBottom: '5px' }}>{productItem.type}</p>
         <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
-        <p>{productItem.type}</p>
       </td>
       <td className="isoItemPrice">
         {numberFormat(productItem.listPrice)} {"TL"}
@@ -125,9 +126,9 @@ export default function ({
         </Row>
       </td>
       <td className="isoItemQuantity">
-        {numberFormat(quantity * productItem.m2Pallet)} {'(' + productItem.unit + ')'}
+        {numberFormat(quantity * (!isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
       </td>
-      <td className="isoItemPriceTotal">{numberFormat(totalPrice)} TL</td>
+      <td className="isoItemPriceTotal">{numberFormat(totalCost)} TL</td>
     </tr>
   );
 }
