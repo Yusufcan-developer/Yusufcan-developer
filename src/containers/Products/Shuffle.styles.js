@@ -111,7 +111,7 @@ const WDSingleCardWrapper = styled.li`
       display: flex;
       cursor: pointer;
       @media only screen and (min-width: 960px) {
-        height: 330px;
+        height: 250px;
       }
     }
 

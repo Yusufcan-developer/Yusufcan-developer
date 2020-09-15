@@ -48,15 +48,15 @@ const { Panel } = Collapse;
 
 const SearchComponent = () => {
 
-  const productId='';
+  const productId = '';
   //Hook States
   const history = useHistory();
   const { searchQuery } = useParams();
   const queryString = require('query-string');
   const location = useLocation();
-  const [warehouseData,setWarehouseData]=useState();
-  const [partialAmount,setPartialAmount]=useState(0);
-  const [palletAmount,setPalletAmount]=useState(0);
+  const [warehouseData, setWarehouseData] = useState();
+  const [partialAmount, setPartialAmount] = useState(0);
+  const [palletAmount, setPalletAmount] = useState(0);
 
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
@@ -676,7 +676,7 @@ const SearchComponent = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
-    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) {setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
@@ -701,7 +701,7 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false) {
-    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode);setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
@@ -756,18 +756,18 @@ const SearchComponent = () => {
       .then(data => {
         setWarehouseData((data && data.balances) || [])
         // const warehouseGroupData=  _.groupBy(data.balances, function(item){ return item.warehouseName; });
-        let palletQuantity=0;
-        let partialQuantity=0;
-        if(data.balances.length>0){
+        let palletQuantity = 0;
+        let partialQuantity = 0;
+        if (data.balances.length > 0) {
           _.each(data.balances, (item) => {
-            if(item.warehouseName==='PALETLİ SATIŞ AMBARI'){palletQuantity+=item.balance}else{
-              partialQuantity+=item.balance;
+            if (item.warehouseName === 'PALETLİ SATIŞ AMBARI') { palletQuantity += item.balance } else {
+              partialQuantity += item.balance;
             }
           });
           setPalletAmount(palletQuantity);
           setPartialAmount(partialQuantity);
         }
-        
+
       })
       .catch();
     return productInfo;
@@ -929,18 +929,17 @@ const SearchComponent = () => {
                             <h3 className="isoCardTitle">{item.itemCode}</h3>
                           </Col>
                           <Col span={18} align="right" >
-                            <Text mark style={{ fontSize: '80%' }}>{item.salableBalance ? ('Stok Miktarı: ' +numberFormat(item.salableBalance) + ' ' + item.unit) : 'Stok Yok'}{}</Text>
+                            <Text mark style={{ fontSize: '80%' }}>{item.salableBalance ? ('Stok: ' + numberFormat(item.salableBalance) + ' ' + item.unit) : null}{}</Text>
                           </Col>
                         </Row>
-                        <span className="isoCardDate">
-                          {item.description}
+                        <span className="isoCardDate" style={{ minHeight: '70px' }}>
+                          {item.description}{item.color ? ' - ' + item.color : null}{item.surface ? ' - ' + item.surface : null}
                         </span>
-                        <span className="isoCardDate">
+                        {/* <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
-                        </span>
-                        <div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
-                        {item.canBeSoldPartially===true ?(<div className="isoCardTitle" style={{ textAlign: 'center' }}>{numberFormat(item.listPrice)} {"TL"} {'/'} {'KUTU'}</div>):
-                        (null)}
+                        </span> */}
+                        <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
+                          {item.canBeSoldPartially ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
                           <Tooltip title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />
@@ -952,8 +951,8 @@ const SearchComponent = () => {
                             <Button type='link' size="small"
                               icon={<InfoCircleOutlined />} >
                             </Button>
-                          </Tooltip>  
-                        </div> 
+                          </Tooltip>
+                        </div>
                         {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
                         {partialQuantity === true & item.itemCode === selectedItemCode ? (
                           <Modal
@@ -1000,17 +999,17 @@ const SearchComponent = () => {
                                   </Button>
                                 </Col>
                                 <Space size={2}>
-                                <Col span={4}>
-                                  <Tag color="green">
-                                    1 Palet:{item.m2Pallet} {item.unit}
-                                  </Tag>
-                                </Col>
-                                <Col span={4}>
-                                  <Tag color="green">
-                                  Miktar:{numberFormat(palletAmount)} {item.unit}
-                                  </Tag>
-                                </Col>   
-                                </Space> 
+                                  <Col span={4}>
+                                    <Tag color="blue">
+                                      1 Palet: {item.m2Pallet} {item.unit}
+                                    </Tag>
+                                  </Col>
+                                  {palletAmount > 0 ? (<Col span={4}>
+                                    <Tag color="blue">
+                                      Stok: {numberFormat(palletAmount)} {item.unit}
+                                    </Tag>
+                                  </Col>) : null}
+                                </Space>
                               </Row>
                             </Form.Item>
                             <Form.Item label='Parçalı Satış (KUTU)'>
@@ -1039,17 +1038,17 @@ const SearchComponent = () => {
                                   </Button>
                                 </Col>
                                 <Space size={5}>
-                                <Col span={4}>
-                                  <Tag color="green">
-                                    1 Kutu :{item.m2Box} {item.unit}
-                                  </Tag>
-                                </Col>
-                                <Col span={4}>
-                                  <Tag color="green">
-                                  Miktar:{numberFormat(partialAmount)} {item.unit}
-                                  </Tag>
-                                </Col>       
-                                </Space>                               
+                                  <Col span={4}>
+                                    <Tag color="blue">
+                                      1 Kutu: {item.m2Box} {item.unit}
+                                    </Tag>
+                                  </Col>
+                                  {partialAmount > 0 ? (<Col span={4}>
+                                    <Tag color="blue">
+                                      Stok: {numberFormat(partialAmount)} {item.unit}
+                                    </Tag>
+                                  </Col>) : null}
+                                </Space>
                               </Row>
                             </Form.Item>
                           </Modal>
@@ -1057,7 +1056,7 @@ const SearchComponent = () => {
                         ) : (null)}
                         {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) ? (
                           <Button
-                            type="primary"
+                            type="primary" style={{}}
                             onClick={event => onAddProductCart(item)}>{<IntlMessages id={item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'} />}
                           </Button>
                         ) : (
@@ -1102,7 +1101,7 @@ const SearchComponent = () => {
           </ContentHolder>
         </div>
       </AlgoliaSearchPageWrapper>
-    </React.Fragment>
+    </React.Fragment >
   );
 };
 
