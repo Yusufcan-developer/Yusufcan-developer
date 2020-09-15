@@ -60,7 +60,7 @@ export default function ({
   // } else {
   //   totalPrice = ((productItem.listPrice * quantity) * productItem.m2Pallet).toFixed(2);
   // }
-  const totalCost = ((!isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice) * quantity).toFixed(2);
+  const totalCost = ((!isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * quantity).toFixed(2);
 
   function onRemoveBox(product) {
     if (quantity !== 1) {
