@@ -34,7 +34,10 @@ export default function ({
       </div>
       <a
         className="isoItemRemove"
-        onClick={() => cancelQuantity(objectID)}
+        onClick={() => {
+          cancelQuantity(objectID);
+        }}
+       
         href="#!"
       >
         <i className="ion-android-close" />

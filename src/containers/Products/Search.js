@@ -49,6 +49,7 @@ const { Panel } = Collapse;
 const SearchComponent = () => {
 
   const productId = '';
+  const[removeItem,setRemoveItem]=useState();
   //Hook States
   const history = useHistory();
   const { searchQuery } = useParams();
@@ -676,11 +677,14 @@ const SearchComponent = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
+    debugger
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
+
       inputNumberShowOrHide(product)
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
-      if (selectedProduct.quantity !== 1) {
+      if(selectedProduct===undefined){return;}
+      if (selectedProduct.quantity !== 0) {
         const newProductQuantity = [];
         productQuantity.forEach(productItem => {
           if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
@@ -688,6 +692,7 @@ const SearchComponent = () => {
           } else {
             const itemCode = productItem.itemCode
             const quantity = productItem.quantity - 1;
+            if (quantity === 0) { return; }
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -978,7 +983,8 @@ const SearchComponent = () => {
                               <Row align="middle">
                                 <Col span={4} align="right">
                                   <Button type="primary" onClick={event => onRemoveProductCart(item, true, false)}>
-                                    {<IntlMessages id="-" />}
+                                    {removeItem === true ? (< IntlMessages id="---" />):  (<IntlMessages id="-" />)}
+                                  
                                   </Button>
                                 </Col>
                                 <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
