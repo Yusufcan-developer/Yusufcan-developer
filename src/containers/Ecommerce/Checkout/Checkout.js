@@ -41,9 +41,8 @@ import numberFormat from "@iso/config/numberFormat";
 var jwtDecode = require('jwt-decode');
 const Option = SelectOption;
 
-let totalPrice;
 export default function () {
-  const [cartData, setCartData] = useState();
+  const [orderCost, setOrderCost] = useState();
   const [userName, setUserName] = useState();
   const [lastName, setLastName] = useState();
   const [companyName, setCompanyName] = useState();
@@ -96,8 +95,7 @@ export default function () {
         return response.json();
       })
       .then(data => {
-        // setCartData(data.items);
-        totalPrice = data.totalCost;
+        setOrderCost (data.orderCost);
       })
       .catch();
     return productInfo;
@@ -134,7 +132,6 @@ export default function () {
   }
   //Change First Name 
   function saveOrder(event) {
-    console.log('xxxx sip productQuantity', products);
   };
 
   //Change Company Name
@@ -551,7 +548,7 @@ export default function () {
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
                     <span>Toplam</span>
-                    <span>{numberFormat(totalPrice)} TL</span>
+                    <span>{numberFormat(orderCost)} TL</span>
                   </div>
                   <Space size={50}>
                     <Button type="primary" className="isoOrderBtn" onClick={saveOrder} >

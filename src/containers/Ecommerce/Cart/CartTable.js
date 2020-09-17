@@ -26,10 +26,10 @@ import _ from 'underscore';
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
-let totalCost = 0;
 
 export default function CartTable({ style }) {
-  const [cartData, setCartData] = useState();
+  
+  const[totalCost,setTotalCost]=useState();
   let history = useHistory();
   const dispatch = useDispatch();
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
@@ -133,8 +133,7 @@ export default function CartTable({ style }) {
         return response.json();
       })
       .then(data => {
-        setCartData(data.items);
-        totalCost = data.totalCost;
+        setTotalCost(data.totalCost);
       })
       .catch();
     return productInfo;
@@ -178,6 +177,7 @@ export default function CartTable({ style }) {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
+    getCartList();
   }
 
   //Sepetten ürünün çıkarılması
@@ -189,6 +189,7 @@ export default function CartTable({ style }) {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
+    getCartList();
   }
 
   //Sepetteki ürünlerin siparişe hazırlanması
