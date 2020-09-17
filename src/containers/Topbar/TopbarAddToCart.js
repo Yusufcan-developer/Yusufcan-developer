@@ -54,7 +54,6 @@ export default function TopbarAddtoCart() {
       dispatch(initData());
     }
   }, [dispatch, loadingInitData]);
-  
   //Get Cart
   async function getCartList() {
     let productInfo;
@@ -86,7 +85,6 @@ export default function TopbarAddtoCart() {
   //Ürünler Listesinin render edilmesi SingleCart View js dosyasına yönlendiriliyor.
   function renderProducts() {
     getCartList();
-
     if (!productQuantity || productQuantity.length === 0) {
       return (
         <div className="isoNoItemMsg">
@@ -98,7 +96,7 @@ export default function TopbarAddtoCart() {
      
       return (
         <SingleCart
-          key={product.itemCode}
+          key={product.itemCode+product.isPartial}
           quantity={product.quantity}
           changeQuantity={changeQuantity}
           cancelQuantity={event => cancelQuantity(product)}
@@ -128,14 +126,14 @@ export default function TopbarAddtoCart() {
 
   //Ürün iptal etme işlemi
   function cancelQuantity(productItem) {
-    debugger
     const newProductQuantity = [];
     _.each(productQuantity, (product, i) => {
-      if ((product.itemCode === productItem.itemCode) && (product.isPartial === productItem.isPartial)) {       
+      if ((product.itemCode !== productItem.itemCode  || product.isPartial !== productItem.isPartial)) {
+        newProductQuantity.push(product);
       }
-      else{ newProductQuantity.push(product);}
     });
-    dispatch(changeProductQuantity(newProductQuantity));    
+    dispatch(changeProductQuantity(newProductQuantity));
+    getCartList();
   }
 
   const content = (

@@ -146,6 +146,7 @@ export default function CartTable({ style }) {
     }
     return productQuantity.map(product => {
       const key = product.itemCode + (product.isPartial ? '-partial' : null);
+      const objectID = product.itemCode + (product.isPartial ? '-partial' : null);
       const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
       return (
         <SingleCart
@@ -155,6 +156,7 @@ export default function CartTable({ style }) {
           cancelQuantity={event => cancelQuantity(product)}
           productItem={products[product.itemCode]}
           isPartial={product.isPartial}
+          objectID={objectID}
           inputId={inputId}
           {...products[product.itemCode]}
         />
@@ -182,14 +184,14 @@ export default function CartTable({ style }) {
 
   //Sepetten ürünün çıkarılması
   function cancelQuantity(productItem) {
+    getCartList();
     const newProductQuantity = [];
-    productQuantity.forEach(product => {
-      if (product.itemCode !== productItem.itemCode) {
+    _.each(productQuantity, (product) => {
+      if ((product.itemCode !== productItem.itemCode  || product.isPartial !== productItem.isPartial)) {
         newProductQuantity.push(product);
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
-    getCartList();
   }
 
   //Sepetteki ürünlerin siparişe hazırlanması
