@@ -939,7 +939,7 @@ const SearchComponent = () => {
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span> */}
                         <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
-                          {item.canBeSoldPartially ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
+                          {item.canBeSoldPartially ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
                           <Tooltip title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />

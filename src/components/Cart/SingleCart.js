@@ -92,7 +92,7 @@ export default function ({
         <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
       </td>
       <td className="isoItemPrice">
-        {numberFormat(productItem.listPrice)} {"TL"}
+        {numberFormat(isPartial ? productItem.partialPrice : productItem.listPrice)} {"TL"}
       </td>
       <td className="isoItemUnit">
         {productItem.unit}
