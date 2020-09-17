@@ -26,12 +26,12 @@ const {
   changeViewTopbarCart,
   changeProductQuantity,
 } = ecommerceAction;
-let totalPrice;
+
 export default function TopbarAddtoCart() {
   let { url } = useRouteMatch();
   url = stripTrailingSlash(url);
   const dispatch = useDispatch();
-  const [cartData, setCartData] = useState();
+  const [totalPrice,setTotalPrice]=useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const {
     productQuantity,
@@ -77,8 +77,7 @@ export default function TopbarAddtoCart() {
         return response.json();
       })
       .then(data => {
-        // setCartData(data.items);
-        totalPrice = data.totalCost;
+        setTotalPrice(data.totalCost);
       })
       .catch();
     return productInfo;
