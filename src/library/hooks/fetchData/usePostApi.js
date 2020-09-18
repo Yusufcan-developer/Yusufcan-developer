@@ -16,13 +16,14 @@ function useFetch(url, reqBody) {
   const[code,setCode]= useState();
   const [name,setName]=useState();
   const [selectedCheckqueType, setSelectedCheckqueType]=useState();
+  const [selectedTransactionType, setSelectedTransactionType]=useState();
   const [from, setFrom] = useState();
   const [to, setTo] = useState();
   const [searchkey,setSearchKey]=useState();
   
   async function fetchUrl() {
   
-    const reqB = reqBody == null || reqBody==undefined ? {"DealerCodes":dealerCodes,"Regioncodes":regionCodes,"FieldCodes":fieldCodes,"from":from,"to":to,"types":selectedCheckqueType,"keyword":searchkey,"serialNumbers":serialNumber, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
+    const reqB = reqBody == null || reqBody==undefined ? {"DealerCodes":dealerCodes,"Regioncodes":regionCodes,"FieldCodes":fieldCodes,"from":from,"to":to,"transactionTypes":selectedTransactionType,"types":selectedCheckqueType,"keyword":searchkey,"serialNumbers":serialNumber, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
     const requestOptions = {
       method: "POST",
       headers: {

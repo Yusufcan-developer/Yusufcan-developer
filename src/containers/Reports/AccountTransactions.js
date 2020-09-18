@@ -13,10 +13,12 @@ import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import { Table, Row, Col, TreeSelect } from "antd";
+import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 
 //Style
 import { DownloadOutlined } from '@ant-design/icons';
@@ -41,6 +43,8 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
 export default function () {
+  const children = [];
+  const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = React.useState();
   const [autoExpandParent, setAutoExpandParent] = React.useState(true);
@@ -59,6 +63,8 @@ export default function () {
   const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
+  const [transactionType, setTransactionType] = useState();
+  const [selectedTransactionType, setSelectedTransactionType] = useState();
 
   const location = useLocation();
   const { searchQuery } = useParams();
@@ -78,9 +84,15 @@ export default function () {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'),"transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+ 
+  //İşlem Tipleri
+  const [transactionTypeData] = useFilterData(`${siteConfig.api.lookup.getTransactionTypes}`);
+  for (let i = 0; i < transactionTypeData.length; i++) {
+    children.push(<Option key={transactionTypeData[i]}>{transactionTypeData[i]}</Option>);
+  }
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
@@ -92,6 +104,16 @@ export default function () {
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
+
+    let transactionType = [];
+    if (parsed.type !== undefined) {
+      if (Array.isArray(parsed.type)) {
+        _.each(parsed.type, (item) => {
+          transactionType.push(item);
+        });
+      } else { transactionType.push(parsed.type); }
+    }
+    setSelectedTransactionType(transactionType);
 
     let newDealarCode = []
     if (parsed.fic !== undefined) {
@@ -148,6 +170,7 @@ export default function () {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('type');
 
     if (fromDate != '' & toDate != '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -156,6 +179,7 @@ export default function () {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    if (selectedTransactionType.length > 0) params.append('type', selectedTransactionType); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -237,6 +261,11 @@ export default function () {
     dataSearch(current,pageSize);
   }
 
+  //Change Transaction Type
+  function transactionTypeHandleChange(value) {
+    setSelectedTransactionType(value);
+  }
+  
   let columns = [
     {
       title: "Bayi Kodu",
@@ -432,6 +461,25 @@ export default function () {
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={5}>
+                <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
+              </Col>
+             
+            </Row>
+            <Row>
+            <Col span={6}>
+                <Select
+                  mode="multiple"
+                  style={{ marginBottom: '8px', width: '250px' }}
+                  placeholder="İşlem Tipi Seçiniz"
+                  onChange={transactionTypeHandleChange}
+                  value={selectedTransactionType}
+                >
+                  {children}
+                </Select>
               </Col>
             </Row>
           </Panel>
