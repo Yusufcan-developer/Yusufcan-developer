@@ -57,13 +57,13 @@ export default function () {
   const [adressItem, setAdressItem] = useState();
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
-  const [createAddress, setCreateAddress]=useState(false);
+  const [createAddress, setCreateAddress] = useState(false);
 
-  const [addressCode,setAddressCode]=useState();
-  const [addressTitle,setAddressTitle]=useState();
-  const [address1,setAddress1]=useState();
-  const [address2,setAddress2]=useState();
-  const [addressCity,setAddressCity]=useState();
+  const [addressCode, setAddressCode] = useState();
+  const [addressTitle, setAddressTitle] = useState();
+  const [address1, setAddress1] = useState();
+  const [address2, setAddress2] = useState();
+  const [addressCity, setAddressCity] = useState();
 
   let totalPallet = 0;
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
@@ -89,13 +89,13 @@ export default function () {
     if (activeUser != undefined) { uname = activeUser }
     if (!token.uname) { return 'Unauthorized' }
 
-    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
+    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}?includePallet=true`, requestOptions)
       .then(response => {
         if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
         return response.json();
       })
       .then(data => {
-        setOrderCost (data.orderCost);
+        setOrderCost(data.orderCost);
       })
       .catch();
     return productInfo;
@@ -104,22 +104,11 @@ export default function () {
   function renderProducts() {
     getCartList();
     let products = localStorage.getItem('cartProducts');
-    let productQuantity = localStorage.getItem('cartProductQuantity');
+    const strProductQuantity = localStorage.getItem('cartProductQuantity');
     products = JSON.parse(products);
-    productQuantity = JSON.parse(productQuantity);
-    productQuantity = _.filter(productQuantity, function (item) {
-      if (item.orderAmount > 0) {
-        return true
-      }
-    });
-    _.each(productQuantity, (item, i) => {
-      totalPallet += item.quantity;
-    });
-    productQuantity.push({ 'itemCode': 'M99999900', 'quantity': totalPallet });
-    products['M99999900'] = { 'description': 'AHŞAP PALET BEDELİ ', 'listPrice': 20, 'itemCode': 'M99999900', 'm2Pallet': 1 };
-    return productQuantity.map(product => {
-      //totalPrice +=(product.quantity * products[product.itemCode].listPrice) * products[product.itemCode].m2Pallet;
+    const productQuantity = _.filter(JSON.parse(strProductQuantity), function (item) { return item.orderAmount > 0; });
 
+    return productQuantity.map(product => {
       return (
         <SingleOrderInfo
           key={product.objectID}
@@ -397,7 +386,7 @@ export default function () {
                     <Col span={8} offset={16} align="right" >
                       <Button type="primary" size="small" style={{ marginBottom: '5px' }}
                         icon={<PlusOutlined />} onClick={onCreateAddress}>
-                        {<IntlMessages id="forms.button.createAddress" />} 
+                        {<IntlMessages id="forms.button.createAddress" />}
                       </Button>
                     </Col>
                     <Input.Search
