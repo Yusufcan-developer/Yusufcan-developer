@@ -28,16 +28,23 @@ import PageHeader from '@iso/components/utility/pageHeader';
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
 import { LinkOutlined} from '@ant-design/icons';
-
+var jwtDecode = require('jwt-decode');
 const { TabPane } = Tabs;
 
 const ProductDetail = () => {
 
+  
   const dispatch = useDispatch();
   const { productId } = useParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogImageId, setDialogImageId] = useState(0);
   const [sliderImageUrl, setSliderImageUrl] = useState();
+  const[removeItem,setRemoveItem]=useState();
+  const [partialQuantity, setPartialQuantity] = useState(false);
+  const [palletAmount, setPalletAmount] = useState(0);
+  const [selectedItemCode, setSelectedItemCode] = useState();
+  const [warehouseData, setWarehouseData] = useState();
+  const [partialAmount, setPartialAmount] = useState(0);
   const history = useHistory();
   
   //Style States
@@ -59,8 +66,8 @@ const ProductDetail = () => {
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl,imageLargeBaseUrl] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
-  const [warehouseData] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
+  const [data,loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl,imageLargeBaseUrl,m2Pallet,m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
+  const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
 
   const onChange = value => {
     setQuantity(value);
@@ -90,52 +97,107 @@ const ProductDetail = () => {
       }
     };
   };
+ //removing items from the cart
+ function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {  
+  if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+  else {
 
-  //removing items from the cart
-  function onRemoveProductCart(product) {
     inputNumberShowOrHide(product)
-    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-    if (selectedProduct.quantity !== 1) {
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+    if(selectedProduct===undefined){return;}
+    if (selectedProduct.quantity !== 0) {
       const newProductQuantity = [];
       productQuantity.forEach(productItem => {
-        if (productItem.itemCode !== selectedProduct.itemCode) {
+        if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
           newProductQuantity.push(productItem);
         } else {
           const itemCode = productItem.itemCode
           const quantity = productItem.quantity - 1;
+          if (quantity === 0) { return; }
           newProductQuantity.push({
             itemCode,
             quantity,
+            isPartial,
           });
         }
       });
       dispatch(changeProductQuantity(newProductQuantity));
     }
-  };
-
-  //Adding products to the cart
-  function onAddProductCart(product) {
-    inputNumberShowOrHide()
-    if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) { dispatch(addToCart(product, 1)); notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' }); } //Sepete
+  }
+};
+  // //removing items from the cart
+  // function onRemoveProductCart(product) {
+  //   inputNumberShowOrHide(product)
+  //   var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+  //   if (selectedProduct.quantity !== 1) {
+  //     const newProductQuantity = [];
+  //     productQuantity.forEach(productItem => {
+  //       if (productItem.itemCode !== selectedProduct.itemCode) {
+  //         newProductQuantity.push(productItem);
+  //       } else {
+  //         const itemCode = productItem.itemCode
+  //         const quantity = productItem.quantity - 1;
+  //         newProductQuantity.push({
+  //           itemCode,
+  //           quantity,
+  //         });
+  //       }
+  //     });
+  //     dispatch(changeProductQuantity(newProductQuantity));
+  //   }
+  // };
+//Adding products to the cart
+function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false) {
+  if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+  else {
+    inputNumberShowOrHide(itemCode)
+    if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
+      dispatch(addToCart(product, 1, isPartial));
+      notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+    }
     else {
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
       const newProductQuantity = [];
-      const selectedQuantity = quantity;
       productQuantity.forEach(productItem => {
-        if (productItem.itemCode !== selectedProduct.itemCode) {
+        if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
           newProductQuantity.push(productItem);
         } else {
-          const itemCode = productItem.itemCode
+          const itemCode = productItem.itemCode;
           const quantity = productItem.quantity + 1;
           newProductQuantity.push({
             itemCode,
             quantity,
+            isPartial,
           });
         }
       });
       dispatch(changeProductQuantity(newProductQuantity));
     }
-  };
+  }
+};
+  // //Adding products to the cart
+  // function onAddProductCart(product) {
+  //   inputNumberShowOrHide()
+  //   if ((productQuantity.length === 0) || (productQuantity.find(item => item.itemCode == product.itemCode) === undefined)) { dispatch(addToCart(product, 1)); notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' }); } //Sepete
+  //   else {
+  //     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+  //     const newProductQuantity = [];
+  //     const selectedQuantity = quantity;
+  //     productQuantity.forEach(productItem => {
+  //       if (productItem.itemCode !== selectedProduct.itemCode) {
+  //         newProductQuantity.push(productItem);
+  //       } else {
+  //         const itemCode = productItem.itemCode
+  //         const quantity = productItem.quantity + 1;
+  //         newProductQuantity.push({
+  //           itemCode,
+  //           quantity,
+  //         });
+  //       }
+  //     });
+  //     dispatch(changeProductQuantity(newProductQuantity));
+  //   }
+  // };
 
   function inputNumberShowOrHide() {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
@@ -189,6 +251,57 @@ const ProductDetail = () => {
   function handleShowDialogOk(e) {
     setIsDialogOpen(false);
   }
+  //Input Number return partial quantity value
+  function inputNumberPartialQuantityValue(itemCode, isPartial = false) {
+    var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
+    if (selectedProduct === undefined) {
+      if (partialQuantity) { return 0 }
+      return 0
+    }
+    else {
+      return selectedProduct.quantity;
+    }
+  }
+//Get Warehouse Amount Data
+async function getWarehouseList(itemCode) {
+  let productInfo;
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+    }
+  };
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser = localStorage.getItem("activeUser")
+  let uname = token.uname;
+  if (activeUser != undefined) { uname = activeUser }
+  if (!token.uname) { return 'Unauthorized' }
+
+  await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
+    .then(response => {
+      if (!response.ok) { return response.statusText; }
+      return response.json();
+    })
+    .then(data => {
+      setWarehouseData((data && data.balances) || [])
+      // const warehouseGroupData=  _.groupBy(data.balances, function(item){ return item.warehouseName; });
+      let palletQuantity = 0;
+      let partialQuantity = 0;
+      if (data.balances.length > 0) {
+        _.each(data.balances, (item) => {
+          if (item.warehouseName === 'PALETLİ SATIŞ AMBARI') { palletQuantity += item.balance } else {
+            partialQuantity += item.balance;
+          }
+        });
+        setPalletAmount(palletQuantity);
+        setPartialAmount(partialQuantity);
+      }
+
+    })
+    .catch();
+  return productInfo;
+}
   let columns = [
     {
       title: "Ambar Kodu",
@@ -294,44 +407,91 @@ const ProductDetail = () => {
                 </Row>
                 <Row style={{ marginTop: '30px' }}>
                   <Col align="center" span={24}>
-                    {!inputNumberShowOrHide(productItem) ? (
-                      <Button type="primary" onClick={event => onAddProductCart(productItem)}>
-                        {<IntlMessages id="Sepete Ekle" />}
-                      </Button>
-                    ) : (
-                        <Row align="middle">
-                          <Col span={6} style={{ width: '100%' }} align="right" offset={2}>
-                            <Button type="primary" onClick={event => onRemoveProductCart(productItem)}>
-                              {<IntlMessages id="-" />}
-                            </Button>
-                          </Col>
-                          <Col span={8}>
-                            <Input
-                              id={'quantityText'}
-                              min={1}
-                              max={1000}
-                              defaultValue={1}
-                              value={inputNumberQuantityValue(productItem)}
-                              step={1}
-                              style={{ textAlign: "right" }}
-                              onClick={event => onSelectAll('quantityText')}
-                              onChange={event => onChangeQuantity(event, productItem)}
-                            />
-                          </Col>
-                          <Col span={6} style={{ width: '100%' }} align="left">
-                            <Button type="primary" onClick={event => onAddProductCart(productItem)}>
-                              {<IntlMessages id="+" />}
-                            </Button>
-                          </Col>
-                        </Row>
-                      )}
+               
                   </Col>
                 </Row>
               </Col>
             </Row>
+            <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
+                              <Row align="middle">
+                                <Col span={4} align="right">
+                                  <Button type="primary" onClick={event => onRemoveProductCart(data, true, false)}>
+                                    {removeItem === true ? (< IntlMessages id="---" />):  (<IntlMessages id="-" />)}
+                                  
+                                  </Button>
+                                </Col>
+                                <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                                  <Input
+                                    id={'Paletli' + itemCode}
+                                    onClick={event => onSelectAll('Paletli' + itemCode)}
+                                    onChange={event => onChangeQuantity(event, itemCode)}
+                                    style={{ textAlign: "right" }}
+                                    maxLength={5}
+                                    defaultValue={0}
+                                    step={1}
+                                    value={inputNumberPartialQuantityValue(itemCode)}
+                                  />
+                                </Col>
+                                <Col span={4}>
+                                  <Button type="primary" onClick={event => onAddProductCart(data, true, false)}>
+                                    {<IntlMessages id="+" />}
+                                  </Button>
+                                </Col>
+                                <Space size={2}>
+                                  <Col span={4}>
+                                    <Tag color="blue">
+                                    1 Palet: {m2Pallet} {unit}
+                                    </Tag>
+                                  </Col>
+                                  {palletAmount > 0 ? (<Col span={4}>
+                                    <Tag color="blue">
+                                      Stok: {numberFormat(palletAmount)} {unit}
+                                    </Tag>
+                                  </Col>) : null}
+                                </Space>
+                              </Row>
+                            </Form.Item>
+                            <Form.Item label='Parçalı Satış (KUTU)'>
+                              <Row align="middle">
+                                <Col span={4} align="right">
+                                  <Button type="primary" onClick={event => onRemoveProductCart(data, true, true)}>
+                                    {<IntlMessages id="-" />}
+                                  </Button>
+                                </Col>
+                                <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                                  <Input
+                                    id={'Parçalı' + itemCode}
+                                    onClick={event => onSelectAll('Parçalı' + itemCode)}
+                                    onChange={event => onChangeQuantity(event, itemCode, true)}
+                                    style={{ textAlign: "right" }}
+                                    maxLength={5}
+                                    defaultValue={1}
+                                    step={1}
+                                    value={inputNumberPartialQuantityValue(itemCode, true)}
+                                  />
+                                </Col>
+                                <Col span={4} style={{ width: '100%' }}>
+                                  <Button type="primary" onClick={event => onAddProductCart(data, true, true)}>
+                                    {<IntlMessages id="+" />}
+                                  </Button>
+                                </Col>
+                                <Space size={5}>
+                                  <Col span={4}>
+                                    <Tag color="blue">
+                                    1 Kutu: {m2Box} {unit}
+                                    </Tag>
+                                  </Col>
+                                  {partialAmount > 0 ? (<Col span={4}>
+                                    <Tag color="blue">
+                                      Stok: {numberFormat(partialAmount)} {unit}
+                                    </Tag>
+                                  </Col>) : null}
+                                </Space>
+                              </Row>
+                            </Form.Item>
             <Table
               columns={columns}
-              dataSource={warehouseData}
+              dataSource={warehouseDataList}
               pagination={false}
               // scroll={{ x: 'max-content' }}
               size="small"
