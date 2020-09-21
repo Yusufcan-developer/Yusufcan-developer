@@ -21,6 +21,9 @@ import { Col, Row, Modal, Table, Input, Space } from "antd";
 import Form from "@iso/components/uielements/form";
 import Textarea from '@iso/components/uielements/input';
 
+//Fetch
+import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
+
 //Styles
 import { PlusOutlined } from '@ant-design/icons';
 import {
@@ -64,60 +67,28 @@ export default function () {
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
   const [addressCity, setAddressCity] = useState();
-
-  let totalPallet = 0;
-  const { productQuantity, products } = useSelector(state => state.Ecommerce);
-
+  
+  const [data,changeCart] = useGetCartCheckOut();
+  
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     getInitData(token.uid);
   }, []);
-  //Get Cart
-  async function getCartList() {
-    let productInfo;
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      }
-    };
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    let uname = token.uname;
-    if (activeUser != undefined) { uname = activeUser }
-    if (!token.uname) { return 'Unauthorized' }
 
-    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}?includePallet=true`, requestOptions)
-      .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-        return response.json();
-      })
-      .then(data => {
-        setOrderCost(data.orderCost);
-      })
-      .catch();
-    return productInfo;
-  }
   //Get Products
   function renderProducts() {
-    getCartList();
-    let products = localStorage.getItem('cartProducts');
-    const strProductQuantity = localStorage.getItem('cartProductQuantity');
-    products = JSON.parse(products);
-    const productQuantity = _.filter(JSON.parse(strProductQuantity), function (item) { return item.orderAmount > 0; });
-
-    return productQuantity.map(product => {
-      return (
-        <SingleOrderInfo
-          key={product.objectID}
-          quantity={product.quantity}
-          productItem={products[product.itemCode]}
-          {...products[product.itemCode]}
-        />
-      );
-    });
+    if (data !== undefined) {
+      const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
+      return productList.map(product => {
+        return (
+          <SingleOrderInfo
+            key={product.objectID}
+            productItem={product}
+          />
+        );
+      });
+    }
   }
   //Change First Name 
   function saveOrder(event) {
@@ -279,6 +250,7 @@ export default function () {
     const adress = await getAdress(userData.dealerCodes[0]);
   }
 
+  //Sipariş temizleme işlemi
   async function clearOrder() {
     setLoadingButton(true);
     let sendDatabaseProductList
@@ -341,13 +313,15 @@ export default function () {
                 productQuantity.push({
                   itemCode: product.itemCode,
                   quantity: product.quantity,
-                  orderAmount: 0
+                  orderAmount: 0,
+                  isPartial:product.isPartial
                 });
                 products[product.itemCode] = product.item;
               });
             }
             localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
             localStorage.setItem('cartProducts', JSON.stringify(products));
+            changeCart(true);
           }
         }
         else {
@@ -537,7 +511,7 @@ export default function () {
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
                     <span>Toplam</span>
-                    <span>{numberFormat(orderCost)} TL</span>
+                    <span>{data!=undefined ?(numberFormat(data.orderCost)):(0)} TL</span>
                   </div>
                   <Space size={50}>
                     <Button type="primary" className="isoOrderBtn" onClick={saveOrder} >
