@@ -247,7 +247,12 @@ export default function () {
   //get adress and user id function
   async function getInitData(userId) {
     const userData = await getByUserId(userId);
-    const adress = await getAdress(userData.dealerCodes[0]);
+
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let account = token.uname;
+    if (activeUser != undefined) { account = activeUser }
+    const adress = await getAdress(account);
   }
 
   //Sipariş temizleme işlemi
@@ -372,7 +377,6 @@ export default function () {
                     <Table
                       columns={columns}
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
-                      // dataSource={adress}
                       onRow={(record, rowIndex) => {
                         return {
                           onClick: event => { setAdressItem(record.addressTitle); setPhone(record.phone); setCity(record.city); setVisible(false) },
