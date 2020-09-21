@@ -649,9 +649,10 @@ const SearchComponent = () => {
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
     if (event.target.value > 0) {
-      if ((partialQuantity) && (!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { return onAddProductCart(productData, true, isPartial) }
+      const selectedQuantity=event.target.value;
+      if ((partialQuantity) && (!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
       else {
-        if ((partialQuantity === true) && (event.target.value === 1)) { return onAddProductCart(productData, true, isPartial) }
+        if ((partialQuantity === true) && (event.target.value === 1)) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
         else {
           const product = productData;
           var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
@@ -705,12 +706,13 @@ const SearchComponent = () => {
     }
   };
   //Adding products to the cart
-  function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false) {
+  function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false,selectedQuantity=0) {
+    if (selectedQuantity === 0) { selectedQuantity = 1 }
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
-        dispatch(addToCart(product, 1, isPartial));
+        dispatch(addToCart(product,parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
       }
       else {
