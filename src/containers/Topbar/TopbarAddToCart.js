@@ -13,11 +13,15 @@ import SingleCart from '@iso/components/Cart/SingleCartModal';
 import ecommerceAction from '@iso/redux/ecommerce/actions';
 import { stripTrailingSlash } from '@iso/lib/helpers/utility';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
+
+import TopbarCartWrapper from './TopbarCart.style';
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
+
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import _ from 'underscore';
+
 //Configs
 import siteConfig from "@iso/config/site.config";
 var jwtDecode = require('jwt-decode');
@@ -93,17 +97,35 @@ export default function TopbarAddtoCart() {
       );
     }
     return productQuantity.map(product => {
-     
+     const productItem=products[product.itemCode]
       return (
-        <SingleCart
-          key={product.itemCode+product.isPartial}
-          quantity={product.quantity}
-          changeQuantity={changeQuantity}
-          cancelQuantity={event => cancelQuantity(product)}
-          productItem={products[product.itemCode]}
-          isPartial={product.isPartial}
-          {...products[product.itemCode]}
-        />
+        <TopbarCartWrapper className="isoCartItems">
+      <div className="isoItemImage">
+        <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} />
+      </div>
+      <div className="isoCartDetails">
+        <h3>
+          <a href="#!">{productItem.description}</a>
+        </h3>
+        <p className="isoItemPriceQuantity">
+          <span>{numberFormat(productItem.listPrice)} TL</span>
+          <span className="itemMultiplier">/</span>
+          <span className="isoItemQuantity">{productItem.unit}</span>
+          <span className="itemMultiplier"> </span>
+          <span className="isoItemQuantity">{'('}{productItem.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
+        </p>
+      </div>
+      <a
+        className="isoItemRemove"
+        onClick={() => {
+          cancelQuantity(product);
+        }}
+       
+        href="#!"
+      >
+        <i className="ion-android-close" />
+      </a>
+    </TopbarCartWrapper>       
       );
     });
   }

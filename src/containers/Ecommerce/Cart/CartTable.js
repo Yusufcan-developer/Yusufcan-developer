@@ -8,11 +8,10 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Component
 import Input from '@iso/components/uielements/input';
-import Button from '@iso/components/uielements/button';
 import SingleCart from '@iso/components/Cart/SingleCart';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
-import { Menu, Dropdown } from "antd";
+import { Menu, Dropdown, Col, Row, Button } from "antd";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
@@ -28,8 +27,8 @@ var jwtDecode = require('jwt-decode');
 const { changeProductQuantity } = ecommerceActions;
 
 export default function CartTable({ style }) {
-  
-  const[totalCost,setTotalCost]=useState();
+
+  const [totalCost, setTotalCost] = useState();
   let history = useHistory();
   const dispatch = useDispatch();
   const { productQuantity, products } = useSelector(state => state.Ecommerce);
@@ -96,7 +95,7 @@ export default function CartTable({ style }) {
                   itemCode: product.itemCode,
                   quantity: product.quantity,
                   orderAmount: product.orderAmount,
-                  isPartial:product.isPartial
+                  isPartial: product.isPartial
                 });
                 products[product.itemCode] = product.item;
               });
@@ -146,23 +145,110 @@ export default function CartTable({ style }) {
     }
     return productQuantity.map(product => {
       const key = product.itemCode + (product.isPartial ? '-partial' : null);
-      const objectID = product.itemCode + (product.isPartial ? '-partial' : null);
+      const objectID = product.itemCode;
       const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
+      const productItem = products[product.itemCode];
+      const itemTotalCost = ((!product.isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * product.quantity).toFixed(2);
+
       return (
-        <SingleCart
-          key={key}
-          quantity={product.quantity}
-          changeQuantity={changeQuantity}
-          cancelQuantity={event => cancelQuantity(product)}
-          productItem={products[product.itemCode]}
-          isPartial={product.isPartial}
-          objectID={objectID}
-          inputId={inputId}
-          {...products[product.itemCode]}
-        />
+        <tr>
+          <td
+            className="isoItemRemove"
+            onClick={() => {
+              cancelQuantity(product);
+            }}
+          >
+            <a href="# ">
+              <i className="ion-android-close" />
+            </a>
+          </td>
+          <td className="isoItemImage">
+            <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
+          </td>
+          <td className="isoItemName">
+            <p style={{ marginBottom: '5px' }}>{product.type}</p>
+            <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
+          </td>
+          <td className="isoItemPrice">
+            {numberFormat(product.isPartial ? productItem.partialPrice : productItem.listPrice)} {"TL"}
+          </td>
+          <td className="isoItemUnit">
+            {productItem.unit}
+          </td>
+          <td className="isoItemPalet">
+            <Row justify="center" align="bottom">
+              <Col span={8} style={{ width: '100%' }} align="right">
+                <Button type="primary" onClick={event => onRemoveBox(product)} style={{ color: 'white' }}>
+                  -
+              </Button>
+              </Col>
+              <Col span={8}>
+                <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{product.isPartial ? 'Kutu/Adet' : 'Palet'}</span>
+                <Input
+                  min={1}
+                  id={inputId}
+                  style={{ textAlign: "right", maxHeight: "32px" }}
+                  max={1000}
+                  defaultValue={1}
+                  value={product.quantity}
+                  step={1}
+                  onClick={event => onSelectAll(inputId)}
+                  onChange={event => onChangeQuantity(event, product, product.isPartial)}
+                />
+              </Col>
+              <Col span={8} style={{ width: '100%' }}>
+                <Button type="primary" onClick={event => onAddBox(product)} style={{ color: 'white' }}>
+                  +
+              </Button>
+              </Col>
+            </Row>
+          </td>
+          <td className="isoItemQuantity">
+            {numberFormat(product.quantity * (!product.isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
+          </td>
+          <td className="isoItemPriceTotal">{numberFormat(itemTotalCost)} TL</td>
+        </tr>
+
       );
     });
   }
+  //Miktar girilen text alanında tüm değerleri seçiyor
+  function onSelectAll(id) {
+    document.getElementById(id).select();
+  }
+
+  //Redux product quantity change event
+  function onChangeQuantity(event, productData, isPartial = false) {
+    if (event.target.value > 0) {
+      const product = productData;
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+      const newProductQuantity = [];
+      productQuantity.forEach(productItem => {
+        if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+          newProductQuantity.push(productItem);
+        } else {
+          const itemCode = productItem.itemCode
+          const quantity = parseInt(event.target.value);
+          newProductQuantity.push({
+            itemCode,
+            quantity,
+            isPartial,
+          });
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+    }
+  };
+
+  function onRemoveBox(product) {
+    if (product.quantity !== 1) {
+      changeQuantity(product.itemCode, product.quantity - 1, product.isPartial);
+    }
+  };
+
+  function onAddBox(product) {
+    changeQuantity(product.itemCode, product.quantity + 1, product.isPartial);
+  };
 
   //Sepet miktarının değişikliği
   function changeQuantity(itemCode, quantity, isPartial) {
@@ -186,8 +272,9 @@ export default function CartTable({ style }) {
   function cancelQuantity(productItem) {
     getCartList();
     const newProductQuantity = [];
+    debugger
     _.each(productQuantity, (product) => {
-      if ((product.itemCode !== productItem.itemCode  || product.isPartial !== productItem.isPartial)) {
+      if ((product.itemCode !== productItem.itemCode || product.isPartial !== productItem.isPartial)) {
         newProductQuantity.push(product);
       }
     });
