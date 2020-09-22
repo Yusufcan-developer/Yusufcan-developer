@@ -46,21 +46,19 @@ const Option = SelectOption;
 
 export default function () {
   const [orderCost, setOrderCost] = useState();
-  const [companyName, setCompanyName] = useState();
-  const [email, setEmail] = useState();
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
   const [city, setCity] = useState();
-  const [town,setTown]=useState();
+  const [town, setTown] = useState();
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
-  const [addressCode,setAddressCode]=useState();
+  const [addressCode, setAddressCode] = useState();
   const [adressItem, setAdressItem] = useState();
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
-  const [confirmLoading,setConfirmLoading]=useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
   const [createAddress, setCreateAddress] = useState(false);
 
   const [addressTitle, setAddressTitle] = useState();
@@ -68,9 +66,9 @@ export default function () {
   const [address2, setAddress2] = useState();
 
   const { confirm } = Modal;
-  
-  const [data,changeCart] = useGetCartCheckOut();
-  
+
+  const [data, changeCart] = useGetCartCheckOut();
+
   const token = jwtDecode(localStorage.getItem("id_token"));
   const activeUser = localStorage.getItem("activeUser")
   let account = token.uname;
@@ -98,16 +96,6 @@ export default function () {
   }
   //Change First Name 
   function saveOrder(event) {
-  };
-
-  //Change Company Name
-  const onChangeCompanyName = e => {
-    setCompanyName(e.target.value);
-  }
-
-  //Change Company Name 
-  const onChangeEmail = e => {
-    setEmail(e.target.value);
   };
 
   //Change Phone 
@@ -327,7 +315,7 @@ export default function () {
                   itemCode: product.itemCode,
                   quantity: product.quantity,
                   orderAmount: 0,
-                  isPartial:product.isPartial
+                  isPartial: product.isPartial
                 });
                 products[product.itemCode] = product.item;
               });
@@ -346,9 +334,9 @@ export default function () {
   }
   //post address
   async function postSaveAddress() {
-    if ((addressTitle === undefined) || (address1 === undefined)) {return  message.error('Lütfen zorunlu alanları giriniz.'); }
+    if ((addressTitle === undefined) || (address1 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
-    const reqBody= {"id":0,"addressCode":'',"dealerId":0,"dealerCode":account,"addressTitle":addressTitle,"address1":address1,"address1":address2,"city":city,"town":town, "countryCode": 'TR',"countryName": 'Türkiye','phone':phone } 
+    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": account, "addressTitle": addressTitle, "address1": address1, "address1": address2, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
       method: "POST",
       headers: {
@@ -364,15 +352,15 @@ export default function () {
         return response.json();
       })
       .then(data => {
-        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city);setAddressCode(data.addressCode);
+        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode);
         setVisible(false);
-        setCreateAddress(false);        
+        setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
-        getAdress(account);     
+        getAdress(account);
       })
       .catch();
-      setConfirmLoading(false);
-    }
+    setConfirmLoading(false);
+  }
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -416,7 +404,7 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAdressItem(record.addressTitle); setPhone(record.phone); setCity(record.city); setVisible(false) },
+                          onClick: event => { setCountry(record.countryCode+'-'+record.countryName); setAdressItem(record.addressCode+'-'+record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false) },
                         };
                       }}
                       pagination={false}
@@ -435,9 +423,9 @@ export default function () {
                   confirmLoading={confirmLoading}
                   onOk={() => postSaveAddress()}
                   onCancel={() => setCreateAddress(false)}
-                  
+
                 >
-                  <Form>                   
+                  <Form>
                     <Fieldset className="isoInputFieldset">
                       <InputBox
                         label="Adres Başlığı"
@@ -494,7 +482,7 @@ export default function () {
                     </Fieldset>
                   </Form>
                 </Modal>
-                <label>{<IntlMessages id="page.addressTitle" /> }</label>
+                <label>{<IntlMessages id="page.addressTitle" />}  { <span className="asterisk">*</span> }</label>
                 <div className="isoInputFieldset">
                   <Input.Search
                     value={adressItem}
@@ -503,49 +491,44 @@ export default function () {
                   />
                 </div>
                 <div className="isoInputFieldset">
-                  <InputBox label={<IntlMessages id="checkout.billingform.company" />}
-                    onChange={onChangeCompanyName}
-                    value={companyName}
-                    important
+                  <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
+                    onChange={onChangeAddress1}
+                    value={address1}
+                    readOnly                   
+                  />
+                </div>
+                <div className="isoInputFieldset">
+                  <InputBox label={<IntlMessages id="checkout.billingform.address2" />}
+                    onChange={onChangeAddress2}
+                    value={address2}
+                    readOnly
                   />
                 </div>
 
                 <div className="isoInputFieldset">
-                  <InputBox
-                    label={<IntlMessages id="checkout.billingform.email" />}
-                    onChange={onChangeEmail}
-                    value={email}
-                    important
-                  />
+
                   <InputBox label={<IntlMessages id="checkout.billingform.mobile" />}
                     onChange={onChangePhone}
                     value={phone}
-                    important />
+                    readOnly
+                  />
+                  <InputBox label={<IntlMessages id="checkout.billingform.country" />}
+                    value={country}
+                    readOnly
+                    />
                 </div>
-
                 <div className="isoInputFieldset">
-                  <InputBoxWrapper className="isoInputBox">
-                    <label>{<IntlMessages id="checkout.billingform.country" />}</label>
-                    <Select size="large" defaultValue="turkey" disabled={true}>
-                      <Option value="turkey">Türkiye</Option>
-                      <Option value="argentina">Argentina</Option>
-                      <Option value="australia">Australia</Option>
-                      <Option value="brazil">Brazil</Option>
-                      <Option value="france">France</Option>
-                      <Option value="germany">Germany</Option>
-                      <Option value="southafrica">South Africa</Option>
-                      <Option value="spain">Spain</Option>
-                      <Option value="unitedstate">United State</Option>
-                      <Option value="unitedkingdom">United Kingdom</Option>
-                    </Select>
-                  </InputBoxWrapper>
-
                   <InputBox label={<IntlMessages id="checkout.billingform.city" />}
                     onChange={event => onChangeCity(event)}
                     value={city}
-                    important />
+                    readOnly
+                    />
+                  <InputBox label={<IntlMessages id="checkout.billingform.town" />}
+                    onChange={event => onChangeAddressTown(event)}
+                    value={town}
+                    readOnly
+                    />
                 </div>
-
                 {/* Ödeme özet bilgileri ve sipariş oluşturma */}
               </BillingFormWrapper>
               <OrderTable className="isoOrderInfo">
@@ -558,7 +541,7 @@ export default function () {
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
                     <span>Toplam</span>
-                    <span>{data!=undefined ?(numberFormat(data.orderCost)):(0)} TL</span>
+                    <span>{data != undefined ? (numberFormat(data.orderCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
                     <Button type="primary" className="isoOrderBtn" onClick={saveOrder} >

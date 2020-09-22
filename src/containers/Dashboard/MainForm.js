@@ -421,6 +421,7 @@ const MainForm = () => {
         tableOptions.sortedInfo.columnKey === "lastAccountCutOffDate" &&
         tableOptions.sortedInfo.order,
       render: (lastAccountCutOffDate) => moment(lastAccountCutOffDate).format(siteConfig.dateFormat),
+      align: "right",
     },
     {
       title: "Hesap Kesim Durumu",
