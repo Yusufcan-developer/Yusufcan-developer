@@ -44,6 +44,7 @@ export default {
       getGetByAccountNo: apiUrl + 'b2b/carts/account/',
       cartGetAll: apiUrl + 'b2b/carts/all',
       deleteCart: apiUrl + 'b2b/carts/account/',
+      postSaveAddress: apiUrl + 'core/accounts/addresses',
     },
     report: {
       postOrders: apiUrl + 'core/report/orders',

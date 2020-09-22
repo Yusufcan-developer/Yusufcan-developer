@@ -17,7 +17,7 @@ import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper, InputBoxWrapper } from './Checkout.styles';
 import { useGetCustomerInfo } from "@iso/lib/hooks/fetchData/useGetCustomerInfo";
 import siteConfig from "@iso/config/site.config";
-import { Col, Row, Modal, Table, Input, Space } from "antd";
+import { Col, Row, Modal, Table, Input, Space, message } from "antd";
 import Form from "@iso/components/uielements/form";
 import Textarea from '@iso/components/uielements/input';
 
@@ -46,30 +46,36 @@ const Option = SelectOption;
 
 export default function () {
   const [orderCost, setOrderCost] = useState();
-  const [userName, setUserName] = useState();
-  const [lastName, setLastName] = useState();
   const [companyName, setCompanyName] = useState();
   const [email, setEmail] = useState();
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
   const [city, setCity] = useState();
+  const [town,setTown]=useState();
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
+  const [addressCode,setAddressCode]=useState();
   const [adressItem, setAdressItem] = useState();
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
+  const [confirmLoading,setConfirmLoading]=useState(false);
   const [createAddress, setCreateAddress] = useState(false);
 
-  const [addressCode, setAddressCode] = useState();
   const [addressTitle, setAddressTitle] = useState();
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
-  const [addressCity, setAddressCity] = useState();
+
+  const { confirm } = Modal;
   
   const [data,changeCart] = useGetCartCheckOut();
   
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser = localStorage.getItem("activeUser")
+  let account = token.uname;
+  if (activeUser != undefined) { account = activeUser }
+
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -125,9 +131,6 @@ export default function () {
   };
 
   //Yeni Adres Oluşturma Bölümü
-  const onChangeAddressCode = e => {
-    setAddressCode(e.target.value);
-  }
 
   const onChangeAddressTitle = e => {
     setAddressTitle(e.target.value);
@@ -142,10 +145,20 @@ export default function () {
   }
 
   const onChangeAddressCity = e => {
-    setAddressCity(e.target.value);
+    setCity(e.target.value);
+  }
+
+  const onChangeAddressTown = e => {
+    setTown(e.target.value);
   }
 
   function onCreateAddress() {
+    setCity();
+    setTown();
+    setAddressTitle();
+    setAddress1();
+    setAddress2();
+    setPhone();
     setCreateAddress(true);
   }
   let columns = [
@@ -247,11 +260,6 @@ export default function () {
   //get adress and user id function
   async function getInitData(userId) {
     const userData = await getByUserId(userId);
-
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    let account = token.uname;
-    if (activeUser != undefined) { account = activeUser }
     const adress = await getAdress(account);
   }
 
@@ -336,6 +344,35 @@ export default function () {
       .catch();
     setLoadingButton(false);
   }
+  //post address
+  async function postSaveAddress() {
+    if ((addressTitle === undefined) || (address1 === undefined)) {return  message.error('Lütfen zorunlu alanları giriniz.'); }
+    setConfirmLoading(true);
+    const reqBody= {"id":0,"addressCode":'',"dealerId":0,"dealerCode":account,"addressTitle":addressTitle,"address1":address1,"address1":address2,"city":city,"town":town, "countryCode": 'TR',"countryName": 'Türkiye','phone':phone } 
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(siteConfig.api.carts.postSaveAddress, requestOptions)
+      .then(response => {
+        if (!response.ok) (message.error('Veritabanı bağlantısı kurulumadı lütfen sistem yöneticinize başvurunuz.'));
+        return response.json();
+      })
+      .then(data => {
+        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city);setAddressCode(data.addressCode);
+        setVisible(false);
+        setCreateAddress(false);        
+        message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
+        getAdress(account);     
+      })
+      .catch();
+      setConfirmLoading(false);
+    }
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -393,65 +430,71 @@ export default function () {
                 <Modal
                   visible={createAddress}
                   onClose={() => setCreateAddress(false)}
-                  title={'Yeni Adress Oluşturma'}
-                  okText={'Tamam'}
-                  onOk={() => setCreateAddress(false)}
+                  title={'Yeni Adres Oluşturma'}
+                  okText={'Kaydet'}
+                  confirmLoading={confirmLoading}
+                  onOk={() => postSaveAddress()}
                   onCancel={() => setCreateAddress(false)}
+                  
                 >
-                  <Form>
-                    <Fieldset>
-                      <Label>Adres Kodu</Label>
-                      <Input
-                        label="Description"
-                        placeholder="Adres Kodu Giriniz"
-                        value={addressCode}
-                        onChange={event => onChangeAddressCode(event)}
-                      />
-                    </Fieldset>
-
-                    <Fieldset>
-                      <Label>Adres Başlığı</Label>
-                      <Textarea
-                        label="Description"
+                  <Form>                   
+                    <Fieldset className="isoInputFieldset">
+                      <InputBox
+                        label="Adres Başlığı"
                         placeholder="Adres Başlığı Giriniz"
                         rows={5}
                         value={addressTitle}
-                        onChange={event => onChangeAddressTitle(event)}
+                        onChange={onChangeAddressTitle}
+                        important
                       />
                     </Fieldset>
 
                     <Fieldset>
-                      <Label>Adres 1</Label>
-                      <Textarea
-                        label="Address1"
+                      <InputBox
+                        label="Adres 1"
                         rows={5}
                         placeholder="Adres 1 Giriniz"
                         value={address1}
-                        onChange={event => onChangeAddress1(event)}
+                        onChange={onChangeAddress1}
+                        important
                       />
                     </Fieldset>
 
                     <Fieldset>
-                      <Label>Adres 2</Label>
-                      <Textarea
-                        label="Address2"
+                      <InputBox
+                        label="Adres 2"
                         placeholder="Adres 2 Giriniz"
                         value={address2}
-                        onChange={event => onChangeAddress2(event)}
+                        onChange={onChangeAddress2}
                       />
                     </Fieldset>
                     <Fieldset>
-                      <Label>Şehir</Label>
-                      <Input
-                        label="city"
+                      <InputBox
+                        label="Telefon"
+                        placeholder="Telefon Giriniz"
+                        value={phone}
+                        onChange={onChangePhone}
+                      />
+                    </Fieldset>
+                    <Fieldset>
+                      <InputBox
+                        label="Şehir"
                         placeholder="Şehir Giriniz"
                         value={city}
-                        onChange={event => onChangeAddressCity(event)}
+                        onChange={onChangeAddressCity}
+                      />
+                    </Fieldset>
+                    <Fieldset>
+                      <InputBox
+                        label="İlçe"
+                        placeholder="İlçe Giriniz"
+                        value={town}
+                        onChange={onChangeAddressTown}
                       />
                     </Fieldset>
                   </Form>
                 </Modal>
-                <label>{<IntlMessages id="page.addressTitle" />}</label>
+                <label>{<IntlMessages id="page.addressTitle" /> }</label>
                 <div className="isoInputFieldset">
                   <Input.Search
                     value={adressItem}
