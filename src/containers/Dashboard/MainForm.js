@@ -101,10 +101,10 @@ const MainForm = () => {
   }, [pageSizeRegionalGoals]);
 
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
     usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "pageIndex": pageIndex - 1, "pageCount": pageSize });
 
-  const [cariToplamlarData, cariToplamlarloading, cariToplamlarcurrentPage, setCurrentPageCariToplamlar, CariToplamlarchangePageSize, setChangePageSizeCariToplamlar, CariToplamlartotalDataCount, CariToplamlarsetOnChange] =
+  const [cariToplamlarData, cariToplamlarloading, cariToplamlarcurrentPage, setCurrentPageCariToplamlar, CariToplamlarchangePageSize, setChangePageSizeCariToplamlar, CariToplamlartotalDataCount, CariToplamlarsetOnChange,aggregateData] =
     usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "pageIndex": pageIndexCariToplamlar - 1, "pageCount": pageSizeCariToplamlar });
 
   const [regionalGoalsData, regionalGoalsLoading, regionalGoalsCurrentPage, setCurrentPageRegionalGoals, regionalGoalsChangePageSize, setChangePageSizeRegionalGoals, regionalGoalsTotalDataCount, regionalGoalsSetOnChange] =
@@ -309,6 +309,34 @@ const MainForm = () => {
   function addressHandleChange(value) {
     setAdress(value);
   }
+
+  //Cari Toplamlar Kalemleri Görüntüleme
+  async function onExpand(expandedKeys) {
+    setExpandedKeys(expandedKeys);
+    setAutoExpandParent(false);
+  };
+
+  //Cari Toplamlar Kalemleri Expand İşlemi
+  function expandedRow(row, index) {
+    let aggregateIndex;
+    _.each(aggregateData, (item, i) => {
+      if (item.dealerCode === row.dealerCode) { return aggregateIndex = i }
+    });
+    const aggregateFilterData=_.filter(aggregateData, function (Item) {
+      if (Item.dealerCode === row.dealerCode ) {
+        return true;
+      }});
+      
+    return (<Table
+      columns={aggregateColumns}
+      dataSource={aggregateFilterData}
+      pagination={false}
+      scroll={{ x: 'max-content' }}
+      size="medium"
+      bordered={false}
+    />);
+  };
+
   //DBS Toplamlar Columns
   let columns = [
     {
@@ -370,23 +398,17 @@ const MainForm = () => {
       align: "right",
     },
     {
-      title: "Hesap Kesim Tutarı",
-      dataIndex: "currentAccountCutOffTotals",
-      key: "currentAccountCutOffTotals",
+      title: "Hesap Bakiyesi",
+      dataIndex: "currentAccountBalance",
+      key: "currentAccountBalance",
       render: (currentAccountCutOffTotals) => numberFormat(currentAccountCutOffTotals),
       align: "right",
     },
-    {
-      title: "Ödeme Tutarı",
-      dataIndex: "currentAccountCutOffTotals",
-      key: "currentAccountCutOffTotals",
-      render: (item,record) => numberFormat(record.currentAccountCutOffTotals-record.lastAccountCutOffTotals),
-      align: "right",
-    },
+   
     {
       title: "Hesap Kesim BakiyeTutarı",
-      dataIndex: "lastAccountCutOffTotals",
-      key: "lastAccountCutOffTotals",
+      dataIndex: "lastAccountCutOffBalance",
+      key: "lastAccountCutOffBalance",
       render: (lastAccountCutOffTotals) => numberFormat(lastAccountCutOffTotals),
       align: "right",
     },
@@ -436,43 +458,95 @@ const MainForm = () => {
       align: "right",
     }
   ];
+
+  let aggregateColumns=[
+    {
+      title: "Bayi Kodu",
+      dataIndex: "dealerCode",
+      key: "dealerCode",
+    },
+    {
+      title: "Bayi Adı",
+      dataIndex: "dealerName",
+      key: "dealerName",
+    },
+    {
+      title: "İşlem Tipi",
+      dataIndex: "transactionType",
+      key: "transactionType",
+    },
+    {
+      title: "Borç",
+      dataIndex: "debt",
+      key: "debt",
+      render: (debt) => numberFormat(debt),
+      align: "right",
+    },
+    {
+      title: "Alacak",
+      dataIndex: "credit",
+      key: "credit",
+      render: (credit) => numberFormat(credit),
+      align: "right",
+    },
+    // {
+    //   title: "Bölge Kodu",
+    //   dataIndex: "regionCode",
+    //   key: "regionCode",
+    // },
+    // {
+    //   title: "Bölge Yöneticisi",
+    //   dataIndex: "regionManager",
+    //   key: "regionManager",
+    // },
+    // {
+    //   title: "Saha Kodu",
+    //   dataIndex: "fieldCode",
+    //   key: "fieldCode",
+    // },
+    // {
+    //   title: "Saha Yöneticisi",
+    //   dataIndex: "fieldManager",
+    //   key: "fieldManager",
+    // },
+  ]
   //Hide order table column
   //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
-  // if (token.urole === 'admin') { }
-  // else if (token.urole === 'fieldmanager') {
-  //   const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Field;
-  //   if (getHideColumns.length > 0) {
-  //     for (let index = 0; index < getHideColumns.length; index++) {
-  //       columns = _.without(columns, _.findWhere(columns, {
-  //         dataIndex: getHideColumns[index].dataIndex
-  //       }
-  //       ))
-  //     }
-  //   }
-  // }
-  // else if (token.urole === 'regionmanager') {
-  //   const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Region;
-  //   if (getHideColumns.length > 0) {
-  //     for (let index = 0; index < getHideColumns.length; index++) {
-  //       columns = _.without(columns, _.findWhere(columns, {
-  //         dataIndex: getHideColumns[index].dataIndex
-  //       }
-  //       ))
-  //     }
-  //   }
-  // }
-  // else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-  //   const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
-  //   if (getHideColumns.length > 0) {
-  //     for (let index = 0; index < getHideColumns.length; index++) {
-  //       columns = _.without(columns, _.findWhere(columns, {
-  //         key: getHideColumns[index].key
-  //       }
-  //       ))
-  //     }
-  //   }
-  // }
+  if (token.urole === 'admin') { }
+  else if (token.urole === 'fieldmanager') {
+    const getHideColumns = ColumnOptionsConfig.AggregateTableHideColumns.Field;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        aggregateColumns = _.without(aggregateColumns, _.findWhere(aggregateColumns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if (token.urole === 'regionmanager') {
+    const getHideColumns = ColumnOptionsConfig.AggregateTableHideColumns.Region;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        aggregateColumns = _.without(aggregateColumns, _.findWhere(aggregateColumns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    const getHideColumns = ColumnOptionsConfig.AggregateTableHideColumns.Dealer;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        aggregateColumns = _.without(aggregateColumns, _.findWhere(aggregateColumns, {
+          key: getHideColumns[index].key
+        }
+        ))
+      }
+    }
+  }
 
   //hide column Description 1 , Description 2 , Description 3 , Description 4
   let descriptionHide = true;
@@ -572,7 +646,8 @@ const MainForm = () => {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
-
+          expandable={{ 'expandedRowRender': expandedRow }}
+          onExpand={onExpand}
         />
         <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}

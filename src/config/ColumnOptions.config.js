@@ -11,9 +11,6 @@ export default {
       {
         key: "dealerSubCode",
       },
-      // {
-      //   key: "C-DBS",
-      // },
       {
         key: "regionCode",
       },
@@ -307,6 +304,52 @@ export default {
       },
       {
         dataIndex: "fieldManager",
+      }
+    ],
+    Field: [
+
+    ],
+    Region: [
+      {
+        dataIndex: "fieldCode",
+      },
+      {
+        dataIndex: "fieldName",
+      },
+
+      {
+        dataIndex: "fieldManager",
+      }
+    ]
+  },
+  AggregateTableHideColumns:{
+    Dealer: [
+      {
+        key: "dealerCode",
+      },
+      {
+        key: "dealerName",
+      },
+      {
+        key: "dealerSubCode",
+      },
+      {
+        key: "regionCode",
+      },
+      {
+        key: "regionName",
+      },
+      {
+        key: "fieldCode",
+      },
+      {
+        key: "fieldName",
+      },
+      {
+        key: "regionManager",
+      },
+      {
+        key: "fieldManager",
       }
     ],
     Field: [
