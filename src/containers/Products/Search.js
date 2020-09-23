@@ -838,7 +838,7 @@ const SearchComponent = () => {
                   />
                 </Panel>
               </Collapse>
-            ) : (<Collapse ></Collapse>)}
+            ) : (null)}
 
             {(dimensionData.length != 0 && dimensionData != null) ? (
               <Collapse {...collapseProps}>
@@ -852,7 +852,7 @@ const SearchComponent = () => {
                   />
                 </Panel>
               </Collapse>
-            ) : (<Collapse ></Collapse>)}
+            ) : (null)}
             {(serieData.length != 0 && serieData != null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Seriler" />} key="4">
@@ -865,7 +865,7 @@ const SearchComponent = () => {
                   />
                 </Panel>
               </Collapse>
-            ) : (<Collapse ></Collapse>)}
+            ) : (null)}
             {(colorData.length != 0 && colorData != null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="Renkler" />} key="5">
@@ -877,7 +877,7 @@ const SearchComponent = () => {
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
                 </Panel></Collapse>
-            ) : (<Collapse ></Collapse>)}
+            ) : (null)}
 
             {(surfaceData.length != 0 && surfaceData != null) ? (
               <Collapse {...collapseProps}>
@@ -891,7 +891,7 @@ const SearchComponent = () => {
                   />
                 </Panel>
               </Collapse>
-            ) : (<Collapse ></Collapse>)}
+            ) : (null)}
             <Button
               type="primary"
               icon={<ClearOutlined />}
