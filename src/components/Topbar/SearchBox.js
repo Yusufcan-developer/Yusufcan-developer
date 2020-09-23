@@ -1,5 +1,6 @@
 import React from 'react';
 import { InputSearch } from '../uielements/input';
+
 export default function(props) {
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -14,7 +15,7 @@ export default function(props) {
   return (
     <InputSearch
       id="InputTopbarSearch"
-      size="small"
+      size="large"
       placeholder="Ara"
     />
   );
