@@ -57,7 +57,11 @@ export default function Topbar() {
           ) : (<TopbarAlert showAlert={false}/>)}
 
           </div>
-        <ul className="isoRight">       
+        
+        <ul className="isoRight">
+         <li className="isoSearch">
+            <TopbarSearch />
+          </li>       
           <li
             onClick={() => setSelectedItem('notification')}
             className={selectedItem ? 'isoNotify active' : 'isoNotify'}>
