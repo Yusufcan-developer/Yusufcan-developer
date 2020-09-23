@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Link, useHistory, useRouteMatch, useParams } from 'react-router-dom';
+import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
 import TopbarSearchModal from './TopbarSearchModal.styles';
 import { Col, Row, Modal, Table, Input, Space, message } from "antd";
 import Button from "@iso/components/uielements/button";
 export default function TopbarSearch() {
 
+  const queryString = require('query-string');
+  const location = useLocation();
   const [visible, setVisible] = useState(false);
   const [keyword, setKeyword] = useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
@@ -29,6 +31,7 @@ export default function TopbarSearch() {
       if (keyword !== undefined) {
         setVisible(false);
         history.push(`${'/products/search'}/?keyword=${keyword}`)
+        if(location.pathname==='/products/search/'){window.location.reload(false);}        
       }
       setKeyword();
     }
@@ -60,7 +63,7 @@ return (
         {<Input
           id="InputTopbarSearch"
           size="large"
-          placeholder="Ara"
+          placeholder="Ürünlerde ara"
           value={keyword}
           onChange={onchange}
           onKeyDown={keyPress}
