@@ -25,47 +25,48 @@ export default function TopbarSearch() {
 
   //Keywor 'Enter' search
   const keyPress = e => {
-    if (keyword!==undefined) {
-      if (e.keyCode == 13) {
+    if (e.keyCode == 13) {
+      if (keyword !== undefined) {
         setVisible(false);
         history.push(`${'/products/search'}/?keyword=${keyword}`)
       }
       setKeyword();
     }
   }
-  function showModal() {
-    setVisible(true);
-  };
 
-  //Input
-  const onchange = e => {
-    setKeyword(e.target.value);
-  }
-  return (
-    <div onClick={showModal}>
-      <i
-        className="ion-ios-search-strong"
-        style={{ color: customizedTheme.textColor }}
-      />
-      <TopbarSearchModal
-        visible={visible}
-        onOk={() => setVisible(false)}
-        onCancel={() => setVisible(false)}
-        wrapClassName="isoSearchModal"
-        width="60%"
-        footer={null}
-      >
-        <div className="isoSearchContainer">
-          {<Input
-            id="InputTopbarSearch"
-            size="large"
-            placeholder="Ara"
-            value={keyword}
-            onChange={onchange}
-            onKeyDown={keyPress}
-          />}
-        </div>
-      </TopbarSearchModal>
-    </div>
-  );
+function showModal() {
+  setVisible(true);
+};
+
+//Input
+const onchange = e => {
+  setKeyword(e.target.value);
+}
+return (
+  <div onClick={showModal}>
+    <i
+      className="ion-ios-search-strong"
+      style={{ color: customizedTheme.textColor }}
+    />
+    <TopbarSearchModal
+      visible={visible}
+      onOk={() => setVisible(false)}
+      onCancel={() => setVisible(false)}
+      wrapClassName="isoSearchModal"
+      width="60%"
+      footer={null}
+    >
+      <div className="isoSearchContainer">
+        {<Input
+          id="InputTopbarSearch"
+          size="large"
+          placeholder="Ara"
+          value={keyword}
+          onChange={onchange}
+          onKeyDown={keyPress}
+        />}
+      </div>
+    </TopbarSearchModal>
+  </div>
+);
 }
