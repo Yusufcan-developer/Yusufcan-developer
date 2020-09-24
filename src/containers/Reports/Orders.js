@@ -162,13 +162,12 @@ const OrdersReport = () => {
     });
    
   const partialUnitData=  _.groupBy(orderDetailData[orderDetailIndex].Value, function(item){ return item.unit; });
-  const r =   _.map(partialUnitData, (item) => {     
+  const r =   _.map(partialUnitData, (item) => {   
     return (<Table
       columns={OrderDetailcolumns}
       dataSource={item}
       pagination={false}
       scroll={{ x: 'max-content' }}
-      size="medium"
       bordered={false}
       summary={() => {
             return renderFooter(OrderDetailcolumns, item,false)
@@ -699,7 +698,6 @@ const OrdersReport = () => {
           onExpand={onExpand}
           // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
-          size="medium"
           bordered={false}
           summary={() => {
             return renderFooter(columns, data, true)

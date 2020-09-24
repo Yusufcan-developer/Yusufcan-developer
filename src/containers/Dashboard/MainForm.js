@@ -330,10 +330,8 @@ const MainForm = () => {
     return (<Table
       columns={aggregateColumns}
       dataSource={aggregateFilterData}
-      pagination={false}
-      scroll={{ x: 'max-content' }}
-      size="medium"
-      bordered={false}
+      pagination={true} 
+      scroll={{ x: 'max-content' }}  
     />);
   };
 
@@ -461,11 +459,12 @@ const MainForm = () => {
   ];
 
   let aggregateColumns=[
-    {
-      title: "Bayi Kodu",
-      dataIndex: "dealerCode",
-      key: "dealerCode",
-    },
+   
+    // {
+    //   title: "Bayi Kodu",
+    //   dataIndex: "dealerCode",
+    //   key: "dealerCode",
+    // },
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
@@ -615,7 +614,7 @@ const MainForm = () => {
           loading={loading}
           pagination={false}
           // scroll={{ x: 'calc(700px + 50%)' }}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 1000 }} 
           size="medium"
           bordered={false}
 
@@ -644,7 +643,6 @@ const MainForm = () => {
           dataSource={cariToplamlarData}
           loading={cariToplamlarloading}
           pagination={false}
-          scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
           expandable={{ 'expandedRowRender': expandedRow }}

@@ -272,7 +272,6 @@ export default function CartTable({ style }) {
   function cancelQuantity(productItem) {
     getCartList();
     const newProductQuantity = [];
-    debugger
     _.each(productQuantity, (product) => {
       if ((product.itemCode !== productItem.itemCode || product.isPartial !== productItem.isPartial)) {
         newProductQuantity.push(product);

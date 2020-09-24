@@ -9,7 +9,7 @@ import {
 import WithDirection from '@iso/lib/helpers/rtl';
 
 const TableWrapper = styled(Table)`
-  overflow: hidden;
+  overflow: auto;
   overflow-x: auto;
   background-color: #ffffff;
 

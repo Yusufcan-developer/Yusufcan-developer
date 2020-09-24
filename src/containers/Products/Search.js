@@ -678,7 +678,7 @@ const SearchComponent = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
-    debugger
+    
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
 

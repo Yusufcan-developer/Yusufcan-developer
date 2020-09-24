@@ -1,4 +1,5 @@
-import React from 'react';
+//React
+import React, { useState, useEffect } from "react";
 import {useDispatch, useSelector } from 'react-redux';
 import { Layout } from 'antd';
 import options from './options';
@@ -36,6 +37,10 @@ export default function Sidebar() {
   const customizedTheme = useSelector(
     state => state.ThemeSwitcher.sidebarTheme
   );
+  
+  useEffect(() => {
+    menuOpenOrCloseCollapse(['reportTable'],true);
+  }, []);
 
   function handleClick(e) {
     dispatch(changeCurrent([e.key]));
@@ -48,7 +53,9 @@ export default function Sidebar() {
       // clearTimeout(timer);
     }
   }
-  function onOpenChange(newOpenKeys) {
+
+  function menuOpenOrCloseCollapse(newOpenKeys,firstOpen=false) {
+   
     const latestOpenKey = newOpenKeys.find(
       key => !(openKeys.indexOf(key) > -1)
     );
@@ -59,8 +66,10 @@ export default function Sidebar() {
     if (latestOpenKey) {
       nextOpenKeys = getAncestorKeys(latestOpenKey).concat(latestOpenKey);
     }
-    if (latestCloseKey) {
-      nextOpenKeys = getAncestorKeys(latestCloseKey);
+    if (firstOpen != true) {
+      if (latestCloseKey) {
+        nextOpenKeys = getAncestorKeys(latestCloseKey);
+      }
     }
     dispatch(changeOpenKeys(nextOpenKeys));
   }
@@ -69,6 +78,9 @@ export default function Sidebar() {
       sub3: ['sub2'],
     };
     return map[key] || [];
+  }
+  function onOpenChange(newOpenKeys) {
+    menuOpenOrCloseCollapse(newOpenKeys);
   };
 
   const isCollapsed = collapsed && !openDrawer;
