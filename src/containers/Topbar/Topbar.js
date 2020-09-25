@@ -8,6 +8,7 @@ import TopbarUser from './TopbarUser';
 import TopbarAddtoCart from './TopbarAddToCart';
 import TopbarWrapper from './Topbar.styles';
 import TopbarAlert from './TopbarAlert';
+import history from '@iso/lib/helpers/history';
 var jwtDecode = require('jwt-decode');
 
 
@@ -24,6 +25,7 @@ export default function Topbar() {
   ]);
   const isCollapsed = collapsed && !openDrawer;
   const token = jwtDecode(localStorage.getItem("id_token"));
+  if(token===undefined){return history.replace('/'); }
   const activeUser=localStorage.getItem("activeUser");
   const username = token.uname;
   

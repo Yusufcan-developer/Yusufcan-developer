@@ -502,6 +502,14 @@
   "page.ShippingDataList": "Sevkiyat Listesi",
   "page.usersTitle.header": "Kullanıcılar",
   "page.filtered": "Filtreleme",
+  "filter.category": "Kategori",
+  "filter.salesStatus": "Satış Tipi",
+  "filter.productType": "Ürün Tipi",
+  "filter.dimension": "Ebatlar",
+  "filter.series": "Seriler",
+  "filter.color": "Renkler",
+  "filter.surface": "Yüzeyler",
+  "filter.clear":"Filtreleri Temizle",
   "page404.backButton": "BACK HOME",
   "page500.title": "500",
   "page500.subTitle": "Internal Server Error",
@@ -632,5 +640,8 @@
   "Swiper.lazy.lazyTitle": "Slider with Lazyload",
   "Swiper.custom.customScrollTitle": "Custom view with all Naviation",
   "Swiper.custom.basicNavTitle": "Basic Naviation",
-  "Swiper.custom.buttonNavTitle": "Custom Naviation"
+  "Swiper.custom.buttonNavTitle": "Custom Naviation",
+  "product.minus": "-",
+  "product.plus": "+",
+  "product.cart.add":"Sepete Ekle"
 }

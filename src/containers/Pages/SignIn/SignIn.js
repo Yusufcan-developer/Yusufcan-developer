@@ -1,33 +1,25 @@
 import React, { useState } from 'react';
-import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-
-import { Input, Space } from 'antd';
-// import Input from '@iso/components/uielements/input';
+import { Link, useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { Input } from 'antd';
 import Checkbox from '@iso/components/uielements/checkbox';
 import Button from '@iso/components/uielements/button';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import authAction from '@iso/redux/auth/actions';
 import appAction from '@iso/redux/app/actions';
 import Modals from '@iso/components/Feedback/Modal';
-import Form from '@iso/components/uielements/form';
 import siteConfig from '@iso/config/site.config';
 import verticalLogo from '@iso/assets/images/seramiksan-logo-vertical.png';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-
 import SignInStyleWrapper from './SignIn.styles';
 
 const { login } = authAction;
 const { clearMenu } = appAction;
-const FormItem = Form.Item;
 
 export default function SignIn() {
 
   let history = useHistory();
-  let location = useLocation();
   const dispatch = useDispatch();
-  const isLoggedIn = useSelector(state => state.Auth.idToken);
-  const [redirectToReferrer, setRedirectToReferrer] = React.useState(false);
 
   //Hook state tanımlamaları
   const [username, setUsername] = useState('');
@@ -43,6 +35,7 @@ export default function SignIn() {
       cancelText: 'İptal',
     });
   }
+  
   //Kullanıcı girişi
   function handleLogin(e) {
     e.preventDefault();
@@ -76,11 +69,11 @@ export default function SignIn() {
 
   //Kullanıcı ve parola girildikten sonrasında 'enter ' tuş özelliği ayarlanması.
   const keyPress = e => {
-    if (e.keyCode == 13) {
+    if (e.keyCode === 13) {
       handleLogin(e);
     }
   }
-
+  
   return (
     <SignInStyleWrapper className="isoSignInPage">
       <div className="isoLoginContentWrapper">

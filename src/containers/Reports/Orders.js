@@ -33,8 +33,9 @@ import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr'
-moment.locale('tr');
+// moment.locale('tr');
 var jwtDecode = require('jwt-decode');
+// var moment = require('moment-timezone');
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -84,7 +85,7 @@ const OrdersReport = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
-    useOrderFollowData(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    useOrderFollowData(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY').tz("America/Los_Angeles"), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
@@ -156,12 +157,15 @@ const OrdersReport = () => {
   //Sipariş Kalemleri Expand İşlemi
   function expandedRow(row, index) {
     let orderDetailIndex;
+    let partialUnitData
     let expandUnitCount = []
     _.each(orderDetailData, (item, i) => {
       if (item.Key === row.orderNo) { return orderDetailIndex = i }
     });
-   
-  const partialUnitData=  _.groupBy(orderDetailData[orderDetailIndex].Value, function(item){ return item.unit; });
+    if (orderDetailIndex !== undefined) {
+      partialUnitData = _.groupBy(orderDetailData[orderDetailIndex].Value, function (item) { return item.unit; });
+    }
+    else { partialUnitData = null }
   const r =   _.map(partialUnitData, (item) => {   
     return (<Table
       columns={OrderDetailcolumns}
@@ -254,7 +258,7 @@ const OrdersReport = () => {
   }
 
   //Change from and To date
-  function changeTimePicker(value, dateString) {
+  function changeTimePicker(value, dateString) { 
     setFromDate(dateString[0]);
     setToDate(dateString[1]);
   }

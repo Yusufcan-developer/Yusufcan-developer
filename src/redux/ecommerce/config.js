@@ -1,6 +1,7 @@
 import { isServer } from '@iso/lib/helpers/isServer';
 import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
+import history from '@iso/lib/helpers/history';
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import React, { useState, useEffect } from "react";
@@ -22,6 +23,7 @@ async function getDatabaseProductInfo() {
     }
   };
   const token = jwtDecode(localStorage.getItem("id_token"));
+  if(token===undefined){return  history.replace('/');}
   const activeUser = localStorage.getItem("activeUser")
   let uname = token.uname;
   if (activeUser != undefined) { uname = activeUser }
