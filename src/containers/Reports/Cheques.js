@@ -1,5 +1,5 @@
-import React, { useState, useEffect, Children } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -8,7 +8,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, TreeSelect } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -40,7 +40,6 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
 const ChequesReport = () => {
-  const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
@@ -62,36 +61,36 @@ const ChequesReport = () => {
   const [newUrlParams, setNewUrlParams] = useState('')
 
   const location = useLocation();
-  const { searchQuery } = useParams();
   const queryString = require('query-string');
   const history = useHistory();
 
   //Burada ki useEffect'ler page index page size değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     setChangePageSize(pageSize);
   }, [pageSize]);
 
+  const searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
 
   //Çek Tipleri
-  const [chequeTypeData] = useFilterData(`${siteConfig.api.lookup.getChequeTypes}`);
+  const [chequeTypeData] = useFilterData(`${siteConfig.api.lookup.getChequeTypes}`,searchUrl);
   for (let i = 0; i < chequeTypeData.length; i++) {
     children.push(<Option key={chequeTypeData[i]}>{chequeTypeData[i]}</Option>);
   }
 
   //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
+  function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
 
@@ -174,7 +173,7 @@ const ChequesReport = () => {
     params.delete('sno');
     params.delete('type');
 
-    if (fromDate != '' & toDate != '') {
+    if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -244,7 +243,7 @@ const ChequesReport = () => {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) != -1;
+      return treeNodeTitle.indexOf(filterValue) !== -1;
     }
     return false;
   }
@@ -294,10 +293,6 @@ const ChequesReport = () => {
       key: "amount",
       render: (amount) => numberFormat(amount),
       align: "right",
-      sorter: (a, b) => a.amount - b.amount,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "amount" &&
-        tableOptions.sortedInfo.order,
       footerKey: "amount"
     },
     {
@@ -306,10 +301,6 @@ const ChequesReport = () => {
       key: "issueDate",
       type: "date",
       render: (issueDate) => moment(issueDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.issueDate - b.issueDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "issueDate" &&
-        tableOptions.sortedInfo.order
     },
     {
       title: "Seri No",
@@ -335,10 +326,6 @@ const ChequesReport = () => {
       title: "Durumu",
       dataIndex: "status",
       key: "status",
-      sorter: (a, b) => a.status - b.status,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "status" &&
-        tableOptions.sortedInfo.order
     },
     {
       title: "Bayi Alt Kodu",
@@ -482,7 +469,7 @@ const ChequesReport = () => {
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} align="right">
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
+                <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -493,7 +480,7 @@ const ChequesReport = () => {
       {/* Data list volume */}
       <Box >
         <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>

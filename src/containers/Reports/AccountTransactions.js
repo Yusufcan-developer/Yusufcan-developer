@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import PageHeader from "@iso/components/utility/pageHeader";
@@ -34,7 +34,7 @@ import renderFooter from "./ReportSummary";
 import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
-import 'moment/locale/tr' 
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -46,9 +46,6 @@ export default function () {
   const children = [];
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = React.useState();
-  const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -63,39 +60,39 @@ export default function () {
   const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
-  const [transactionType, setTransactionType] = useState();
   const [selectedTransactionType, setSelectedTransactionType] = useState();
 
   const location = useLocation();
-  const { searchQuery } = useParams();
   const queryString = require('query-string');
   const history = useHistory();
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     setChangePageSize(pageSize);
   }, [pageSize]);
 
+  const searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'),"transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize }, searchUrl);
+
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
- 
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
+
   //İşlem Tipleri
-  const [transactionTypeData] = useFilterData(`${siteConfig.api.lookup.getTransactionTypes}`);
+  const [transactionTypeData] = useFilterData(`${siteConfig.api.lookup.getTransactionTypes}`, searchUrl);
   for (let i = 0; i < transactionTypeData.length; i++) {
     children.push(<Option key={transactionTypeData[i]}>{transactionTypeData[i]}</Option>);
   }
 
   //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
+  function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
 
@@ -172,7 +169,7 @@ export default function () {
     params.delete('pgindex');
     params.delete('type');
 
-    if (fromDate != '' & toDate != '') {
+    if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -229,12 +226,12 @@ export default function () {
     setToDate(dateString[1]);
   }
 
-   //Search DailerName Tree Select Component
-   function filterTreeNodeDealerCode(value, treeNode) {
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) != -1;
+      return treeNodeTitle.indexOf(filterValue) !== -1;
     }
     return false;
   }
@@ -255,17 +252,17 @@ export default function () {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageIndex(current);
     setPageSize(pageSize);
-    dataSearch(current,pageSize);
+    dataSearch(current, pageSize);
   }
 
   //Change Transaction Type
   function transactionTypeHandleChange(value) {
     setSelectedTransactionType(value);
   }
-  
+
   let columns = [
     {
       title: "Bayi Kodu",
@@ -282,11 +279,6 @@ export default function () {
       dataIndex: "date",
       key: "date",
       type: "date",
-      render: (date) => moment(date).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.date - b.date,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "date" &&
-        tableOptions.sortedInfo.order
     },
     {
       title: "Belge No",
@@ -297,17 +289,11 @@ export default function () {
         tableOptions.sortedInfo.columnKey === "documentId" &&
         tableOptions.sortedInfo.order
     },
-    // {
-    //   title: "TR Kod",
-    //   dataIndex: "trCode",
-    //   key: "trCode",
-    //   align: "center"
-    // },
     {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
       key: "transactionType"
-    },    
+    },
     {
       title: "Borç",
       dataIndex: "debt",
@@ -315,10 +301,6 @@ export default function () {
       align: "right",
       sorter: (a, b) => a.debt - b.debt,
       render: (debt) => numberFormat(debt),
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "debt" &&
-        tableOptions.sortedInfo.order,
-      footerKey: "debt",
     },
     {
       title: "Alacak",
@@ -326,23 +308,12 @@ export default function () {
       key: "credit",
       align: "right",
       render: (credit) => numberFormat(credit),
-      sorter: (a, b) => a.credit - b.credit,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "credit" &&
-        tableOptions.sortedInfo.order,
-      footerKey: "credit",
     },
     {
       title: "Açıklama",
       dataIndex: "description",
       key: "description"
     },
-    // {
-    //   title: "Para Birimi",
-    //   dataIndex: "currency",
-    //   key: "currency",
-    //   align: "center"
-    // },
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
@@ -458,7 +429,7 @@ export default function () {
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
+                <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -467,10 +438,10 @@ export default function () {
               <Col span={5}>
                 <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
               </Col>
-             
+
             </Row>
             <Row>
-            <Col span={6}>
+              <Col span={6}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: '250px' }}
@@ -488,7 +459,7 @@ export default function () {
       {/* Data list volume */}
       <Box>
         <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>

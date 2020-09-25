@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -12,10 +12,10 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Descriptions, Typography, Tag, Select } from "antd";
+import { Table, Row, Col, TreeSelect, Tag, Select } from "antd";
 
 //Fetch
-import { useOrderFollowData } from "@iso/lib/hooks/fetchData/usePostApiOrderFollowUpData";
+import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 
 //Styles
@@ -45,14 +45,8 @@ const OrdersReport = () => {
 
   const queryString = require('query-string');
   const history = useHistory();
-
   const [lookupAddressChildren,setLookupAddressChildren] = useState();
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = useState();
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const [checkedKeys, setCheckedKeys] = useState();
-  const [selectedKeys, setSelectedKeys] = useState([]);
-  const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -69,29 +63,28 @@ const OrdersReport = () => {
   const [newUrlParams, setNewUrlParams] = useState('');
   const [adress, setAdress] = useState();
   const location = useLocation();
-  const { searchQuery } = useParams();
-  const { Text } = Typography;
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     setCurrentPage(pageIndex);
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
   }, [pageIndex]);
 
   useEffect(() => {
     setChangePageSize(pageSize);
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
   }, [pageSize]);
 
+  const searchUrl = queryString.parse(location.search);
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray, orderDetailData] =
-    useOrderFollowData(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY').tz("America/Los_Angeles"), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData] =
+  usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
 
   //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
+  function getVariablesFromUrl() {
 
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
@@ -148,17 +141,10 @@ const OrdersReport = () => {
     });
   }
 
-  //Sipariş Kalemleri Görüntüleme
-  async function onExpand(expandedKeys) {
-    setExpandedKeys(expandedKeys);
-    setAutoExpandParent(false);
-  };
-
   //Sipariş Kalemleri Expand İşlemi
   function expandedRow(row, index) {
     let orderDetailIndex;
-    let partialUnitData
-    let expandUnitCount = []
+    let partialUnitData;
     _.each(orderDetailData, (item, i) => {
       if (item.Key === row.orderNo) { return orderDetailIndex = i }
     });
@@ -195,7 +181,7 @@ const OrdersReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    if (fromDate != '' & toDate != '') {
+    if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -252,7 +238,7 @@ const OrdersReport = () => {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) != -1;
+      return treeNodeTitle.indexOf(filterValue) !== -1;
     }
     return false;
   }
@@ -413,11 +399,7 @@ const OrdersReport = () => {
       title: "Sipariş Tarihi",
       dataIndex: "orderDate",
       key: "orderDate",
-      type: "date",
-      sorter: (a, b) => a.orderDate - b.orderDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "orderDate" &&
-        tableOptions.sortedInfo.order,
+      type: "date",      
       render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat),
     },
     {
@@ -441,11 +423,7 @@ const OrdersReport = () => {
     {
       title: "Belge No",
       dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => a.documentId - b.documentId,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order,
+      key: "documentId",     
     },
     {
       title: "Ödeme",
@@ -466,22 +444,14 @@ const OrdersReport = () => {
       title: "Toplam",
       dataIndex: "total",
       key: "total",
-      align: "right",
-      sorter: (a, b) => a.total - b.total,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "total" &&
-        tableOptions.sortedInfo.order,
+      align: "right",      
       render: (total) => numberFormat(total),
       footerKey: "total",
     },
     {
       title: "Durum",
       dataIndex: "status",
-      key: "status",
-      sorter: (a, b) => a.status - b.status,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "status" &&
-        tableOptions.sortedInfo.order,
+      key: "status",     
     },
     {
       title: "Açıklama 1",
@@ -575,16 +545,16 @@ const OrdersReport = () => {
     _.each(data, (item, i) => {
       switch (descriptionTitle) {
         case 'description1':
-          if (item.description1 != '') { return descriptionHide = false }
+          if (item.description1 !== '') { return descriptionHide = false }
           break;
         case 'description2':
-          if (item.description2 != '') { return descriptionHide = false }
+          if (item.description2 !== '') { return descriptionHide = false }
           break;
         case 'description3':
-          if (item.description3 != '') { return descriptionHide = false }
+          if (item.description3 !== '') { return descriptionHide = false }
           break;
         case 'description4':
-          if (item.description4 != '') { return descriptionHide = false }
+          if (item.description4 !== '') { return descriptionHide = false }
           break;
         default:
           break;
@@ -647,7 +617,7 @@ const OrdersReport = () => {
                 <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz"   style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
+                <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -679,7 +649,7 @@ const OrdersReport = () => {
       {/* Data list volume */}
       <Box >
         <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>
@@ -699,8 +669,6 @@ const OrdersReport = () => {
           loading={loading}
           expandable={{ 'expandedRowRender': expandedRow }}
           pagination={false}
-          onExpand={onExpand}
-          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           bordered={false}
           summary={() => {
