@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Link, useHistory } from 'react-router-dom';
-
+import React, { useEffect } from "react";
+import { Link } from 'react-router-dom';
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import PageHeader from "@iso/components/utility/pageHeader";
-
 import { Card, Row, Col } from "antd";
 
-//Kategoriler verisi.
+const { Meta } = Card;
+
+//Kategoriler Grup Bilgisi.
 const categories = [
   {
     "Id": "VİTRİFİYE (SSG)",
@@ -35,17 +35,16 @@ const categories = [
   },
 
 ];
-const { Meta } = Card;
+
 const ProductGroupList = () => {
-  const history = useHistory();
-  const [loading, setloading] = useState(false);
+
   let products = localStorage.getItem('cartProducts');
-  if (products === null)
-    window.location.reload(false);
+
   useEffect(() => {
     if (products === null)
       window.location.reload(false);
   });
+
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>

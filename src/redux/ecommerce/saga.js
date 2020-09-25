@@ -4,6 +4,7 @@ import fake from './fake';
 import getInitData from './config';
 import _ from 'underscore';
 import siteConfig from "@iso/config/site.config";
+import history from '@iso/lib/helpers/history';
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 var jwtDecode = require('jwt-decode');
@@ -41,6 +42,7 @@ export function* updateData({ products, productQuantity }) {
     delete item['quantity'];
   });
   const token = jwtDecode(localStorage.getItem("id_token"));
+  if(token===undefined){return  history.replace('/');}
   const activeUser = localStorage.getItem("activeUser")
   let account = token.uname;
   if (activeUser != undefined) { account = activeUser }
@@ -55,7 +57,7 @@ export function* updateData({ products, productQuantity }) {
   };
   fetch(siteConfig.api.carts.postCart, requestOptions)
     .then(response => {
-      if (!response.ok) throw Error(response.statusText);
+      if (!response.ok) (console.log(response.statusText));
       return response.json();
     })
     .then(data => {

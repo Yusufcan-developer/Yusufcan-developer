@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -9,9 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import Input, { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import LayoutWrapper from '@iso/components/utility/layoutWrapper';
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Checkbox, Tooltip, Space, Popover, InputNumber, Image, Tag, Descriptions } from "antd";
-import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag } from "antd";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,14 +17,12 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Fetch
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
-import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { usePostFilter } from "@iso/lib/hooks/fetchData/usePostFilterData";
 import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterProductCategories";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
-import { direction } from '@iso/lib/helpers/rtl';
 import numberFormat from "@iso/config/numberFormat";
 
 //Other Library
@@ -42,20 +38,15 @@ import {
   SortAscendingOutlined, ClearOutlined, InfoCircleOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
-var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
 
 const SearchComponent = () => {
 
-  const productId = '';
-  const[removeItem,setRemoveItem]=useState();
   //Hook States
   const history = useHistory();
-  const { searchQuery } = useParams();
   const queryString = require('query-string');
   const location = useLocation();
-  const [warehouseData, setWarehouseData] = useState();
   const [partialAmount, setPartialAmount] = useState(0);
   const [palletAmount, setPalletAmount] = useState(0);
 
@@ -82,10 +73,9 @@ const SearchComponent = () => {
   const [listPriceHighestButtonType, setListPriceHighestButtonType] = useState('dashed');
   const [partialQuantity, setPartialQuantity] = useState(false);
   const [selectedItemCode, setSelectedItemCode] = useState();
-  const [form] = Form.useForm();
 
   useEffect(() => {
-    getVariablesFromUrl(searchQuery);
+    getVariablesFromUrl();
     setCurrentPage(pageIndex);
     if (category === undefined) {
       setOnChangeFilter(true);
@@ -97,8 +87,7 @@ const SearchComponent = () => {
   }, [pageIndex]);
 
   //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
-
+  function getVariablesFromUrl() {
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
 
@@ -207,10 +196,9 @@ const SearchComponent = () => {
     if (parsed.srtf !== undefined) {
       setSortingField(parsed.srtf); switch (parsed.srtf) {
         case 'ItemRef':
-          return
-          setItemRefButtonType('primary');
+          return setItemRefButtonType('primary');          
         case 'ListPrice':
-          if (parsed.srto == 'ASC') { return setListPriceLowestButtonType('primary') }
+          if (parsed.srto === 'ASC') { return setListPriceLowestButtonType('primary') }
           else { return setListPriceHighestButtonType('primary') }
         default:
           return setItemRefButtonType('primary');
@@ -220,13 +208,14 @@ const SearchComponent = () => {
   }
 
   //Redux ürünler listeleme
-  const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
+  const { productQuantity } = useSelector(state => state.Ecommerce);
+  const { addToCart, changeProductQuantity } = ecommerceActions;
   const dispatch = useDispatch();
 
+  const parsed = queryString.parse(location.search);
   //Hook ProductList
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category===undefined?color:[category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category===undefined?color:[category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder },category,parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -309,7 +298,7 @@ const SearchComponent = () => {
 
   //Keywor 'Enter' search
   const keyPress = e => {
-    if (e.keyCode == 13) {
+    if (e.keyCode === 13) {
       keywordAddUrl();
     }
   }
@@ -367,24 +356,25 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   };
-  //Quality Filter Event
-  function onChangeQuality(checkedProductQualityValue) {
-    setQuality(checkedProductQualityValue);
+  // //Quality Filter Event
+  // function onChangeQuality(checkedProductQualityValue) {
+  //   setQuality(checkedProductQualityValue);
 
-    const params = new URLSearchParams(location.search);
-    params.delete('pq');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
-    setPageIndex(1);
-    if (checkedProductQualityValue.length > 0) {
-      checkedProductQualityValue.forEach(item => {
-        params.append('pq', item);
-        params.toString();
-      });
-    }
-    history.push(`${location.pathname}?${params.toString()}`);
-    return setOnChange(true);
-  };
+  //   const params = new URLSearchParams(location.search);
+  //   params.delete('pq');
+  //   params.delete('pgindex');
+  //   params.append('pgindex', 1)
+  //   setPageIndex(1);
+  //   if (checkedProductQualityValue.length > 0) {
+  //     checkedProductQualityValue.forEach(item => {
+  //       params.append('pq', item);
+  //       params.toString();
+  //     });
+  //   }
+  //   history.push(`${location.pathname}?${params.toString()}`);
+  //   return setOnChange(true);
+  // };
+
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
     const dimensionNewArray = _.map(checkedDimensionValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
@@ -564,7 +554,7 @@ const SearchComponent = () => {
     setSeries([]);
     setColor([]);
     setSurface([]);
-    if (getProductGroupName != undefined) {
+    if (getProductGroupName !== undefined) {
       let productGroupName = getProductGroupName;
       params.delete('pg');
       setCategory(productGroupName);
@@ -579,7 +569,7 @@ const SearchComponent = () => {
     params.delete('pgindex');
     params.append('pgindex', 1)
 
-    setPageIndex(1);
+    // setPageIndex(1);
 
     history.push(`${location.pathname}?${params.toString()}`);
     setOnChangeFilter(true);
@@ -594,7 +584,7 @@ const SearchComponent = () => {
   //Quantity input number Show/Hide
   function inputNumberShowOrHide(value) {
     if (productQuantity !== null) {
-      var selectedProduct = productQuantity.find(item => item.itemCode == value.itemCode);
+      var selectedProduct = productQuantity.find(item => item.itemCode === value.itemCode);
       if (selectedProduct === undefined) {
         return false;
       }
@@ -605,7 +595,7 @@ const SearchComponent = () => {
 
   //Input Number return quantity value
   function inputNumberQuantityValue(product) {
-    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+    var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode);
     if (selectedProduct === undefined) {
       if (partialQuantity) { return 0 }
       return 1
@@ -650,12 +640,12 @@ const SearchComponent = () => {
   function onChangeQuantity(event, productData, isPartial = false) {
     if (event.target.value > 0) {
       const selectedQuantity=event.target.value;
-      if ((partialQuantity) && (!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
+      if ((partialQuantity) && (!productQuantity.find(item => item.itemCode === productData.itemCode && item.isPartial === isPartial))) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
       else {
         if ((partialQuantity === true) && (event.target.value === 1)) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
         else {
           const product = productData;
-          var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+          var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
           const newProductQuantity = [];
           productQuantity.forEach(productItem => {
             if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
@@ -683,7 +673,7 @@ const SearchComponent = () => {
     else {
 
       inputNumberShowOrHide(product)
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+      var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
       if(selectedProduct===undefined){return;}
       if (selectedProduct.quantity !== 0) {
         const newProductQuantity = [];
@@ -711,12 +701,12 @@ const SearchComponent = () => {
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
-      if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
+      if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
         dispatch(addToCart(product,parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
       }
       else {
-        const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+        const selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
         const newProductQuantity = [];
         productQuantity.forEach(productItem => {
           if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
@@ -739,6 +729,7 @@ const SearchComponent = () => {
   function handleCancel() {
     setPartialQuantity(false);
   };
+
   //Get Warehouse Amount Data
   async function getWarehouseList(itemCode) {
     let productInfo;
@@ -749,11 +740,6 @@ const SearchComponent = () => {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    let uname = token.uname;
-    if (activeUser != undefined) { uname = activeUser }
-    if (!token.uname) { return 'Unauthorized' }
 
     await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
       .then(response => {
@@ -761,8 +747,6 @@ const SearchComponent = () => {
         return response.json();
       })
       .then(data => {
-        setWarehouseData((data && data.balances) || [])
-        // const warehouseGroupData=  _.groupBy(data.balances, function(item){ return item.warehouseName; });
         let palletQuantity = 0;
         let partialQuantity = 0;
         if (data.balances.length > 0) {
@@ -774,7 +758,6 @@ const SearchComponent = () => {
           setPalletAmount(palletQuantity);
           setPartialAmount(partialQuantity);
         }
-
       })
       .catch();
     return productInfo;
@@ -799,14 +782,14 @@ const SearchComponent = () => {
               value={keyword}
               onKeyDown={keyPress} />
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Kategori" />} key="0">
+              <Panel header={<IntlMessages id="filter.category" />} key="0">
                 <RadioGroup onChange={onChangeCategory} options={productCategories}
                   value={category}>
                 </RadioGroup>
               </Panel>
             </Collapse>
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="Satış Tipi" />} key="1">
+              <Panel header={<IntlMessages id="filter.salesStatus" />} key="1">
                 <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
                   <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
                     Hepsi
@@ -827,9 +810,9 @@ const SearchComponent = () => {
                 />
               </Panel>
             </Collapse> */}
-            {(productTypeData.length != 0 && productTypeData != null) ? (
+            {(productTypeData.length !== 0 && productTypeData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="Ürün Tipi" />} key="2">
+                <Panel header={<IntlMessages id="filter.productType" />} key="2">
                   <CheckboxGroup
                     options={productTypeData}
                     value={type}
@@ -840,9 +823,9 @@ const SearchComponent = () => {
               </Collapse>
             ) : (null)}
 
-            {(dimensionData.length != 0 && dimensionData != null) ? (
+            {(dimensionData.length !== 0 && dimensionData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="Ebat" />} key="3">
+                <Panel header={<IntlMessages id="filter.dimension" />} key="3">
                   <CheckboxGroup
                     options={
                       dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -853,9 +836,9 @@ const SearchComponent = () => {
                 </Panel>
               </Collapse>
             ) : (null)}
-            {(serieData.length != 0 && serieData != null) ? (
+            {(serieData.length !== 0 && serieData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="Seriler" />} key="4">
+                <Panel header={<IntlMessages id="filter.series" />} key="4">
                   <CheckboxGroup
                     value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -866,9 +849,9 @@ const SearchComponent = () => {
                 </Panel>
               </Collapse>
             ) : (null)}
-            {(colorData.length != 0 && colorData != null) ? (
+            {(colorData.length !== 0 && colorData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="Renkler" />} key="5">
+                <Panel header={<IntlMessages id="filter.color" />} key="5">
                   <CheckboxGroup
                     value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -879,9 +862,9 @@ const SearchComponent = () => {
                 </Panel></Collapse>
             ) : (null)}
 
-            {(surfaceData.length != 0 && surfaceData != null) ? (
+            {(surfaceData.length !== 0 && surfaceData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="Yüzeyler" />} key="6">
+                <Panel header={<IntlMessages id="filter.surface" />} key="6">
                   <CheckboxGroup
                     value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -897,7 +880,7 @@ const SearchComponent = () => {
               icon={<ClearOutlined />}
               onClick={event => clearFilterVariables()}
               style={{ marginTop: '10px' }}
-            >{<IntlMessages id="Filtreleri Temizle" />}
+            >{<IntlMessages id="filter.clear" />}
             </Button>
           </SidebarWrapper>
 
@@ -985,8 +968,7 @@ const SearchComponent = () => {
                               <Row align="middle">
                                 <Col span={4} align="right">
                                   <Button type="primary" onClick={event => onRemoveProductCart(item, true, false)}>
-                                    {removeItem === true ? (< IntlMessages id="---" />):  (<IntlMessages id="-" />)}
-                                  
+                                    {<IntlMessages id="product.minus" />}                                  
                                   </Button>
                                 </Col>
                                 <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
@@ -1003,7 +985,7 @@ const SearchComponent = () => {
                                 </Col>
                                 <Col span={4}>
                                   <Button type="primary" onClick={event => onAddProductCart(item, true, false)}>
-                                    {<IntlMessages id="+" />}
+                                    {<IntlMessages id="product.plus" />}
                                   </Button>
                                 </Col>
                                 <Space size={2}>
@@ -1025,7 +1007,7 @@ const SearchComponent = () => {
                                 {/* <div>Parçalı Satış 1 Kutu: {item.m2Box} {item.unit}</div> */}
                                 <Col span={4} align="right">
                                   <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
-                                    {<IntlMessages id="-" />}
+                                    {<IntlMessages id="product.minus" />}
                                   </Button>
                                 </Col>
                                 <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
@@ -1042,7 +1024,7 @@ const SearchComponent = () => {
                                 </Col>
                                 <Col span={4} style={{ width: '100%' }}>
                                   <Button type="primary" onClick={event => onAddProductCart(item, true, true)}>
-                                    {<IntlMessages id="+" />}
+                                    {<IntlMessages id="product.plus" />}
                                   </Button>
                                 </Col>
                                 <Space size={5}>
@@ -1067,7 +1049,7 @@ const SearchComponent = () => {
                             <Col span={20} align="middle">
                               <Button
                                 type="primary" style={{ width: '100%' }}
-                                onClick={event => onAddProductCart(item)}>{<IntlMessages id={item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'} />}
+                                onClick={event => onAddProductCart(item)}>{<IntlMessages id={item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'product.cart.add'} />}
                               </Button>
                             </Col>
                           </Row>
@@ -1075,7 +1057,7 @@ const SearchComponent = () => {
                             <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                               <Col span={4} style={{ width: '100%' }} align="right">
                                 <Button type="primary" onClick={event => onRemoveProductCart(item)}>
-                                  {<IntlMessages id="-" />}
+                                  {<IntlMessages id="product.minus" />}
                                 </Button>
                               </Col>
                               <Col span={8} align="middle">
@@ -1093,7 +1075,7 @@ const SearchComponent = () => {
                               </Col>
                               <Col span={4} style={{ width: '100%' }}>
                                 <Button type="primary" onClick={event => onAddProductCart(item)}>
-                                  {<IntlMessages id="+" />}
+                                  {<IntlMessages id="product.plus" />}
                                 </Button>
                               </Col>
                             </Row>

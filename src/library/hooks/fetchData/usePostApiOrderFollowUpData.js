@@ -1,6 +1,8 @@
 // hooks.js
 import { useState, useEffect } from "react";
 import siteConfig from "@iso/config/site.config";
+import history from '@iso/lib/helpers/history';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import _ from 'underscore';
 
 function useOrderFollowData(url, reqBody) {
@@ -39,11 +41,15 @@ function useOrderFollowData(url, reqBody) {
       }
     };
    
+    // await fetch(url, requestOptions)
+    //   .then(response => { 
+    //     const status=apiStatusManagement(response);
+    //   })
     await fetch(url, requestOptions) //Order Fetch
-      .then(response => {
-        if (!response.ok)  {return localStorage.removeItem('id_token');} //Promise.reject(response);//throw Error(response.statusText);
-        return response.json();
-      })
+    .then(response => {
+      if (!response.ok)  {} //Promise.reject(response);//throw Error(response.statusText);
+      return response.json();
+    })
       .then(data => {
         if(data){    
         const orderIdArrayH = [];
@@ -71,7 +77,7 @@ function useOrderFollowData(url, reqBody) {
         let orderDetailUrl=siteConfig.api.report.getOrderLineItems;
         return fetch(`${orderDetailUrl}/?${orderIdgetUrlItems}`, requestOrderDetailOptions) //Order Detail Fetch
         .then(response => {
-          if (!response.ok) return Promise.reject(response);
+          if (!response.ok) return history.replace('/');
           return response.json();
         })
         .then(data => {

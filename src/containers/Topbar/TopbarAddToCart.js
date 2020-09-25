@@ -112,7 +112,7 @@ export default function TopbarAddtoCart() {
           <span className="itemMultiplier">/</span>
           <span className="isoItemQuantity">{productItem.unit}</span>
           <span className="itemMultiplier"> </span>
-          <span className="isoItemQuantity">{'('}{productItem.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
+          <span className="isoItemQuantity">{'('}{product.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
         </p>
       </div>
       <a

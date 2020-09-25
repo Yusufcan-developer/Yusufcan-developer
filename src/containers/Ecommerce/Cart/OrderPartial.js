@@ -165,7 +165,7 @@ const OrderPartial = () => {
             return response.json();
             break;
           case 401:
-            // Go to login
+            history.push('/');
             break;
           case 404:
             // Show 404 page
@@ -174,7 +174,6 @@ const OrderPartial = () => {
             // Serveur Error redirect to 500
             break;
           default:
-            // Unknow Error
             break;
         }
       })

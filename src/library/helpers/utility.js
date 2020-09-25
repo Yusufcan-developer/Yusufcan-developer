@@ -1,5 +1,5 @@
 import { Map } from 'immutable';
-
+import history from '@iso/lib/helpers/history';
 export function clearToken() {
   localStorage.clear();
   // localStorage.removeItem('id_token');
@@ -11,6 +11,7 @@ export function clearToken() {
 export function getToken() {
   try {
     const idToken = localStorage.getItem('id_token');
+    if(idToken===undefined){return  history.replace('/'); }
     return new Map({ idToken });
   } catch (err) {
     clearToken();

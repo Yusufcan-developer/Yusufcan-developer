@@ -1,7 +1,9 @@
 // hooks.js
 import { useState, useEffect } from "react";
+//Other Library
+import _ from 'underscore';
 
-function useProductData(url, reqBody) {
+function useProductData(url, reqBody,categorie,searchUrl) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
@@ -25,9 +27,11 @@ function useProductData(url, reqBody) {
   const [orderIdArray, setOrderIdArray] = useState();
   const [sortingField, setSortingField]=useState();
   const [sortingOrder, setSortingOrder]=useState();
+  const [lastReqBody,setLastReqBody]=useState();
 
   async function fetchUrl() {
   
+    setLastReqBody(searchUrl);
     const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"salesStatus": salesStatus, "surfaces":surface, "colors":color, "dimensions":dimension, "productStatus":productStatus, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize, "sortingField": sortingField,"sortingOrder": sortingOrder } : reqBody; 
    
     const requestOptions = {
@@ -60,23 +64,21 @@ function useProductData(url, reqBody) {
         // setOrderIdArray(orderIdArrayH);
 
         setLoading(false); 
-        setOnChange(false); 
+        setOnChange(false);
 
        }) .catch(error => console.log('hata',error));
-      // .catch(console.log('xxxx hata'));
-
-    // const response = await fetch(url);
-    // const json = await response.json();
-    // setData(json);
-    // setLoading(false);
   }
 
   
   useEffect(() => {
-    setLoading(true);
-    fetchUrl();
+    if (categorie !== undefined) {
+      if (!_.isEqual(lastReqBody, searchUrl)) {
+        setLoading(true);
+        fetchUrl();
+      }
+    }
   }, [currentPage, changePageSize, onChange]);
-  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray];
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray];
 }
 
 
