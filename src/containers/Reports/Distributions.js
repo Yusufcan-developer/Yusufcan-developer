@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -47,11 +47,6 @@ const { RangePicker } = DatePicker;
 
 export default function () {
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = React.useState();
-  const [autoExpandParent, setAutoExpandParent] = React.useState(true);
-  const [checkedKeys, setCheckedKeys] = React.useState();
-  const [selectedKeys, setSelectedKeys] = React.useState([]);
-  const [iconLoading, setIconLoading] = React.useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -67,33 +62,32 @@ export default function () {
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
-  const { searchQuery } = useParams();
 
-  const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
 
   //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     console.log("pageSize!", pageSize);
     setChangePageSize(pageSize);
   }, [pageSize]);
 
+  const searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
 
   //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
+  function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
 
@@ -227,7 +221,7 @@ export default function () {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) != -1;
+      return treeNodeTitle.indexOf(filterValue) !== -1;
     }
     return false;
   }
@@ -482,7 +476,7 @@ export default function () {
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
+                <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -493,7 +487,7 @@ export default function () {
       {/* Data list volume */}
       <Box title={<IntlMessages id="page.distributionListData" />}>
         <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>

@@ -1,14 +1,16 @@
 // hooks.js
 import { useState, useEffect } from "react";
 import _ from 'underscore';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
-function useFilterData(url) {
+function useFilterData(url,searchUrl) {
   const [data, setData] = useState([]);
   const [loadingFilter, setLoading] = useState(true);
   const [onChangeFilter, setOnChangeFilter] = useState(false);
+  const [lastReqBody, setLastReqBody] = useState();
 
   async function fetchUrl() {
-
+    setLastReqBody(searchUrl);
     const requestOptions = {
         method: "GET",
         headers: {
@@ -18,10 +20,10 @@ function useFilterData(url) {
       };
    
     await fetch(url,requestOptions)
-      .then(response => {
-        if (!response.ok)  {return localStorage.removeItem('id_token');}
-        return response.json();
-      })
+    .then(response => {
+      const status = apiStatusManagement(response);
+      return status;
+    })
       .then(data => {        
         const nullOrBlankData=_.filter(data, function (Item) {
           if (Item === null || Item === '') {
@@ -41,13 +43,13 @@ function useFilterData(url) {
       .catch();
   }
   useEffect(() => {
-    setLoading(true);   
-    fetchUrl();
+    if (!_.isEqual(lastReqBody, searchUrl)) {
+      setLoading(true);
+      fetchUrl();
+    }
   }, [onChangeFilter]);
-
 
   return [data, loadingFilter , setOnChangeFilter];
 }
-
 
 export { useFilterData };

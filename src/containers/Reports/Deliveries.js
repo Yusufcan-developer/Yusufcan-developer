@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, TreeSelect } from "antd";
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
@@ -43,11 +43,6 @@ const { RangePicker } = DatePicker;
 const DeliveriesReport = () => {
 
   const [searchKey, setSearchKey] = useState('');
-  const [expandedKeys, setExpandedKeys] = useState();
-  const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const [checkedKeys, setCheckedKeys] = useState();
-  const [selectedKeys, setSelectedKeys] = useState([]);
-  const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
@@ -64,34 +59,31 @@ const DeliveriesReport = () => {
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
-
-  const { searchQuery } = useParams();
-  const match = useRouteMatch();
   const queryString = require('query-string');
   const history = useHistory();
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
   useEffect(() => {
-    getVariablesFromUrl(searchQuery)
+    getVariablesFromUrl()
     // setChangePageSize(pageSize);
   }, [pageSize]);
 
+  const searchUrl = queryString.parse(location.search);
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`);
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postDeliveries}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    useFetch(`${siteConfig.api.report.postDeliveries}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize },searchUrl);
 
   //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
-
+  function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
-
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
@@ -154,7 +146,7 @@ const DeliveriesReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
-    if (fromDate != '' & toDate != '') {
+    if (fromDate !=='' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -215,7 +207,7 @@ const DeliveriesReport = () => {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) != -1;
+      return treeNodeTitle.indexOf(filterValue) !== -1;
     }
     return false;
   }
@@ -273,10 +265,7 @@ const DeliveriesReport = () => {
       dataIndex: "deliveryDate",
       key: "deliveryDate",
       type: "date",
-      render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.deliveryDate.length - b.deliveryDate.length,
-      sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
+      render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),      
     },
     {
       title: "Teslimat Adresi",
@@ -287,17 +276,11 @@ const DeliveriesReport = () => {
       title: "Sipariş No",
       dataIndex: "orderNo",
       key: "orderNo",
-      sorter: (a, b) => a.orderNo.length - b.orderNo.length,
-      sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
-      sorter: (a, b) => a.itemCode.length - b.itemCode.length,
-      sortOrder: tableOptions.sortedInfo.columnKey === 'itemCode' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Ürün Açıklaması ",
@@ -310,10 +293,6 @@ const DeliveriesReport = () => {
       key: "amount",
       align: "right",
       render: (amount) => numberFormat(amount),
-      sorter: (a, b) => a.amount - b.amount,
-      sortOrder: tableOptions.sortedInfo.columnKey === 'amount' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-      footerKey: "amount",
     },
     {
       title: "Birim",
@@ -446,7 +425,7 @@ const DeliveriesReport = () => {
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
+                <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -457,7 +436,7 @@ const DeliveriesReport = () => {
       {/* Data list volume */}
       <Box>
         <Col span={8} offset={16} align="right" >
-          <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
           </Button>
@@ -476,7 +455,6 @@ const DeliveriesReport = () => {
           onChange={handleChange}
           loading={loading}
           pagination={false}
-          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
