@@ -1,6 +1,7 @@
 //React
 import React, { useState, useEffect } from "react";
-
+import { useHistory, useLocation } from 'react-router-dom';
+import queryString from 'query-string'
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import Box from '@iso/components/utility/box';
@@ -41,7 +42,11 @@ import {
 //Other Library
 import _ from 'underscore';
 import numberFormat from "@iso/config/numberFormat";
+import 'moment/locale/tr'
+var moment = require('moment-timezone');
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
+
 const Option = SelectOption;
 
 export default function () {
@@ -51,6 +56,8 @@ export default function () {
   const [city, setCity] = useState();
   const [town, setTown] = useState();
   const [visible, setVisible] = useState();
+  const [fromDate, setFromDate] =useState(moment(new Date()));
+  const [toDate, setToDate] = useState(moment(new Date()));
   const [form] = Form.useForm();
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
@@ -60,6 +67,8 @@ export default function () {
   const [loadingButton, setLoadingButton] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [createAddress, setCreateAddress] = useState(false);
+  const [successOrderSave,setSuccessOrderSave]=useState(true);
+  const history = useHistory();
 
   const [addressTitle, setAddressTitle] = useState();
   const [address1, setAddress1] = useState();
@@ -96,6 +105,9 @@ export default function () {
   }
   //Change First Name 
   function saveOrder(event) {
+    if(adressItem){
+      postSaveOrder();
+    }else{message.warning('Lütfen sevk adresi seçiniz!')}
   };
 
   //Change Phone 
@@ -361,6 +373,42 @@ export default function () {
       .catch();
     setConfirmLoading(false);
   }
+  //Save Order
+  async function postSaveOrder() {
+    setConfirmLoading(true);
+    const reqBody = {}
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+
+      body: JSON.stringify(reqBody)
+    };
+    let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', account);
+    newSaveOrderUrl = newSaveOrderUrl.replace('{addressCode}', addressCode);
+      await fetch(`${newSaveOrderUrl}`, requestOptions)
+      .then(response => {
+        if (!response.ok) (console.log('xxxx re',response));
+        return response.json();
+      })
+      .then(data => {
+     if(data.isSuccess){successSaveOrderModal();
+     }else{
+        message.warning('Sipariş oluşturma işlemi başarısızdır lütfen bilgilerinizi kontrol ediniz.');
+     }
+      })
+      .catch();
+    setConfirmLoading(false);
+  }
+  function successSaveOrderModal() {
+    Modal.success({
+      content: 'Sipariş kaydetme işlemi başarılıdır.',
+      okText:'Tamam',
+      onOk:history.push(`${'/reports/orders'}/?from=${fromDate.format('YYYY-MM-DD')}&to=${toDate.format('YYYY-MM-DD')}&pgsize=10&pgindex=1`),
+    });
+  }
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -404,7 +452,7 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setCountry(record.countryCode+'-'+record.countryName); setAdressItem(record.addressCode+'-'+record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false) },
+                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode+'-'+record.countryName); setAdressItem(record.addressCode+'-'+record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false) },
                         };
                       }}
                       pagination={false}
@@ -481,7 +529,7 @@ export default function () {
                       />
                     </Fieldset>
                   </Form>
-                </Modal>
+                </Modal>               
                 <label>{<IntlMessages id="page.addressTitle" />}  { <span className="asterisk">*</span> }</label>
                 <div className="isoInputFieldset">
                   <Input.Search
@@ -544,7 +592,7 @@ export default function () {
                     <span>{data != undefined ? (numberFormat(data.orderCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
-                    <Button type="primary" className="isoOrderBtn" onClick={saveOrder} >
+                    <Button type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrder()} >
                       Sipariş Oluştur
         </Button>
                     <Button type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >

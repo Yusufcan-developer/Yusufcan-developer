@@ -1,7 +1,6 @@
 import history from '@iso/lib/helpers/history';
 import { message } from "antd";
 export const apiStatusManagement = response => {
-  debugger
   try {
     switch (response.status) {
       case 200:

@@ -47,8 +47,8 @@ export default function () {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
-  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
+  const [toDate, setToDate] = useState(moment(new Date()));
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
@@ -71,7 +71,7 @@ export default function () {
     setChangePageSize(pageSize);
   }, [pageSize]);
 
-  const searchUrl = queryString.parse(location.search);
+  let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
     useFetch(`${siteConfig.api.report.postLetters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize },searchUrl);
@@ -83,8 +83,8 @@ export default function () {
 
     const parsed = queryString.parse(location.search);
 
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from).format('DD-MM-YYYY')) }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to).format('DD-MM-YYYY')) }
+    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
@@ -130,6 +130,7 @@ export default function () {
         dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
       }
     });
+    return setOnChange(true);
   }
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
@@ -154,7 +155,9 @@ export default function () {
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-
+   
+    searchUrl = queryString.parse(location.search);
+    
     return setOnChange(true);
   }
 
@@ -194,11 +197,11 @@ export default function () {
     }
   };
 
-  //Change from and To date
-  function changeTimePicker(value, dateString) {
-    setFromDate(dateString[0]);
-    setToDate(dateString[1]);
-  }
+ //Change from and To date
+ function changeTimePicker(value, dateString) {
+  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+}
 
    //Search DailerName Tree Select Component
    function filterTreeNodeDealerCode(value, treeNode) {
