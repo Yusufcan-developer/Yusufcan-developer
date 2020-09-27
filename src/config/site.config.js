@@ -45,6 +45,7 @@ export default {
       cartGetAll: apiUrl + 'b2b/carts/all',
       deleteCart: apiUrl + 'b2b/carts/account/',
       postSaveAddress: apiUrl + 'core/accounts/addresses',
+      postSaveOrder:apiUrl+'b2b/carts/save-order/{accountNo}/{addressCode}',
     },
     report: {
       postOrders: apiUrl + 'core/report/orders',
