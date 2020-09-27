@@ -43,6 +43,7 @@ function useFetch(url, reqBody, searchUrl) {
         return status;
       })
       .then(data => {
+        if (data.data !== undefined) {
         const value = data.data.slice();
         value.forEach((item, index) => {
           item.key = index;
@@ -57,7 +58,11 @@ function useFetch(url, reqBody, searchUrl) {
         setData(value);
         setLoading(false);
         setOnChange(false);
-      })
+      } else {
+        setLoading(false);
+        setOnChange(false);
+      }
+    })
       .catch();
   }
   useEffect(() => {
