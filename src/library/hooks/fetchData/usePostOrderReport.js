@@ -24,7 +24,6 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   let orderIdgetUrlItems = '';
   async function fetchUrl() {
 
-    setLastReqBody(searchUrl);
     const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "keyword": searchkey, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
@@ -65,6 +64,7 @@ function usePostOrderReport(url, reqBody, searchUrl) {
 
           setLoading(false);
           setOnChange(false);
+          setLastReqBody(searchUrl);
           _.each(orderIdArrayH, (orderDetailItems, index) => {
             orderIdgetUrlItems += ('orderNo=' + orderDetailItems + '&&')
           });

@@ -158,8 +158,6 @@ const DeliveriesReport = () => {
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-
-    searchUrl = queryString.parse(location.search);
     
     return setOnChange(true);
   }
