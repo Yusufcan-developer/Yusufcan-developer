@@ -26,8 +26,6 @@ function useFetch(url, reqBody, searchUrl) {
 
   async function fetchUrl() {
 
-    setLastReqBody(searchUrl);
-
     const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "transactionTypes": selectedTransactionType, "types": selectedCheckqueType, "keyword": searchkey, "serialNumbers": serialNumber, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
@@ -58,6 +56,7 @@ function useFetch(url, reqBody, searchUrl) {
         setData(value);
         setLoading(false);
         setOnChange(false);
+        setLastReqBody(searchUrl);
       } else {
         setLoading(false);
         setOnChange(false);
