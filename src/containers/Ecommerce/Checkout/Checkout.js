@@ -44,7 +44,7 @@ import _ from 'underscore';
 import numberFormat from "@iso/config/numberFormat";
 import 'moment/locale/tr'
 import moment from 'moment';
-moment.locale('tr');
+moment.locale('tr')
 var jwtDecode = require('jwt-decode');
 
 const Option = SelectOption;

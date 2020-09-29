@@ -32,7 +32,7 @@ import numberFormat from "@iso/config/numberFormat";
 import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
-import 'moment/locale/tr'
+import 'moment/locale/tr';
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
