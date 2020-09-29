@@ -18,10 +18,8 @@ export function* initData() {
 }
 export function* updateData({ products, productQuantity }) {
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-  localStorage.setItem('cartProducts', JSON.stringify(products));
   yield put({
     type: actions.UPDATE_DATA,
-    products,
     productQuantity,
   });
 }

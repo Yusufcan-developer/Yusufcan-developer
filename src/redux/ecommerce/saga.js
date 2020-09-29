@@ -14,25 +14,20 @@ export function* changedCard() {
 }
 //Get database product Info to redux
 export function* initData() {
-  let products = localStorage.getItem('cartProducts');
   let productQuantity = localStorage.getItem('cartProductQuantity');
-  products = JSON.parse(products);
   productQuantity = JSON.parse(productQuantity);
 
   //Redux send data
   yield put({
     type: actions.UPDATE_DATA,
-    products,
     productQuantity,
   });
 }
-export function* updateData({ products, productQuantity }) {
+export function* updateData({ productQuantity }) {
 
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-  localStorage.setItem('cartProducts', JSON.stringify(products));
   yield put({
     type: actions.UPDATE_DATA,
-    products,
     productQuantity,
   });
 

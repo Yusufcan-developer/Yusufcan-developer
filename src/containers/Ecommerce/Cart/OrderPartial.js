@@ -122,9 +122,7 @@ const OrderPartial = () => {
     history.push('/checkout');
   }
   async function productItemOrder(allAmountItem, errorMessageType) {
-    let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
-    products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
     let sendDatabaseProductList
 
@@ -180,7 +178,6 @@ const OrderPartial = () => {
       .then(data => {
         if (data) {
           if (data !== 'Unauthorized') {
-            products = {};
             productQuantity = [];
             // Verileri Redux'a gönderme işlemi  
             let sendReduxProductList = _.each(data.items, (item) => {
@@ -194,11 +191,9 @@ const OrderPartial = () => {
                   orderAmount: product.orderAmount,
                   isPartial:product.isPartial
                 });
-                products[product.itemCode] = product.item;
               });
             }
             localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-            localStorage.setItem('cartProducts', JSON.stringify(products));
             setOrderData(data.items);
             setCartData(data.items);
             setModalVisible(false);

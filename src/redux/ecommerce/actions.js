@@ -18,23 +18,19 @@ const actions = {
   },
   changeProductQuantity: productQuantity => {
     return (dispatch, getState) => {
-      const { products } = getState().Ecommerce;
       dispatch({
         type: actions.UPDATE_DATA_SAGA,
-        products,
         productQuantity,
       });
     };
   },
   addToCart: (product,quantity,isPartial) => {
     return (dispatch, getState) => {
-      const { products, productQuantity } = getState().Ecommerce;
+      const { productQuantity } = getState().Ecommerce;
       const itemCode = product.itemCode;
       productQuantity.push({ itemCode, quantity: quantity,isPartial:isPartial });
-      products[itemCode] = product;
       dispatch({
         type: actions.UPDATE_DATA_SAGA,
-        products,
         productQuantity,
       });
     };

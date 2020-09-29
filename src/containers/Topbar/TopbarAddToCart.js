@@ -89,7 +89,6 @@ export default function TopbarAddtoCart() {
 
   //Ürünler Listesinin render edilmesi SingleCart View js dosyasına yönlendiriliyor.
   function renderProducts() {
-    debugger
     getCartList();
     if (!productQuantity || productQuantity.length === 0) {
       return (

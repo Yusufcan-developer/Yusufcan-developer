@@ -267,9 +267,7 @@ export default function () {
   async function clearOrder() {
     setLoadingButton(true);
     let sendDatabaseProductList
-    let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
-    products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
     sendDatabaseProductList = _.each(productQuantity, (item) => {
       item['orderAmount'] = 0;
@@ -315,7 +313,6 @@ export default function () {
       .then(data => {
         if (data) {
           if (data !== 'Unauthorized') {
-            products = {};
             productQuantity = [];
             // Verileri Redux'a gönderme işlemi  
             let sendReduxProductList = _.each(data.items, (item) => {
@@ -329,11 +326,9 @@ export default function () {
                   orderAmount: 0,
                   isPartial: product.isPartial
                 });
-                products[product.itemCode] = product.item;
               });
             }
             localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-            localStorage.setItem('cartProducts', JSON.stringify(products));
             changeCart(true);
           }
         }

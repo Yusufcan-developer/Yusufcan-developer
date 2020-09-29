@@ -62,7 +62,7 @@ const ProductDetail = () => {
   };
   //Redux States
   const [quantity, setQuantity] = useState(1)
-  const { productQuantity, products } = useSelector(state => state.Ecommerce);
+  const { productQuantity } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
@@ -128,10 +128,12 @@ const ProductDetail = () => {
   //Adding products to the cart
 
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false,selectedQuantity) {
+    debugger
     if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(itemCode)
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
+        if(selectedQuantity===undefined){selectedQuantity=1}
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
       }
