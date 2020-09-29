@@ -8,7 +8,6 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Component
 import Input from '@iso/components/uielements/input';
-import SingleCart from '@iso/components/Cart/SingleCart';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
 import { Menu, Dropdown, Col, Row, Button } from "antd";
@@ -25,19 +24,17 @@ import _ from 'underscore';
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
-
+let cartItem=null;
 export default function CartTable({ style }) {
 
   const [totalCost, setTotalCost] = useState();
   let history = useHistory();
   const dispatch = useDispatch();
-  const { productQuantity, products } = useSelector(state => state.Ecommerce);
+  const { productQuantity } = useSelector(state => state.Ecommerce);
 
   async function allCartItemChangeOrderAmount() {
     let sendDatabaseProductList
-    let products = localStorage.getItem('cartProducts');
     let productQuantity = localStorage.getItem('cartProductQuantity');
-    products = JSON.parse(products);
     productQuantity = JSON.parse(productQuantity);
     sendDatabaseProductList = _.each(productQuantity, (item) => {
       item.amount = item.quantity;
@@ -83,7 +80,6 @@ export default function CartTable({ style }) {
       .then(data => {
         if (data) {
           if (data !== 'Unauthorized') {
-            products = {};
             productQuantity = [];
             // Verileri Redux'a gönderme işlemi  
             let sendReduxProductList = _.each(data.items, (item) => {
@@ -97,11 +93,9 @@ export default function CartTable({ style }) {
                   orderAmount: product.orderAmount,
                   isPartial: product.isPartial
                 });
-                products[product.itemCode] = product.item;
               });
             }
             localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-            localStorage.setItem('cartProducts', JSON.stringify(products));
           }
         }
         else {
@@ -132,6 +126,7 @@ export default function CartTable({ style }) {
         return response.json();
       })
       .then(data => {
+        cartItem=data.items;
         setTotalCost(data.totalCost);
       })
       .catch();
@@ -143,13 +138,18 @@ export default function CartTable({ style }) {
     if (!productQuantity || productQuantity.length === 0) {
       return <tr className="isoNoItemMsg">Ürün Bulunamadı</tr>;
     }
+    if(cartItem!==null){
+      debugger
     return productQuantity.map(product => {
+      debugger   
       const key = product.itemCode + (product.isPartial ? '-partial' : null);
-      const objectID = product.itemCode;
       const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
-      const productItem = products[product.itemCode];
+      let productItem ;           
+      productItem = _.find(cartItem, function(item){ return item.itemCode ==product.itemCode; });
+      if(productItem!==undefined){
+      productItem=productItem.item;
       const itemTotalCost = ((!product.isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * product.quantity).toFixed(2);
-
+      
       return (
         <tr>
           <td
@@ -210,8 +210,8 @@ export default function CartTable({ style }) {
         </tr>
 
       );
-    });
-  }
+    }});
+  }}
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();

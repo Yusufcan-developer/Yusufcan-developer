@@ -394,6 +394,7 @@ export default function () {
         return response.json();
       })
       .then(data => {
+        console.log('xxxx data',data)
      if(data.isSuccess){successSaveOrderModal();
      }else{
         message.warning('Sipariş oluşturma işlemi başarısızdır lütfen bilgilerinizi kontrol ediniz.');
