@@ -43,8 +43,8 @@ import {
 import _ from 'underscore';
 import numberFormat from "@iso/config/numberFormat";
 import 'moment/locale/tr'
-var moment = require('moment-timezone');
-moment.locale('tr');
+import moment from 'moment';
+moment.locale('tr')
 var jwtDecode = require('jwt-decode');
 
 const Option = SelectOption;

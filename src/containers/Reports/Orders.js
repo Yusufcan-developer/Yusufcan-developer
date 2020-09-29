@@ -31,9 +31,8 @@ import numberFormat from "@iso/config/numberFormat";
 //Other Library
 import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
-// import moment from 'moment';
-import 'moment/locale/tr'
-var moment = require('moment-timezone');
+import moment from 'moment';
+import 'moment/locale/tr';
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
