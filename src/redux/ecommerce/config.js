@@ -43,10 +43,8 @@ async function getDatabaseProductInfo() {
 
 async function getInitData() {
   let productQuantity = [];
-  const products = {};
   if (localStorage.getItem("id_token")) {
     const cartProductQuantity = localStorage.getItem('cartProductQuantity');
-    let cartProducts = localStorage.getItem('cartProducts');
     const productsData = await getDatabaseProductInfo();
     if (productsData !== 'Unauthorized') {
       // Database product code and product quantity send Redux  
@@ -62,15 +60,13 @@ async function getInitData() {
             orderAmount:product.orderAmount,
             isPartial:product.isPartial
           });
-          products[product.itemCode] = product.item;
         });
       }
 
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-  localStorage.setItem('cartProducts', JSON.stringify(products));
     } else { }
   }
-  return { productQuantity, products };
+  return { productQuantity };
 }
 
 export default getInitData();

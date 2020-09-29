@@ -38,7 +38,7 @@ const categories = [
 
 const ProductGroupList = () => {
 
-  let products = localStorage.getItem('cartProducts');
+  let products = localStorage.getItem('cartProductQuantity');
 
   useEffect(() => {
     if (products === null)
