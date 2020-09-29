@@ -48,7 +48,7 @@ moment.locale('tr')
 var jwtDecode = require('jwt-decode');
 
 const Option = SelectOption;
-
+let createOrderNo='xxxx';
 export default function () {
   const [orderCost, setOrderCost] = useState();
   const [phone, setPhone] = useState();
@@ -67,7 +67,7 @@ export default function () {
   const [loadingButton, setLoadingButton] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [createAddress, setCreateAddress] = useState(false);
-  const [successOrderSave,setSuccessOrderSave]=useState(true);
+  const [successOrderSave,setSuccessOrderSave]=useState(false);
   const history = useHistory();
 
   const [addressTitle, setAddressTitle] = useState();
@@ -123,6 +123,7 @@ export default function () {
   //Adres Modal iptal işlemi
   function handleCancel() {
     setVisible(false);
+    setSuccessOrderSave(false);
   };
 
   //Adres Modal açma
@@ -389,8 +390,7 @@ export default function () {
         return response.json();
       })
       .then(data => {
-        console.log('xxxx data',data)
-     if(data.isSuccess){successSaveOrderModal();
+     if(data.isSuccess){ createOrderNo=data.orderNo;setSuccessOrderSave(true);
      }else{
         message.warning('Sipariş oluşturma işlemi başarısızdır lütfen bilgilerinizi kontrol ediniz.');
      }
@@ -398,13 +398,16 @@ export default function () {
       .catch();
     setConfirmLoading(false);
   }
-  function successSaveOrderModal() {
-    Modal.success({
-      content: 'Sipariş kaydetme işlemi başarılıdır.',
-      okText:'Tamam',
-      onOk:history.push(`${'/reports/orders'}/?from=${fromDate.format('YYYY-MM-DD')}&to=${toDate.format('YYYY-MM-DD')}&pgsize=10&pgindex=1`),
-    });
+  function orderPreview() {
+    history.push(`${'/reports/orders'}/?keyword=${createOrderNo}&pgsize=10&pgindex=1`)
   }
+  // function successSaveOrderModal(orderNo='xxxx') {
+  //   Modal.success({
+  //     content: orderNo+ 'numaralı sipariş başarılı bir şekilde oluşturulmuştur.',
+  //     okText:'Tamam',
+  //     onOk:history.push(`${'/reports/orders'}/?from=${fromDate.format('YYYY-MM-DD')}&to=${toDate.format('YYYY-MM-DD')}&pgsize=10&pgindex=1`),
+  //   });
+  // }
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -526,6 +529,15 @@ export default function () {
                     </Fieldset>
                   </Form>
                 </Modal>               
+                <Modal
+          title={'Siparişiniz Başarıyla Oluşturuldu'}
+          visible={successOrderSave}
+          okText={'Siparişi Görüntüle'}
+          onOk={orderPreview}
+          onCancel={handleCancel}
+        >
+          <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Geçmiş Siparişler menüsünden görüntüleyebilirsiniz.</p>
+        </Modal>
                 <label>{<IntlMessages id="page.addressTitle" />}  { <span className="asterisk">*</span> }</label>
                 <div className="isoInputFieldset">
                   <Input.Search

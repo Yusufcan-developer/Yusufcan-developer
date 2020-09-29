@@ -31,7 +31,6 @@ function useProductData(url, reqBody,categorie,searchUrl) {
 
   async function fetchUrl() {
   
-    setLastReqBody(searchUrl);
     const reqB = reqBody == null || reqBody==undefined ? {"keyword":keyword,"salesStatus": salesStatus, "surfaces":surface, "colors":color, "dimensions":dimension, "productStatus":productStatus, "categories":productGroup, "pageIndex": currentPage - 1,"pageCount": changePageSize, "sortingField": sortingField,"sortingOrder": sortingOrder } : reqBody; 
    
     const requestOptions = {
@@ -60,8 +59,8 @@ function useProductData(url, reqBody,categorie,searchUrl) {
 
         setTotalDataCount(dataCount);
         setTotalPage(totalPages);
-        setData(value);  
-        // setOrderIdArray(orderIdArrayH);
+        setData(value);       
+        setLastReqBody(searchUrl);
 
         setLoading(false); 
         setOnChange(false);
@@ -69,13 +68,13 @@ function useProductData(url, reqBody,categorie,searchUrl) {
        }) .catch(error => console.log('hata',error));
   }
 
-  
   useEffect(() => {
-    if (categorie !== undefined) {
+    debugger
+    // if (categorie !== undefined) {
       if (!_.isEqual(lastReqBody, searchUrl)) {
         setLoading(true);
         fetchUrl();
-      }
+      // }
     }
   }, [currentPage, changePageSize, onChange]);
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray];

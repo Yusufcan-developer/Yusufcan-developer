@@ -110,7 +110,7 @@ export default function TopbarAddtoCart() {
       </div>
       <div className="isoCartDetails">
         <h3>
-          <a href="#!">{productItem.description}</a>
+          <a href="#!">{productItem.itemCode} - {productItem.description}</a>
         </h3>
         <p className="isoItemPriceQuantity">
           <span>{numberFormat(productItem.listPrice)} TL</span>
