@@ -475,8 +475,8 @@ export default function () {
                   <Form>
                     <Fieldset className="isoInputFieldset">
                       <InputBox
-                        label="Adres Başlığı"
-                        placeholder="Adres Başlığı Giriniz"
+                        label="Adres Başlığı (Firma Unvanı / İlçe /İl)"
+                        placeholder="Firma Unvanı / İlçe /İl"
                         rows={5}
                         value={addressTitle}
                         onChange={onChangeAddressTitle}
@@ -486,7 +486,7 @@ export default function () {
 
                     <Fieldset>
                       <InputBox
-                        label="Adres 1"
+                        label="Adres 1" 
                         rows={5}
                         placeholder="Adres 1 Giriniz"
                         value={address1}
@@ -497,8 +497,8 @@ export default function () {
 
                     <Fieldset>
                       <InputBox
-                        label="Adres 2"
-                        placeholder="Adres 2 Giriniz"
+                        label="İlgili (İlgili kişi / Cep Telefonu)"
+                        placeholder="İlgili kişi / Cep Telefonu"
                         value={address2}
                         onChange={onChangeAddress2}
                       />

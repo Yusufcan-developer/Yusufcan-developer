@@ -580,16 +580,16 @@ const MainForm = () => {
 
   let infoHeader = null;
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    infoHeader = (
-      <Col span={12}>
-        <Form.Item label="Bayi Kodu">
-          <span className="ant-form-text">{code}</span>
-        </Form.Item>
-        <Form.Item label="Unvanı">
-          <span className="ant-form-text">{name}</span>
-        </Form.Item>
-      </Col>
-    );
+    // infoHeader = (
+    //   // <Col span={12}>
+    //   //   <Form.Item label="Bayi Kodu">
+    //   //     <span className="ant-form-text">{code}</span>
+    //   //   </Form.Item>
+    //   //   <Form.Item label="Unvanı">
+    //   //     <span className="ant-form-text">{name}</span>
+    //   //   </Form.Item>
+    //   // </Col>
+    // );
   }
 
   return (
@@ -598,6 +598,35 @@ const MainForm = () => {
         {<IntlMessages id="page.mainForm.header" />}
       </PageHeader>
       {infoHeader}
+      <Box >
+        <h2 style={{ marginBottom: '10px' }}>Cari Toplamları</h2>
+        {/* <ReportPagination
+          onShowSizeChange={onShowCariToplamlarSizeChange}
+          onChange={currentCariToplamlarPageChange}
+          pageSize={pageSizeCariToplamlar}
+          total={CariToplamlartotalDataCount}
+          current={pageIndexCariToplamlar}
+          position="top"
+        /> */}
+        <Table
+          columns={CariToplamlarColumns}
+          dataSource={cariToplamlarData}
+          loading={cariToplamlarloading}
+          pagination={false}
+          size="medium"
+          bordered={false}
+          expandable={{ 'expandedRowRender': expandedRow }}
+          onExpand={onExpand}
+        />
+        <ReportPagination
+          onShowSizeChange={onShowCariToplamlarSizeChange}
+          onChange={currentCariToplamlarPageChange}
+          pageSize={pageSizeCariToplamlar}
+          total={CariToplamlartotalDataCount}
+          current={pageIndexCariToplamlar}
+          position="bottom"
+        />
+      </Box>
       <Box >
         <h2 style={{ marginBottom: '10px' }}>DBS Toplamları</h2>
         {/* <ReportPagination
@@ -628,35 +657,7 @@ const MainForm = () => {
           position="bottom"
         />
       </Box>
-      <Box >
-        <h2 style={{ marginBottom: '10px' }}>Cari Toplamları</h2>
-        {/* <ReportPagination
-          onShowSizeChange={onShowCariToplamlarSizeChange}
-          onChange={currentCariToplamlarPageChange}
-          pageSize={pageSizeCariToplamlar}
-          total={CariToplamlartotalDataCount}
-          current={pageIndexCariToplamlar}
-          position="top"
-        /> */}
-        <Table
-          columns={CariToplamlarColumns}
-          dataSource={cariToplamlarData}
-          loading={cariToplamlarloading}
-          pagination={false}
-          size="medium"
-          bordered={false}
-          expandable={{ 'expandedRowRender': expandedRow }}
-          onExpand={onExpand}
-        />
-        <ReportPagination
-          onShowSizeChange={onShowCariToplamlarSizeChange}
-          onChange={currentCariToplamlarPageChange}
-          pageSize={pageSizeCariToplamlar}
-          total={CariToplamlartotalDataCount}
-          current={pageIndexCariToplamlar}
-          position="bottom"
-        />
-      </Box>
+     
       {/* <Box >
         <h2 style={{ marginBottom: '10px' }}>Bölgesel Hedefler</h2>
         <Table
