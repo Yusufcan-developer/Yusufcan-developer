@@ -596,8 +596,12 @@ export default function () {
 
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
-                    <span>Toplam</span>
-                    <span>{data != undefined ? (numberFormat(data.orderCost)) : (0)} TL</span>
+                    <span>Toplam KDV</span>
+                    <span>{data != undefined ? (numberFormat(data.orderVat)) : (0)} TL</span>
+                  </div>
+                  <div className="isoOrderTableFooter">
+                    <span>Genel Toplam</span>
+                    <span>{data != undefined ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
                     <Button type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrder()} >
