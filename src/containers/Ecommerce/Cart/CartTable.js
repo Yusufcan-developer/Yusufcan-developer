@@ -127,7 +127,7 @@ export default function CartTable({ style }) {
       })
       .then(data => {
         cartItem=data.items;
-        setTotalCost(data.totalCost);
+        setTotalCost(data.totalOverallCost);
       })
       .catch();
     return productInfo;
@@ -147,6 +147,7 @@ export default function CartTable({ style }) {
       let productItem ;           
       productItem = _.find(cartItem, function(item){ return item.itemCode ==product.itemCode; });
       if(productItem!==undefined){
+      let totalVat=productItem.totalVat;
       productItem=productItem.item;
       const itemTotalCost = ((!product.isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * product.quantity).toFixed(2);
       
@@ -205,6 +206,9 @@ export default function CartTable({ style }) {
           </td>
           <td className="isoItemQuantity">
             {numberFormat(product.quantity * (!product.isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
+          </td>
+          <td className="isoItemOrderVat">
+            {numberFormat(totalVat)}
           </td>
           <td className="isoItemPriceTotal">{numberFormat(itemTotalCost)} TL</td>
         </tr>
@@ -304,6 +308,7 @@ export default function CartTable({ style }) {
             <th className="isoItemUnit">Birim</th>
             <th className="isoItemPalet">Sepete Eklenen</th>
             <th className="isoItemQuantity">Miktar</th>
+            <th className="isoItemOrderVat">KDV Tutarı</th>
             <th className="isoItemPriceTotal">Tutar</th>
           </tr>
         </thead>
@@ -317,6 +322,7 @@ export default function CartTable({ style }) {
             <td className="isoItemPrice" />
             <th className="isoItemUnit" />
             <td className="isoItemPalet" />
+            <td className="isoItemOrderVat" />
             <td className="isoItemQuantity">Toplam Tutar</td>
             <td className="isoItemPriceTotal">{numberFormat(totalCost)} TL</td>
           </tr>
