@@ -20,9 +20,9 @@ export default function TopbarUser(props) {
 
   const content = (
     <TopbarDropdownWrapper className="isoUserDropdown">
-      <Link className="isoDropdownLink" to={'/my-profile'}>
+      {/* <Link className="isoDropdownLink" to={'/my-profile'}>
         <IntlMessages id="topbar.myprofile" />
-      </Link>
+      </Link> */}
       <a className="isoDropdownLink" href="# ">
         <IntlMessages id="themeSwitcher.settings" />
       </a>
