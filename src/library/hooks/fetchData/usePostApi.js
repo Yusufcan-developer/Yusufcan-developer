@@ -23,10 +23,12 @@ function useFetch(url, reqBody, searchUrl) {
   const [to, setTo] = useState();
   const [searchkey, setSearchKey] = useState();
   const [lastReqBody, setLastReqBody] = useState();
+  const [sortingField,setSortingField]=useState();
+  const [sortingOrder,setSortingOrder]=useState();
 
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "transactionTypes": selectedTransactionType, "types": selectedCheckqueType, "keyword": searchkey, "serialNumbers": serialNumber, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
+    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "transactionTypes": selectedTransactionType, "types": selectedCheckqueType, "keyword": searchkey, "serialNumbers": serialNumber, "pageIndex": currentPage - 1, "pageCount": changePageSize,"sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {

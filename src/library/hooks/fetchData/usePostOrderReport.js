@@ -21,10 +21,12 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [lastReqBody, setLastReqBody] = useState();
+  const [sortingField,setSortingField]=useState();
+  const [sortingOrder,setSortingOrder]=useState();
   let orderIdgetUrlItems = '';
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "keyword": searchkey, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
+    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "keyword": searchkey, "pageIndex": currentPage - 1, "pageCount": changePageSize,"sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
