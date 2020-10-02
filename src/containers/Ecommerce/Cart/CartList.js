@@ -12,10 +12,12 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Alert, Modal, message } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal, message } from "antd";
 import TopbarAlert from '../../Topbar/TopbarAlert';
+
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
+import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -43,9 +45,11 @@ var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
-
+const { Option } = Select;
 
 const CartList = () => {
+  //Bayi Kodu Tekli veya çoklu seçim kontrolü
+  const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
 
   const queryString = require('query-string');
   const history = useHistory();
@@ -93,6 +97,13 @@ const CartList = () => {
 
   //Cart Data
   const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
+
+  //Bayi kodları listesi ve Lookup döndürme işlemi
+  const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
+  const lookupDealerChildren = [];
+  _.each(lookupDealerTreeData, (item, i) => {
+    lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
+  });
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
@@ -232,6 +243,22 @@ const CartList = () => {
   function handleCancel() {
     setDeleteCartVisible(false);
   };
+  //Select Component Bayi Kodu değiştirme 
+  function dealerCodeHandleChange(value) {
+    if (dealerCodeSelectModSingle) { setDealerCodes([value]); } else {
+      setDealerCodes(value);
+    }
+  }
+  
+  function handleCreateCart() {
+    if (dealerCodes === undefined) { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
+    else {
+      localStorage.setItem('activeUser', dealerCodes);
+      history.push('/products/categories');
+      window.location.reload(false);      
+    }
+  }
+
   //Cart Detail Columns
   const CartDetailcolumns = [
     {
@@ -272,7 +299,7 @@ const CartList = () => {
       key: "totalCost",
       align: "right",
       footerKey: "totalCost",
-      render: (totalCost,item) => { return numberFormat(totalCost) }
+      render: (totalCost, item) => { return numberFormat(totalCost) }
     },
   ];
 
@@ -329,6 +356,38 @@ const CartList = () => {
   return (
 
     <LayoutWrapper>
+      <PageHeader>
+        {<IntlMessages id="page.CreateCarts.header" />}
+      </PageHeader>
+      <Box>
+        <Row>
+          <Col span={6}>
+            <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={6}>
+            <Select
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Hesap Kodu seçiniz"
+              optionFilterProp="children"
+              value={dealerCodes}
+              onChange={dealerCodeHandleChange}
+              filterOption={(input, option) =>
+                option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {lookupDealerChildren}
+            </Select>
+          </Col>
+          <Col span={1}>
+              </Col>
+          <Button type="primary" loading={iconLoading} onClick={handleCreateCart}>
+            {<IntlMessages id="forms.button.label_Choose" />}
+          </Button>
+        </Row>
+      </Box>
       <PageHeader>
         {<IntlMessages id="page.ActiveCarts.header" />}
       </PageHeader>

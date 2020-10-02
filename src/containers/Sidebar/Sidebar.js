@@ -157,6 +157,12 @@ export default function Sidebar() {
   else if (token.urole === 'regionmanager') {
     newColumn=options
   }
+  else if(token.urole==='support'){
+    newColumn=options
+  }
+  else if(token.urole==='director'){
+    newColumn=options
+  }
   else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = options;
 
