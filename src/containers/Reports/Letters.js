@@ -37,6 +37,8 @@ var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
+let sortingField;
+let sortingOrder;
 
 export default function () {
   const [searchKey, setSearchKey] = useState('');
@@ -74,7 +76,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postLetters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize },searchUrl);
+    useFetch(`${siteConfig.api.report.postLetters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
 
@@ -88,6 +90,8 @@ export default function () {
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
+    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -144,11 +148,15 @@ export default function () {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('sortingField');
+    params.delete('sortingOrder');
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
+    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
+    if(sortingField!==undefined){params.append('sortingField', sortingField);}
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -212,12 +220,19 @@ export default function () {
   }
 
   const handleChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter);
     setState({
       ...tableOptions,
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
+    if (sorter !== undefined) {
+      if (sorter.order === "descend") {
+        sortingOrder='DESC';
+      } else { sortingOrder='ASC'; }
+    
+    sortingField=sorter.field;
+    dataSearch()
+    }
   };
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
@@ -251,19 +266,17 @@ export default function () {
       dataIndex: "toDate",
       key: "toDate",
       render: (toDate) => moment(toDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.toDate - b.toDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "toDate" &&
-        tableOptions.sortedInfo.order
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'toDate' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
-      sorter: (a, b) => a.documentId - b.documentId,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Başlangıç Tarihi",
@@ -271,10 +284,9 @@ export default function () {
       key: "fromDate",
       type: "date",
       render: (fromDate) => moment(fromDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.fromDate - b.fromDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "fromDate" &&
-        tableOptions.sortedInfo.order
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'fromDate' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "TR Kodu",
@@ -288,10 +300,9 @@ export default function () {
       key: "amount",
       align: "right",
       render: (amount) => numberFormat(amount),
-      sorter: (a, b) => a.amount - b.amount,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "amount" &&
-        tableOptions.sortedInfo.order,
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'amount' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
       footerKey: "amount"
     },
     {

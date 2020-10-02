@@ -38,6 +38,8 @@ var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
+let sortingField;
+let sortingOrder;
 
 export default function () {
   const [searchKey, setSearchKey] = useState('');
@@ -75,7 +77,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize },searchUrl);
+    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
@@ -90,6 +92,8 @@ export default function () {
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
+    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -147,9 +151,13 @@ export default function () {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('sortingField');
+    params.delete('sortingOrder');
 
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
+    if(sortingField!==undefined){params.append('sortingField', sortingField);}
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -202,14 +210,21 @@ export default function () {
   setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
 }
 
-  const handleChange = (pagination, filters, sorter) => {
-    console.log('Various parameters', pagination, filters, sorter);
-    setState({
-      ...tableOptions,
-      ["sortedInfo"]: sorter,
-      ["filteredInfo"]: filters
-    });
-  };
+const handleChange = (pagination, filters, sorter) => {
+  setState({
+    ...tableOptions,
+    ["sortedInfo"]: sorter,
+    ["filteredInfo"]: filters
+  });
+  if (sorter !== undefined) {
+    if (sorter.order === "descend") {
+      sortingOrder='DESC';
+    } else { sortingOrder='ASC'; }
+  
+  sortingField=sorter.field;
+  dataSearch()
+  }
+};
 
    //Search DailerName Tree Select Component
    function filterTreeNodeDealerCode(value, treeNode) {
@@ -250,19 +265,14 @@ export default function () {
       title: "Durum",
       dataIndex: "status",
       key: "status",
-      sorter: (a, b) => a.status.length - b.status.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "status" &&
-        tableOptions.sortedInfo.order
     },
     {
       title: "Dağıtım Kodu",
       dataIndex: "distributionId",
       key: "distributionId",
-      sorter: (a, b) => a.distributionId - b.distributionId,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "distributionId" &&
-        tableOptions.sortedInfo.order
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionId' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Dağıtım Sipariş Tarihi",
@@ -270,10 +280,9 @@ export default function () {
       key: "distributionOrderDate",
       key: "toDate",
       render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
-      sorter: (a, b) => a.distributionOrderDate - b.distributionOrderDate,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "distributionOrderDate" &&
-        tableOptions.sortedInfo.order
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Adres Kodu",
@@ -289,10 +298,9 @@ export default function () {
       title: "Sipariş No",
       dataIndex: "orderNo",
       key: "orderNo",
-      sorter: (a, b) => a.orderNo - b.orderNo,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "orderNo" &&
-        tableOptions.sortedInfo.order
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Ürün Kodu",
@@ -336,10 +344,6 @@ export default function () {
       key: "distributedAmount",
       align: "right",
       render: (distributedAmount) => numberFormat(distributedAmount),
-      sorter: (a, b) => a.distributedAmount - b.distributedAmount,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "distributedAmount" &&
-        tableOptions.sortedInfo.order,
       footerKey: "distributedAmount"
     },
     {
@@ -348,10 +352,9 @@ export default function () {
       key: "remainingAmount",
       align: "right",
       render: (remainingAmount) => numberFormat(remainingAmount),
-      sorter: (a, b) => a.remainingAmount - b.remainingAmount,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "remainingAmount" &&
-        tableOptions.sortedInfo.order,
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
       footerKey: "remainingAmount"
     },
     {

@@ -41,7 +41,8 @@ var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
-
+let sortingField;
+let sortingOrder;
 export default function () {
   const children = [];
   const Option = SelectOption;
@@ -80,7 +81,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize }, searchUrl);
+    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -101,7 +102,9 @@ export default function () {
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-
+    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
+    
     let transactionType = [];
     if (parsed.type !== undefined) {
       if (Array.isArray(parsed.type)) {
@@ -169,11 +172,15 @@ export default function () {
     params.delete('pgsize');
     params.delete('pgindex');
     params.delete('type');
+    params.delete('sortingField');
+    params.delete('sortingOrder');
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
+    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
+    if(sortingField!==undefined){params.append('sortingField', sortingField);}
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -243,6 +250,14 @@ export default function () {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
+    if (sorter !== undefined) {
+      if (sorter.order === "descend") {
+        sortingOrder='DESC';
+      } else { sortingOrder='ASC'; }
+    
+    sortingField=sorter.field;
+    dataSearch()
+    }
   };
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -280,15 +295,18 @@ export default function () {
       dataIndex: "date",
       key: "date",
       type: "date",
+      render: (date) => moment(date).format(siteConfig.dateFormat),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'date' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
-      sorter: (a, b) => a.documentId.length - b.documentId.length,
-      sortOrder:
-        tableOptions.sortedInfo.columnKey === "documentId" &&
-        tableOptions.sortedInfo.order
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
       title: "İşlem Tipi",
@@ -300,7 +318,6 @@ export default function () {
       dataIndex: "debt",
       key: "debt",
       align: "right",
-      sorter: (a, b) => a.debt - b.debt,
       render: (debt) => numberFormat(debt),
     },
     {
