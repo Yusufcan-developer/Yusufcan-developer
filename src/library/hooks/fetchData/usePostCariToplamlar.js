@@ -22,7 +22,7 @@ function usePostCariToplamlarReport(url, reqBody) {
   let aggregateGetUrlItems = '';
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
+    const reqB = reqBody == null || reqBody == undefined ? {"dealerCodes": dealerCodes, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
