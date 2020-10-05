@@ -47,7 +47,7 @@ function useProductData(url, reqBody,categorie,searchUrl) {
         if (!response.ok) throw Error(response.statusText);
         return response.json();
       })
-      .then(data => {        
+      .then(data => {     
         const orderIdArrayH = [];
         const value = data.data.slice();
         value.forEach((item, index) => {          
@@ -61,11 +61,10 @@ function useProductData(url, reqBody,categorie,searchUrl) {
         setTotalPage(totalPages);
         setData(value);       
         setLastReqBody(searchUrl);
-
         setLoading(false); 
         setOnChange(false);
-
-       }) .catch(error => console.log('hata',error));
+      }) .catch(error => console.log('hata',error));
+      
   }
 
   useEffect(() => {

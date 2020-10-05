@@ -128,7 +128,7 @@ const ProductDetail = () => {
   //Adding products to the cart
 
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false,selectedQuantity) {
-    debugger
+    
     if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(itemCode)

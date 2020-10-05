@@ -139,9 +139,7 @@ export default function CartTable({ style }) {
       return <tr className="isoNoItemMsg">Ürün Bulunamadı</tr>;
     }
     if(cartItem!==null){
-      debugger
     return productQuantity.map(product => {
-      debugger   
       const key = product.itemCode + (product.isPartial ? '-partial' : null);
       const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
       let productItem ;           
