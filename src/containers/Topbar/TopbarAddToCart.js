@@ -47,6 +47,7 @@ export default function TopbarAddtoCart() {
   let quantity;
   if (productQuantity) { quantity = productQuantity.length }
   else { quantity = 0 }
+  
   function hide() {
     dispatch(changeViewTopbarCart(false));
   }
@@ -68,10 +69,11 @@ export default function TopbarAddtoCart() {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
+    debugger
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let uname = token.uname;
-    if (activeUser !== undefined) { uname = activeUser }
+    if (activeUser !== null) { uname = activeUser }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
