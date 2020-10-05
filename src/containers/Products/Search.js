@@ -224,6 +224,7 @@ const SearchComponent = () => {
 
   //Get Type 
   // const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
+
   //Post Type
   const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
 
@@ -728,6 +729,7 @@ const SearchComponent = () => {
       }
     }
   };
+  
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
   function handleCancel() {
     setPartialQuantity(false);
