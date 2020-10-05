@@ -1,30 +1,21 @@
 // hooks.js
 import { useState, useEffect } from "react";
-//Other Library
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import _ from 'underscore';
 
 function usePostFilter(url, reqBody) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalPage, setTotalPage] = useState(1);
-  const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
-  const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
-  const [dealerCodes, setDealerCodes] = useState();
-  const [regionCodes, setRegionCodes] = useState();
-  const [fieldCodes, setFieldCodes] = useState();
+  const [changePageSize, setChangePageSize] = useState();
+  const [currentPage, setCurrentPage] = useState();
   const [productGroup,setProductGroup]=useState();
-  const [dimension,setDimension]=useState([])
-  const [color,setColor]=useState([])
-  const [productStatus,setProductStatus]=useState([])
-  const [surface,setSurface]=useState([])
-  const [productionQuality, setProductionQuality] = useState([])
+  const [dimension,setDimension]=useState([]);
+  const [color,setColor]=useState([]);
+  const [productStatus,setProductStatus]=useState([]);
+  const [surface,setSurface]=useState([]);
   const [salesStatus, setSalesStatus] = useState()
-  const [keyword,setKeyword]=useState()
-  const [from, setFrom] = useState();
-  const [to, setTo] = useState();
-  const [totalDataCount, setTotalDataCount] = useState();
+  const [keyword,setKeyword]=useState();
   const [onChange, setOnChange] = useState(false);
-  const [orderIdArray, setOrderIdArray] = useState();
   const [sortingField, setSortingField]=useState();
   const [sortingOrder, setSortingOrder]=useState();
 
@@ -41,10 +32,10 @@ function usePostFilter(url, reqBody) {
       body: JSON.stringify(reqBody)
     };
     await fetch(url, requestOptions)
-      .then(response => {
-        if (!response.ok) throw Error(response.statusText);
-        return response.json();
-      })
+    .then(response => {
+      const status = apiStatusManagement(response);
+      return status;
+    })
       .then(data => {
         const filterData = _.uniq(data, false, function (item) { if (item === null || item === '') {return item = null } else {return item }});
         setData(filterData);

@@ -8,9 +8,7 @@ function useGetTreeData(url, searchUrl) {
   const [lastReqBody, setLastReqBody] = useState();
 
   async function fetchUrl() {
-
     setLastReqBody(searchUrl);
-
     const requestOptions = {
       method: "GET",
       headers: {

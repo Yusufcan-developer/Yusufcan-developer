@@ -1,5 +1,6 @@
 // hooks.js
 import { useState, useEffect } from "react";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 function useFilterProductCategories(url, reqBody) {
   const [data, setData] = useState([]);
@@ -8,8 +9,8 @@ function useFilterProductCategories(url, reqBody) {
 
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody==undefined ? { } : reqBody; 
-   
+    const reqB = reqBody == null || reqBody == undefined ? {} : reqBody;
+
     const requestOptions = {
       method: "POST",
       headers: {
@@ -19,10 +20,10 @@ function useFilterProductCategories(url, reqBody) {
       body: JSON.stringify(reqBody)
     };
     
-    await fetch(url,requestOptions)
+    await fetch(url, requestOptions)
       .then(response => {
-        if (!response.ok) {return localStorage.removeItem('id_token');}
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         setData(data);
@@ -31,13 +32,11 @@ function useFilterProductCategories(url, reqBody) {
       .catch();
   }
   useEffect(() => {
-    setLoading(true);   
+    setLoading(true);
     fetchUrl();
   }, []);
 
-
-  return [data, loading , setOnChange];
+  return [data, loading, setOnChange];
 }
-
 
 export { useFilterProductCategories };

@@ -33,6 +33,7 @@ import siteConfig from "@iso/config/site.config";
 import renderFooter from "..//../Reports/ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
 import ReportPagination from "../../Reports/ReportPagination";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -215,14 +216,13 @@ const CartList = () => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
     await fetch(`${siteConfig.api.carts.deleteCart}${accountNo}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         cart = data;

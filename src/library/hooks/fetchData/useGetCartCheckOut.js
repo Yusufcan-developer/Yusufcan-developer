@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import _ from 'underscore';
 import siteConfig from "@iso/config/site.config";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 var jwtDecode = require('jwt-decode');
 
 function useGetCartCheckOut(url) {
   const [data, setData] = useState([]);
-  const [loadingFilter, setLoading] = useState(true);
   const [onChangeFilter, setOnChangeFilter] = useState(false);
 
   async function fetchUrl() {
@@ -25,18 +25,17 @@ function useGetCartCheckOut(url) {
       if (!token.uname) { return 'Unauthorized' }
     
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}?includePallet=true`, requestOptions)
-      .then(response => {
-        if (!response.ok)  {}
-        return response.json();
-      })
+    .then(response => {
+      const status = apiStatusManagement(response);
+      return status;
+    })
       .then(data => {        
         setData(data);
         setOnChangeFilter(false);
       })
       .catch();
   }
-  useEffect(() => {
-    setLoading(true);   
+  useEffect(() => {  
     fetchUrl();
   }, [onChangeFilter]);
     return [data,setOnChangeFilter];
