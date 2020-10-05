@@ -1,5 +1,6 @@
 // hooks.js
 import { useState, useEffect } from "react";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 function useGetProductItem(url) {
   const [productItem, setProductItem] = useState()
@@ -19,16 +20,16 @@ function useGetProductItem(url) {
   const [imageUrl, setImageUrl] = useState();
   const [canBeSoldPartially, setCanBeSoldPartially] = useState();
   const [notes, setNotes] = useState();
-  const [campaign,setCampaign]=useState();
-  const [imageGeneralFileNames,setImageGeneralFileNames]=useState();
-  const [imageThumbBaseUrl,setImageThumbBaseUrl]=useState();
-  const [imageMediumBaseUrl,setImageMediumBaseUrl]=useState();
-  const [imageTechnicalFileNames,setImageTechnicalFileNames]=useState();
-  const [imageOriginalBaseUrl,setImageOriginalBaseUrl]=useState();
-  const [imageLargeBaseUrl,setImageLargeBaseUrl]=useState();
-  const [m2Pallet,setM2Pallet]=useState();
-  const [m2Box,setM2Box]=useState();
-  const [data,setData]=useState();
+  const [campaign, setCampaign] = useState();
+  const [imageGeneralFileNames, setImageGeneralFileNames] = useState();
+  const [imageThumbBaseUrl, setImageThumbBaseUrl] = useState();
+  const [imageMediumBaseUrl, setImageMediumBaseUrl] = useState();
+  const [imageTechnicalFileNames, setImageTechnicalFileNames] = useState();
+  const [imageOriginalBaseUrl, setImageOriginalBaseUrl] = useState();
+  const [imageLargeBaseUrl, setImageLargeBaseUrl] = useState();
+  const [m2Pallet, setM2Pallet] = useState();
+  const [m2Box, setM2Box] = useState();
+  const [data, setData] = useState();
   async function fetchUrl() {
 
     const requestOptions = {
@@ -41,8 +42,8 @@ function useGetProductItem(url) {
 
     fetch(`${url}`, requestOptions)
       .then(response => {
-        if (!response.ok) throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         setData(data);
@@ -75,14 +76,11 @@ function useGetProductItem(url) {
 
     setLoading(false);
   }
-
   useEffect(() => {
     setLoading(true);
     fetchUrl();
   }, [onChange]);
-  return [data,loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaign,imageThumbBaseUrl,imageMediumBaseUrl,imageGeneralFileNames,imageTechnicalFileNames,imageOriginalBaseUrl,imageLargeBaseUrl,m2Pallet,m2Box, setOnChange];
+  return [data, loading, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaign, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box, setOnChange];
 }
-
-
 
 export { useGetProductItem };

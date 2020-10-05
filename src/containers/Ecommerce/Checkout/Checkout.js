@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
 import queryString from 'query-string'
+
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import Box from '@iso/components/utility/box';
-import BillingForm from './BillingForm';
 import OrderInfo from './OrderInfo';
 import { CheckoutContents } from './Checkout.styles';
 import { useSelector } from 'react-redux';
@@ -16,7 +16,6 @@ import Select, { SelectOption } from '@iso/components/uielements/select';
 import InputBox from './InputBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper, InputBoxWrapper } from './Checkout.styles';
-import { useGetCustomerInfo } from "@iso/lib/hooks/fetchData/useGetCustomerInfo";
 import siteConfig from "@iso/config/site.config";
 import { Col, Row, Modal, Table, Input, Space, message } from "antd";
 import Form from "@iso/components/uielements/form";
@@ -44,11 +43,12 @@ import _ from 'underscore';
 import numberFormat from "@iso/config/numberFormat";
 import 'moment/locale/tr'
 import moment from 'moment';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 moment.locale('tr')
 var jwtDecode = require('jwt-decode');
 
 const Option = SelectOption;
-let createOrderNo='xxxx';
+let createOrderNo = 'xxxx';
 export default function () {
   const [orderCost, setOrderCost] = useState();
   const [phone, setPhone] = useState();
@@ -57,7 +57,7 @@ export default function () {
   const [town, setTown] = useState();
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
-  const [fromDate, setFromDate] =useState(moment(new Date()));
+  const [fromDate, setFromDate] = useState(moment(new Date()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [form] = Form.useForm();
   const [user, setUser] = useState();
@@ -68,7 +68,7 @@ export default function () {
   const [loadingButton, setLoadingButton] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [createAddress, setCreateAddress] = useState(false);
-  const [successOrderSave,setSuccessOrderSave]=useState(false);
+  const [successOrderSave, setSuccessOrderSave] = useState(false);
   const history = useHistory();
 
   const [addressTitle, setAddressTitle] = useState();
@@ -106,10 +106,10 @@ export default function () {
   }
   //Change First Name 
   function saveOrderQuestionModal() {
-    if(adressItem){
+    if (adressItem) {
       setCreateOrderQuestionVisible(true);
-    }else{message.warning('Lütfen sevk adresi seçiniz!')}
-  
+    } else { message.warning('Lütfen sevk adresi seçiniz!') }
+
   };
 
   function saveOrder() {
@@ -240,8 +240,8 @@ export default function () {
     };
     await fetch(`${siteConfig.api.security.getUser}${userId}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         setUser(data);
@@ -263,8 +263,8 @@ export default function () {
     };
     await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         setAdress(data);
@@ -305,26 +305,8 @@ export default function () {
     };
     await fetch(siteConfig.api.carts.postCart, requestOptions)
       .then(response => {
-        switch (response.status) {
-          case 201:
-            return response.json();
-            break;
-          case 400:
-            return response.json();
-            break;
-          case 401:
-            // Go to login
-            break;
-          case 404:
-            // Show 404 page
-            break;
-          case 500:
-            // Serveur Error redirect to 500
-            break;
-          default:
-            // Unknow Error
-            break;
-        }
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         if (data) {
@@ -371,8 +353,8 @@ export default function () {
     };
     await fetch(siteConfig.api.carts.postSaveAddress, requestOptions)
       .then(response => {
-        if (!response.ok) (message.error('Veritabanı bağlantısı kurulumadı lütfen sistem yöneticinize başvurunuz.'));
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode);
@@ -399,16 +381,17 @@ export default function () {
     };
     let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', account);
     newSaveOrderUrl = newSaveOrderUrl.replace('{addressCode}', addressCode);
-      await fetch(`${newSaveOrderUrl}`, requestOptions)
+    await fetch(`${newSaveOrderUrl}`, requestOptions)
       .then(response => {
-        if (!response.ok) (console.log('xxxx re',response));
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
-     if(data.isSuccess){ createOrderNo=data.orderNo;setSuccessOrderSave(true);
-     }else{
-        message.warning('Sipariş oluşturma işlemi başarısızdır lütfen bilgilerinizi kontrol ediniz.');
-     }
+        if (data.isSuccess) {
+          createOrderNo = data.orderNo; setSuccessOrderSave(true);
+        } else {
+          message.warning('Sipariş oluşturma işlemi başarısızdır lütfen bilgilerinizi kontrol ediniz.');
+        }
       })
       .catch();
     setConfirmLoading(false);
@@ -460,7 +443,7 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode+'-'+record.countryName); setAdressItem(record.addressCode+'-'+record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false) },
+                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false) },
                         };
                       }}
                       pagination={false}
@@ -495,7 +478,7 @@ export default function () {
 
                     <Fieldset>
                       <InputBox
-                        label="Adres 1" 
+                        label="Adres 1"
                         rows={5}
                         placeholder="Adres 1 Giriniz"
                         value={address1}
@@ -537,37 +520,37 @@ export default function () {
                       />
                     </Fieldset>
                   </Form>
-                </Modal>               
+                </Modal>
                 <Modal
-          title={'Siparişiniz Başarıyla Oluşturuldu'}
-          visible={successOrderSave}
-          okText={'Siparişi Görüntüle'}
-          onOk={orderPreview}
-          onCancel={handleCancelOrderSave}
-        >
-          <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Geçmiş Siparişler menüsünden görüntüleyebilirsiniz.</p>
-        </Modal>
-        <Modal
-        visible={createOrderQuestionVisible}
-        title={"Sipariş oluşturma"}
-        okText="Tamam"
-        cancelText="İptal"
-        maskClosable={false}
-        onCancel={handleCancel}
-        onOk={saveOrder}
-      >
-        <p>{'Sipariş kaydetme işlemi yapılacaktır.Siparişi düzeltme işlemi için yöneticinize başvurabilirsiniz. Devam etmek istiyor musunuz?'}</p>
-        <Form
-          form={form}
-          layout="vertical"
-          name="form_in_modal"
-          initialValues={{
-            modifier: 'public',
-          }}
-        >
-        </Form>
-      </Modal>
-                <label>{<IntlMessages id="page.addressTitle" />}  { <span className="asterisk">*</span> }</label>
+                  title={'Siparişiniz Başarıyla Oluşturuldu'}
+                  visible={successOrderSave}
+                  okText={'Siparişi Görüntüle'}
+                  onOk={orderPreview}
+                  onCancel={handleCancelOrderSave}
+                >
+                  <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Geçmiş Siparişler menüsünden görüntüleyebilirsiniz.</p>
+                </Modal>
+                <Modal
+                  visible={createOrderQuestionVisible}
+                  title={"Sipariş oluşturma"}
+                  okText="Tamam"
+                  cancelText="İptal"
+                  maskClosable={false}
+                  onCancel={handleCancel}
+                  onOk={saveOrder}
+                >
+                  <p>{'Sipariş kaydetme işlemi yapılacaktır.Siparişi düzeltme işlemi için yöneticinize başvurabilirsiniz. Devam etmek istiyor musunuz?'}</p>
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    name="form_in_modal"
+                    initialValues={{
+                      modifier: 'public',
+                    }}
+                  >
+                  </Form>
+                </Modal>
+                <label>{<IntlMessages id="page.addressTitle" />}  {<span className="asterisk">*</span>}</label>
                 <div className="isoInputFieldset">
                   <Input.Search
                     value={adressItem}
@@ -579,7 +562,7 @@ export default function () {
                   <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
                     onChange={onChangeAddress1}
                     value={address1}
-                    readOnly                   
+                    readOnly
                   />
                 </div>
                 <div className="isoInputFieldset">
@@ -600,19 +583,19 @@ export default function () {
                   <InputBox label={<IntlMessages id="checkout.billingform.country" />}
                     value={country}
                     readOnly
-                    />
+                  />
                 </div>
                 <div className="isoInputFieldset">
                   <InputBox label={<IntlMessages id="checkout.billingform.city" />}
                     onChange={event => onChangeCity(event)}
                     value={city}
                     readOnly
-                    />
+                  />
                   <InputBox label={<IntlMessages id="checkout.billingform.town" />}
                     onChange={event => onChangeAddressTown(event)}
                     value={town}
                     readOnly
-                    />
+                  />
                 </div>
                 {/* Ödeme özet bilgileri ve sipariş oluşturma */}
               </BillingFormWrapper>

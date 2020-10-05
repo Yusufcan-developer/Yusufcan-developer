@@ -27,6 +27,7 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import renderFooter from "./ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -305,8 +306,8 @@ const OrdersReport = () => {
     };
     await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         const addressChildren=[];

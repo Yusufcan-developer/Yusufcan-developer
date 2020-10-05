@@ -24,6 +24,7 @@ import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterPr
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
 import numberFormat from "@iso/config/numberFormat";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Other Library
 import _ from 'underscore';
@@ -748,8 +749,8 @@ const SearchComponent = () => {
 
     await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         let palletQuantity = 0;

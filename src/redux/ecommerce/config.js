@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 import React, { useState, useEffect } from "react";
 import authAction from '@iso/redux/auth/actions';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 var jwtDecode = require('jwt-decode');
 
 const { logout } = authAction;
@@ -30,10 +31,10 @@ async function getDatabaseProductInfo() {
   if (!token.uname) { return 'Unauthorized' }
 
   await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
-    .then(response => {
-      if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-      return response.json();
-    })
+  .then(response => {
+    const status = apiStatusManagement(response);
+    return status;
+})
     .then(data => {
       productInfo = data;
     })

@@ -20,7 +20,7 @@ import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseDat
 
 //Configs
 import siteConfig from "@iso/config/site.config";
-// import noImage from '@iso/assets/images/noImage.png';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import numberFormat from "@iso/config/numberFormat";
 
 //Styles
@@ -127,13 +127,13 @@ const ProductDetail = () => {
   };
   //Adding products to the cart
 
-  function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false,selectedQuantity) {
-    
+  function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity) {
+
     if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(itemCode)
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
-        if(selectedQuantity===undefined){selectedQuantity=1}
+        if (selectedQuantity === undefined) { selectedQuantity = 1 }
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
       }
@@ -178,29 +178,29 @@ const ProductDetail = () => {
   function onSelectAll(id) {
     document.getElementById(id).select();
   }
-   //Redux product quantity change event
-   function onChangeQuantity(event, productData, isPartial = false) {
+  //Redux product quantity change event
+  function onChangeQuantity(event, productData, isPartial = false) {
     if (event.target.value > 0) {
-      const selectedQuantity=event.target.value;
-      if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
+      const selectedQuantity = event.target.value;
+      if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { return onAddProductCart(productData, true, isPartial, selectedQuantity) }
       else {
-          const product = productData;
-          var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
-          const newProductQuantity = [];
-          productQuantity.forEach(productItem => {
-            if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
-              newProductQuantity.push(productItem);
-            } else {
-              const itemCode = productItem.itemCode
-              const quantity = parseInt(event.target.value);
-              newProductQuantity.push({
-                itemCode,
-                quantity,
-                isPartial,
-              });
-            }
-          });
-          dispatch(changeProductQuantity(newProductQuantity));
+        const product = productData;
+        var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+        const newProductQuantity = [];
+        productQuantity.forEach(productItem => {
+          if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+            newProductQuantity.push(productItem);
+          } else {
+            const itemCode = productItem.itemCode
+            const quantity = parseInt(event.target.value);
+            newProductQuantity.push({
+              itemCode,
+              quantity,
+              isPartial,
+            });
+          }
+        });
+        dispatch(changeProductQuantity(newProductQuantity));
       }
     }
   };
@@ -241,8 +241,8 @@ const ProductDetail = () => {
 
     await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         setWarehouseData((data && data.balances) || [])

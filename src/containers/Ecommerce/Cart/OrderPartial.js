@@ -10,7 +10,7 @@ import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import { Table, Row, Col,  message, InputNumber, Popconfirm, Form, Popover, Space, Tag } from "antd";
+import { Table, Row, Col, message, InputNumber, Popconfirm, Form, Popover, Space, Tag } from "antd";
 import Popconfirms from '@iso/components/Feedback/Popconfirm';
 
 //Styles
@@ -21,6 +21,7 @@ import { RightOutlined } from '@ant-design/icons';
 //Configs
 import siteConfig from "@iso/config/site.config";
 import numberFormat from "@iso/config/numberFormat";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -49,7 +50,7 @@ const OrderPartial = () => {
   });
   const [editingKey, setEditingKey] = useState('');
   const [isPartial, setIsPartial] = useState();
-  const isEditing = record => record.itemCode === editingKey &record.isPartial===isPartial;
+  const isEditing = record => record.itemCode === editingKey & record.isPartial === isPartial;
 
   useEffect(() => {
     getCartList();
@@ -73,8 +74,8 @@ const OrderPartial = () => {
 
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         setOrderData(data.items);
@@ -117,7 +118,7 @@ const OrderPartial = () => {
   function InputNumberOnchange(value) {
     setQuantity(value);
   }
-  
+
   function nextOrderPage() {
     history.push('/checkout');
   }
@@ -130,14 +131,14 @@ const OrderPartial = () => {
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['amount'] = item['quantity'];
         delete item['quantity'];
-        if (item.itemCode === allAmountItem.itemCode && item.isPartial===allAmountItem.isPartial)  { item.orderAmount = allAmountItem.amount }
+        if (item.itemCode === allAmountItem.itemCode && item.isPartial === allAmountItem.isPartial) { item.orderAmount = allAmountItem.amount }
       });
     }
     else {//Girilmiş olan sipariş miktarını alır
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['amount'] = item['quantity'];
         delete item['quantity'];
-        if (item.itemCode === productItem.itemCode && item.isPartial===productItem.isPartial) { item.orderAmount = quantity }
+        if (item.itemCode === productItem.itemCode && item.isPartial === productItem.isPartial) { item.orderAmount = quantity }
       });
     }
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -154,27 +155,10 @@ const OrderPartial = () => {
       body: JSON.stringify(reqBody)
     };
     fetch(siteConfig.api.carts.postCart, requestOptions)
-      .then(response => {
-        switch (response.status) {
-          case 201:
-            return response.json();
-            break;
-          case 400:
-            return response.json();
-            break;
-          case 401:
-            history.push('/');
-            break;
-          case 404:
-            // Show 404 page
-            break;
-          case 500:
-            // Serveur Error redirect to 500
-            break;
-          default:
-            break;
-        }
-      })
+    .then(response => {
+      const status = apiStatusManagement(response);
+      return status;
+    })
       .then(data => {
         if (data) {
           if (data !== 'Unauthorized') {
@@ -189,7 +173,7 @@ const OrderPartial = () => {
                   itemCode: product.itemCode,
                   quantity: product.quantity,
                   orderAmount: product.orderAmount,
-                  isPartial:product.isPartial
+                  isPartial: product.isPartial
                 });
               });
             }
@@ -235,12 +219,13 @@ const OrderPartial = () => {
       title: "Birimi",
       dataIndex: ['item', 'unit'],
       key: "item.unit",
-      render:(unit,record) =>  {return(
-        <>
-        {record.isPartial===true  ? (
-          'Kutu'
-        ) : (unit)}
-      </>)
+      render: (unit, record) => {
+        return (
+          <>
+            {record.isPartial === true ? (
+              'Kutu'
+            ) : (unit)}
+          </>)
       }
     },
     {
@@ -265,20 +250,21 @@ const OrderPartial = () => {
       key: "remaining",
       align: "right",
       footerKey: "remaining",
-      render: (record, item) => 
+      render: (record, item) =>
       //{ return (item.amount - item.orderAmount);
-      {return(
-        <>
-        {item.amount>item.amount - item.orderAmount  ? (
-           <Tag color={'red'} key={item}>
-            {item.amount - item.orderAmount}
-          </Tag>
-        ) : (<Tag color={'green'}>
-        {item.amount - item.orderAmount}
-        </Tag>)}
-      </>)
+      {
+        return (
+          <>
+            {item.amount > item.amount - item.orderAmount ? (
+              <Tag color={'red'} key={item}>
+                {item.amount - item.orderAmount}
+              </Tag>
+            ) : (<Tag color={'green'}>
+              {item.amount - item.orderAmount}
+            </Tag>)}
+          </>)
       }
-      
+
       //render: (record, item) => { return numberFormat(item.amount*item.totalM2Pallet-item.totalM2Pallet*item.orderAmount ); }
     },
     {
@@ -292,9 +278,9 @@ const OrderPartial = () => {
             <Popover
               content={
                 <div>
-                <Space size={10}>
-                  {<InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />}
-                  <Button type="primary" onClick={productItemOrder}>Onayla</Button>
+                  <Space size={10}>
+                    {<InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />}
+                    <Button type="primary" onClick={productItemOrder}>Onayla</Button>
                   </Space>
                 </div>
               }
@@ -338,12 +324,13 @@ const OrderPartial = () => {
       title: "Birimi",
       dataIndex: ['item', 'unit'],
       key: "item.unit",
-      render:(unit,record) =>  {return(
-        <>
-        {record.isPartial===true  ? (
-          'Kutu'
-        ) : (unit)}
-      </>)
+      render: (unit, record) => {
+        return (
+          <>
+            {record.isPartial === true ? (
+              'Kutu'
+            ) : (unit)}
+          </>)
       }
     },
     {

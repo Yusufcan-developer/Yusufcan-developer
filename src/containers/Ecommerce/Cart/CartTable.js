@@ -15,6 +15,7 @@ import { Menu, Dropdown, Col, Row, Button } from "antd";
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import siteConfig from "@iso/config/site.config";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Style
 import { DownOutlined } from '@ant-design/icons';
@@ -24,7 +25,7 @@ import _ from 'underscore';
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
-let cartItem=null;
+let cartItem = null;
 export default function CartTable({ style }) {
 
   const [totalCost, setTotalCost] = useState();
@@ -56,26 +57,8 @@ export default function CartTable({ style }) {
     };
     await fetch(siteConfig.api.carts.postCart, requestOptions)
       .then(response => {
-        switch (response.status) {
-          case 201:
-            return response.json();
-            break;
-          case 400:
-            return response.json();
-            break;
-          case 401:
-            // Go to login
-            break;
-          case 404:
-            // Show 404 page
-            break;
-          case 500:
-            // Serveur Error redirect to 500
-            break;
-          default:
-            // Unknow Error
-            break;
-        }
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         if (data) {
@@ -122,11 +105,11 @@ export default function CartTable({ style }) {
 
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
-        cartItem=data.items;
+        cartItem = data.items;
         setTotalCost(data.totalOverallCost);
       })
       .catch();
@@ -138,82 +121,84 @@ export default function CartTable({ style }) {
     if (!productQuantity || productQuantity.length === 0) {
       return <tr className="isoNoItemMsg">Ürün Bulunamadı</tr>;
     }
-    if(cartItem!==null){
-    return productQuantity.map(product => {
-      const key = product.itemCode + (product.isPartial ? '-partial' : null);
-      const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
-      let productItem ;           
-      productItem = _.find(cartItem, function(item){ return item.itemCode ==product.itemCode; });
-      if(productItem!==undefined){
-      let totalVat=productItem.totalVat;
-      productItem=productItem.item;
-      const itemTotalCost = ((!product.isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * product.quantity).toFixed(2);
-      
-      return (
-        <tr>
-          <td
-            className="isoItemRemove"
-            onClick={() => {
-              cancelQuantity(product);
-            }}
-          >
-            <a href="# ">
-              <i className="ion-android-close" />
-            </a>
-          </td>
-          <td className="isoItemImage">
-            <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
-          </td>
-          <td className="isoItemName">
-            <p style={{ marginBottom: '5px' }}>{product.type}</p>
-            <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
-          </td>
-          <td className="isoItemPrice">
-            {numberFormat(product.isPartial ? productItem.partialPrice : productItem.listPrice)} {"TL"}
-          </td>
-          <td className="isoItemUnit">
-            {productItem.unit}
-          </td>
-          <td className="isoItemPalet">
-            <Row justify="center" align="bottom">
-              <Col span={8} style={{ width: '100%' }} align="right">
-                <Button type="primary" onClick={event => onRemoveBox(product)} style={{ color: 'white' }}>
-                  -
-              </Button>
-              </Col>
-              <Col span={8}>
-                <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{product.isPartial ? 'Kutu/Adet' : 'Palet'}</span>
-                <Input
-                  min={1}
-                  id={inputId}
-                  style={{ textAlign: "right", maxHeight: "32px" }}
-                  max={1000}
-                  defaultValue={1}
-                  value={product.quantity}
-                  step={1}
-                  onClick={event => onSelectAll(inputId)}
-                  onChange={event => onChangeQuantity(event, product, product.isPartial)}
-                />
-              </Col>
-              <Col span={8} style={{ width: '100%' }}>
-                <Button type="primary" onClick={event => onAddBox(product)} style={{ color: 'white' }}>
-                  +
-              </Button>
-              </Col>
-            </Row>
-          </td>
-          <td className="isoItemQuantity">
-            {numberFormat(product.quantity * (!product.isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
-          </td>
-          <td className="isoItemOrderVat">
-            {numberFormat(totalVat)}
-          </td>
-          <td className="isoItemPriceTotal">{numberFormat(itemTotalCost)} TL</td>
-        </tr>
+    if (cartItem !== null) {
+      return productQuantity.map(product => {
+        const key = product.itemCode + (product.isPartial ? '-partial' : null);
+        const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
+        let productItem;
+        productItem = _.find(cartItem, function (item) { return item.itemCode == product.itemCode; });
+        if (productItem !== undefined) {
+          let totalVat = productItem.totalVat;
+          productItem = productItem.item;
+          const itemTotalCost = ((!product.isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * product.quantity).toFixed(2);
 
-      );
-    }});
-  }}
+          return (
+            <tr>
+              <td
+                className="isoItemRemove"
+                onClick={() => {
+                  cancelQuantity(product);
+                }}
+              >
+                <a href="# ">
+                  <i className="ion-android-close" />
+                </a>
+              </td>
+              <td className="isoItemImage">
+                <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
+              </td>
+              <td className="isoItemName">
+                <p style={{ marginBottom: '5px' }}>{product.type}</p>
+                <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
+              </td>
+              <td className="isoItemPrice">
+                {numberFormat(product.isPartial ? productItem.partialPrice : productItem.listPrice)} {"TL"}
+              </td>
+              <td className="isoItemUnit">
+                {productItem.unit}
+              </td>
+              <td className="isoItemPalet">
+                <Row justify="center" align="bottom">
+                  <Col span={8} style={{ width: '100%' }} align="right">
+                    <Button type="primary" onClick={event => onRemoveBox(product)} style={{ color: 'white' }}>
+                      -
+              </Button>
+                  </Col>
+                  <Col span={8}>
+                    <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{product.isPartial ? 'Kutu/Adet' : 'Palet'}</span>
+                    <Input
+                      min={1}
+                      id={inputId}
+                      style={{ textAlign: "right", maxHeight: "32px" }}
+                      max={1000}
+                      defaultValue={1}
+                      value={product.quantity}
+                      step={1}
+                      onClick={event => onSelectAll(inputId)}
+                      onChange={event => onChangeQuantity(event, product, product.isPartial)}
+                    />
+                  </Col>
+                  <Col span={8} style={{ width: '100%' }}>
+                    <Button type="primary" onClick={event => onAddBox(product)} style={{ color: 'white' }}>
+                      +
+              </Button>
+                  </Col>
+                </Row>
+              </td>
+              <td className="isoItemQuantity">
+                {numberFormat(product.quantity * (!product.isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
+              </td>
+              <td className="isoItemOrderVat">
+                {numberFormat(totalVat)}
+              </td>
+              <td className="isoItemPriceTotal">{numberFormat(itemTotalCost)} TL</td>
+            </tr>
+
+          );
+        }
+      });
+    }
+  }
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();

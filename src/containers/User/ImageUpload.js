@@ -6,7 +6,7 @@ import {
     Switch,
     useLocation
   } from "react-router-dom";
-  
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import Uppy from '@uppy/core';
 import { Dashboard, ProgressBar } from '@uppy/react';
 import "@uppy/core/dist/style.css";
@@ -164,7 +164,10 @@ class ImageUpload extends React.Component {
             }
         };
         await fetch(siteConfig.api.image.getProductImages.replace('{productCode}', productCode), requestOptions)
-            .then(response => response.json())
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
             .then(images => {
                 var categoricalImages = [];
                 _.each(imageTypes, function (imageType) {

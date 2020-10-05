@@ -15,14 +15,11 @@ import { stripTrailingSlash } from '@iso/lib/helpers/utility';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
 
 import TopbarCartWrapper from './TopbarCart.style';
-//Fetch
-import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import _ from 'underscore';
-
-//Configs
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
 var jwtDecode = require('jwt-decode');
 const {
@@ -77,8 +74,8 @@ export default function TopbarAddtoCart() {
 
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         cartItem=data.items;

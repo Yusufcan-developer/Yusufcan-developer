@@ -1,5 +1,6 @@
 // hooks.js
 import { useState, useEffect } from "react";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 function useFetch(url, reqBody) {
   const [data, setData] = useState([]);
@@ -10,12 +11,12 @@ function useFetch(url, reqBody) {
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [roleNames, setRoleNames] = useState();
-  const [searchkey,setSearchKey]=useState();
-  const [isActive,setIsActive]=useState();
+  const [searchkey, setSearchKey] = useState();
+  const [isActive, setIsActive] = useState();
 
   async function fetchUrl() {
-  
-    const reqB = reqBody == null || reqBody==undefined ? { "keyword": searchkey, "isActive": isActive,"roleNames": roleNames, "pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
+
+    const reqB = reqBody == null || reqBody == undefined ? { "keyword": searchkey, "isActive": isActive, "roleNames": roleNames, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
@@ -27,32 +28,31 @@ function useFetch(url, reqBody) {
     };
     await fetch(url, requestOptions)
       .then(response => {
-        if (!response.ok) throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
-      .then(data => {        
+      .then(data => {
         const value = data.data.slice();
-        value.forEach((item, index) => {          
+        value.forEach((item, index) => {
           item.key = index;
         });
         const totalPages = data.totalPages;
         const dataCount = data.totalDataCount;
-        console.log("Data :", data );
+        console.log("Data :", data);
 
         setTotalDataCount(dataCount);
         setTotalPage(totalPages);
         setData(value);
-        setLoading(false); 
-        setOnChange(false); 
+        setLoading(false);
+        setOnChange(false);
       })
       .catch();
   }
   useEffect(() => {
     setLoading(true);
     fetchUrl();
-  }, [currentPage, changePageSize,onChange]);
-  return [data, loading ,currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
+  }, [currentPage, changePageSize, onChange]);
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
 }
-
 
 export { useFetch };

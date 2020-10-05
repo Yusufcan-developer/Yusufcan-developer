@@ -22,6 +22,7 @@ import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeD
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Style
 import { DownOutlined, PoweroffOutlined, UserAddOutlined } from '@ant-design/icons';
@@ -42,7 +43,7 @@ const UserList = () => {
   const [searchKey, setSearchKey] = useState('');
   const [userId, setUserId] = useState(-1);
   const [username, setUsername] = useState();
-  const [selectedUser,setSelectedUser]=useState();
+  const [selectedUser, setSelectedUser] = useState();
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
@@ -253,8 +254,8 @@ const UserList = () => {
     };
     await fetch(`${siteConfig.api.security.getUser}${userId}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         productInfo = data;
@@ -431,8 +432,8 @@ const UserList = () => {
     };
     await fetch(`${siteConfig.api.users.deleteUser}${userId}`, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; }//throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         productInfo = data;
@@ -456,8 +457,8 @@ const UserList = () => {
     };
     await fetch(siteConfig.api.security.postChangePassword, requestOptions)
       .then(response => {
-        if (!response.ok) throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         userData = data;
@@ -481,8 +482,8 @@ const UserList = () => {
     };
     await fetch(siteConfig.api.users.postUser, requestOptions)
       .then(response => {
-        if (!response.ok) throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         userData = data;
@@ -503,7 +504,7 @@ const UserList = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageSize(pageSize);
     setSelectedCurrentPage(current);
     setlocalCurrentPage(current);
@@ -617,7 +618,7 @@ const UserList = () => {
       key: "title",
       fixed: "right",
       render: (text, record) => (
-        <Dropdown overlay={menu} trigger={['hover'] } onVisibleChange={event => { setSelectedUser(record) }} >
+        <Dropdown overlay={menu} trigger={['hover']} onVisibleChange={event => { setSelectedUser(record) }} >
           <Button >
             İşlemler  <DownOutlined />
           </Button>

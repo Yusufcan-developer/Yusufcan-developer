@@ -2,27 +2,21 @@
 import { useState, useEffect } from "react";
 import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 function usePostCariToplamlarReport(url, reqBody) {
   const [data, setData] = useState([]);
-  const [aggregateData, setAggregateData] = useState([]);//Sipariş Kalem Bilgileri Verisi
+  const [aggregateData, setAggregateData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
-  const [changePageSize, setChangePageSize] = useState(); // Bu ikisi formdan form dan gelicek veye default olacak
-  const [currentPage, setCurrentPage] = useState();        // Bu ikisi formdan form dan gelicek veye default olacak
+  const [changePageSize, setChangePageSize] = useState();
+  const [currentPage, setCurrentPage] = useState();
   const [dealerCodes, setDealerCodes] = useState();
-  const [regionCodes, setRegionCodes] = useState();
-  const [fieldCodes, setFieldCodes] = useState();
-  const [from, setFrom] = useState();
-  const [to, setTo] = useState();
-  const [searchkey, setSearchKey] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
-  const [orderIdArray, setOrderIdArray] = useState();
-  let aggregateGetUrlItems = '';
-  async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? {"dealerCodes": dealerCodes, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
+  async function fetchUrl() {
+    const reqB = reqBody == null || reqBody == undefined ? { "dealerCodes": dealerCodes, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
@@ -32,10 +26,10 @@ function usePostCariToplamlarReport(url, reqBody) {
       body: JSON.stringify(reqBody)
     };
 
-    await fetch(url, requestOptions) //Order Fetch
+    await fetch(url, requestOptions)
       .then(response => {
-        if (!response.ok) { return response.statusText; } //Promise.reject(response);//throw Error(response.statusText);
-        return response.json();
+        const status = apiStatusManagement(response);
+        return status;
       })
       .then(data => {
         if (data) {

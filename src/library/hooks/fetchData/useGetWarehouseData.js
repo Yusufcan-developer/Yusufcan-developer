@@ -1,14 +1,13 @@
 // hooks.js
 import { useState, useEffect } from "react";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 function useGetWarehouseData(url) {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true);
   const [onChange, setOnChange] = useState(false);
 
-
   async function fetchUrl() {
-
     const requestOptions = {
       method: "GET",
       headers: {
@@ -18,14 +17,10 @@ function useGetWarehouseData(url) {
     };
 
     fetch(`${url}`, requestOptions)
-      .then(response => {
-        if (!response.ok) {
-          console.log('error log ', response.statusText);
-          return null;
-        }
-        // throw Error(response.statusText);
-        return response.json();
-      })
+    .then(response => {
+      const status = apiStatusManagement(response);
+      return status;
+    })
       .then(data => {
         setData((data && data.balances) || [])
       })
@@ -39,7 +34,5 @@ function useGetWarehouseData(url) {
   }, [onChange]);
   return [data, setOnChange];
 }
-
-
 
 export { useGetWarehouseData };
