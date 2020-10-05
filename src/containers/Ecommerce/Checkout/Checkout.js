@@ -56,6 +56,7 @@ export default function () {
   const [city, setCity] = useState();
   const [town, setTown] = useState();
   const [visible, setVisible] = useState();
+  const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
   const [fromDate, setFromDate] =useState(moment(new Date()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [form] = Form.useForm();
@@ -104,11 +105,17 @@ export default function () {
     }
   }
   //Change First Name 
-  function saveOrder(event) {
+  function saveOrderQuestionModal() {
     if(adressItem){
-      postSaveOrder();
+      setCreateOrderQuestionVisible(true);
     }else{message.warning('Lütfen sevk adresi seçiniz!')}
+  
   };
+
+  function saveOrder() {
+    setCreateOrderQuestionVisible(false);
+    postSaveOrder();
+  }
 
   //Change Phone 
   const onChangePhone = e => {
@@ -120,9 +127,17 @@ export default function () {
     setCity(e.target.value);
   };
 
+  function handleCancelOrderSave() {
+    history.push(`${'/products/categories'}`)
+    window.location.reload(false);
+    setVisible(true);
+    setCreateOrderQuestionVisible(false);
+    setSuccessOrderSave(false);
+  }
   //Adres Modal iptal işlemi
   function handleCancel() {
     setVisible(false);
+    setCreateOrderQuestionVisible(false);
     setSuccessOrderSave(false);
   };
 
@@ -400,14 +415,8 @@ export default function () {
   }
   function orderPreview() {
     history.push(`${'/reports/orders'}/?keyword=${createOrderNo}&pgsize=10&pgindex=1`)
+    window.location.reload(false);
   }
-  // function successSaveOrderModal(orderNo='xxxx') {
-  //   Modal.success({
-  //     content: orderNo+ 'numaralı sipariş başarılı bir şekilde oluşturulmuştur.',
-  //     okText:'Tamam',
-  //     onOk:history.push(`${'/reports/orders'}/?from=${fromDate.format('YYYY-MM-DD')}&to=${toDate.format('YYYY-MM-DD')}&pgsize=10&pgindex=1`),
-  //   });
-  // }
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -534,10 +543,30 @@ export default function () {
           visible={successOrderSave}
           okText={'Siparişi Görüntüle'}
           onOk={orderPreview}
-          onCancel={handleCancel}
+          onCancel={handleCancelOrderSave}
         >
           <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Geçmiş Siparişler menüsünden görüntüleyebilirsiniz.</p>
         </Modal>
+        <Modal
+        visible={createOrderQuestionVisible}
+        title={"Sipariş oluşturma"}
+        okText="Tamam"
+        cancelText="İptal"
+        maskClosable={false}
+        onCancel={handleCancel}
+        onOk={saveOrder}
+      >
+        <p>{'Sipariş kaydetme işlemi yapılacaktır.Siparişi düzeltme işlemi için yöneticinize başvurabilirsiniz. Devam etmek istiyor musunuz?'}</p>
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{
+            modifier: 'public',
+          }}
+        >
+        </Form>
+      </Modal>
                 <label>{<IntlMessages id="page.addressTitle" />}  { <span className="asterisk">*</span> }</label>
                 <div className="isoInputFieldset">
                   <Input.Search
@@ -596,7 +625,11 @@ export default function () {
 
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
-                    <span>Toplam KDV</span>
+                    <span>Toplam</span>
+                    <span>{data != undefined ? (numberFormat(data.orderCost)) : (0)} TL</span>
+                  </div>
+                  <div className="isoOrderTableFooter">
+                    <span>KDV</span>
                     <span>{data != undefined ? (numberFormat(data.orderVat)) : (0)} TL</span>
                   </div>
                   <div className="isoOrderTableFooter">
@@ -604,7 +637,7 @@ export default function () {
                     <span>{data != undefined ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
-                    <Button type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrder()} >
+                    <Button type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
                       Sipariş Oluştur
         </Button>
                     <Button type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
