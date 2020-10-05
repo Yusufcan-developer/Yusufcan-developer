@@ -69,7 +69,6 @@ export default function TopbarAddtoCart() {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    debugger
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let uname = token.uname;

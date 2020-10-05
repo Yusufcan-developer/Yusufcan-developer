@@ -295,6 +295,7 @@ const SearchComponent = () => {
       params.toString();
     }
     history.push(`${location.pathname}?${params.toString()}`);
+    
     return setOnChange(true);
   }
 
@@ -906,13 +907,13 @@ const SearchComponent = () => {
                         <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange'>
                           <div className="isoCardImage">
                             <Link to={`${'/products/detail'}/${item.itemCode}`}>
-                              <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} onMouseOver={e => console.log(e)} />
+                              <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                             </Link>{' '}
                           </div>
                         </Badge.Ribbon>
                       ) : (<div className="isoCardImage">
                         <Link to={`${'/products/detail'}/${item.itemCode}`}>
-                          <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} onMouseOver={e => console.log(e)} />
+                          <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName}/>
                         </Link>{' '}
                       </div>)}
                       <div className="isoCardContent">
