@@ -48,6 +48,7 @@ var jwtDecode = require('jwt-decode');
 
 let createOrderNo = 'xxxx';
 export default function () {
+  document.title = "Sipariş - Seramiksan B2B";
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
   const [city, setCity] = useState();

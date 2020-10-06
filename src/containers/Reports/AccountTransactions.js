@@ -44,6 +44,7 @@ const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
 export default function () {
+  document.title = "Cari Hareketler - Seramiksan B2B";
   const children = [];
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');

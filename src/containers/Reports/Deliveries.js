@@ -42,7 +42,7 @@ const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
 const DeliveriesReport = () => {
-
+  document.title = "Sevkiyat - Seramiksan B2B";
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
