@@ -30,7 +30,7 @@ var jwtDecode = require('jwt-decode');
 
 const { Option } = Select;
 const MainForm = () => {
-
+  document.title = "Ana Ekran - Seramiksan B2B";
   const queryString = require('query-string');
   
   const [iconLoading, setIconLoading] = useState(false);

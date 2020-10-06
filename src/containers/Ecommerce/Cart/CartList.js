@@ -49,6 +49,7 @@ const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 const CartList = () => {
+  document.title = "Sepet Listesi - Seramiksan B2B";
   //Bayi Kodu Tekli veya çoklu seçim kontrolü
   const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
 

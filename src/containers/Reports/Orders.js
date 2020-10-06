@@ -21,6 +21,7 @@ import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 //Styles
 import { DownloadOutlined } from '@ant-design/icons';
 
+
 //Configs
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
@@ -45,7 +46,7 @@ const { Option } = Select;
 let sortingField;
 let sortingOrder;
 const OrdersReport = () => {
-
+  document.title = "Geçmiş Siparişler - Seramiksan B2B";
   const queryString = require('query-string');
   const history = useHistory();
   const [lookupAddressChildren,setLookupAddressChildren] = useState();
@@ -149,7 +150,7 @@ const OrdersReport = () => {
   }
 
   //Sipariş Kalemleri Expand İşlemi
-  function expandedRow(row, index) {
+  function expandedRowRender(row, index) {
     let orderDetailIndex;
     let partialUnitData;
     _.each(orderDetailData, (item, i) => {
@@ -161,14 +162,15 @@ const OrdersReport = () => {
     else { partialUnitData = null }
   const r =   _.map(partialUnitData, (item) => {   
     return (<Table
+      className="components-table-demo-nested"
       columns={OrderDetailcolumns}
       dataSource={item}
       pagination={false}
-      scroll={{ x: 'max-content' }}
-      bordered={false}
-      summary={() => {
-            return renderFooter(OrderDetailcolumns, item,false)
-          }}
+      scroll={{ x: 1000 }
+    }
+      // summary={() => {
+      //       return renderFooter(OrderDetailcolumns, item,false)
+      //     }}
     />);
         });
 
@@ -326,6 +328,101 @@ const OrdersReport = () => {
   }
   //Order Detail Columns
   const OrderDetailcolumns = [
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+    },
     {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
@@ -685,11 +782,12 @@ const OrdersReport = () => {
           position="top"
         />
         <Table
+          className="components-table-demo-nested"
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-          expandable={{ 'expandedRowRender': expandedRow }}
+          expandable={{ 'expandedRowRender': expandedRowRender }}
           pagination={false}
           scroll={{ x: 'max-content' }}
           bordered={false}

@@ -37,7 +37,7 @@ const categories = [
 ];
 
 const ProductGroupList = () => {
-
+  document.title = "Kategoriler - Seramiksan B2B";
   let products = localStorage.getItem('cartProductQuantity');
 
   useEffect(() => {

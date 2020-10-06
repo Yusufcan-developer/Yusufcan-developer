@@ -39,7 +39,7 @@ const FormItem = Form.Item;
 const { Option } = Select;
 
 const UserList = () => {
-
+  document.title = "Kullanıcılar - Seramiksan B2B";
   const [searchKey, setSearchKey] = useState('');
   const [userId, setUserId] = useState(-1);
   const [username, setUsername] = useState();

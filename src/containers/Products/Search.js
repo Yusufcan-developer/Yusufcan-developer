@@ -43,7 +43,7 @@ import Modal from "antd/lib/modal/Modal";
 const { Panel } = Collapse;
 
 const SearchComponent = () => {
-
+  document.title = "Ürünler Listesi - Seramiksan B2B";
   //Hook States
   const history = useHistory();
   const queryString = require('query-string');

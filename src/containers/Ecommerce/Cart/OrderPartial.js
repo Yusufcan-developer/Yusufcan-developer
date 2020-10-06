@@ -36,7 +36,7 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 
 const OrderPartial = () => {
-
+  document.title = "Sipariş Hazırlama - Seramiksan B2B";
   const history = useHistory();
   const [form] = Form.useForm();
   const [modalVisible, setModalVisible] = useState(true);

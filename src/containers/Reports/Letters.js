@@ -41,6 +41,7 @@ let sortingField;
 let sortingOrder;
 
 export default function () {
+  document.title = "Teminat Mektubu - Seramiksan B2B";
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",

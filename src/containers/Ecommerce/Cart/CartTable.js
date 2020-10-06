@@ -24,7 +24,7 @@ var jwtDecode = require('jwt-decode');
 const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
-
+  document.title = "Akif Sepet - Seramiksan B2B";
   let history = useHistory();
   const [totalCost, setTotalCost] = useState();
   const dispatch = useDispatch();

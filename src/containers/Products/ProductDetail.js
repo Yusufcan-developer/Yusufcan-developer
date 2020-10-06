@@ -32,8 +32,7 @@ var jwtDecode = require('jwt-decode');
 const { TabPane } = Tabs;
 
 const ProductDetail = () => {
-
-
+  document.title = "Ürün Detayı - Seramiksan B2B";
   const dispatch = useDispatch();
   const { productId } = useParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
