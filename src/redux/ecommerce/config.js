@@ -23,11 +23,13 @@ async function getDatabaseProductInfo() {
       Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
     }
   };
+  debugger
   const token = jwtDecode(localStorage.getItem("id_token"));
   if(token===undefined){return  history.replace('/');}
   const activeUser = localStorage.getItem("activeUser")
   let uname = token.uname;
   if (activeUser != undefined) { uname = activeUser }
+
   if (!token.uname) { return 'Unauthorized' }
 
   await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
@@ -38,7 +40,9 @@ async function getDatabaseProductInfo() {
     .then(data => {
       productInfo = data;
     })
-    .catch();
+    .catch(
+      console.log('xxxx')
+    );
   return productInfo;
 }
 

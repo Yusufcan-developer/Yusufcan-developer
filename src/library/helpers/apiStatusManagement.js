@@ -7,7 +7,7 @@ export const apiStatusManagement = response => {
         return response.json();
         break;
       case 401:
-        return history.push('/');
+        localStorage.removeItem('id_token');history.push('/');
         break;
       case 404:
         return message.error('Veritabanından bilgiler getirilemiyor sistem yöneticinize başvurunuz.');
