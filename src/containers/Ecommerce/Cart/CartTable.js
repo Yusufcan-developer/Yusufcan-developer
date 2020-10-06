@@ -1,6 +1,6 @@
 //React
-import React, { useState, useEffect } from "react";
-import { Link, Redirect, useHistory, useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import {  useHistory } from 'react-router-dom';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,15 +10,12 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 import Input from '@iso/components/uielements/input';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
-import { Menu, Dropdown, Col, Row, Button } from "antd";
+import { Col, Row, Button } from "antd";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
-
-//Style
-import { DownOutlined } from '@ant-design/icons';
 
 //Other Library
 import _ from 'underscore';
@@ -28,13 +25,13 @@ const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
 
-  const [totalCost, setTotalCost] = useState();
   let history = useHistory();
+  const [totalCost, setTotalCost] = useState();
   const dispatch = useDispatch();
   const { productQuantity } = useSelector(state => state.Ecommerce);
 
   async function allCartItemChangeOrderAmount() {
-    let sendDatabaseProductList
+    let sendDatabaseProductList;
     let productQuantity = localStorage.getItem('cartProductQuantity');
     productQuantity = JSON.parse(productQuantity);
     sendDatabaseProductList = _.each(productQuantity, (item) => {
@@ -82,7 +79,6 @@ export default function CartTable({ style }) {
           }
         }
         else {
-
         }
       })
       .catch();
@@ -199,6 +195,7 @@ export default function CartTable({ style }) {
       });
     }
   }
+ 
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();
