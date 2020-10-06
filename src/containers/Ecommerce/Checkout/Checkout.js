@@ -1,7 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from 'react-router-dom';
-import queryString from 'query-string'
+import { useHistory } from 'react-router-dom';
 
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
@@ -47,18 +46,14 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 moment.locale('tr')
 var jwtDecode = require('jwt-decode');
 
-const Option = SelectOption;
 let createOrderNo = 'xxxx';
 export default function () {
-  const [orderCost, setOrderCost] = useState();
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
   const [city, setCity] = useState();
   const [town, setTown] = useState();
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
-  const [fromDate, setFromDate] = useState(moment(new Date()));
-  const [toDate, setToDate] = useState(moment(new Date()));
   const [form] = Form.useForm();
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
@@ -69,21 +64,18 @@ export default function () {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [createAddress, setCreateAddress] = useState(false);
   const [successOrderSave, setSuccessOrderSave] = useState(false);
-  const history = useHistory();
-
   const [addressTitle, setAddressTitle] = useState();
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
+  const history = useHistory();
 
   const { confirm } = Modal;
-
   const [data, changeCart] = useGetCartCheckOut();
-
   const token = jwtDecode(localStorage.getItem("id_token"));
   const activeUser = localStorage.getItem("activeUser")
   let account = token.uname;
+  
   if (activeUser != undefined) { account = activeUser }
-
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -108,8 +100,7 @@ export default function () {
   function saveOrderQuestionModal() {
     if (adressItem) {
       setCreateOrderQuestionVisible(true);
-    } else { message.warning('Lütfen sevk adresi seçiniz!') }
-
+    } else { message.warning('Lütfen sevk adresi seçiniz!')}
   };
 
   function saveOrder() {
@@ -134,6 +125,7 @@ export default function () {
     setCreateOrderQuestionVisible(false);
     setSuccessOrderSave(false);
   }
+
   //Adres Modal iptal işlemi
   function handleCancel() {
     setVisible(false);
@@ -147,7 +139,6 @@ export default function () {
   };
 
   //Yeni Adres Oluşturma Bölümü
-
   const onChangeAddressTitle = e => {
     setAddressTitle(e.target.value);
   }
@@ -177,40 +168,6 @@ export default function () {
     setPhone();
     setCreateAddress(true);
   }
-  let columns = [
-    {
-      title: "Adres Kodu",
-      dataIndex: "addressCode",
-      key: "addressCode",
-    },
-    {
-      title: "Adres Başlığı",
-      dataIndex: "addressTitle",
-      key: "addressTitle",
-    },
-    {
-      title: "Adres 1",
-      dataIndex: "address1",
-      key: "address1",
-    },
-    {
-      title: "Adres 2",
-      dataIndex: "address2",
-      key: "address2",
-    },
-    {
-      title: "Şehir",
-      dataIndex: "city",
-      key: "city",
-    },
-    {
-      title: 'İşlem',
-      key: 'operation',
-      fixed: 'right',
-      width: 100,
-      render: () => <a>Seç</a>,
-    },
-  ];
 
   //Search Adress Filter
   function addressFilterSearch(value) {
@@ -226,6 +183,11 @@ export default function () {
     }
     else { setAddressFilterData('') }
   };
+
+  function orderPreview() {
+    history.push(`${'/reports/orders'}/?keyword=${createOrderNo}&pgsize=10&pgindex=1`)
+    window.location.reload(false);
+  }
 
   //get user by id
   async function getByUserId(userId) {
@@ -337,6 +299,7 @@ export default function () {
       .catch();
     setLoadingButton(false);
   }
+
   //post address
   async function postSaveAddress() {
     if ((addressTitle === undefined) || (address1 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
@@ -348,7 +311,6 @@ export default function () {
         "Content-Type": "application/json",
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       },
-
       body: JSON.stringify(reqBody)
     };
     await fetch(siteConfig.api.carts.postSaveAddress, requestOptions)
@@ -366,6 +328,7 @@ export default function () {
       .catch();
     setConfirmLoading(false);
   }
+
   //Save Order
   async function postSaveOrder() {
     setConfirmLoading(true);
@@ -376,7 +339,6 @@ export default function () {
         "Content-Type": "application/json",
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       },
-
       body: JSON.stringify(reqBody)
     };
     let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', account);
@@ -396,10 +358,42 @@ export default function () {
       .catch();
     setConfirmLoading(false);
   }
-  function orderPreview() {
-    history.push(`${'/reports/orders'}/?keyword=${createOrderNo}&pgsize=10&pgindex=1`)
-    window.location.reload(false);
-  }
+
+  let columns = [
+    {
+      title: "Adres Kodu",
+      dataIndex: "addressCode",
+      key: "addressCode",
+    },
+    {
+      title: "Adres Başlığı",
+      dataIndex: "addressTitle",
+      key: "addressTitle",
+    },
+    {
+      title: "Adres 1",
+      dataIndex: "address1",
+      key: "address1",
+    },
+    {
+      title: "Adres 2",
+      dataIndex: "address2",
+      key: "address2",
+    },
+    {
+      title: "Şehir",
+      dataIndex: "city",
+      key: "city",
+    },
+    {
+      title: 'İşlem',
+      key: 'operation',
+      fixed: 'right',
+      width: 100,
+      render: () => <a>Seç</a>,
+    },
+  ];
+
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">

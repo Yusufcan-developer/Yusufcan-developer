@@ -4,6 +4,7 @@ import WithDirection from '@iso/lib/helpers/rtl';
 const WDContentHolderWrapper = styled.div`
   margin-top: 0px;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
 
   .demoBtn {
     margin-right: ${props => (props['data-rtl'] === 'rtl' ? '0' : '10px')};
