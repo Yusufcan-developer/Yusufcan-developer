@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Layout } from 'antd';
 import useWindowSize from '@iso/lib/hooks/useWindowSize';
 import appActions from '@iso/redux/app/actions';
-import ThemeSwitcher from '@iso/containers/ThemeSwitcher/ThemeSwitcher';
 import siteConfig from '@iso/config/site.config';
 import Sidebar from '../Sidebar/Sidebar';
 import Topbar from '../Topbar/Topbar';
@@ -55,7 +54,7 @@ export default function Dashboard() {
             <Footer style={styles.footer}>{siteConfig.footerText}</Footer>
           </Layout>
         </Layout>
-        {/* <ThemeSwitcher /> */}
+       
       </Layout>
     </DashboardContainer>
   );
