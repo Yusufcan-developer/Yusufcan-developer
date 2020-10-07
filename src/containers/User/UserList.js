@@ -445,7 +445,7 @@ const UserList = () => {
   async function changePassword() {
     let userData;
     const reqBody = {
-      "username": username, "oldPassword": oldPassword, "newPassword": newPassword
+      "username": username, "oldPassword": oldPassword || '' , "newPassword": newPassword
     }
     const requestOptions = {
       method: "POST",
@@ -847,11 +847,11 @@ const UserList = () => {
           <Form.Item
             label="Kullanıcı Adı"
           >
-            <Input value={username} disabled={true} />
+            <Input  value={username} disabled={true} />
           </Form.Item>
           <Form.Item name="description" label="Eski Parola"
           >
-            <Input value={oldPassword} onChange={event => setOldPassword(event.target.value)} />
+            <Input.Password  autoComplete={"off"} value={oldPassword} onChange={event => setOldPassword(event.target.value)} />
           </Form.Item>
           <Form.Item
             label="Yeni Parola"
@@ -872,7 +872,7 @@ const UserList = () => {
               }),
             ]}
           >
-            <Input value={newPassword} onChange={event => setNewPassword(event.target.value)} />
+            <Input.Password autoComplete={"off"} value={newPassword} onChange={event => setNewPassword(event.target.value)} />
           </Form.Item>
           <Form.Item
             label="Yeni Parola (Tekrar)"

@@ -127,7 +127,7 @@ const ProductsTable = styled.div`
         .isoTransition;
 
         &.isoNoItemMsg {
-          min-height: 300px;
+          ${'' /* min-height: 300px; */}
           justify-content: center;
           font-size: 30px;
           font-weight: 300;

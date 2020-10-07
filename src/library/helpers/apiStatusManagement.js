@@ -1,6 +1,6 @@
 import history from '@iso/lib/helpers/history';
 import { message } from "antd";
-export const apiStatusManagement = response => {
+export const apiStatusManagement = (response,notShowMessage) => {
   try {
     switch (response.status) {
       case 200:
@@ -10,7 +10,13 @@ export const apiStatusManagement = response => {
         localStorage.removeItem('id_token');history.push('/');
         break;
       case 404:
-        return message.error('Veritabanından bilgiler getirilemiyor sistem yöneticinize başvurunuz.');
+        debugger
+        if (notShowMessage) {
+          { return 'Unauthorized' }
+        }
+        else {
+          return message.error('Veritabanından bilgiler getirilemiyor sistem yöneticinize başvurunuz.');
+        }
         break;
       case 500:
         return history.push('/');

@@ -32,7 +32,6 @@ var jwtDecode = require('jwt-decode');
 const { TabPane } = Tabs;
 
 const ProductDetail = () => {
-  document.title = "Ürün Detayı - Seramiksan B2B";
   const dispatch = useDispatch();
   const { productId } = useParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -67,7 +66,7 @@ const ProductDetail = () => {
   //Product Detail Hook
   const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
-
+  document.title = "Ürün - "+description+" - Seramiksan B2B";
   const onChange = value => {
     setQuantity(value);
     const product = productItem;

@@ -41,7 +41,7 @@ const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
 const ChequesReport = () => {
-  document.title = "Çek Ve Senetler - Seramiksan B2B";
+  document.title = "Çek ve Senetler - Seramiksan B2B";
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
