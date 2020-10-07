@@ -1,6 +1,6 @@
 //React
 import React, { useState } from "react";
-import {  useHistory } from 'react-router-dom';
+import {  useHistory, Link } from 'react-router-dom';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,6 +11,7 @@ import Input from '@iso/components/uielements/input';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
 import { Col, Row, Button } from "antd";
+import PageHeader from "@iso/components/utility/pageHeader";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
@@ -18,15 +19,18 @@ import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Other Library
+import { OrderTable } from '../Checkout/Checkout.styles';
 import _ from 'underscore';
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
-  document.title = "Akif Sepet - Seramiksan B2B";
+  document.title = "Sepet - Seramiksan B2B";
   let history = useHistory();
   const [totalCost, setTotalCost] = useState();
+  const [total, setTotal] = useState();
+  const [totalVat, setTotalVat] = useState();
   const dispatch = useDispatch();
   const { productQuantity } = useSelector(state => state.Ecommerce);
 
@@ -101,21 +105,40 @@ export default function CartTable({ style }) {
 
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
       .then(response => {
-        const status = apiStatusManagement(response);
+        const status = apiStatusManagement(response,true);
         return status;
       })
       .then(data => {
         cartItem = data.items;
         setTotalCost(data.totalOverallCost);
+        setTotal(data.totalCost);
+        setTotalVat(data.totalVat);
+
       })
       .catch();
     return productInfo;
   }
   //Ürünlerin Getirilmesi
   function renderItems() {
-    getCartList()
+    getCartList();
     if (!productQuantity || productQuantity.length === 0) {
-      return <tr className="isoNoItemMsg">Ürün Bulunamadı</tr>;
+      if (!productQuantity || productQuantity.length === 0) {
+        return <React.Fragment> 
+          <tr className="isoNoItemMsg">
+            <div className="isoNoItemMsg">
+              <div className="isoNoItemMsg">
+                <span>Ürün Bulunamadı</span>
+              </div>
+              <div className="isoNoItemMsg">
+                <span> <a href="/products/categories" >
+                  Sepete Ürün Eklemek İçin Tıklayınız
+            </a></span>
+              </div>
+            </div>
+          </tr>
+        </React.Fragment>
+     
+      }     
     }
     if (cartItem !== null) {
       return productQuantity.map(product => {
@@ -183,9 +206,6 @@ export default function CartTable({ style }) {
               </td>
               <td className="isoItemQuantity">
                 {numberFormat(product.quantity * (!product.isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
-              </td>
-              <td className="isoItemOrderVat">
-                {numberFormat(totalVat)}
               </td>
               <td className="isoItemPriceTotal">{numberFormat(itemTotalCost)} TL</td>
             </tr>
@@ -277,8 +297,10 @@ export default function CartTable({ style }) {
   }
   const classname = style != null ? style : '';
   return (
-    <ProductsTable className={`isoCartTable ${classname}`}>
-      <table>
+    <React.Fragment>
+     <PageHeader>Sepet Detayı</PageHeader>
+      <ProductsTable className={`isoCartTable ${classname}`}>
+        <table>
         <thead>
           <tr>
             <th className="isoItemRemove" />
@@ -288,7 +310,6 @@ export default function CartTable({ style }) {
             <th className="isoItemUnit">Birim</th>
             <th className="isoItemPalet">Sepete Eklenen</th>
             <th className="isoItemQuantity">Miktar</th>
-            <th className="isoItemOrderVat">KDV Tutarı</th>
             <th className="isoItemPriceTotal">Tutar</th>
           </tr>
         </thead>
@@ -300,14 +321,28 @@ export default function CartTable({ style }) {
             <td className="isoItemImage" />
             <td className="isoItemName" />
             <td className="isoItemPrice" />
-            <th className="isoItemUnit" />
+            <td className="isoItemUnit" />
             <td className="isoItemPalet" />
-            <td className="isoItemOrderVat" />
-            <td className="isoItemQuantity">Toplam Tutar</td>
-            <td className="isoItemPriceTotal">{numberFormat(totalCost)} TL</td>
+            <OrderTable className="isoOrderInfo">
+                <div className="isoOrderTable">                  
+                  <div className="isoOrderTableFooter">
+                    <span>Toplam</span>
+                    <span>{totalCost != undefined ? (numberFormat(total)) : (0)} TL</span>
+                  </div>
+                  <div className="isoOrderTableFooter">
+                    <span>KDV</span>
+                    <span>{totalCost != undefined ? (numberFormat(totalVat)) : (0)} TL</span>
+                  </div>
+                  <div className="isoOrderTableFooter">
+                    <span>Genel Toplam</span>
+                    <span>{totalCost != undefined ? (numberFormat(totalCost)) : (0)} TL</span>
+                  </div>                 
+                </div>
+              </OrderTable>
           </tr>
+         
         </tbody>
-
+       
         <tfoot>
           <tr>
             <td
@@ -340,5 +375,6 @@ export default function CartTable({ style }) {
         </tfoot>
       </table>
     </ProductsTable>
+    </React.Fragment>
   );
 }

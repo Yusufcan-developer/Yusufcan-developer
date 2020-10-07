@@ -13,7 +13,7 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import { Table, Row, Col, TreeSelect, Tag, Select } from "antd";
-
+import { Scrollbars } from 'react-custom-scrollbars';
 //Fetch
 import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
@@ -161,20 +161,23 @@ const OrdersReport = () => {
     }
     else { partialUnitData = null }
   const r =   _.map(partialUnitData, (item) => {   
-    return (<Table
-      className="components-table-demo-nested"
-      columns={OrderDetailcolumns}
-      dataSource={item}
-      pagination={false}
-      scroll={{ x: 1000 }
-    }
-      // summary={() => {
-      //       return renderFooter(OrderDetailcolumns, item,false)
-      //     }}
-    />);
+    return (<Scrollbars style={{height: 150 }}  autoHide
+      autoHideTimeout={1000}
+      autoHideDuration={200}> 
+      <Table
+        bordered={false}
+        scroll={{ x: 'max-content' }}
+        columns={OrderDetailcolumns}
+        dataSource={item}
+        pagination={false}
+        summary={() => {
+          return renderFooter(OrderDetailcolumns, item, false)
+        }}
+      />
+     </Scrollbars>);
         });
 
-        return (<React.Fragment>{r}</React.Fragment>);
+    return (<React.Fragment>{r} </React.Fragment>);
   };
 
   //Get Search Data
@@ -327,102 +330,7 @@ const OrdersReport = () => {
     ExcelExport(columns, data, 'Geçmiş Siparişler');
   }
   //Order Detail Columns
-  const OrderDetailcolumns = [
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
+  const OrderDetailcolumns = [    
     {
       title: "Ürün Kodu",
       dataIndex: "itemCode",

@@ -178,7 +178,8 @@ const CartList = () => {
     switch (value.key) {
       case '1':
         localStorage.setItem('activeUser', selectedCart.accountNo);
-        window.location.reload(false);
+        history.push('/cart'); 
+        window.location.reload(false);         
         break;
       case '2':
         setAccountNo(selectedCart.accountNo)
@@ -255,8 +256,8 @@ const CartList = () => {
     if (dealerCodes === undefined) { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
     else {
       localStorage.setItem('activeUser', dealerCodes);
-      history.push('/products/categories');
-      window.location.reload(false);      
+      history.push('/cart'); 
+      window.location.reload(false);
     }
   }
 

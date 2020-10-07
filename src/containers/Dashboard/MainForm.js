@@ -9,7 +9,7 @@ import IntlMessages from "@iso/components/utility/intlMessages";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { Table, Row, Col, Pagination, Typography,  Select } from "antd";
-
+import Collapse from "@iso/components/uielements/collapse";
 //Fetch
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 
@@ -25,9 +25,10 @@ import 'moment/locale/tr'
 import { usePostDBSTotalReport } from "../../library/hooks/fetchData/usePostDBSTotal";
 import { usePostCariToplamlarReport } from "../../library/hooks/fetchData/usePostCariToplamlar";
 import ReportPagination from "../Reports//ReportPagination";
+
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
-
+const { Panel } = Collapse;
 const { Option } = Select;
 const MainForm = () => {
   document.title = "Ana Ekran - Seramiksan B2B";
@@ -365,6 +366,8 @@ const MainForm = () => {
       </PageHeader>
       {infoHeader}
       <Box >
+      <Collapse accordion>
+          <Panel header={<IntlMessages id="page.filtered" />} key="0">
       <Row>
           <Col span={6}>
             <Select
@@ -388,6 +391,8 @@ const MainForm = () => {
             {<IntlMessages id="forms.button.label_Search" />}
           </Button>
         </Row>
+        </Panel>
+        </Collapse>
       </Box>
       <Box >      
         <h2 style={{ marginBottom: '10px' }}>Cari Toplamları</h2>

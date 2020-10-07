@@ -74,7 +74,7 @@ export default function TopbarAddtoCart() {
 
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
       .then(response => {
-        const status = apiStatusManagement(response);
+        const status = apiStatusManagement(response,true);
         return status;
       })
       .then(data => {

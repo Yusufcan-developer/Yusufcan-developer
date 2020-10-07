@@ -23,7 +23,6 @@ async function getDatabaseProductInfo() {
       Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
     }
   };
-  debugger
   const token = jwtDecode(localStorage.getItem("id_token"));
   if(token===undefined){return  history.replace('/');}
   const activeUser = localStorage.getItem("activeUser")
@@ -34,14 +33,13 @@ async function getDatabaseProductInfo() {
 
   await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
   .then(response => {
-    const status = apiStatusManagement(response);
+    const status = apiStatusManagement(response,true);
     return status;
 })
     .then(data => {
       productInfo = data;
     })
     .catch(
-      console.log('xxxx')
     );
   return productInfo;
 }
@@ -51,6 +49,8 @@ async function getInitData() {
   if (localStorage.getItem("id_token")) {
     const cartProductQuantity = localStorage.getItem('cartProductQuantity');
     const productsData = await getDatabaseProductInfo();
+
+  console.log('xxxxx prod',productsData)
     if (productsData !== 'Unauthorized') {
       // Database product code and product quantity send Redux  
       let sendReduxProductList = _.each(productsData.items, (item) => {
