@@ -3,97 +3,106 @@ import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
+import PageHeader from "@iso/components/utility/pageHeader";
+import Collapse from "@iso/components/uielements/collapse";
+import Input from '@iso/components/uielements/input';
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import PageHeader from "@iso/components/utility/pageHeader";
-import Collapse from "@iso/components/uielements/collapse";
-import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, TreeSelect, Tag, Select } from "antd";
-import { Scrollbars } from 'react-custom-scrollbars';
+import { Table, Row, Col, TreeSelect } from "antd";
+import Select, { SelectOption } from '@iso/components/uielements/select';
+
 //Fetch
-import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
-import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
-
-//Styles
-import { DownloadOutlined, TableOutlined } from '@ant-design/icons';
-
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
+import { useUserFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
+//Style
+import { DownloadOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
-import ReportPagination from "./ReportPagination";
-import renderFooter from "./ReportSummary";
+import ReportPagination from "../Reports/ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
-import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import renderFooter from "../Reports/ReportSummary";
 
 //Other Library
-import ExcelExport from "./ExcelExport";
+import ExcelExport from "../Reports/ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
-import 'moment/locale/tr';
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
-
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
-const { Option } = Select;
 let sortingField;
 let sortingOrder;
-const OrdersReport = () => {
-  document.title = "Geçmiş Siparişler - Seramiksan B2B";
-  const queryString = require('query-string');
-  const history = useHistory();
-  const [lookupAddressChildren,setLookupAddressChildren] = useState();
+export default function () {
+  document.title = "Kullanıcı Logları - Seramiksan B2B";
+  const children = [];
+  const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
+  const [roleNames, setRoleNames] = useState();
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
-  const [dealerCodes, setDealerCodes] = useState()
-  const [regionCodes, setRegionCodes] = useState()
+  const [dealerCodes, setDealerCodes] = useState();
+  const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
-
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
-  const [adress, setAdress] = useState();
-  const location = useLocation();
+  const [selectedTransactionType, setSelectedTransactionType] = useState();
 
-  //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
+  const location = useLocation();
+  const queryString = require('query-string');
+  const history = useHistory();
+
+  //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    setCurrentPage(pageIndex);
     getVariablesFromUrl()
+    setCurrentPage(pageIndex);
   }, [pageIndex]);
 
   useEffect(() => {
-    setChangePageSize(pageSize);
     getVariablesFromUrl()
+    setChangePageSize(pageSize);
   }, [pageSize]);
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData] =
-  usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder },searchUrl);
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  }, searchUrl);
 
-  //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+ //Kullanıcı listesi
+ const [userData] =
+ useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": null, "roleNames": roleNames, "pageIndex": 0, "pageCount": 10000000 });
+  const lookupDealerChildren = [];
+  _.each(userData, (item, i) => {
+    lookupDealerChildren.push(<Option key={item.username}>{ item.firstName===''?item.username + '-'+item.title: item.username + '-' + item.firstName +' '+item.lastName}</Option>);
+  });
+
+  //İşlem Tipleri
+  const [transactionTypeData] = useFilterData(`${siteConfig.api.lookup.getTransactionTypes}`, searchUrl);
+  for (let i = 0; i < transactionTypeData.length; i++) {
+    children.push(<Option key={transactionTypeData[i]}>{transactionTypeData[i]}</Option>);
+  }
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
 
-    //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
-    
+
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
@@ -101,9 +110,18 @@ const OrdersReport = () => {
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
-    let newDealarCode = []
+    
+    let transactionType = [];
+    if (parsed.type !== undefined) {
+      if (Array.isArray(parsed.type)) {
+        _.each(parsed.type, (item) => {
+          transactionType.push(item);
+        });
+      } else { transactionType.push(parsed.type); }
+    }
+    setSelectedTransactionType(transactionType);
 
-    //Field url data
+    let newDealarCode = []
     if (parsed.fic !== undefined) {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
@@ -112,7 +130,6 @@ const OrdersReport = () => {
       } else { newDealarCode.push(parsed.fic) }
     }
 
-    //RegionCode url data
     if (parsed.rec !== undefined) {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
@@ -121,7 +138,6 @@ const OrdersReport = () => {
       } else { newDealarCode.push(parsed.rec) }
     }
 
-    //Dealar url data
     if (parsed.dec !== undefined) {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
@@ -147,34 +163,12 @@ const OrdersReport = () => {
       }
     });
     return setOnChange(true);
-  }
-
-  //Sipariş Kalemleri Expand İşlemi
-  function expandedRowRender(row, index) {
-    let orderDetailIndex;
-    let partialUnitData;
-    _.each(orderDetailData, (item, i) => {
-      if (item.Key === row.orderNo) { return orderDetailIndex = i }
-    });
-    if (orderDetailIndex !== undefined) {
-      partialUnitData = _.groupBy(orderDetailData[orderDetailIndex].Value, function (item) { return item.unit; });
     }
-    else { partialUnitData = null }
-  const r =   _.map(partialUnitData, (item) => {   
-    return (
-      <Table
-        columns={OrderDetailcolumns}
-        dataSource={item}
-        pagination={false}
-        bordered={false}
-        summary={() => {
-          return renderFooter(OrderDetailcolumns, item, false)
-        }}
-      />);
-        });
 
-    return (<React.Fragment>{r} </React.Fragment>);
-  };
+    //Select Component Bayi Kodu değiştirme 
+    function dealerCodeHandleChange(value) {
+        setDealerCodes(value);
+    }
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
@@ -188,6 +182,7 @@ const OrdersReport = () => {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('type');
     params.delete('sortingField');
     params.delete('sortingOrder');
 
@@ -200,20 +195,21 @@ const OrdersReport = () => {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    if (selectedTransactionType.length > 0) params.append('type', selectedTransactionType); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
   }
+
   //Search Button Event
   const searchButton = () => {
     dataSearch();
   };
 
   //Change DealerCode
-  async function onChangeDealerCode(value) {
-
+  function onChangeDealerCode(value) {
     let fieldArrObj = [];
     let regionArrObj = [];
     let dealerArrObj = [];
@@ -240,10 +236,14 @@ const OrdersReport = () => {
         setSelectedDealerCode(value)
         setNewUrlParams(params.toString());
       });
-
-   await getAdress(dealerArrObj);
     }
   };
+
+ //Change from and To date
+ function changeTimePicker(value, dateString) {
+  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+}
 
   //Search DailerName Tree Select Component
   function filterTreeNodeDealerCode(value, treeNode) {
@@ -253,13 +253,6 @@ const OrdersReport = () => {
       return treeNodeTitle.indexOf(filterValue) !== -1;
     }
     return false;
-  }
-
-  //Change from and To date
-  function changeTimePicker(value, dateString) {
-    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-
   }
 
   const handleChange = (pagination, filters, sorter) => {
@@ -286,214 +279,69 @@ const OrdersReport = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageIndex(current);
     setPageSize(pageSize);
-    dataSearch(current,pageSize);
-  }
- //Select Component Rol değiştirme 
- function addressHandleChange(value) {
-  setAdress(value);
-}
-  //Get adress
-  async function getAdress(dealerCodes) {
-    //Get User Info  
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      }
-    };
-    await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
-      .then(response => {
-        const status = apiStatusManagement(response);
-        return status;
-      })
-      .then(data => {
-        const addressChildren=[];
-        _.each(data, (item, i) => {
-          addressChildren.push(<Option key={item.addressCode}>{item.addressTitle}</Option>);
-        });
-        setLookupAddressChildren(addressChildren)
-      })
-      .catch();
-    return data;
+    dataSearch(current, pageSize);
   }
 
-  //Excel Oluşturma
-  const exportExcelButton = () => {
-    ExcelExport(columns, data, 'Geçmiş Siparişler');
+  //Change Transaction Type
+  function transactionTypeHandleChange(value) {
+    setSelectedTransactionType(value);
   }
-  //Order Detail Columns
-  const OrderDetailcolumns = [    
-    {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
-    },
-    {
-      title: "Ürün Açıklaması",
-      dataIndex: "itemDescription",
-      key: "itemDescription",
-      ellipsis: true,
-    },
-    {
-      title: "Miktar",
-      dataIndex: "amount",
-      key: "amount",
-      align: "right",
-      render: (amount) => numberFormat(amount),
-      footerKey: "amount",
-    },
-    {
-      title: "Birim",
-      dataIndex: "unit",
-      key: "unit",
-    },
-    {
-      title: "Kalan miktar",
-      dataIndex: "remainingAmount",
-      key: "remainingAmount",
-      align: "right",
-      render: (remainingAmount) => numberFormat(remainingAmount),
-      footerKey: "remainingAmount",
-    },
-    {
-      title: "Birim fiyat",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
-      align: "right",
-      render: (unitPrice) => numberFormat(unitPrice)
-    },
-    {
-      title: "Dağıtım Önerilen Miktar",
-      dataIndex: "distributionSuggestedAmount",
-      key: "distributionSuggestedAmount",
-      align: "right",
-      render: (distributionSuggestedAmount) => numberFormat(distributionSuggestedAmount),
-      footerKey: "distributionSuggestedAmount",
-    },
-    {
-      title: "Dağıtım Gerçek Tutar",
-      dataIndex: "distributionActualAmount",
-      key: "distributionActualAmount",
-      align: "right",
-      render: (distributionActualAmount) => numberFormat(distributionActualAmount),
-      footerKey: "distributionActualAmount",
-    },
-    {
-      title: "Teslimat Tutarı",
-      dataIndex: "deliveryAmount",
-      key: "deliveryAmount",
-      align: "right",
-      render: (deliveryAmount) => numberFormat(deliveryAmount),
-      footerKey: "deliveryAmount",
-    },
 
-  ];
-
-  //Order Columns
   let columns = [
     {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
-      key: "dealerCode",
+      key: "dealerCode"
     },
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
-      key: "dealerName",
+      key: "dealerName"
     },
     {
-      title: "Sipariş No",
-      dataIndex: "orderNo",
-      key: "orderNo",
-      defaultSortOrder: 'descend',
-      sorter: (a, b) => a.orderNo - b.orderNo,
-      sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-    },
-    {
-      title: "Sipariş Tarihi",
-      dataIndex: "orderDate",
-      key: "orderDate",
+      title: "Tarih",
+      dataIndex: "date",
+      key: "date",
       type: "date",
+      render: (date) => moment(date).format(siteConfig.dateFormat),
       sorter: (a, b) => (''),
-      sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
+      sortOrder: tableOptions.sortedInfo.columnKey === 'date' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat),
-    },
-    {
-      title: "Cari/DBS",
-      dataIndex: "dealerSubCode",
-      key: "C-DBS",
-      render: dealerSubCode => (
-        <>
-          {!dealerSubCode.endsWith('D') ? (
-            <Tag color={'green'} key={dealerSubCode}>
-              {'CARİ'}
-            </Tag>
-          ) : (
-              <Tag color={'geekblue'} key={dealerSubCode}>
-                {'DBS'}
-              </Tag>
-            )}
-        </>
-      ),
     },
     {
       title: "Belge No",
       dataIndex: "documentId",
-      key: "documentId",     
+      key: "documentId",
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
     },
     {
-      title: "Ödeme",
-      dataIndex: "payment",
-      key: "payment",
+      title: "İşlem Tipi",
+      dataIndex: "transactionType",
+      key: "transactionType"
     },
     {
-      title: "Adres Kodu",
-      dataIndex: "addressCode",
-      key: "addressCode",
+      title: "Borç",
+      dataIndex: "debt",
+      key: "debt",
+      align: "right",
+      render: (debt) => numberFormat(debt),
     },
     {
-      title: "Teslimat Adresi",
-      dataIndex: "deliveryAddress",
-      key: "deliveryAddress",
+      title: "Alacak",
+      dataIndex: "credit",
+      key: "credit",
+      align: "right",
+      render: (credit) => numberFormat(credit),
     },
     {
-      title: "Toplam",
-      dataIndex: "total",
-      key: "total",
-      align: "right",      
-      render: (total) => numberFormat(total),
-      footerKey: "total",
-    },
-    {
-      title: "Durum",
-      dataIndex: "status",
-      key: "status",     
-    },
-    {
-      title: "Açıklama 1",
-      dataIndex: "description1",
-      key: "description1",
-    },
-    {
-      title: "Açıklama 2",
-      dataIndex: "description2",
-      key: "description2",
-    },
-    {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3",
-    },
-    {
-      title: "Açıklama 4",
-      dataIndex: "description4",
-      key: "description4",
+      title: "Açıklama",
+      dataIndex: "description",
+      key: "description"
     },
     {
       title: "Bayi Alt Kodu",
@@ -523,11 +371,10 @@ const OrdersReport = () => {
   ];
 
   //Hide order table column
-  //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
   else if (token.urole === 'fieldmanager') {
-    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Field;
+    const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Field;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -538,7 +385,7 @@ const OrdersReport = () => {
     }
   }
   else if (token.urole === 'regionmanager') {
-    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Region;
+    const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Region;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -549,57 +396,31 @@ const OrdersReport = () => {
     }
   }
   else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
+    const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
-          key: getHideColumns[index].key
+          dataIndex: getHideColumns[index].dataIndex
         }
         ))
       }
     }
   }
-
-  //hide column Description 1 , Description 2 , Description 3 , Description 4
-  let descriptionHide = true;
-  for (let index = 1; index < 5; index++) {
-    let descriptionTitle = 'description' + index;
-    _.each(data, (item, i) => {
-      switch (descriptionTitle) {
-        case 'description1':
-          if (item.description1 !== '') { return descriptionHide = false }
-          break;
-        case 'description2':
-          if (item.description2 !== '') { return descriptionHide = false }
-          break;
-        case 'description3':
-          if (item.description3 !== '') { return descriptionHide = false }
-          break;
-        case 'description4':
-          if (item.description4 !== '') { return descriptionHide = false }
-          break;
-        default:
-          break;
-      }
-    });
-
-    if (descriptionHide === true) {
-      columns = _.without(columns, _.findWhere(columns, {
-        dataIndex: descriptionTitle
-      }));
-    }
+  //Excel Oluşturma
+  const exportExcelButton = () => {
+    ExcelExport(columns, data, 'Cari Hareketler');
   }
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.orderFollowUp.header" />}
+        {<IntlMessages id="page.logs.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
               <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                <FormItem label={<IntlMessages id="page.users" />}></FormItem>
               </Col>
               <Col span={6} >
                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
@@ -607,24 +428,26 @@ const OrdersReport = () => {
               <Col span={6} >
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
               </Col>
-             
               <Col span={5} offset={1}>
               </Col>
             </Row>
             <Row>
               <Col span={6}>
-                <TreeSelect
-                  treeData={treeData}
-                  value={selectedDealerCode}
-                  onChange={onChangeDealerCode}
-                  filterTreeNode={filterTreeNodeDealerCode}
-                  treeCheckable={true}
-                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
-                  placeholder={"Bayi Kodu Seçiniz"}
-                  showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
-                  dropdownMatchSelectWidth={500}
-                />
+              <Select
+              showSearch
+              mode="multiple"
+              dropdownMatchSelectWidth={500}
+              style={{ marginBottom: '8px', width: '250px' }}
+              placeholder="Kullanıcı Seçiniz"
+              optionFilterProp="children"
+              value={dealerCodes}
+              onChange={dealerCodeHandleChange}
+              filterOption={(input, option) =>
+                option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {lookupDealerChildren}
+            </Select>
               </Col>
               <Col span={6}>
                 <RangePicker
@@ -633,10 +456,9 @@ const OrdersReport = () => {
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
-
               </Col>
               <Col span={6}>
-                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz"   style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} offset={1}>
                 <Button type="primary" onClick={searchButton}>
@@ -645,31 +467,29 @@ const OrdersReport = () => {
               </Col>
             </Row>
             <Row>
-              <Col span={5} >
-                <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+              <Col span={5}>
+                <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
               </Col>
-              <Col span={6} offset={2}>
-              </Col>
+
             </Row>
             <Row>
-            <Select
-              mode={"multiple"}
-              style={{ width: '100%' }}
-              placeholder="Sevk Adresi Seçiniz"
-              style={{ marginBottom: '8px', width: '250px' }}
-              value={adress}
-              dropdownMatchSelectWidth={500}
-              onChange={addressHandleChange}
-            >
-          {lookupAddressChildren}
-            </Select>
-           
+              <Col span={6}>
+                <Select
+                  mode="multiple"
+                  style={{ marginBottom: '8px', width: '250px' }}
+                  placeholder="İşlem Tipi Seçiniz"
+                  onChange={transactionTypeHandleChange}
+                  value={selectedTransactionType}
+                >
+                  {children}
+                </Select>
+              </Col>
             </Row>
           </Panel>
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box >
+      <Box>
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
@@ -685,17 +505,17 @@ const OrdersReport = () => {
           position="top"
         />
         <Table
-          className="components-table-demo-nested"
           columns={columns}
           dataSource={data}
           onChange={handleChange}
           loading={loading}
-          expandable={{ 'expandedRowRender': expandedRowRender }}
           pagination={false}
+          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
+          size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data, true)
+            return renderFooter(columns, data)
           }}
         />
         <ReportPagination
@@ -710,5 +530,3 @@ const OrdersReport = () => {
     </LayoutWrapper>
   );
 }
-
-export default OrdersReport;

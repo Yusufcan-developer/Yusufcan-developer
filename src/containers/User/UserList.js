@@ -9,13 +9,11 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag, notification, message } from "antd";
-import Input, {
-  InputGroup,
-} from '@iso/components/uielements/input';
+import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag, notification, message, Input } from "antd";
+
 
 //Fetch
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
+import { useUserFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 
 //Configs
@@ -162,7 +160,7 @@ const UserList = () => {
 
   //Kullanıcı listesi
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,] =
-    useFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+  useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {

@@ -929,7 +929,7 @@ const SearchComponent = () => {
                           </Col>
                         </Row>
                         <span className="isoCardDate" style={{ minHeight: '70px' }}>
-                          {item.description}{item.color ? ' - ' + item.color : null}{item.surface ? ' - ' + item.surface : null}{item.type ? ' - ' + item.type : null}
+                          {item.description}
                         </span>
                         {/* <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;

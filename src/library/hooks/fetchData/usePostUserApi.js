@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
-function useFetch(url, reqBody) {
+function useUserFetch(url, reqBody) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
@@ -55,4 +55,4 @@ function useFetch(url, reqBody) {
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
 }
 
-export { useFetch };
+export { useUserFetch };

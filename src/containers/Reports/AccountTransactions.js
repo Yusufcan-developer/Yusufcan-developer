@@ -31,7 +31,7 @@ import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 
 //Other Library
-import ExcelExport from "./ExcelExport";
+import ExcelExport from "../Reports/ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr'
