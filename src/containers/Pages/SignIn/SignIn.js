@@ -83,6 +83,7 @@ export default function SignIn() {
             return loginError()
           }
           else {
+            localStorage.removeItem('activeUser');
             dispatch(login(data.token));
             dispatch(clearMenu()); history.push('/products/categories')
           }
