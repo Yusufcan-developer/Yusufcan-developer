@@ -290,7 +290,7 @@ const ProductDetail = () => {
           <a href="/products/categories">Ürün Grubu</a>
         </Breadcrumb.Item>
         <Breadcrumb.Item>
-          <Link to="/products/search">Ürünler listesi</Link></Breadcrumb.Item>
+          <Link to="/products/search">Ürün Arama</Link></Breadcrumb.Item>
         <Breadcrumb.Item>Ürün Detayı</Breadcrumb.Item>
       </Breadcrumb>
       <Row style={rowStyle} gutter={gutter} justify="start">

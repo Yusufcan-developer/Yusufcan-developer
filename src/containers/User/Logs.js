@@ -43,7 +43,7 @@ const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
 export default function () {
-  document.title = "Kullanıcı Logları - Seramiksan B2B";
+  document.title = "Olay Günlükleri - Seramiksan B2B";
   const children = [];
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');

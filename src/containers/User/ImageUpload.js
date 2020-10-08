@@ -115,13 +115,13 @@ class ImageUpload extends React.Component {
         this.uppy.close()
         this.sendImagesThrottled.cancel();
         this.updateImageThrottled.cancel();
-        this.updateSortedImagesThrottled.cancel();
-        document.title = "Ürün Fotoğrafları - Seramiksan B2B";
+        this.updateSortedImagesThrottled.cancel();       
     }
 
     componentDidMount() {
         this.getProducts();
         this.getImageTypes();
+        document.title = "Ürün Fotoğrafları - Seramiksan B2B";
     }
 
     getProducts = () => {
