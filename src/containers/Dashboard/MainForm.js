@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import {useLocation } from 'react-router-dom';
+import {useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Box from "@iso/components/utility/box";
@@ -30,10 +30,11 @@ moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 const { Option } = Select;
+
 const MainForm = () => {
   document.title = "Ana Ekran - Seramiksan B2B";
   const queryString = require('query-string');
-  
+  const history = useHistory();
   const [iconLoading, setIconLoading] = useState(false);
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -46,9 +47,11 @@ const MainForm = () => {
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [dealerCodes, setDealerCodes] = useState()
   const location = useLocation();
+  const [newUrlParams, setNewUrlParams] = useState('')
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
+    getVariablesFromUrl();
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
@@ -86,24 +89,34 @@ const MainForm = () => {
 
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    let newDealarCode = []
 
-    //Dealar url data
-    if (parsed.dec !== undefined) {
-      if (Array.isArray(parsed.dec)) {
-        _.each(parsed.dec, (item, i) => {
-          newDealarCode.push(item);
+    let dealerCode = [];
+    if (parsed.dealer !== undefined) {
+      if (Array.isArray(parsed.dealer)) {
+        _.each(parsed.dealer, (item) => {
+          dealerCode.push(item);
         });
-      } else { newDealarCode.push(parsed.dec) }
+      } else { dealerCode.push(parsed.dealer); }
     }
-    // setSelectedDealerCode(newDealarCode);
+    setDealerCodes(dealerCode);
     
+    AccountSetOnChange(true);
+    setOnChange(true);
   }
 
   //Get Search Data
-  function dataSearch() {   
+  function dataSearch(selectedPageIndex, selectedPageSize) {
+    const params = new URLSearchParams(location.search);
+
+    params.delete('dealer');
+
+    if (dealerCodes.length > 0) params.append('dealer', dealerCodes); params.toString();
+    let createUrl = null;
+    if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
+    history.push(`${location.pathname}?${createUrl}`);
+
     AccountSetOnChange(true);
-    return setOnChange(true);
+    setOnChange(true);
   }
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -397,14 +410,14 @@ const MainForm = () => {
       </Box>
       <Box >      
         <h2 style={{ marginBottom: '10px' }}>Cari Toplamları</h2>
-        {/* <ReportPagination
+        <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
           onChange={currentCariToplamlarPageChange}
-          pageSize={pageSizeCariToplamlar}
-          total={CariToplamlartotalDataCount}
-          current={pageIndexCariToplamlar}
+          pageSize={pageSizeAccount}
+          total={AccountTotalDataCount}
+          current={pageIndexAccount}
           position="top"
-        /> */}
+        />
         <Table
           columns={AccountColumns}
           dataSource={accountData}
@@ -425,14 +438,14 @@ const MainForm = () => {
       </Box>
       <Box >
         <h2 style={{ marginBottom: '10px' }}>DBS Toplamları</h2>
-        {/* <ReportPagination
+        <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
           pageSize={pageSize}
           total={totalDataCount}
           current={pageIndex}
           position="top"
-        /> */}
+        />
         <Table
           columns={columns}
           dataSource={data}
