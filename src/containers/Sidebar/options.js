@@ -74,6 +74,10 @@ const options = [
         key: 'admin/carts',
         label: 'sidebar.carts',
       },
+      {
+        key: 'admin/logs',
+        label: 'sidebar.logs',
+      },
     ],
   },   
 ];

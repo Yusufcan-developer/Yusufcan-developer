@@ -106,6 +106,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/User/UserList')),
   },
   {
+    path: 'admin/logs',
+    component: lazy(() => import('@iso/containers/User/Logs')),
+  },
+  {
     path: 'admin/saveUser',
     component: lazy(() => import('@iso/containers/User/SaveUser')),
   }

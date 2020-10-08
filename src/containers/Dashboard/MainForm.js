@@ -373,6 +373,7 @@ const MainForm = () => {
             <Select
               showSearch
               mode="multiple"
+              dropdownMatchSelectWidth={500}
               style={{ width: '100%' }}
               placeholder="Bayi seçiniz"
               optionFilterProp="children"
