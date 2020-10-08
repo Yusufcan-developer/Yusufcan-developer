@@ -28,6 +28,7 @@ export default function SignIn() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [passwordChangeVisible, setPasswordChangeVisible] = useState(false);
+  const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
   const [oldPassword, setOldPassword] = useState();
   const [newPassword, setNewPassword] = useState();
   const [confirmPassword, setConfirmPassword] = useState();
@@ -105,6 +106,7 @@ export default function SignIn() {
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
   function handleCancel() {
     setPasswordChangeVisible(false);
+    setForgotPasswordVisible(false);
   };
   //Parola düzenleme fetch işlemi
   async function changePassword() {
@@ -130,7 +132,14 @@ export default function SignIn() {
       }).catch(error => console.log('hata', error));
     return userData;
   }
+  async function handleForgotPasswordOk() {
+    setForgotPasswordVisible(false);
+    // const password = await changePassword();
 
+    // if (password) { message.success('Parola başarıyla değiştirilmiştir.'); setPasswordChangeVisible(false); handleLogin(); }
+    // else { message.error('Parola değiştirme işlemi başarısızdır.'); }
+
+  };
   //Kullanıcı parola değiştirme
   async function handlePasswordOk() {
     const password = await changePassword();
@@ -269,22 +278,52 @@ export default function SignIn() {
               </div>
 
               <div className="isoInputWrapper isoLeftRightComponent">
-                <Checkbox>
-                  <IntlMessages id="page.signInRememberMe" />
-                </Checkbox>
+              <Link to="" className="isoForgotPass" onClick={()=>setForgotPasswordVisible(true)}>
+                <IntlMessages id="page.signInForgotPass" />
+              </Link>
                 <Button type="primary" onClick={handleLogin}>
                   <IntlMessages id="page.signInButton" />
                 </Button>
               </div>
-
-            </form>
-            <div className="isoCenterComponent isoHelperWrapper">
-              <Link to="/forgotpassword" className="isoForgotPass">
-                <IntlMessages id="page.signInForgotPass" />
-              </Link>
-            </div>
+            </form>          
           </div>
         </div>
+        <Modal
+            visible={forgotPasswordVisible}
+            width={600}
+            title="Parolanızı mı unuttunuz?"
+            okText="İstek Gönder"
+            cancelText={null}
+            maskClosable={true}
+            onCancel={handleCancel}
+            onOk={() => {
+              form
+                .validateFields()
+                .then(values => {
+                  form.resetFields();
+                  handleForgotPasswordOk(values);
+                })
+                .catch(info => {
+                  console.log('Validate Failed:', info);
+                });
+            }}
+          >
+            <Alert message="E-postanızı girin, size bir sıfırlama bağlantısı gönderelim." type="error" style={{ marginBottom: '10px' }} />
+            <Form
+              form={form}
+              layout="vertical"
+              name="form_in_modal"
+              initialValues={{
+                modifier: 'public',
+              }}
+            >
+              <Form.Item
+                label="Kullanıcı Adı veya E-posta"
+              >
+                <Input autoComplete={"off"} value={username}/>
+              </Form.Item>             
+            </Form>
+          </Modal>
       </div>
     </SignInStyleWrapper>
   );

@@ -43,7 +43,7 @@ import Modal from "antd/lib/modal/Modal";
 const { Panel } = Collapse;
 
 const SearchComponent = () => {
-  document.title = "Ürünler Listesi - Seramiksan B2B";
+  document.title = "Ürün Arama - Seramiksan B2B";
   //Hook States
   const history = useHistory();
   const queryString = require('query-string');
@@ -779,7 +779,7 @@ const SearchComponent = () => {
         <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
       </Breadcrumb> */}
       <AlgoliaSearchPageWrapper className="isoAlgoliaSearchPage">
-        <PageHeader>Ürünler Listesi</PageHeader>
+        <PageHeader>Ürün Arama</PageHeader>
         <div className="isoAlgoliaMainWrapper">
           <SidebarWrapper className="isoAlgoliaSidebar">
             <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
