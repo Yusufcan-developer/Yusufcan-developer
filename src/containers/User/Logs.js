@@ -16,7 +16,7 @@ import { Table, Row, Col, TreeSelect } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { usePostLogFetch } from "@iso/lib/hooks/fetchData/usePostLog";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { useUserFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
 //Style
@@ -57,13 +57,10 @@ export default function () {
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
-  const [dealerCodes, setDealerCodes] = useState();
-  const [regionCodes, setRegionCodes] = useState();
-  const [fieldCodes, setFieldCodes] = useState();
-  const [selectedDealerCode, setSelectedDealerCode] = useState();
+  const [userIds, setUserIds] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
-  const [selectedTransactionType, setSelectedTransactionType] = useState();
-
+  const [selectedLogType, setSelectedLogType] = useState();
+  const [selectedLogSource, setSelectedLogSource] = useState();
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
@@ -82,21 +79,29 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  }, searchUrl);
+  usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource,"logTypes": selectedLogType,"userIds": userIds, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  }, searchUrl);
 
  //Kullanıcı listesi
  const [userData] =
  useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": null, "roleNames": roleNames, "pageIndex": 0, "pageCount": 10000000 });
   const lookupDealerChildren = [];
   _.each(userData, (item, i) => {
-    lookupDealerChildren.push(<Option key={item.username}>{ item.firstName===''?item.username + '-'+item.title: item.username + '-' + item.firstName +' '+item.lastName}</Option>);
+    lookupDealerChildren.push(<Option key={item.id}>{ item.firstName===''?item.username + '-'+item.title: item.username + '-' + item.firstName +' '+item.lastName}</Option>);
   });
 
-  //İşlem Tipleri
-  const [transactionTypeData] = useFilterData(`${siteConfig.api.lookup.getTransactionTypes}`, searchUrl);
-  for (let i = 0; i < transactionTypeData.length; i++) {
-    children.push(<Option key={transactionTypeData[i]}>{transactionTypeData[i]}</Option>);
-  }
+  //Log Tipleri
+  const [logTypeData] = useFilterData(`${siteConfig.api.security.getLogTypes}`, searchUrl);
+  const lookUpLogType = [];
+  _.each(logTypeData, (item) => {
+    lookUpLogType.push(<Option key={item.Key}>{ item.Value}</Option>);
+  });
+
+  //Log Source
+  const [logSourceData] = useFilterData(`${siteConfig.api.security.getLogSources}`, searchUrl);
+  const lookUpLogSource = [];
+  _.each(logSourceData, (item) => {
+    lookUpLogSource.push(<Option key={item.Key}>{ item.Value}</Option>);
+  });
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
@@ -111,78 +116,64 @@ export default function () {
     if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
     
-    let transactionType = [];
+    let type = [];
     if (parsed.type !== undefined) {
       if (Array.isArray(parsed.type)) {
         _.each(parsed.type, (item) => {
-          transactionType.push(item);
+          type.push(item);
         });
-      } else { transactionType.push(parsed.type); }
-    }
-    setSelectedTransactionType(transactionType);
-
-    let newDealarCode = []
-    if (parsed.fic !== undefined) {
-      if (Array.isArray(parsed.fic)) {
-        _.each(parsed.fic, (item, i) => {
-          newDealarCode.push(item);
-        });
-      } else { newDealarCode.push(parsed.fic) }
+      } else { type.push(parsed.type); }
     }
 
-    if (parsed.rec !== undefined) {
-      if (Array.isArray(parsed.rec)) {
-        _.each(parsed.rec, (item, i) => {
-          newDealarCode.push(item);
+    let source = [];
+    if (parsed.source !== undefined) {
+      if (Array.isArray(parsed.source)) {
+        _.each(parsed.source, (item) => {
+          source.push(item);
         });
-      } else { newDealarCode.push(parsed.rec) }
+      } else { source.push(parsed.source); }
     }
 
-    if (parsed.dec !== undefined) {
-      if (Array.isArray(parsed.dec)) {
-        _.each(parsed.dec, (item, i) => {
-          newDealarCode.push(item);
+    let user = [];
+    if (parsed.user !== undefined) {
+      if (Array.isArray(parsed.user)) {
+        _.each(parsed.user, (item) => {
+          user.push(item);
         });
-      } else { newDealarCode.push(parsed.dec) }
+      } else { user.push(parsed.user); }
     }
-    setSelectedDealerCode(newDealarCode);
+    setSelectedLogType(type);
+    setSelectedLogSource(source);
+    setUserIds(user);
 
-    //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
-    let fieldArrObj = [];
-    let regionArrObj = [];
-    let dealerArrObj = [];
-
-    if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
-    _.filter(newDealarCode, function (item) {
-      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
-      else if (item.split("|").length === 2) {
-        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
-      }
-      else {
-        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
-      }
-    });
     return setOnChange(true);
     }
+  
+  function dealerCodeHandleChange(value) {
+    let userObj = [];
+    const params = new URLSearchParams(location.search);
+    params.delete('user');
 
-    //Select Component Bayi Kodu değiştirme 
-    function dealerCodeHandleChange(value) {
-        setDealerCodes(value);
-    }
+    if (value.length === 0) { setNewUrlParams(''); params.delete('user'); setUserIds(userObj);}
+    else {
+      _.filter(value, function (item) {
+        userObj.push(parseInt(item)); params.append('user', item); params.toString();
+      });}
+      setUserIds(userObj);
+      setNewUrlParams(params.toString());
+  }
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-
-    params.delete('dec');
-    params.delete('rec');
-    params.delete('fic');
-    params.delete('from')
+    params.delete('user')
+    params.delete('type');
+    params.delete('source');
+    params.delete('from');
     params.delete('to');
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
-    params.delete('type');
     params.delete('sortingField');
     params.delete('sortingOrder');
 
@@ -190,12 +181,11 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if(sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
+    if (sortingField!==undefined){params.append('sortingField', sortingField);}
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
-    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    if (selectedTransactionType.length > 0) params.append('type', selectedTransactionType); params.toString();
+    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString();}
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -208,52 +198,12 @@ export default function () {
     dataSearch();
   };
 
-  //Change DealerCode
-  function onChangeDealerCode(value) {
-    let fieldArrObj = [];
-    let regionArrObj = [];
-    let dealerArrObj = [];
-    const params = new URLSearchParams(location.search);
-    params.delete('dec');
-    params.delete('rec');
-    params.delete('fic');
-    params.delete('from')
-    params.delete('to');
-    params.delete('keyword');
-    params.delete('pgsize');
-    params.delete('pgindex');
-
-    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
-    else {
-      _.filter(value, function (item) {
-        if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
-        else if (item.split("|").length === 2) {
-          regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
-        }
-        else {
-          dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
-        }
-        setSelectedDealerCode(value)
-        setNewUrlParams(params.toString());
-      });
-    }
-  };
 
  //Change from and To date
  function changeTimePicker(value, dateString) {
   setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
   setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
 }
-
-  //Search DailerName Tree Select Component
-  function filterTreeNodeDealerCode(value, treeNode) {
-    if (value && treeNode && treeNode.title) {
-      const filterValue = value.toLocaleLowerCase('tr')
-      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) !== -1;
-    }
-    return false;
-  }
 
   const handleChange = (pagination, filters, sorter) => {
     setState({
@@ -285,21 +235,67 @@ export default function () {
     dataSearch(current, pageSize);
   }
 
-  //Change Transaction Type
-  function transactionTypeHandleChange(value) {
-    setSelectedTransactionType(value);
-  }
+  //Change Source
+  function logSourceHandleChange(value) {
+    let sourceObj = [];
+    const params = new URLSearchParams(location.search);
+    params.delete('user')
+    params.delete('type');
+    params.delete('source');
+    params.delete('from');
+    params.delete('to');
+    params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
+    params.delete('sortingField');
+    params.delete('sortingOrder');
 
+    if (value.length === 0) { setNewUrlParams(''); params.delete('source'); setSelectedLogSource(sourceObj);}
+    else {
+      _.filter(value, function (item) {
+        sourceObj.push(item); params.append('source', item); params.toString();
+      });}
+      setSelectedLogSource(sourceObj);
+      setNewUrlParams(params.toString());
+  }
+  //Change Log Type
+  function logTypeHandleChange(value) {
+    let typeObj = [];
+    const params = new URLSearchParams(location.search);
+    params.delete('user')
+    params.delete('type');
+    params.delete('source');
+    params.delete('from');
+    params.delete('to');
+    params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
+    params.delete('sortingField');
+    params.delete('sortingOrder');
+
+    if (value.length === 0) { setNewUrlParams(''); params.delete('type'); setSelectedLogType(typeObj);}
+    else {
+      _.filter(value, function (item) {
+        typeObj.push(item); params.append('type', item); params.toString();
+      });}
+      setSelectedLogType(typeObj);
+      setNewUrlParams(params.toString());
+  }
   let columns = [
     {
-      title: "Bayi Kodu",
-      dataIndex: "dealerCode",
-      key: "dealerCode"
+      title: "Kullanıcı Adı",
+      dataIndex: "userFullName",
+      key: "userFullName"
     },
     {
-      title: "Bayi Adı",
-      dataIndex: "dealerName",
-      key: "dealerName"
+      title: "Kullanıcı Hesap No",
+      dataIndex: "accountNo",
+      key: "accountNo"
+    },
+    {
+      title: "Kullanıcı Hesap Adı",
+      dataIndex: "accountName",
+      key: "accountName"
     },
     {
       title: "Tarih",
@@ -312,62 +308,26 @@ export default function () {
       sortDirections: ['descend', 'ascend'],
     },
     {
-      title: "Belge No",
-      dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => (''),
-      sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
+      title: "Olay Kaynağı",
+      dataIndex: "logSourceName",
+      key: "logSource",
     },
     {
-      title: "İşlem Tipi",
-      dataIndex: "transactionType",
-      key: "transactionType"
-    },
-    {
-      title: "Borç",
-      dataIndex: "debt",
-      key: "debt",
-      align: "right",
-      render: (debt) => numberFormat(debt),
-    },
-    {
-      title: "Alacak",
-      dataIndex: "credit",
-      key: "credit",
-      align: "right",
-      render: (credit) => numberFormat(credit),
+      title: "Olay Tipi",
+      dataIndex: "logTypeName",
+      key: "logType",
     },
     {
       title: "Açıklama",
       dataIndex: "description",
-      key: "description"
+      key: "description",
     },
     {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode",
+      title: "İp Adresi",
+      dataIndex: "ipAddress",
+      key: "ipAddress",
     },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode",
-    },
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager",
-    },
-    {
-      title: "Saha Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode",
-    },
-    {
-      title: "Saha Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager",
-    },
+    
   ];
 
   //Hide order table column
@@ -408,7 +368,7 @@ export default function () {
   }
   //Excel Oluşturma
   const exportExcelButton = () => {
-    ExcelExport(columns, data, 'Cari Hareketler');
+    ExcelExport(columns, data, 'Kullanıcı Olay Günlügü');
   }
   return (
     <LayoutWrapper>
@@ -440,7 +400,7 @@ export default function () {
               style={{ marginBottom: '8px', width: '250px' }}
               placeholder="Kullanıcı Seçiniz"
               optionFilterProp="children"
-              value={dealerCodes}
+              value={userIds}
               onChange={dealerCodeHandleChange}
               filterOption={(input, option) =>
                 option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -467,24 +427,39 @@ export default function () {
               </Col>
             </Row>
             <Row>
-              <Col span={5}>
+              <Col span={6}>
                 <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
               </Col>
-
+              <Col span={6}>
+                <FormItem label={<IntlMessages id="page.logSources" />}></FormItem>
+              </Col>
             </Row>
             <Row>
               <Col span={6}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: '250px' }}
-                  placeholder="İşlem Tipi Seçiniz"
-                  onChange={transactionTypeHandleChange}
-                  value={selectedTransactionType}
+                  placeholder="Olay Tipi Seçiniz"
+                  onChange={logTypeHandleChange}
+                  value={selectedLogType}
                 >
-                  {children}
+                  {lookUpLogType}
                 </Select>
+              
               </Col>
-            </Row>
+              <Col span={6}>
+                <Select
+                  mode="multiple"
+                  style={{ marginBottom: '8px', width: '250px' }}
+                  placeholder="Olay Kaynağı Seçiniz"
+                  onChange={logSourceHandleChange}
+                  value={selectedLogSource}
+                >
+                  {lookUpLogSource}
+                </Select>
+              
+              </Col>
+            </Row>           
           </Panel>
         </Collapse>
       </Box>
@@ -514,9 +489,6 @@ export default function () {
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
-          summary={() => {
-            return renderFooter(columns, data)
-          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

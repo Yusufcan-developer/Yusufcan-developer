@@ -50,7 +50,6 @@ async function getInitData() {
     const cartProductQuantity = localStorage.getItem('cartProductQuantity');
     const productsData = await getDatabaseProductInfo();
 
-  console.log('xxxxx prod',productsData)
     if (productsData !== 'Unauthorized') {
       // Database product code and product quantity send Redux  
       let sendReduxProductList = _.each(productsData.items, (item) => {
