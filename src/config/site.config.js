@@ -73,6 +73,10 @@ export default {
       getUser: apiUrl + 'security/users/',
       postAuthenticate: apiUrl + 'security/authenticate',
       postChangePassword: apiUrl + 'security/change-password',
+      getLogSources:apiUrl+'security/logs/sources',
+      getLogTypes:apiUrl+'security/logs/types',
+      postLog:apiUrl+'security/logs/search',
+      postSaveLog:apiUrl+'security/logs',
     },
     image: {
       getProductsOfImages: apiUrl + 'images/products-for-images',
