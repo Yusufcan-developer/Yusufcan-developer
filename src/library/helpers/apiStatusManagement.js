@@ -12,7 +12,7 @@ export const apiStatusManagement = (response,notShowMessage) => {
       case 404:
         debugger
         if (notShowMessage) {
-          { return 'Unauthorized' }
+          { return 'Unauthorized1' }
         }
         else {
           return message.error('Veritabanından bilgiler getirilemiyor sistem yöneticinize başvurunuz.');

@@ -17,7 +17,7 @@ import { Scrollbars } from 'react-custom-scrollbars';
 //Fetch
 import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
-
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 //Styles
 import { DownloadOutlined, TableOutlined } from '@ant-design/icons';
 
@@ -35,6 +35,7 @@ import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr';
+import enumerations from "../../config/enumerations";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -71,6 +72,7 @@ const OrdersReport = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
+    postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Browse,'Sipariş raporu listeleme');
     setCurrentPage(pageIndex);
     getVariablesFromUrl()
   }, [pageIndex]);
@@ -208,6 +210,7 @@ const OrdersReport = () => {
   }
   //Search Button Event
   const searchButton = () => {
+    postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Browse,'Sipariş raporu yeni arama');
     dataSearch();
   };
 
@@ -323,6 +326,7 @@ const OrdersReport = () => {
 
   //Excel Oluşturma
   const exportExcelButton = () => {
+    postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Export,'Sipariş raporu excel oluşturma');
     ExcelExport(columns, data, 'Geçmiş Siparişler');
   }
   //Order Detail Columns

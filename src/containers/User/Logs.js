@@ -239,8 +239,7 @@ export default function () {
   function logSourceHandleChange(value) {
     let sourceObj = [];
     const params = new URLSearchParams(location.search);
-    params.delete('user')
-    params.delete('type');
+    params.delete('user');
     params.delete('source');
     params.delete('from');
     params.delete('to');
@@ -264,7 +263,6 @@ export default function () {
     const params = new URLSearchParams(location.search);
     params.delete('user')
     params.delete('type');
-    params.delete('source');
     params.delete('from');
     params.delete('to');
     params.delete('keyword');
