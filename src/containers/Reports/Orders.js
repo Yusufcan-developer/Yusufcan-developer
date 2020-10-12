@@ -48,6 +48,10 @@ let sortingField;
 let sortingOrder;
 const OrdersReport = () => {
   document.title = "Geçmiş Siparişler - Seramiksan B2B";
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';}
+
   const queryString = require('query-string');
   const history = useHistory();
   const [lookupAddressChildren,setLookupAddressChildren] = useState();
@@ -308,7 +312,7 @@ const OrdersReport = () => {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
+    await fetch(siteConfig.api.lookup.getAddresses.replace('dealerCodes', dealerCodes), requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
@@ -601,6 +605,7 @@ const OrdersReport = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          {newView!=='MobileView'?
             <Row>
               <Col span={6}>
                 <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
@@ -615,8 +620,9 @@ const OrdersReport = () => {
               <Col span={5} offset={1}>
               </Col>
             </Row>
-            <Row>
-              <Col span={6}>
+          :null}         
+            <Row>            
+              <Col  span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <TreeSelect
                   treeData={treeData}
                   value={selectedDealerCode}
@@ -630,7 +636,7 @@ const OrdersReport = () => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -639,20 +645,21 @@ const OrdersReport = () => {
                 />
 
               </Col>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24} >
                 <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz"   style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={5} offset={1}>
+              
+              <Col span={newView!=='MobileView'?5:0} offset={newView!=='MobileView'?1:0} >
                 <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
             </Row>
             <Row>
-              <Col span={5} >
+              <Col span={newView!=='MobileView'?5:0} >
                 <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
               </Col>
-              <Col span={6} offset={2}>
+              <Col span={newView!=='MobileView'?6:0} offset={newView!=='MobileView'?2:0}>
               </Col>
             </Row>
             <Row>
@@ -667,8 +674,12 @@ const OrdersReport = () => {
             >
           {lookupAddressChildren}
             </Select>
-           
-            </Row>
+            <Col span={newView==='MobileView'?5:0} offset={newView==='MobileView'?1:0} >
+                <Button type="primary" onClick={searchButton}>
+                  {<IntlMessages id="forms.button.label_Search" />}
+                </Button>
+              </Col>
+            </Row> 
           </Panel>
         </Collapse>
       </Box>

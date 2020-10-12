@@ -9,13 +9,11 @@ var jwtDecode = require('jwt-decode');
 
 export async function postSaveLog(selectedLogSource,selectedLogType,description,searchUrl) { 
   //Account No gelecek
-  debugger
   let logData;
   const activeUser = localStorage.getItem("activeUser");
   const token = jwtDecode(localStorage.getItem("id_token"));
   if(token===undefined){return  history.replace('/');}
   let accountNo = token.uname;
-  debugger
   if (activeUser != undefined) { accountNo = activeUser }
   try {
     const reqBody ={ "logSource": selectedLogSource, "logType": selectedLogType, "accountNo": 'B141009', "description": description }

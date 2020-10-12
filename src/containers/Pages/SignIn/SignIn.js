@@ -75,7 +75,6 @@ export default function SignIn() {
         return response.json();
       })
       .then(data => {
-        debugger
         //Kullanıcı girişi başarılı oldugu durumda token değeri alınıyor ve redux'a gönderiliyor.
         //dispatch(login()) fonksiyonu redux actionlarında tanımlı değerdir.
         if (data !== undefined) {

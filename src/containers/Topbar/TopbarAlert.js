@@ -12,8 +12,10 @@ export default function TopbarAlert(props) {
     setVisiblity(visible => !visible);
   }
   const onClose = e => {
-    localStorage.setItem('activeUser',token.uname);
-    window.location.reload(false);
+    localStorage.removeItem('activeUser');
+    localStorage.removeItem('cartProductQuantity');
+    window.location.reload(true);
+
   };
   
     return (

@@ -32,9 +32,10 @@ export default function CartTable({ style }) {
   const [total, setTotal] = useState();
   const [totalVat, setTotalVat] = useState();
   const dispatch = useDispatch();
-  const { productQuantity } = useSelector(state => state.Ecommerce);
+ const { productQuantity } = useSelector(state => state.Ecommerce);
 
   async function allCartItemChangeOrderAmount() {
+    debugger
     let sendDatabaseProductList;
     let productQuantity = localStorage.getItem('cartProductQuantity');
     productQuantity = JSON.parse(productQuantity);
@@ -80,10 +81,13 @@ export default function CartTable({ style }) {
               });
             }
             localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
+
           }
         }
         else {
         }
+        history.push('/checkout');
+        window.location.reload(false);
       })
       .catch();
   }
@@ -97,6 +101,7 @@ export default function CartTable({ style }) {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
+    debugger
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let uname = token.uname;
@@ -124,12 +129,12 @@ export default function CartTable({ style }) {
     if (!productQuantity || productQuantity.length === 0) {
       if (!productQuantity || productQuantity.length === 0) {
         return <React.Fragment> 
-          <tr className="isoNoItemMsg">
+          <tr className="isoNoItemMsg" style={{ textAlign: 'center' }}>
             <div className="isoNoItemMsg">
               <div className="isoNoItemMsg">
                 <span>Ürün Bulunamadı</span>
               </div>
-              <div className="isoNoItemMsg">
+              <div justify='center' className="isoNoItemMsg">
                 <span> <a href="/products/categories" >
                   Sepete Ürün Eklemek İçin Tıklayınız
             </a></span>
@@ -288,7 +293,6 @@ export default function CartTable({ style }) {
   async function allProductToOrder() {
     //Sepette ki miktarların sipariş miktarına dönüştürülmesi
     await allCartItemChangeOrderAmount();
-    history.push('/checkout');
   }
 
   //Parçalı siparişlerin hazırlanması

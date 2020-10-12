@@ -18,6 +18,7 @@ import Input from '@iso/components/uielements/input';
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -31,6 +32,7 @@ import renderFooter from "./ReportSummary";
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 import moment from 'moment';
+import enumerations from "../../config/enumerations";
 import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -68,6 +70,7 @@ const ChequesReport = () => {
 
   //Burada ki useEffect'ler page index page size değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
+    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Browse,'Çek ve Senet raporu listeleme');
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -199,6 +202,7 @@ const ChequesReport = () => {
 
   //Search Button Event
   const searchButton = () => {
+    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Browse,'Çek ve Senet raporu yeni arama');
     dataSearch();
   };
 
@@ -412,6 +416,7 @@ const ChequesReport = () => {
 
   //Excel Oluştur
   const exportExcelButton = () => {
+    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Export,'Çek ve Senet raporu excel oluşturma');
     ExcelExport(columns, data, 'Çek-Senet');
   }
 

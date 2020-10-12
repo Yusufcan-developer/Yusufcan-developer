@@ -12,6 +12,7 @@ import { Table, Row, Col, Pagination, Typography,  Select } from "antd";
 import Collapse from "@iso/components/uielements/collapse";
 //Fetch
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -25,7 +26,7 @@ import 'moment/locale/tr'
 import { usePostDBSTotalReport } from "../../library/hooks/fetchData/usePostDBSTotal";
 import { usePostCariToplamlarReport } from "../../library/hooks/fetchData/usePostCariToplamlar";
 import ReportPagination from "../Reports//ReportPagination";
-
+import enumerations from "../../config/enumerations";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
@@ -51,6 +52,7 @@ const MainForm = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
+    postSaveLog(enumerations.LogSource.General,enumerations.LogTypes.Browse,'DBS ve Cari toplamlar raporu listeleme');
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -106,6 +108,7 @@ const MainForm = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
+    postSaveLog(enumerations.LogSource.General,enumerations.LogTypes.Browse,'DBS ve Cari toplamlar raporu yeni arama');
     const params = new URLSearchParams(location.search);
 
     params.delete('dealer');

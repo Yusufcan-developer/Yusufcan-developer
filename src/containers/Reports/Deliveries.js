@@ -17,6 +17,7 @@ import { Table, Row, Col, TreeSelect } from "antd";
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Style
 import { DownloadOutlined } from '@ant-design/icons';
@@ -32,7 +33,8 @@ import renderFooter from "./ReportSummary";
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 import moment from 'moment';
-import 'moment/locale/tr' 
+import 'moment/locale/tr';
+import enumerations from "../../config/enumerations";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -43,6 +45,9 @@ let sortingField;
 let sortingOrder;
 const DeliveriesReport = () => {
   document.title = "Sevkiyat - Seramiksan B2B";
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';}
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -65,6 +70,7 @@ const DeliveriesReport = () => {
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
+    postSaveLog(enumerations.LogSource.ReportDeliveries,enumerations.LogTypes.Browse,'Sevkiyat raporu listeleme');
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -171,6 +177,7 @@ const DeliveriesReport = () => {
 
   //Search Button Event
   const searchButton = () => {
+    postSaveLog(enumerations.LogSource.ReportDeliveries,enumerations.LogTypes.Browse,'Sevkiyat raporu yeni arama');
     dataSearch();
   };
 
@@ -253,6 +260,7 @@ const DeliveriesReport = () => {
 
   //Excel Oluşturma
   const exportExcelButton = () => {
+    postSaveLog(enumerations.LogSource.ReportDeliveries,enumerations.LogTypes.Export,'Sevkiyat raporu excel oluşturma');
     ExcelExport(columns, data, 'Sevkiyatlar');
   }
 
@@ -407,6 +415,7 @@ const DeliveriesReport = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          {newView!=='MobileView'?
             <Row>
               <Col span={6}>
                 <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
@@ -420,8 +429,9 @@ const DeliveriesReport = () => {
               <Col span={5} offset={1}>
               </Col>
             </Row>
+            :null}  
             <Row>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <TreeSelect
                   treeData={treeData}
                   value={selectedDealerCode}
@@ -435,7 +445,7 @@ const DeliveriesReport = () => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -443,10 +453,10 @@ const DeliveriesReport = () => {
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={5} offset={1}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>

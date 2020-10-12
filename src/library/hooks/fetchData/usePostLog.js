@@ -39,7 +39,7 @@ function usePostLogFetch(url, reqBody, searchUrl) {
         return status;
       })
       .then(data => {
-        if (data.data !== undefined) {
+        if (data !== undefined) {
         const value = data.data.slice();
 
         const totalPages = data.totalPages;
