@@ -350,11 +350,13 @@ export default function () {
         return status;
       })
       .then(data => {
+        if(data!==undefined){
         if (data.isSuccess) {
           createOrderNo = data.orderNo; setSuccessOrderSave(true);
         } else {
-          message.warning('Sipariş oluşturma işlemi başarısızdır lütfen bilgilerinizi kontrol ediniz.');
+          message.warning(data.message);
         }
+      }
       })
       .catch();
     setConfirmLoading(false);

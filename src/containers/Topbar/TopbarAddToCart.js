@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { Link, useRouteMatch } from 'react-router-dom';
+import { Link, useRouteMatch ,useHistory, useLocation} from 'react-router-dom';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -32,6 +32,9 @@ export default function TopbarAddtoCart() {
   let { url } = useRouteMatch();
   url = stripTrailingSlash(url);
   const dispatch = useDispatch();
+  const queryString = require('query-string');
+  const location = useLocation();
+
   const [totalPrice,setTotalPrice]=useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const {
@@ -133,22 +136,6 @@ export default function TopbarAddtoCart() {
     }});
   }}
 
-  //Miktar değişikliği
-  function changeQuantity(objectID, quantity,isPartial) {
-    const newProductQuantity = [];
-    productQuantity.forEach(product => {
-      if (product.itemCode !== objectID) {
-        newProductQuantity.push(product);
-      } else {
-        newProductQuantity.push({
-          objectID,
-          quantity,
-        });
-      }
-    });
-    dispatch(changeProductQuantity(newProductQuantity));
-  }
-
   //Ürün iptal etme işlemi
   function cancelQuantity(productItem) {
     const newProductQuantity = [];
@@ -159,6 +146,7 @@ export default function TopbarAddtoCart() {
     });
     dispatch(changeProductQuantity(newProductQuantity));
     getCartList();
+    if(location.pathname==="/checkout"){return  window.location.reload(false);}
   }
 
   const content = (

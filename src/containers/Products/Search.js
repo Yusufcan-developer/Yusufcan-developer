@@ -19,6 +19,7 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
 import { usePostFilter } from "@iso/lib/hooks/fetchData/usePostFilterData";
 import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterProductCategories";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -44,6 +45,18 @@ const { Panel } = Collapse;
 
 const SearchComponent = () => {
   document.title = "Ürün Arama - Seramiksan B2B";
+
+  const [state, setState] = React.useState({
+    collapsed: true,
+  });
+  const { collapsed } = state;
+  const className = collapsed ? '' : 'sidebarOpen';
+  const btnText = collapsed ? 'Filtrele' : 'Gizle';
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';}
+
+
   //Hook States
   const history = useHistory();
   const queryString = require('query-string');
@@ -76,6 +89,7 @@ const SearchComponent = () => {
   const [selectedItemCode, setSelectedItemCode] = useState();
 
   useEffect(() => {
+    postSaveLog(enumerations.LogSource.General,enumerations.LogTypes.Browse,'Ürün listeleme');
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
     if (category === undefined) {
@@ -709,6 +723,7 @@ const SearchComponent = () => {
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
         dispatch(addToCart(product,parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,product.itemCode+ ' Ürün sepete eklendi');
       }
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
@@ -727,6 +742,7 @@ const SearchComponent = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
+        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Update,product.itemCode+ ' Ürünün miktarı arttırıldı.');
       }
     }
   };
@@ -777,11 +793,26 @@ const SearchComponent = () => {
           <Link to="/products/categories">Ürün Grubu</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
-      </Breadcrumb> */}
-      <AlgoliaSearchPageWrapper className="isoAlgoliaSearchPage">
+      </Breadcrumb> */}     
+      <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
         <PageHeader>Ürün Arama</PageHeader>
+        {newView==='MobileView'? <Button style={{marginBottom:!state.collapsed ?'-20px':'0px'}}
+        className="ant-btn-primary isoAlgoliaSidebarToggle"
+        onClick={() => {
+          setState({ ...state, collapsed: !state.collapsed });
+        }}
+      >
+        {btnText}
+      </Button> :null}     
         <div className="isoAlgoliaMainWrapper">
           <SidebarWrapper className="isoAlgoliaSidebar">
+          {newView==='MobileView'?
+          <Col>            
+                <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
+                <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
+                <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
+              </Col> : null
+              }
             <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
               onChange={onchangeInputSearch}
               onSearch={onSearch}
@@ -892,14 +923,18 @@ const SearchComponent = () => {
 
           <ContentHolder>
             <Row style={{ marginBottom: '10px' }}>
-              <Col span={16}>
+            {newView==='MobileView'?
+            null : <Col span={16}>            
                 <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                 <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                 <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
-              </Col>
-              <Col span={8} align="right">
+              </Col>}
+              {newView==='MobileView'?
+              <Col style={{ width: '100%' }}align="right">
                 {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
-              </Col>
+              </Col>: <Col  span={8}  style={{ width: '100%' }}align="right">
+                {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
+              </Col>}
             </Row>
             <Box>
               <Spin spinning={loading}>

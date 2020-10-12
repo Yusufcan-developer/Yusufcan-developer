@@ -43,7 +43,6 @@ function useCartListData(url, reqBody) {
         value.forEach((item, index) => {          
           item.key = index;
           accountsNo.push(item.accountNo);
-          // accountsNo.push('utku');
         });
        
         setData(data.data);  

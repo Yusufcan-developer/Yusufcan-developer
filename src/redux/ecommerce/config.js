@@ -37,6 +37,7 @@ async function getDatabaseProductInfo() {
     return status;
 })
     .then(data => {
+      debugger
       productInfo = data;
     })
     .catch(
