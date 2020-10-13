@@ -44,6 +44,9 @@ let sortingField;
 let sortingOrder;
 const ChequesReport = () => {
   document.title = "Çek ve Senetler - Seramiksan B2B";
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';}
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
@@ -428,6 +431,7 @@ const ChequesReport = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          {newView!=='MobileView'?
             <Row>
               <Col span={6}>
                 <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
@@ -439,8 +443,9 @@ const ChequesReport = () => {
                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
               </Col>
             </Row>
+            :null}
             <Row>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -454,7 +459,7 @@ const ChequesReport = () => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: '250px' }}
@@ -465,7 +470,7 @@ const ChequesReport = () => {
                   {children}
                 </Select>
               </Col>
-              <Col span={6}>
+              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
