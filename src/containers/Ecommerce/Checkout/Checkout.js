@@ -68,6 +68,7 @@ export default function () {
   const [addressTitle, setAddressTitle] = useState();
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
+  const [itemsWaitingManufacturing,setItemsWaitingManufacturing]=useState();
   const history = useHistory();
 
   const { confirm } = Modal;
@@ -352,6 +353,7 @@ export default function () {
       .then(data => {
         if(data!==undefined){
         if (data.isSuccess) {
+          setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
           createOrderNo = data.orderNo; setSuccessOrderSave(true);
         } else {
           message.warning(data.message);
@@ -525,7 +527,20 @@ export default function () {
                   onOk={orderPreview}
                   onCancel={handleCancelOrderSave}
                 >
-                  <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Geçmiş Siparişler menüsünden görüntüleyebilirsiniz.</p>
+                  <React.Fragment>
+                    <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Geçmiş Siparişler menüsünden görüntüleyebilirsiniz.</p>
+                    {
+                      itemsWaitingManufacturing && itemsWaitingManufacturing.length > 0 ? (
+                        <React.Fragment>
+                          <p>Aşağıda listelenen ürün(ler) üretimden sonra sevkedilecektir.</p>
+                          <ul>
+                            {itemsWaitingManufacturing.map(item => { return (<li>{item.itemCode} - {item.description}</li>) })}
+                          </ul>
+                        </React.Fragment>
+                      ) : null
+                    }
+                  </React.Fragment>
+                  
                 </Modal>
                 <Modal
                   visible={createOrderQuestionVisible}
