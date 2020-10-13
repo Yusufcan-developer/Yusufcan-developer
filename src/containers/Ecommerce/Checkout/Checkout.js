@@ -532,9 +532,9 @@ export default function () {
                     {
                       itemsWaitingManufacturing && itemsWaitingManufacturing.length > 0 ? (
                         <React.Fragment>
-                          <p>Aşağıda listelenen ürün(ler) üretimden sonra sevkedilecektir.</p>
-                          <ul>
-                            {itemsWaitingManufacturing.map(item => { return (<li>{item.itemCode} - {item.description}</li>) })}
+                          <p style={{ margin: '10px 0 10px 0' }}>Aşağıda listelenen ürün(ler) üretimden sonra sevkedilecektir:</p>
+                          <ul style={{ listStylePosition: 'inside', listStyleType: 'initial' }}>
+                            {itemsWaitingManufacturing.map(item => { return (<li><strong>{item.itemCode}</strong> - {item.description}</li>) })}
                           </ul>
                         </React.Fragment>
                       ) : null
