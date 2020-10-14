@@ -46,6 +46,7 @@ export default {
       deleteCart: apiUrl + 'b2b/carts/account/',
       postSaveAddress: apiUrl + 'core/accounts/addresses',
       postSaveOrder:apiUrl+'b2b/carts/save-order/{accountNo}/{addressCode}',
+      getHasSaveOrderPermission:apiUrl+'b2b/carts/save-order/has-permission',
     },
     report: {
       postOrders: apiUrl + 'core/report/orders',
