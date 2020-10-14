@@ -18,7 +18,7 @@ const categories = [
   {
     "Id": "KARO",
     "title": "Karo",
-    "description": "Banyo, Mutfak, İç ve Dış Mekanlar, Ticari Mekan",
+    "description": "Teknik Granit, Porselen, Yer karosu, Duvar karosu, Dekor, Serastep",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/ardesia_final_35159.jpg",
   },
   {
