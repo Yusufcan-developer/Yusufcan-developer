@@ -54,7 +54,8 @@ const SearchComponent = () => {
   const btnText = collapsed ? 'Filtrele' : 'Gizle';
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
 
 
   //Hook States
@@ -89,7 +90,7 @@ const SearchComponent = () => {
   const [selectedItemCode, setSelectedItemCode] = useState();
 
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General,enumerations.LogTypes.Browse,'Ürün listeleme');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün listeleme');
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
     if (category === undefined) {
@@ -211,7 +212,7 @@ const SearchComponent = () => {
     if (parsed.srtf !== undefined) {
       setSortingField(parsed.srtf); switch (parsed.srtf) {
         case 'ItemRef':
-          return setItemRefButtonType('primary');          
+          return setItemRefButtonType('primary');
         case 'ListPrice':
           if (parsed.srto === 'ASC') { return setListPriceLowestButtonType('primary') }
           else { return setListPriceHighestButtonType('primary') }
@@ -232,7 +233,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category===undefined?color:[category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder },category,parsed);
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -311,7 +312,7 @@ const SearchComponent = () => {
       params.toString();
     }
     history.push(`${location.pathname}?${params.toString()}`);
-    
+
     return setOnChange(true);
   }
 
@@ -658,10 +659,10 @@ const SearchComponent = () => {
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
     if (event.target.value > 0) {
-      const selectedQuantity=event.target.value;
-      if ((partialQuantity) && (!productQuantity.find(item => item.itemCode === productData.itemCode && item.isPartial === isPartial))) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
+      const selectedQuantity = event.target.value;
+      if ((partialQuantity) && (!productQuantity.find(item => item.itemCode === productData.itemCode && item.isPartial === isPartial))) { return onAddProductCart(productData, true, isPartial, selectedQuantity) }
       else {
-        if ((partialQuantity === true) && (event.target.value === 1)) { return onAddProductCart(productData, true, isPartial,selectedQuantity) }
+        if ((partialQuantity === true) && (event.target.value === 1)) { return onAddProductCart(productData, true, isPartial, selectedQuantity) }
         else {
           const product = productData;
           var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
@@ -687,13 +688,13 @@ const SearchComponent = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
-    
+
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
 
       inputNumberShowOrHide(product)
       var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
-      if(selectedProduct===undefined){return;}
+      if (selectedProduct === undefined) { return; }
       if (selectedProduct.quantity !== 0) {
         const newProductQuantity = [];
         productQuantity.forEach(productItem => {
@@ -715,15 +716,15 @@ const SearchComponent = () => {
     }
   };
   //Adding products to the cart
-  function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false,selectedQuantity=0) {
+  function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
     if (selectedQuantity === 0) { selectedQuantity = 1 }
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
-        dispatch(addToCart(product,parseInt(selectedQuantity), isPartial));
+        dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
-        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,product.itemCode+ ' Ürün sepete eklendi');
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + ' Ürün sepete eklendi');
       }
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
@@ -742,11 +743,11 @@ const SearchComponent = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Update,product.itemCode+ ' Ürünün miktarı arttırıldı.');
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' Ürünün miktarı arttırıldı.');
       }
     }
   };
-  
+
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
   function handleCancel() {
     setPartialQuantity(false);
@@ -793,26 +794,26 @@ const SearchComponent = () => {
           <Link to="/products/categories">Ürün Grubu</Link>
         </Breadcrumb.Item>
         <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
-      </Breadcrumb> */}     
+      </Breadcrumb> */}
       <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
         <PageHeader>Ürün Arama</PageHeader>
-        {newView==='MobileView'? <Button style={{marginBottom:!state.collapsed ?'-20px':'0px'}}
-        className="ant-btn-primary isoAlgoliaSidebarToggle"
-        onClick={() => {
-          setState({ ...state, collapsed: !state.collapsed });
-        }}
-      >
-        {btnText}
-      </Button> :null}     
+        {newView === 'MobileView' ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
+          className="ant-btn-primary isoAlgoliaSidebarToggle"
+          onClick={() => {
+            setState({ ...state, collapsed: !state.collapsed });
+          }}
+        >
+          {btnText}
+        </Button> : null}
         <div className="isoAlgoliaMainWrapper">
           <SidebarWrapper className="isoAlgoliaSidebar">
-          {newView==='MobileView'?
-          <Col>            
+            {newView === 'MobileView' ?
+              <Col>
                 <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                 <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                 <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
               </Col> : null
-              }
+            }
             <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
               onChange={onchangeInputSearch}
               onSearch={onSearch}
@@ -923,18 +924,18 @@ const SearchComponent = () => {
 
           <ContentHolder>
             <Row style={{ marginBottom: '10px' }}>
-            {newView==='MobileView'?
-            null : <Col span={16}>            
-                <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
-                <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
-                <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
-              </Col>}
-              {newView==='MobileView'?
-              <Col style={{ width: '100%' }}align="right">
-                {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
-              </Col>: <Col  span={8}  style={{ width: '100%' }}align="right">
-                {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
-              </Col>}
+              {newView === 'MobileView' ?
+                null : <Col span={16}>
+                  <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
+                  <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
+                  <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
+                </Col>}
+              {newView === 'MobileView' ?
+                <Col style={{ width: '100%' }} align="right">
+                  {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
+                </Col> : <Col span={8} style={{ width: '100%' }} align="right">
+                  {totalDataCount > 0 && <span>{totalDataCount} adet sonuç bulundu</span>}
+                </Col>}
             </Row>
             <Box>
               <Spin spinning={loading}>
@@ -951,7 +952,7 @@ const SearchComponent = () => {
                         </Badge.Ribbon>
                       ) : (<div className="isoCardImage">
                         <Link to={`${'/products/detail'}/${item.itemCode}`}>
-                          <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName}/>
+                          <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                         </Link>{' '}
                       </div>)}
                       <div className="isoCardContent">
@@ -1009,7 +1010,7 @@ const SearchComponent = () => {
                               <Row align="middle">
                                 <Col span={4} align="right">
                                   <Button type="primary" onClick={event => onRemoveProductCart(item, true, false)}>
-                                    {<IntlMessages id="product.minus" />}                                  
+                                    {<IntlMessages id="product.minus" />}
                                   </Button>
                                 </Col>
                                 <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
@@ -1042,10 +1043,9 @@ const SearchComponent = () => {
                                   </Col>) : null}
                                 </Space>
                               </Row>
-                            </Form.Item>
-                            <Form.Item label='Parçalı Satış (KUTU)'>
+                            </Form.Item>                            
+                            <Form.Item label={item.unit !== 'TOR' ?'Parçalı Satış (KUTU)':'Parçalı Satış(TORBA)'} >
                               <Row align="middle">
-                                {/* <div>Parçalı Satış 1 Kutu: {item.m2Box} {item.unit}</div> */}
                                 <Col span={4} align="right">
                                   <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
                                     {<IntlMessages id="product.minus" />}
@@ -1070,9 +1070,10 @@ const SearchComponent = () => {
                                 </Col>
                                 <Space size={5}>
                                   <Col span={4}>
-                                    <Tag color="blue">
+                                    {item.unit !== 'TOR' ? <Tag color="blue">
                                       1 Kutu: {item.m2Box} {item.unit}
-                                    </Tag>
+                                    </Tag> : null}
+
                                   </Col>
                                   {partialAmount > 0 ? (<Col span={4}>
                                     <Tag color="blue">

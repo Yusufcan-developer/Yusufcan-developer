@@ -35,7 +35,6 @@ export default function CartTable({ style }) {
  const { productQuantity } = useSelector(state => state.Ecommerce);
 
   async function allCartItemChangeOrderAmount() {
-    debugger
     let sendDatabaseProductList;
     let productQuantity = localStorage.getItem('cartProductQuantity');
     productQuantity = JSON.parse(productQuantity);
@@ -101,7 +100,6 @@ export default function CartTable({ style }) {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    debugger
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let uname = token.uname;

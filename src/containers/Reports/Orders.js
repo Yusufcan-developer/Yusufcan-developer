@@ -622,7 +622,7 @@ const OrdersReport = () => {
             </Row>
           :null}         
             <Row>            
-              <Col  span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <TreeSelect
                   treeData={treeData}
                   value={selectedDealerCode}

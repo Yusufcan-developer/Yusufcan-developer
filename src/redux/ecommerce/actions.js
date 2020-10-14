@@ -17,7 +17,6 @@ const actions = {
     };
   },
   changeProductQuantity: productQuantity => {
-    debugger
     return (dispatch, getState) => {
       dispatch({
         type: actions.UPDATE_DATA_SAGA,

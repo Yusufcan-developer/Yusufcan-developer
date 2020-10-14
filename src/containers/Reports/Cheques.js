@@ -479,6 +479,7 @@ const ChequesReport = () => {
                 />
               </Col>
             </Row>
+            {newView!=='MobileView'?
             <Row>
               <Col span={5}>
                 <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
@@ -489,11 +490,12 @@ const ChequesReport = () => {
               <Col span={6} offset={2}>
               </Col>
             </Row>
+            :null}
             <Row>
-              <Col span={5}>
+              <Col span={newView!=='MobileView'?5:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <Input size="small" placeholder="Seri No" value={serialNumber} onChange={event => setSerialNumber([event.target.value])} />
               </Col>
-              <Col span={5} offset={1}>
+              <Col span={newView!=='MobileView'?5:0} offset={1} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={5} align="right">

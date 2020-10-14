@@ -33,7 +33,6 @@ export function* updateData({ productQuantity }) {
 
   //Redux product code and product quantity send database  
   let sendDatabaseProductList = _.each(productQuantity, (item) => {
-    debugger
     item['amount'] = item['quantity'];
     delete item['quantity'];
   });
