@@ -167,7 +167,7 @@ export default function Sidebar() {
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         newColumn = _.without(options, _.findWhere(options, {
-          children: { key: 'admin/users'}
+          key: 'systemAdministrator'
         }
         ))
       }
@@ -222,9 +222,9 @@ export default function Sidebar() {
         ))
       }
     }
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        newColumn = _.without(options, _.findWhere(options, {
+    if (newColumn.length > 0) {
+      for (let index = 0; index < newColumn.length; index++) {
+        newColumn = _.without(newColumn, _.findWhere(newColumn, {
           key: 'directorSystem'
         }
         ))
