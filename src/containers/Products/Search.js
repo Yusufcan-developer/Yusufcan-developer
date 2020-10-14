@@ -645,7 +645,7 @@ const SearchComponent = () => {
     else {
       productQuantity.forEach(productItem => {
         if (productItem.itemCode === selectedProduct.itemCode) {
-          if (productItem.isPartial === true) { titleArray.push(productItem.quantity + ' Kutu'); }
+          if (productItem.isPartial === true) {product.unit !== 'TOR' ? titleArray.push(productItem.quantity + ' Kutu'):titleArray.push(productItem.quantity + ' Torba') }
           else { titleArray.push(productItem.quantity + ' Palet') }
         }
       });
