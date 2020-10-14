@@ -49,6 +49,9 @@ const { Option } = Select;
 
 const CartList = () => {
   document.title = "Sepet Listesi - Seramiksan B2B";
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';}
   //Bayi Kodu Tekli veya çoklu seçim kontrolü
   const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
 
@@ -361,13 +364,15 @@ const CartList = () => {
         {<IntlMessages id="page.CreateCarts.header" />}
       </PageHeader>
       <Box>
+        {newView !== 'MobileView' ?
+          <Row>
+            <Col span={6}>
+              <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
+            </Col>
+          </Row>
+          : null}
         <Row>
-          <Col span={6}>
-            <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
-          </Col>
-        </Row>
-        <Row>
-          <Col span={6}>
+          <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
             <Select
               showSearch
               style={{ width: '100%' }}
@@ -382,7 +387,7 @@ const CartList = () => {
               {lookupDealerChildren}
             </Select>
           </Col>
-          <Col span={1}>
+          <Col span={newView!=='MobileView'?1:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
               </Col>
           <Button type="primary" loading={iconLoading} onClick={handleCreateCart}>
             {<IntlMessages id="forms.button.label_Choose" />}

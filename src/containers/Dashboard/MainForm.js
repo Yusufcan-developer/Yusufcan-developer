@@ -34,6 +34,9 @@ const { Option } = Select;
 
 const MainForm = () => {
   document.title = "Ana Ekran - Seramiksan B2B";
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';}
   const queryString = require('query-string');
   const history = useHistory();
   const [iconLoading, setIconLoading] = useState(false);
@@ -385,7 +388,7 @@ const MainForm = () => {
       <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
       <Row>
-          <Col span={6}>
+          <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
             <Select
               showSearch
               mode="multiple"
@@ -402,7 +405,7 @@ const MainForm = () => {
               {lookupDealerChildren}
             </Select>
           </Col>
-          <Col span={1}>
+          <Col  align={'right'} span={newView!=='MobileView'?1:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
               </Col>
           <Button type="primary" loading={iconLoading} onClick={dataSearch} >
             {<IntlMessages id="forms.button.label_Search" />}

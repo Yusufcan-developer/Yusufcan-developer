@@ -30,7 +30,7 @@ const categories = [
   {
     "Id": "BANYO MOBİLYASI",
     "title": "Banyo Mobilyası",
-    "description": "Banyo Mobilyası Ürün Grubu (Lorem ipsum dolor sit amet, consectetur)",
+    "description": "Banyo Mobilyası Ürün Grubu ",
     "imageUrl": "https://www.seramiksan.com.tr/images/seriler/betonmekan_0856e.jpg",
   },
 

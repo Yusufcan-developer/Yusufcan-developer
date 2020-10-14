@@ -47,7 +47,8 @@ const DeliveriesReport = () => {
   document.title = "Sevkiyat - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -70,7 +71,7 @@ const DeliveriesReport = () => {
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries,enumerations.LogTypes.Browse,'Sevkiyat raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, 'Sevkiyat raporu listeleme');
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -82,22 +83,22 @@ const DeliveriesReport = () => {
 
   let searchUrl = queryString.parse(location.search);
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postDeliveries}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder },searchUrl);
+    useFetch(`${siteConfig.api.report.postDeliveries}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -159,25 +160,25 @@ const DeliveriesReport = () => {
     params.delete('sortingField');
     params.delete('sortingOrder');
 
-    if (fromDate !=='' & toDate !== '') {
+    if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if(sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-    
+
     return setOnChange(true);
   }
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries,enumerations.LogTypes.Browse,'Sevkiyat raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, 'Sevkiyat raporu yeni arama');
     dataSearch();
   };
 
@@ -236,11 +237,11 @@ const DeliveriesReport = () => {
     });
     if (sorter !== undefined) {
       if (sorter.order === "descend") {
-        sortingOrder='DESC';
-      } else { sortingOrder='ASC'; }
-    
-    sortingField=sorter.field;
-    dataSearch()
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
     }
   };
 
@@ -255,12 +256,12 @@ const DeliveriesReport = () => {
   function currentPageChange(current, pageSize) {
     setPageIndex(current);
     setPageSize(pageSize);
-    dataSearch(current,pageSize);
+    dataSearch(current, pageSize);
   }
 
   //Excel Oluşturma
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries,enumerations.LogTypes.Export,'Sevkiyat raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, 'Sevkiyat raporu excel oluşturma');
     ExcelExport(columns, data, 'Sevkiyatlar');
   }
 
@@ -292,7 +293,7 @@ const DeliveriesReport = () => {
       sorter: (a, b) => '',
       sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-      render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),      
+      render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
     },
     {
       title: "Teslimat Adresi",
@@ -370,7 +371,7 @@ const DeliveriesReport = () => {
       key: "fieldManager"
     },
   ];
-  
+
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
@@ -415,23 +416,23 @@ const DeliveriesReport = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            :null}  
-            <Row>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   treeData={treeData}
                   value={selectedDealerCode}
@@ -445,7 +446,7 @@ const DeliveriesReport = () => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -453,11 +454,11 @@ const DeliveriesReport = () => {
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Input style={{ marginBottom: '8px', width: '250px' }} size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Button type="primary" onClick={searchButton}>
+              <Col xs={{ offset: 0, span: 24 }} sm={{ offset: 1, span: 2 }}  >
+                <Button  style={{  width: '100%'}} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

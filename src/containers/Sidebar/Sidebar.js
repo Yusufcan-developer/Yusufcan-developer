@@ -150,18 +150,66 @@ export default function Sidebar() {
   //Get Token and Token Decode
   
   if (token.urole === 'admin') { newColumn=options
+    const getHideColumns = options;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        newColumn = _.without(options, _.findWhere(options, {
+          key: 'directorSystem'
+        }
+        ))
+      }
+    }
   }
   else if (token.urole === 'fieldmanager') {
-    newColumn=options  
+    newColumn=options
+    const getHideColumns = options;
+
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        newColumn = _.without(options, _.findWhere(options, {
+          children: { key: 'admin/users'}
+        }
+        ))
+      }
+    }
   }
   else if (token.urole === 'regionmanager') {
     newColumn=options
+    const getHideColumns = options;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        newColumn = _.without(options, _.findWhere(options, {
+          key: 'systemAdministrator'
+        }
+        ))
+      }
+    }
   }
   else if(token.urole==='support'){
     newColumn=options
+    const getHideColumns = options;
+
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        newColumn = _.without(options, _.findWhere(options, {
+          key: 'systemAdministrator'
+        }
+        ))
+      }
+    }
   }
   else if(token.urole==='director'){
     newColumn=options
+    const getHideColumns = options;
+
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        newColumn = _.without(options, _.findWhere(options, {
+          key: 'systemAdministrator'
+        }
+        ))
+      }
+    }
   }
   else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     const getHideColumns = options;
@@ -173,7 +221,16 @@ export default function Sidebar() {
         }
         ))
       }
-    }}
+    }
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        newColumn = _.without(options, _.findWhere(options, {
+          key: 'directorSystem'
+        }
+        ))
+      }
+    }
+  }
  { return (
     <SidebarWrapper>
       <Sider

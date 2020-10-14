@@ -79,6 +79,18 @@ const options = [
         label: 'sidebar.logs',
       },
     ],
-  },   
+  },
+  {
+    key: 'directorSystem',
+    label: 'sidebar.administrator',
+    leftIcon: 'ion-document-text',
+    children: [  
+     
+      {
+        key: 'admin/carts',
+        label: 'sidebar.carts',
+      },
+    ],
+  }, 
 ];
 export default options;
