@@ -92,6 +92,8 @@ export default function CartTable({ style }) {
   }
   //Get Cart
   async function getCartList() {
+
+    console.log('xxxx geldim')
     let productInfo;
     const requestOptions = {
       method: "GET",

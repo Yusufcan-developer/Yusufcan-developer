@@ -16,7 +16,7 @@ import InputBox from './InputBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper, InputBoxWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
-import { Col, Row, Modal, Table, Input, Space, message } from "antd";
+import { Col, Row, Modal, Table, Input, Space, message, Alert } from "antd";
 import Form from "@iso/components/uielements/form";
 import Textarea from '@iso/components/uielements/input';
 
@@ -56,6 +56,7 @@ export default function () {
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
   const [form] = Form.useForm();
+  const [hasOrderSavePermission, setHasOrderSavePermission] = useState();
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
   const [addressCode, setAddressCode] = useState();
@@ -68,7 +69,7 @@ export default function () {
   const [addressTitle, setAddressTitle] = useState();
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
-  const [itemsWaitingManufacturing,setItemsWaitingManufacturing]=useState();
+  const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
   const history = useHistory();
 
   const { confirm } = Modal;
@@ -76,7 +77,7 @@ export default function () {
   const token = jwtDecode(localStorage.getItem("id_token"));
   const activeUser = localStorage.getItem("activeUser")
   let account = token.uname;
-  
+
   if (activeUser != undefined) { account = activeUser }
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -102,11 +103,12 @@ export default function () {
   function saveOrderQuestionModal() {
     if (adressItem) {
       setCreateOrderQuestionVisible(true);
-    } else { message.warning('Lütfen sevk adresi seçiniz!')}
+    } else { message.warning('Lütfen sevk adresi seçiniz!') }
   };
 
   function saveOrder() {
     setCreateOrderQuestionVisible(false);
+
     postSaveOrder();
   }
 
@@ -237,8 +239,32 @@ export default function () {
     return user;
   }
 
+  //get has save order permission
+  async function getHasSaveOrderPermission() {
+    let userData;
+    //Get User Info  
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(`${siteConfig.api.carts.getHasSaveOrderPermission}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        setHasOrderSavePermission(data);
+      })
+      .catch();
+    return userData;
+  }
+
   //get adress and user id function
   async function getInitData(userId) {
+    const hasSaveOrderPermission = await getHasSaveOrderPermission();
     const userData = await getByUserId(userId);
     const adress = await getAdress(account);
   }
@@ -351,14 +377,14 @@ export default function () {
         return status;
       })
       .then(data => {
-        if(data!==undefined){
-        if (data.isSuccess) {
-          setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
-          createOrderNo = data.orderNo; setSuccessOrderSave(true);
-        } else {
-          message.warning(data.message);
+        if (data !== undefined) {
+          if (data.isSuccess) {
+            setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
+            createOrderNo = data.orderNo; setSuccessOrderSave(true);
+          } else {
+            message.warning(data.message);
+          }
         }
-      }
       })
       .catch();
     setConfirmLoading(false);
@@ -404,9 +430,14 @@ export default function () {
       <LayoutWrapper className="isoCheckoutPage">
         <Box>
           <div className="isoBillingAddressWrapper">
+            {hasOrderSavePermission !== true ? <Alert
+              message="Uyarı"
+              description="Sipariş oluşturma yetkiniz bulunmamaktadır."
+              type="warning"
+              showIcon style={{ width: '500px', margin: '15px auto' }}
+            /> : null}
             <h3 className="isoSectionTitle">Sipariş Detayı</h3>
             <div className="isoBillingSection">
-
               {/* Müşteri Bilgileri */}
               <BillingFormWrapper className="isoBillingForm">
                 <Modal
@@ -427,7 +458,7 @@ export default function () {
                   >
                     <Col span={8} offset={16} align="right" >
                       <Button type="primary" size="small" style={{ marginBottom: '5px' }}
-                        icon={<PlusOutlined />} onClick={onCreateAddress}>
+                        icon={<PlusOutlined />} onClick={onCreateAddress} >
                         {<IntlMessages id="forms.button.createAddress" />}
                       </Button>
                     </Col>
@@ -540,7 +571,7 @@ export default function () {
                       ) : null
                     }
                   </React.Fragment>
-                  
+
                 </Modal>
                 <Modal
                   visible={createOrderQuestionVisible}
@@ -568,6 +599,7 @@ export default function () {
                     value={adressItem}
                     important
                     onSearch={handleShowModal}
+                    disabled={!hasOrderSavePermission}
                   />
                 </div>
                 <div className="isoInputFieldset">
@@ -632,10 +664,10 @@ export default function () {
                     <span>{data != undefined ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
-                    <Button type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
+                    <Button disabled={!hasOrderSavePermission} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
                       Sipariş Oluştur
         </Button>
-                    <Button type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
+                    <Button disabled={!hasOrderSavePermission} type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
                       Sipariş Temizle
         </Button>
                   </Space>

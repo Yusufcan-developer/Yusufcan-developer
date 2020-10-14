@@ -299,11 +299,12 @@ const ProductDetail = () => {
         <Breadcrumb.Item>Ürün Detayı</Breadcrumb.Item>
       </Breadcrumb>
       <Row style={rowStyle} gutter={gutter} justify="start">
-        <PageHeader>{itemCode + " - " + description}</PageHeader>
+        <PageHeader >{itemCode + " - " + description}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
             <SwiperWithCustomNav navigationControl={false} >
-              <Card >
+              <Card 
+                  style={{textAlign:'center'}}>
                 {<Image
                   key={`customnav-slider--key${sliderImageUrl || imageUrl}`}
                   src={sliderImageUrl || imageUrl}
