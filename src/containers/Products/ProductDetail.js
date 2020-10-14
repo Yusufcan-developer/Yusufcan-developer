@@ -10,7 +10,7 @@ import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
-import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge } from 'antd';
+import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge, message } from 'antd';
 import { ReactSortable } from "react-sortablejs";
 import _, { select } from 'underscore';
 
@@ -126,7 +126,12 @@ const ProductDetail = () => {
   //Adding products to the cart
 
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity) {
-
+    //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    if ((!activeUser)|(activeUser===null)) {
+    if ((token.urole === 'admin')||(token.urole === 'fieldmanager')||(token.urole === 'regionmanager') ||(token.urole === 'support'))  { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
+    }
     if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(itemCode)
