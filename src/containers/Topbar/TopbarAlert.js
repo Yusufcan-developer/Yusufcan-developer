@@ -5,8 +5,8 @@ var jwtDecode = require('jwt-decode');
 
 export default function TopbarAlert(props) {
   const [visible, setVisiblity] = React.useState(false);
-  const { showAlert,username } = props;
-  const message=username+' hesabıyla ilişkili sepet üzerinde işlem yapmaktasınız';
+  const { showAlert, username } = props;
+  const message = username + ' hesabına ait sepette işlem yapmaktasınız';
   const token = jwtDecode(localStorage.getItem("id_token"));
   function handleVisibleChange() {
     setVisiblity(visible => !visible);
@@ -17,14 +17,13 @@ export default function TopbarAlert(props) {
     window.location.reload(true);
 
   };
-  
-    return (
-        <React.Fragment>          
-            {(showAlert ) ? (
-                <Alert message={message} type="info" showIcon closable banner
-      onClose={onClose} />
-            ) : ('')}
 
+  return (
+    <React.Fragment>
+      {(showAlert) ? (
+        <Alert message={message} type="info" showIcon closable banner
+          onClose={onClose}/>
+      ) : ('')}
     </React.Fragment>
   );
 };

@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import Input, { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag } from "antd";
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message } from "antd";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -40,7 +40,7 @@ import {
   SortAscendingOutlined, ClearOutlined, InfoCircleOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
-
+var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 
 const SearchComponent = () => {
@@ -717,13 +717,20 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
+  
+    //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser = localStorage.getItem("activeUser")
+  if ((!activeUser)|(activeUser===null)) {
+  if ((token.urole === 'admin')||(token.urole === 'fieldmanager')||(token.urole === 'regionmanager') ||(token.urole === 'support'))  { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
+  }
     if (selectedQuantity === 0) { selectedQuantity = 1 }
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
-        notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+        notification.info({ message: 'Sepet', description: 'Ürün '+product.itemCode+' Sepete Eklenmiştir', placement: 'bottomRight' });
         postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + ' Ürün sepete eklendi');
       }
       else {
