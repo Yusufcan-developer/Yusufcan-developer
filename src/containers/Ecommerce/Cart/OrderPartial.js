@@ -223,7 +223,8 @@ const OrderPartial = () => {
         return (
           <>
             {record.isPartial === true ? (
-              'Kutu'
+              unit==='TOR'?
+              'TOR':'Kutu'
             ) : (unit)}
           </>)
       }

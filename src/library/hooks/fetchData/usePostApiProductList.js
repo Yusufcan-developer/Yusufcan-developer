@@ -2,8 +2,10 @@
 import { useState, useEffect } from "react";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import _ from 'underscore';
-
+import { Link, useHistory, useLocation } from 'react-router-dom';
 function useProductData(url, reqBody, categorie, searchUrl) {
+  const queryString = require('query-string');
+  const location = useLocation();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
@@ -60,14 +62,22 @@ function useProductData(url, reqBody, categorie, searchUrl) {
         setLastReqBody(searchUrl);
         setLoading(false);
         setOnChange(false);
-      }).catch(error => console.log('hata', error));
+      }).catch(error => setOnChange(false));
   }
   useEffect(() => {
-    // if (categorie !== undefined) {
-    if (!_.isEqual(lastReqBody, searchUrl)) {
+    const parsed = queryString.parse(location.search);
+    if ((categorie === undefined) && (parsed.keyword === undefined)){return setOnChange(false);}
+     if (categorie === undefined) {
+       if (parsed.keyword !== undefined) {
+         setLoading(true);
+         fetchUrl();
+       }
+    }
+    else {
+       if (!_.isEqual(lastReqBody, searchUrl)) {
       setLoading(true);
       fetchUrl();
-      // }
+       }
     }
   }, [currentPage, changePageSize, onChange]);
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray];

@@ -90,7 +90,7 @@ const SearchComponent = () => {
   const [selectedItemCode, setSelectedItemCode] = useState();
 
   useEffect(() => {
-    // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün listeleme');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün listeleme');
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
     if (category === undefined) {
@@ -221,8 +221,9 @@ const SearchComponent = () => {
       }
     }
     else { setItemRefButtonType('primary'); }
-
-    return setOnChange(true);
+    
+      return setOnChange(true);
+    
   }
 
   //Redux ürünler listeleme
@@ -231,10 +232,11 @@ const SearchComponent = () => {
   const dispatch = useDispatch();
 
   const parsed = queryString.parse(location.search);
+
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
     useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
-
+  
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
 
@@ -645,7 +647,7 @@ const SearchComponent = () => {
     else {
       productQuantity.forEach(productItem => {
         if (productItem.itemCode === selectedProduct.itemCode) {
-          if (productItem.isPartial === true) {product.unit !== 'TOR' ? titleArray.push(productItem.quantity + ' Kutu'):titleArray.push(productItem.quantity + ' Torba') }
+          if (productItem.isPartial === true) { product.unit !== 'TOR' ? titleArray.push(productItem.quantity + ' Kutu') : titleArray.push(productItem.quantity + ' Torba') }
           else { titleArray.push(productItem.quantity + ' Palet') }
         }
       });
@@ -717,21 +719,21 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
-  
+
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
-  const token = jwtDecode(localStorage.getItem("id_token"));
-  const activeUser = localStorage.getItem("activeUser")
-  if ((!activeUser)|(activeUser===null)) {
-  if ((token.urole === 'admin')||(token.urole === 'fieldmanager')||(token.urole === 'regionmanager') ||(token.urole === 'support'))  { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
-  }
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    if ((!activeUser) | (activeUser === null)) {
+      if ((token.urole === 'admin') || (token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
+    }
     if (selectedQuantity === 0) { selectedQuantity = 1 }
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
-        notification.info({ message: 'Sepet', description: 'Ürün '+product.itemCode+' Sepete Eklenmiştir', placement: 'bottomRight' });
-        // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + ' Ürün sepete eklendi');
+        notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + ' Ürün sepete eklendi');
       }
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
@@ -750,7 +752,7 @@ const SearchComponent = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' Ürünün miktarı arttırıldı.');
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' Ürünün miktarı arttırıldı.');
       }
     }
   };
@@ -1050,8 +1052,8 @@ const SearchComponent = () => {
                                   </Col>) : null}
                                 </Space>
                               </Row>
-                            </Form.Item>                            
-                            <Form.Item label={item.unit !== 'TOR' ?'Parçalı Satış (KUTU)':'Parçalı Satış(TORBA)'} >
+                            </Form.Item>
+                            <Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
                               <Row align="middle">
                                 <Col span={4} align="right">
                                   <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>

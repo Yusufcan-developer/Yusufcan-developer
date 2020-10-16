@@ -181,7 +181,7 @@ const CartList = () => {
       case '1':
         localStorage.setItem('activeUser', selectedCart.accountNo);
         history.push('/cart'); 
-        window.location.reload(false);   
+        return window.location.reload(false);
         break;
       case '2':
         setAccountNo(selectedCart.accountNo)
