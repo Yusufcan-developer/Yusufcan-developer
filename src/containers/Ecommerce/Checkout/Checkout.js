@@ -41,7 +41,7 @@ import {
 import _ from 'underscore';
 import numberFormat from "@iso/config/numberFormat";
 import 'moment/locale/tr'
-import moment from 'moment';
+import moment, { duration } from 'moment';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 moment.locale('tr')
 var jwtDecode = require('jwt-decode');
@@ -382,7 +382,7 @@ export default function () {
             setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
             createOrderNo = data.orderNo; setSuccessOrderSave(true);
           } else {
-            message.warning(data.message);
+            message.warning(data.message,10);
           }
         }
       })

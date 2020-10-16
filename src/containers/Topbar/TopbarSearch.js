@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import TopbarSearchModal from './TopbarSearchModal.styles';
-import { Col, Row, Modal, Table, Input, Space, message } from "antd";
-import Button from "@iso/components/uielements/button";
+import { Input } from "antd";
 export default function TopbarSearch() {
 
-  const queryString = require('query-string');
   const location = useLocation();
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisiblity] = React.useState(false);
   const [keyword, setKeyword] = useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const history = useHistory();
@@ -29,47 +27,53 @@ export default function TopbarSearch() {
   const keyPress = e => {
     if (e.keyCode == 13) {
       if (keyword !== undefined) {
-        setVisible(false);
+        setVisiblity(false);
         history.push(`${'/products/search'}/?keyword=${keyword}`)
-        if(location.pathname==='/products/search/'){window.location.reload(false);}        
+        if (location.pathname === '/products/search/') { window.location.reload(false); }
       }
       setKeyword();
     }
   }
+  
+  function showModal() {
+    setVisiblity(true);
+  };
+  const handleBlur = () => {
+    setTimeout(() => {
+      setVisiblity(false);
+    }, 200);
+  };
+  //Input
+  const onchange = e => {
+    setKeyword(e.target.value);
+  }
+  return (
+    <div onClick={() => setVisiblity(true)}>
+      <i
+        className="ion-ios-search-strong"
+        style={{ color: customizedTheme.textColor }}
+      />
+      <TopbarSearchModal
+        visible={visible}
+        onOk={() => setVisiblity(false)}
+        onCancel={() => setVisiblity(false)}
+        maskClosable={true}
+        width="60%"
+        footer={null}
+      >
+        <div className="isoSearchContainer">
+          {visible ?<Input
+            id="InputTopbarSearch"
+            size="large"
+            placeholder="Ürünlerde ara"
+            value={keyword}
+            onChange={onchange}
+            onKeyDown={keyPress}
+            onBlur={handleBlur}
+          />:null}
 
-function showModal() {
-  setVisible(true);
-};
-
-//Input
-const onchange = e => {
-  setKeyword(e.target.value);
-}
-return (
-  <div onClick={showModal}>
-    <i
-      className="ion-ios-search-strong"
-      style={{ color: customizedTheme.textColor }}
-    />
-    <TopbarSearchModal
-      visible={visible}
-      onOk={() => setVisible(false)}
-      onCancel={() => setVisible(false)}
-      wrapClassName="isoSearchModal"
-      width="60%"
-      footer={null}
-    >
-      <div className="isoSearchContainer">
-        {<Input
-          id="InputTopbarSearch"
-          size="large"
-          placeholder="Ürünlerde ara"
-          value={keyword}
-          onChange={onchange}
-          onKeyDown={keyPress}
-        />}
-      </div>
-    </TopbarSearchModal>
-  </div>
-);
+        </div>
+      </TopbarSearchModal>
+    </div>
+  );
 }

@@ -93,7 +93,6 @@ export default function CartTable({ style }) {
   //Get Cart
   async function getCartList() {
 
-    console.log('xxxx geldim')
     let productInfo;
     const requestOptions = {
       method: "GET",
@@ -304,9 +303,9 @@ export default function CartTable({ style }) {
     <React.Fragment>
      <PageHeader>Sepet Detayı</PageHeader>
       <ProductsTable className={`isoCartTable ${classname}`}>
-        <table>
+        <table className="sticky-column" style={{overflow:'scroll'}}>
         <thead>
-          <tr>
+          <tr >
             <th className="isoItemRemove" />
             <th className="isoItemImage" />
             <th className="isoItemName">Ürün</th>
