@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+//React
+import React, { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { Card, Row, Col } from "antd";
-
+import TopbarAddtoCart from '../Topbar/TopbarAddToCart';
 const { Meta } = Card;
 
 //Kategoriler Grup Bilgisi.
@@ -40,18 +41,15 @@ const ProductGroupList = () => {
   document.title = "Kategoriler - Seramiksan B2B";
   let products = localStorage.getItem('cartProductQuantity');
 
-  useEffect(() => {
-    if (products === null)
-      window.location.reload(false);
-  });
-
+  
+  TopbarAddtoCart();
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>
       <Box>
         <Row gutter={[24, 16]}>
           {categories.map((item) => (
-            <Col xs={{ span: 24 }} sm={{ span: 6 }}>
+            <Col xs={{ span: 24 }} sm={{ span: 12 }} lg={{span:6}} >
             {/* Seçilen kategori grubuna göre Id alınıp ürün listeleme sayfasına geçiyor.*/}
               <Link to={`${'/products/search'}/?pg=${item.Id}`}>
                 <Card

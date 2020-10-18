@@ -21,6 +21,7 @@ import numberFormat from "@iso/config/numberFormat";
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
+import getInitData from '../../redux/ecommerce/config';
 var jwtDecode = require('jwt-decode');
 const {
   initData,
@@ -34,7 +35,7 @@ export default function TopbarAddtoCart() {
   const dispatch = useDispatch();
   const queryString = require('query-string');
   const location = useLocation();
-
+  const [quantity, setQuantity]=useState();
   const [totalPrice,setTotalPrice]=useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const {
@@ -43,22 +44,12 @@ export default function TopbarAddtoCart() {
     loadingInitData,
     viewTopbarCart,
   } = useSelector(state => state.Ecommerce);
-
-  let quantity;
-  if (productQuantity) { quantity = productQuantity.length }
-  else { quantity = 0 }
-  
   function hide() {
     dispatch(changeViewTopbarCart(false));
   }
   function handleVisibleChange() {
     dispatch(changeViewTopbarCart(!viewTopbarCart));
   }
-  React.useEffect(() => {
-    if (!loadingInitData) {
-      dispatch(initData());
-    }
-  }, [dispatch, loadingInitData]);
   //Get Cart
   async function getCartList() {
     let productInfo;
@@ -83,6 +74,14 @@ export default function TopbarAddtoCart() {
       .then(data => {
         cartItem=data.items;
         setTotalPrice(data.totalCost);
+        setQuantity(cartItem.length);
+        getInitData();//Send Redux Data;        
+        //Redux Data refresh
+        if ((productQuantity === null)|| (quantity!==productQuantity.length)){
+          let productQuantity = localStorage.getItem('cartProductQuantity');
+          productQuantity = JSON.parse(productQuantity); dispatch(initData({ productQuantity }));
+        }
+
       })
       .catch();
     return productInfo;
@@ -91,7 +90,7 @@ export default function TopbarAddtoCart() {
   //Ürünler Listesinin render edilmesi SingleCart View js dosyasına yönlendiriliyor.
   function renderProducts() {
     getCartList();
-    if (!productQuantity || productQuantity.length === 0) {
+    if (!quantity || quantity.length === 0) {
       return (
         <div className="isoNoItemMsg">
           <span>Sepetiniz Boş</span>
@@ -99,7 +98,7 @@ export default function TopbarAddtoCart() {
       );
     }
     if(cartItem!==null){
-    return productQuantity.map(product => {
+    return cartItem.map(product => {
       let productItem ;
       productItem = _.find(cartItem, function(item){ return item.itemCode ===product.itemCode &&item.isPartial===product.isPartial });
       if(productItem!==undefined){

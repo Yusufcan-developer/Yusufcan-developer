@@ -7,11 +7,15 @@ import ecommerceActions from '@iso/redux/ecommerce/actions';
 import React, { useState, useEffect } from "react";
 import authAction from '@iso/redux/auth/actions';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+
 var jwtDecode = require('jwt-decode');
 
 const { logout } = authAction;
 const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
-
+export default function getInitData() {
+  let productControl = localStorage.getItem('cartProductQuantity');
+  let activeUser = localStorage.getItem('activeUser');
+  if((!productControl)||(activeUser)){getInitData();}
 async function getDatabaseProductInfo() {
   //Get Database to Redux Product Info
   let productInfo;
@@ -66,11 +70,9 @@ async function getInitData() {
           });
         });
       }
-
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
     } else { }
   }
   return { productQuantity };
 }
-
-export default getInitData();
+}

@@ -12,7 +12,6 @@ import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
 import { Col, Row, Button } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
-
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import siteConfig from "@iso/config/site.config";
@@ -21,6 +20,7 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 //Other Library
 import { OrderTable } from '../Checkout/Checkout.styles';
 import _ from 'underscore';
+import getInitData from "../../../redux/ecommerce/config";
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
@@ -117,6 +117,7 @@ export default function CartTable({ style }) {
         setTotalCost(data.totalOverallCost);
         setTotal(data.totalCost);
         setTotalVat(data.totalVat);
+        getInitData();
 
       })
       .catch();
