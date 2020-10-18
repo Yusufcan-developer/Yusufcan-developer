@@ -950,7 +950,7 @@ const SearchComponent = () => {
               <Spin spinning={loading}>
                 <Row gutter={[24, 16]}>
                   {data.map((item) => (
-                    <SingleCardWrapper className={listClass} style={style}>
+                    <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{span:6}} >
                       {item.canBeSoldPartially === true ? (
                         <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange'>
                           <div className="isoCardImage">

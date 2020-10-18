@@ -13,7 +13,7 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal, message } from "antd";
-
+import TopbarAddtoCart from '../../Topbar/TopbarAddToCart';
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
@@ -180,8 +180,7 @@ const CartList = () => {
     switch (value.key) {
       case '1':
         localStorage.setItem('activeUser', selectedCart.accountNo);
-        history.push('/cart'); 
-        return window.location.reload(false);
+        history.push('/cart');
         break;
       case '2':
         setAccountNo(selectedCart.accountNo)
