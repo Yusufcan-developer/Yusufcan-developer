@@ -74,6 +74,8 @@ export default function TopbarAddtoCart() {
       .then(data => {
         cartItem=data.items;
         setTotalPrice(data.totalCost);
+        debugger
+        if(data!=='Unauthorized1'){
         setQuantity(cartItem.length);
         getInitData();//Send Redux Data;        
         //Redux Data refresh
@@ -81,7 +83,8 @@ export default function TopbarAddtoCart() {
           let productQuantity = localStorage.getItem('cartProductQuantity');
           productQuantity = JSON.parse(productQuantity); dispatch(initData({ productQuantity }));
         }
-
+      }
+      else{setQuantity(0)}
       })
       .catch();
     return productInfo;
