@@ -30,10 +30,10 @@ function useProductData(url, reqBody, categorie, searchUrl) {
   const [sortingField, setSortingField] = useState();
   const [sortingOrder, setSortingOrder] = useState();
   const [lastReqBody, setLastReqBody] = useState();
-
+  const [campaing, setCampaingCode] = useState();
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "keyword": keyword, "salesStatus": salesStatus, "surfaces": surface, "colors": color, "dimensions": dimension, "productStatus": productStatus, "categories": productGroup, "pageIndex": currentPage - 1, "pageCount": changePageSize, "sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
+    const reqB = reqBody == null || reqBody == undefined ? { "keyword": keyword, "salesStatus": salesStatus,"onlyHavingCampaigns":campaing, "surfaces": surface, "colors": color, "dimensions": dimension, "productStatus": productStatus, "categories": productGroup, "pageIndex": currentPage - 1, "pageCount": changePageSize, "sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {

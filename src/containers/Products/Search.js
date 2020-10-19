@@ -78,6 +78,7 @@ const SearchComponent = () => {
   const [dimension, setDimension] = useState([]);
   const [color, setColor] = useState([]);
   const [surface, setSurface] = useState([]);
+  const [campaing, setCampaingCode] = useState(false);
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
 
   //Sorting states
@@ -120,7 +121,6 @@ const SearchComponent = () => {
         setType(parsed.ut)
       } else { setType([parsed.ut]); }
     }
-
     //Dimension get url data
     if (parsed.dm !== undefined) {
       let dimensionNewArray
@@ -197,6 +197,12 @@ const SearchComponent = () => {
     if (parsed.ss !== undefined) {
       setSalesStatus(parsed.ss)
     }
+        
+    //Kampanya get url data
+    if (parsed.campaing !== undefined) {
+      if(parsed.campaing==='true')
+      setCampaingCode(true);else{setCampaingCode(false)}
+    }
 
     //Product Quality get url data
     if (parsed.pq !== undefined) {
@@ -221,9 +227,9 @@ const SearchComponent = () => {
       }
     }
     else { setItemRefButtonType('primary'); }
-    
-      return setOnChange(true);
-    
+
+    return setOnChange(true);
+
   }
 
   //Redux ürünler listeleme
@@ -235,8 +241,8 @@ const SearchComponent = () => {
 
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
-  
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus,"onlyHavingCampaigns":campaing, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
+
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
 
@@ -355,6 +361,24 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   }
+
+
+  //Campaing Filter Event
+  function onChangeCampaing(event) {
+    setCampaingCode(event.target.value)
+    const params = new URLSearchParams(location.search);
+    params.delete('campaing');
+    params.append('campaing', event.target.value);
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setPageIndex(1);
+    params.toString();
+
+    history.push(`${location.pathname}?${params.toString()}`);
+
+    return setOnChange(true);
+  }
+
   //Type Filter Event
   function onChangeType(checkedProductTypeValue) {
     setType(checkedProductTypeValue);
@@ -796,14 +820,6 @@ const SearchComponent = () => {
   }
   return (
     <React.Fragment>
-      {/* <Breadcrumb>
-        <Breadcrumb.Item>
-          <Link to="/dashboard">Dashboard</Link></Breadcrumb.Item>
-        <Breadcrumb.Item >
-          <Link to="/products/categories">Ürün Grubu</Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Ürünler Listesi</Breadcrumb.Item>
-      </Breadcrumb> */}
       <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
         <PageHeader>Ürün Arama</PageHeader>
         {newView === 'MobileView' ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
@@ -843,6 +859,18 @@ const SearchComponent = () => {
                 </Radio>
                   <Radio style={radioStyle} value={enumerations.SalesStatus.OnlyPartials}>
                     Parçalı Satış
+                </Radio>
+                </RadioGroup>
+              </Panel>
+            </Collapse>
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="filter.campaing" />} key="1">
+                <RadioGroup onChange={onChangeCampaing} defaultValue={campaing}>
+                  <Radio style={radioStyle} value={false}>
+                    Hepsi
+                </Radio>
+                  <Radio style={radioStyle} value={true}>
+                    Kampanyalı
                 </Radio>
                 </RadioGroup>
               </Panel>
@@ -950,20 +978,34 @@ const SearchComponent = () => {
               <Spin spinning={loading}>
                 <Row gutter={[24, 16]}>
                   {data.map((item) => (
-                    <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{span:6}} >
+                    <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 6 }} >
                       {item.canBeSoldPartially === true ? (
-                        <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange'>
-                          <div className="isoCardImage">
-                            <Link to={`${'/products/detail'}/${item.itemCode}`}>
-                              <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
-                            </Link>{' '}
-                          </div>
-                        </Badge.Ribbon>
-                      ) : (<div className="isoCardImage">
+                        <React.Fragment>
+                          <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange' placement='end'>
+                            {item.campaignCode === '' ? ''
+                              : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
+                              </Badge.Ribbon>}
+                            <div className="isoCardImage">
+                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                                <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                              </Link>{' '}
+                            </div>
+                          </Badge.Ribbon>
+                        </React.Fragment>
+                      ) : ( 
+                        <React.Fragment>
+                        {item.campaignCode===''? 
+                        <div className="isoCardImage">                     
                         <Link to={`${'/products/detail'}/${item.itemCode}`}>
                           <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                         </Link>{' '}
-                      </div>)}
+                      </div>: <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
+                        <div className="isoCardImage">                     
+                        <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                          <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                        </Link>{' '}
+                      </div></Badge.Ribbon>}
+                       </React.Fragment>)}
                       <div className="isoCardContent">
                         <Row>
                           <Col span={6} >
