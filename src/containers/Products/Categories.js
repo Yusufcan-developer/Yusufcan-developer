@@ -40,7 +40,9 @@ const categories = [
 const ProductGroupList = () => {
   document.title = "Kategoriler - Seramiksan B2B";
   let products = localStorage.getItem('cartProductQuantity');
-
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';}
   
   TopbarAddtoCart();
   return (
@@ -49,7 +51,7 @@ const ProductGroupList = () => {
       <Box>
         <Row gutter={[24, 16]}>
           {categories.map((item) => (
-            <Col xs={{ span: 24 }} sm={{ span: 12 }} lg={{span:6}} >
+            <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
             {/* Seçilen kategori grubuna göre Id alınıp ürün listeleme sayfasına geçiyor.*/}
               <Link to={`${'/products/search'}/?pg=${item.Id}`}>
                 <Card

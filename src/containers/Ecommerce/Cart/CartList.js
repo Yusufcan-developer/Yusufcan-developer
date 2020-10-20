@@ -13,7 +13,6 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal, message } from "antd";
-import TopbarAddtoCart from '../../Topbar/TopbarAddToCart';
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
@@ -23,7 +22,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import Actions from '@iso/redux/themeSwitcher/actions';
 import config from '@iso/redux/ecommerce/config'
 import ecommerceActions from '@iso/redux/ecommerce/actions';
-
 //Styles
 import { DownOutlined } from '@ant-design/icons';
 
@@ -181,6 +179,7 @@ const CartList = () => {
       case '1':
         localStorage.setItem('activeUser', selectedCart.accountNo);
         history.push('/cart');
+        window.location.reload(false);
         break;
       case '2':
         setAccountNo(selectedCart.accountNo)

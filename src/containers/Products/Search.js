@@ -600,6 +600,7 @@ const SearchComponent = () => {
     setSeries([]);
     setColor([]);
     setSurface([]);
+    setCampaingCode(false);
     if (getProductGroupName !== undefined) {
       let productGroupName = getProductGroupName;
       params.delete('pg');
@@ -613,7 +614,8 @@ const SearchComponent = () => {
     params.delete('clr');
     params.delete('sfc');
     params.delete('pgindex');
-    params.append('pgindex', 1)
+    params.delete('campaing');
+    params.append('pgindex', 1);
 
     // setPageIndex(1);
 
@@ -748,7 +750,7 @@ const SearchComponent = () => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     if ((!activeUser) | (activeUser === null)) {
-      if ((token.urole === 'admin') || (token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
+      if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
     }
     if (selectedQuantity === 0) { selectedQuantity = 1 }
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
@@ -865,7 +867,7 @@ const SearchComponent = () => {
             </Collapse>
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="filter.campaing" />} key="1">
-                <RadioGroup onChange={onChangeCampaing} defaultValue={campaing}>
+                <RadioGroup onChange={onChangeCampaing} value={campaing} defaultValue={campaing}>
                   <Radio style={radioStyle} value={false}>
                     Hepsi
                 </Radio>

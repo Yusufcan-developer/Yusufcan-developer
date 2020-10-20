@@ -11,7 +11,6 @@ import TopbarAlert from './TopbarAlert';
 import history from '@iso/lib/helpers/history';
 var jwtDecode = require('jwt-decode');
 
-
 const { Header } = Layout;
 const { toggleCollapsed } = appActions;
 
@@ -55,20 +54,17 @@ export default function Topbar() {
         <div className="isoLeft">
           {activeUser != undefined & activeUser!=username ? (
             <TopbarAlert showAlert={true} username={activeUser} />
-
           ) : (<TopbarAlert showAlert={false}/>)}
-
-          </div>
-        
+          </div>        
         <ul className="isoRight">
          <li className="isoSearch">
             <TopbarSearch />
           </li>       
-          <li
+          {/* <li
             onClick={() => setSelectedItem('notification')}
             className={selectedItem ? 'isoNotify active' : 'isoNotify'}>
             <TopbarNotification />
-          </li>
+          </li> */}
           <li onClick={() => setSelectedItem('addToCart')} className="isoCart">
             <TopbarAddtoCart />
           </li>

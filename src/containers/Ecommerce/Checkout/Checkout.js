@@ -330,7 +330,7 @@ export default function () {
 
   //post address
   async function postSaveAddress() {
-    if ((addressTitle === undefined) || (address1 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
+    if ((addressTitle === undefined) || (address1 === undefined)|| (city === undefined)|| (town === undefined)|| (address2 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
     const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": account, "addressTitle": addressTitle, "address1": address1, "address1": address2, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
@@ -523,6 +523,7 @@ export default function () {
                         placeholder="İlgili kişi / Cep Telefonu"
                         value={address2}
                         onChange={onChangeAddress2}
+                        important
                       />
                     </Fieldset>
                     <Fieldset>
@@ -539,6 +540,7 @@ export default function () {
                         placeholder="Şehir Giriniz"
                         value={city}
                         onChange={onChangeAddressCity}
+                        important
                       />
                     </Fieldset>
                     <Fieldset>
@@ -547,6 +549,7 @@ export default function () {
                         placeholder="İlçe Giriniz"
                         value={town}
                         onChange={onChangeAddressTown}
+                        important
                       />
                     </Fieldset>
                   </Form>
