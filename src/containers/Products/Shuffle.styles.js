@@ -89,8 +89,8 @@ const WDSingleCardWrapper = styled.li`
     margin: 0 7px 15px;
     padding: 0;
 
-    @media only screen and (max-width: 767px) {
-      width: calc(100% / 2 - 10px);
+    @media only screen and (max-width: 768px) {
+      width: calc(100% / 3 - 10px);
       margin: 0 5px 10px;
     }
 
@@ -174,7 +174,6 @@ const WDSortableCardWrapper = styled.div`
         @media only screen and (max-width: 430px) {
           padding: 0 10px;
         }
-
         i {
           padding-right: ${props =>
             props['data-rtl'] === 'rtl' ? '0' : '10px'};

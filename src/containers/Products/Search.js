@@ -53,9 +53,9 @@ const SearchComponent = () => {
   const className = collapsed ? '' : 'sidebarOpen';
   const btnText = collapsed ? 'Filtrele' : 'Gizle';
   let newView = 'MobileView';
-  if (window.innerWidth > 1220) {
+  if (window.innerWidth > 769) {
     newView = 'DesktopView';
-  }
+  }else if(window.innerHeight> 767){newView='TabletView'}
 
 
   //Hook States
@@ -324,7 +324,7 @@ const SearchComponent = () => {
     return setOnChange(true);
   }
 
-  //Keywor 'Enter' search
+  //Keyword 'Enter' search
   const keyPress = e => {
     if (e.keyCode === 13) {
       keywordAddUrl();
@@ -824,7 +824,7 @@ const SearchComponent = () => {
     <React.Fragment>
       <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
         <PageHeader>Ürün Arama</PageHeader>
-        {newView === 'MobileView' ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
+        {newView === 'MobileView' ||newView === 'TabletView' ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
           className="ant-btn-primary isoAlgoliaSidebarToggle"
           onClick={() => {
             setState({ ...state, collapsed: !state.collapsed });
@@ -841,6 +841,7 @@ const SearchComponent = () => {
                 <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
               </Col> : null
             }
+
             <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
               onChange={onchangeInputSearch}
               onSearch={onSearch}
