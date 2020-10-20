@@ -15,7 +15,7 @@ const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActi
 export default function getInitData() {
   let productControl = localStorage.getItem('cartProductQuantity');
   let activeUser = localStorage.getItem('activeUser');
-  if((!productControl)||(activeUser)){getInitData();}
+  getInitData();
 async function getDatabaseProductInfo() {
   //Get Database to Redux Product Info
   let productInfo;

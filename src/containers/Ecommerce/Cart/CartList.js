@@ -379,7 +379,7 @@ const CartList = () => {
               value={dealerCodes}
               onChange={dealerCodeHandleChange}
               filterOption={(input, option) =>
-                option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
               }
             >
               {lookupDealerChildren}
