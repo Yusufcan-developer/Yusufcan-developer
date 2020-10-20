@@ -274,7 +274,7 @@ export default function () {
       title: "Bitiş Tarihi",
       dataIndex: "toDate",
       key: "toDate",
-      render: (toDate) => moment(toDate).format(siteConfig.dateFormat),
+      render: (toDate) =>(toDate!==null?moment(toDate).format(siteConfig.dateFormat):'-'),
       sorter: (a, b) => (''),
       sortOrder: tableOptions.sortedInfo.columnKey === 'toDate' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],

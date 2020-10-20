@@ -16,7 +16,7 @@ const WDSidebarWrapper = styled.div`
     props['data-rtl'] === 'rtl' ? '0 0 0 30px' : '0 30px 0 0'};
   ${transition()};
 
-  @media only screen and (max-width: 767px) {
+  @media only screen and (max-width: 768px) {
     width: 100%;
     margin-left: ${props =>
       props['data-rtl'] === 'rtl' ? '30px' : 'calc(-100% + -30px)'};
@@ -24,7 +24,7 @@ const WDSidebarWrapper = styled.div`
       props['data-rtl'] === 'rtl' ? 'calc(-100% + -30px)' : '30px'};
   }
 
-  @media only screen and (min-width: 768px) and (max-width: 1199px) {
+  @media only screen and (min-width: 769px) and (max-width: 1199px) {
     width: 270px;
   }
 
