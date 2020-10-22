@@ -12,7 +12,7 @@ const ProductsTable = styled.div`
   background-color: #ffffff;
   margin: 0 15px;
 
-  @media only screen and (max-width: 767px) {
+  @media only screen and (max-width: 2000px) {
     overflow-x: auto;
     margin: 0;
   }
@@ -41,8 +41,8 @@ const ProductsTable = styled.div`
     flex-direction: column;
     border: 1px solid ${palette('border', 0)};
 
-    @media only screen and (max-width: 767px) {
-      width: 767px;
+    @media only screen and (max-width: 1048px) {
+      width: 1200px;
       overflow: hidden;
     }
 

@@ -17,11 +17,13 @@ import _, { select } from 'underscore';
 //Fetch
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
 import { useGetWarehouseData } from "@iso/lib/hooks/fetchData/useGetWarehouseData";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import numberFormat from "@iso/config/numberFormat";
+import enumerations from "@iso/config/enumerations";
 
 //Styles
 import PageHeader from '@iso/components/utility/pageHeader';
@@ -59,7 +61,6 @@ const ProductDetail = () => {
     textAlign: 'center',
   };
   //Redux States
-  const [quantity, setQuantity] = useState(1)
   const { productQuantity } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
@@ -67,36 +68,14 @@ const ProductDetail = () => {
   const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
   document.title = "Ürün - "+description+" - Seramiksan B2B";
-  const onChange = value => {
-    setQuantity(value);
-    const product = productItem;
-    if (productQuantity.length === 0) { dispatch(addToCart(product, value)); } //Sepete
-    else {
-      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-      if (selectedProduct === undefined) {
-        dispatch(addToCart(product));
-      }
-      else {
-        const newProductQuantity = [];
-        const selectedQuantity = value;
-        productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode) {
-            newProductQuantity.push(productItem);
-          } else {
-            const itemCode = productItem.itemCode
-            const quantity = selectedQuantity;
-            newProductQuantity.push({
-              itemCode,
-              quantity,
-            });
-          }
-        });
-        dispatch(changeProductQuantity(newProductQuantity));
-      }
-    };
-  };
+
+  useEffect(() => {
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün detayı');  
+  }, []);
+
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
+    let productDeleteItemLog=false;
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
 
@@ -111,7 +90,7 @@ const ProductDetail = () => {
           } else {
             const itemCode = productItem.itemCode
             const quantity = productItem.quantity - 1;
-            if (quantity === 0) { return; }
+            if (quantity === 0) {return productDeleteItemLog=true; }
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -120,6 +99,8 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
+        if(!productDeleteItemLog){postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' Ürünün miktarı azaltıldı.');}
+        else{postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + ' Ürün sepetten çıkarıldı');}
       }
     }
   };
@@ -130,7 +111,7 @@ const ProductDetail = () => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     if ((!activeUser)|(activeUser===null)) {
-    if ((token.urole === 'admin')||(token.urole === 'fieldmanager')||(token.urole === 'regionmanager') ||(token.urole === 'support'))  { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
+    if ((token.urole === 'fieldmanager')||(token.urole === 'regionmanager') ||(token.urole === 'support'))  { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
     }
     if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
@@ -139,6 +120,7 @@ const ProductDetail = () => {
         if (selectedQuantity === undefined) { selectedQuantity = 1 }
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + ' Ürün sepete eklendi');
       }
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
@@ -157,6 +139,7 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' Ürünün miktarı arttırıldı.');
       }
     }
   };
@@ -167,16 +150,7 @@ const ProductDetail = () => {
     }
     else { return true; }
   }
-  //Quantity input number Show/Hide
-  function inputNumberQuantityValue() {
-    var selectedProduct = productQuantity.find(item => item.itemCode == productId);
-    if (selectedProduct === undefined) {
-      return 1
-    }
-    else {
-      return selectedProduct.quantity;
-    }
-  }
+
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();
@@ -207,14 +181,6 @@ const ProductDetail = () => {
       }
     }
   };
-  function handleShowDialog(e, value) {
-    console.log('e.key', e)
-    setIsDialogOpen(true);
-    setDialogImageId(e);
-  }
-  function handleShowDialogOk(e) {
-    setIsDialogOpen(false);
-  }
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValue(itemCode, isPartial = false) {
     var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);

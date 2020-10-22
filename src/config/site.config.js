@@ -93,6 +93,7 @@ export default {
 
   },
   dateFormat: 'DD-MM-YYYY',
+  dateFormatAddTime:'DD-MM-YYYY HH:mm:ss',
   google: {
     analyticsKey: 'UA-xxxxxxxxx-1',
   },

@@ -183,7 +183,7 @@ export default function CartTable({ style }) {
               </td>
               <td className="isoItemPalet">
                 <Row justify="center" align="bottom">
-                  <Col span={8} style={{ width: '100%' }} align="right">
+                  <Col span={8} >
                     <Button type="primary" onClick={event => onRemoveBox(product)} style={{ color: 'white' }}>
                       -
               </Button>
@@ -193,7 +193,7 @@ export default function CartTable({ style }) {
                     <Input
                       min={1}
                       id={inputId}
-                      style={{ textAlign: "right", maxHeight: "32px" }}
+                      style={{ textAlign: "right", maxHeight: "100px" }}
                       max={1000}
                       defaultValue={1}
                       value={product.quantity}

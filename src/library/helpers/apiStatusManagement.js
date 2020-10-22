@@ -1,10 +1,10 @@
 import history from '@iso/lib/helpers/history';
 import { message } from "antd";
-export const apiStatusManagement = (response,notShowMessage) => {
+export const apiStatusManagement = (response, notShowMessage) => {
   try {
-    switch (response.status) {    
+    switch (response.status) {
       case 401:
-        localStorage.removeItem('id_token');history.push('/');
+        localStorage.removeItem('id_token'); history.push('/');
         break;
       case 404:
         if (notShowMessage) {
@@ -20,6 +20,6 @@ export const apiStatusManagement = (response,notShowMessage) => {
     }
   }
   catch (err) {
-    return 'Unauthorized1'  ;
+    return 'Unauthorized1';
   }
 };

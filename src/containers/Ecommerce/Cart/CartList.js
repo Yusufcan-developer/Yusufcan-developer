@@ -332,7 +332,7 @@ const CartList = () => {
       sortOrder:
         tableOptions.sortedInfo.columnKey === "date" &&
         tableOptions.sortedInfo.order,
-      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat)
+      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormatAddTime)
     },
     {
       title: "Toplam Kalem",
