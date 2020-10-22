@@ -399,7 +399,7 @@ const MainForm = () => {
               value={dealerCodes}
               onChange={dealerCodeHandleChange}
               filterOption={(input, option) =>
-                option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
               }
             >
               {lookupDealerChildren}
@@ -431,6 +431,7 @@ const MainForm = () => {
           pagination={false}
           size="medium"
           bordered={false}
+          scroll={{ x: 1000 }}
           expandable={{ 'expandedRowRender': expandedRow }}
         />
         <ReportPagination

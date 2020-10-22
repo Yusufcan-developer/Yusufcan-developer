@@ -789,6 +789,9 @@ const UserList = () => {
               placeholder="Bayi Kodu seçiniz"
               value={dealerCodes}
               onChange={dealerCodeHandleChange}
+              filterOption={(input, option) =>
+                option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+              }
             >
               {lookupDealerChildren}
             </Select>

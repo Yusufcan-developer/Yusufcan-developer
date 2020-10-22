@@ -305,7 +305,7 @@ export default function () {
       dataIndex: "date",
       key: "date",
       type: "date",
-      render: (date) => moment(date).format(siteConfig.dateFormat),
+      render: (date) => moment(date).format(siteConfig.dateFormatAddTime),
       sorter: (a, b) => (''),
       sortOrder: tableOptions.sortedInfo.columnKey === 'date' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
