@@ -370,7 +370,8 @@ const OrderPartial = () => {
       <PageHeader>
         {<IntlMessages id="page.CartToOrder" />}
       </PageHeader>
-      <Box >
+      
+      <Box   style={{overflow:'scroll'}}>
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" onClick={nextOrderPage} style={{ marginBottom: '5px' }}
           >
