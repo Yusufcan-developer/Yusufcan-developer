@@ -1,5 +1,5 @@
 //React
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {  useHistory, Link } from 'react-router-dom';
 
 //Redux
@@ -12,10 +12,13 @@ import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
 import { Col, Row, Button } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import enumerations from "@iso/config/enumerations";
 
 //Other Library
 import { OrderTable } from '../Checkout/Checkout.styles';
@@ -26,6 +29,10 @@ var jwtDecode = require('jwt-decode');
 const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
+
+  useEffect(() => {
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Sepet ürün listesi');  
+  }, []);
   document.title = "Sepet - Seramiksan B2B";
   let history = useHistory();
   const [totalCost, setTotalCost] = useState();
@@ -228,16 +235,19 @@ export default function CartTable({ style }) {
 
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
+    const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if (event.target.value > 0) {
       const product = productData;
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
       const newProductQuantity = [];
+      let setQunatity;
       productQuantity.forEach(productItem => {
         if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
           newProductQuantity.push(productItem);
         } else {
           const itemCode = productItem.itemCode
           const quantity = parseInt(event.target.value);
+          setQunatity=quantity;
           newProductQuantity.push({
             itemCode,
             quantity,
@@ -246,21 +256,28 @@ export default function CartTable({ style }) {
         }
       });
       dispatch(changeProductQuantity(newProductQuantity));
+      postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' Ürünün miktarı arttırıldı.'+'Miktar '+setQunatity);
     }
   };
 
   function onRemoveBox(product) {
+    const productIsPartialTitle = product.isPartial === true ? ' Parçalı' : ' Paletli';
     if (product.quantity !== 1) {
+      const quantity=product.quantity - 1;
       changeQuantity(product.itemCode, product.quantity - 1, product.isPartial);
+      postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' ürünün miktarı azaltıld.'+'Miktar '+quantity);
     }
   };
 
   function onAddBox(product) {
+    const productIsPartialTitle = product.isPartial === true ? ' Parçalı' : ' Paletli';
+    const quantity=product.quantity + 1;
     changeQuantity(product.itemCode, product.quantity + 1, product.isPartial);
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' ürünün miktarı arttırıldı.'+'Miktar '+quantity);
   };
 
   //Sepet miktarının değişikliği
-  function changeQuantity(itemCode, quantity, isPartial) {
+  function changeQuantity(itemCode, quantity, isPartial) {    
     const newProductQuantity = [];
     productQuantity.forEach(product => {
       if (product.itemCode !== itemCode || product.isPartial !== isPartial) {
@@ -279,6 +296,7 @@ export default function CartTable({ style }) {
 
   //Sepetten ürünün çıkarılması
   function cancelQuantity(productItem) {
+    const productIsPartialTitle = productItem.isPartial === true ? ' Parçalı' : ' Paletli';
     getCartList();
     const newProductQuantity = [];
     _.each(productQuantity, (product) => {
@@ -287,6 +305,7 @@ export default function CartTable({ style }) {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, productItem.itemCode + productIsPartialTitle+ ' Ürün sepetten çıkarıldı.');
   }
 
   //Sepetteki ürünlerin siparişe hazırlanması

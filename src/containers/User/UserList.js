@@ -15,12 +15,14 @@ import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, D
 //Fetch
 import { useUserFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import enumerations from "@iso/config/enumerations";
 
 //Style
 import { DownOutlined, PoweroffOutlined, UserAddOutlined } from '@ant-design/icons';
@@ -102,6 +104,7 @@ const UserList = () => {
   useEffect(() => {
     setCurrentPage(localCurrentPage);
     getVariablesFromUrl();
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, 'Kullanıcılar listesi');
   }, [localCurrentPage]);
 
   //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
@@ -202,6 +205,7 @@ const UserList = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
+    postSaveLog(enumerations.LogSource.Users,enumerations.LogTypes.Browse,'Kullanıclar listesi yeni arama');
     const params = new URLSearchParams(location.search)
 
     params.delete('keyword');
@@ -295,8 +299,9 @@ const UserList = () => {
   async function handleDeleteUserOk() {
     const user = await deleteUser(userId);
 
-    if (user) { message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false); }
-    else { message.error('Kullanıcı silme işlemi başarısızdır.'); }
+    if (user) { message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false); 
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete,userId+' kullanıcı parolası değiştirilmiştir.'); }
+    else { message.error('Kullanıcı silme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete,userId+' kullanıcı parolası değiştirlememiştir.'); }
     return setOnChange(true);
   };
 
@@ -304,8 +309,9 @@ const UserList = () => {
   async function handlePasswordOk() {
     const password = await changePassword();
 
-    if (password) { message.success('Parola başarıyla değiştirilmiştir.'); cancelAndClearValues(); setForgotPasswordVisible(false); }
-    else { message.error('Parola değiştirme işlemi başarısızdır.'); }
+    if (password) { message.success('Parola başarıyla değiştirilmiştir.'); cancelAndClearValues(); setForgotPasswordVisible(false);
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update,username+' kullanıcı parolası değiştirilmiştir.'); }
+    else { message.error('Parola değiştirme işlemi başarısızdır.');postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update,username+' kullanıcı parolası değiştirlemedi.');  }
     return setOnChange(true);
   };
 
@@ -313,8 +319,9 @@ const UserList = () => {
   async function handleOk() {
     //Kullanıcı düzenleme işlemi
     const userInfo = await saveUser();
-    if (userInfo) { message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false); }
-    else { message.error('Kullanıcı kaydetme işlemi başarısızdır.'); }
+    if (userInfo) { message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false); 
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,userInfo.username+' kullanıcı başarıyla kaydedilmiştir.');}
+    else { message.error('Kullanıcı kaydetme işlemi başarısızdır.');  postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,'Kullanıcı kaydedilememiştir.');}
     modalSelectedValueClear();
     return setOnChange(true);
   };
@@ -495,6 +502,7 @@ const UserList = () => {
 
   //Yeni Kullanıcı Ekleme işlemi için Modal açma
   function addNewUser() {
+    postSaveLog(enumerations.LogSource.Users,enumerations.LogTypes.Browse,'Yeni kullanıcı ekleme');
     setVisible(true);
   }
   /**Pagination : Tablo  pageSize'ı değiştirir*/

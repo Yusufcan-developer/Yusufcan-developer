@@ -1,6 +1,8 @@
 import React from 'react';
 import { Alert } from 'antd';
 import { useSelector } from 'react-redux';
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import enumerations from "../../config/enumerations";
 var jwtDecode = require('jwt-decode');
 
 export default function TopbarAlert(props) {
@@ -15,7 +17,7 @@ export default function TopbarAlert(props) {
     localStorage.removeItem('activeUser');
     localStorage.removeItem('cartProductQuantity');
     window.location.reload(true);
-
+    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,'Aktif bayi kapatıldı.');
   };
 
   return (

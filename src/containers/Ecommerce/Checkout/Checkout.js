@@ -22,6 +22,7 @@ import Textarea from '@iso/components/uielements/input';
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Styles
 import { PlusOutlined } from '@ant-design/icons';
@@ -43,6 +44,8 @@ import numberFormat from "@iso/config/numberFormat";
 import 'moment/locale/tr'
 import moment, { duration } from 'moment';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import enumerations from "@iso/config/enumerations";
+
 moment.locale('tr')
 var jwtDecode = require('jwt-decode');
 
@@ -83,6 +86,7 @@ export default function () {
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     getInitData(token.uid);
+    postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Browse, 'Sipariş Oluşturma');  
   }, []);
 
   //Get Products
@@ -108,7 +112,6 @@ export default function () {
 
   function saveOrder() {
     setCreateOrderQuestionVisible(false);
-
     postSaveOrder();
   }
 
@@ -140,6 +143,7 @@ export default function () {
   //Adres Modal açma
   function handleShowModal() {
     setVisible(true);
+    postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Browse, 'Adres listesi');  
   };
 
   //Yeni Adres Oluşturma Bölümü
@@ -351,10 +355,11 @@ export default function () {
         setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode);
         setVisible(false);
         setCreateAddress(false);
-        message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
+        message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');        
         getAdress(account);
+        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add,data.addressTitle+' adres başarılı şekilde oluşturulmuştur.');
       })
-      .catch();
+      .catch(setConfirmLoading(false));
     setConfirmLoading(false);
   }
 
@@ -382,8 +387,10 @@ export default function () {
           if (data.isSuccess) {
             setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
             createOrderNo = data.orderNo; setSuccessOrderSave(true);
+            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo+' numaralı sipariş başarılı şekilde oluşturulmuştur.');
           } else {
             message.warning(data.message,10);
+            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, 'Sipariş oluşturma işlemi başarısızdır.'+'Hatanın sebep(leri) '+data.message);
           }
         }
       })

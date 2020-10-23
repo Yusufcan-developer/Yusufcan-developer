@@ -13,10 +13,10 @@ export async function postSaveLog(selectedLogSource,selectedLogType,description,
   const activeUser = localStorage.getItem("activeUser");
   const token = jwtDecode(localStorage.getItem("id_token"));
   if(token===undefined){return  history.replace('/');}
-  let accountNo = token.uname;
+  let accountNo = undefined;
   if (activeUser != undefined) { accountNo = activeUser }
   try {
-    const reqBody ={ "logSource": selectedLogSource, "logType": selectedLogType, "accountNo": 'B141009', "description": description }
+    const reqBody ={ "logSource": selectedLogSource, "logType": selectedLogType, "accountNo": accountNo, "description": description }
     const requestOptions = {
       method: "POST",
       headers: {

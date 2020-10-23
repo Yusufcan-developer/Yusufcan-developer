@@ -12,6 +12,7 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import { Table, Row, Col, message, InputNumber, Popconfirm, Form, Popover, Space, Tag } from "antd";
 import Popconfirms from '@iso/components/Feedback/Popconfirm';
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Styles
 import { DownOutlined } from '@ant-design/icons';
@@ -22,6 +23,7 @@ import { RightOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import numberFormat from "@iso/config/numberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import enumerations from "@iso/config/enumerations";
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -54,6 +56,7 @@ const OrderPartial = () => {
 
   useEffect(() => {
     getCartList();
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Browse, 'Kısmi sipariş oluşturma');
   }, []);
 
   //Get Cart Listesi
@@ -113,6 +116,8 @@ const OrderPartial = () => {
       setIsPartial(record.isPartial);
     }
     setProductItem(record, deleteAmount);
+    const productIsPartialTitle = record.isPartial === true ? ' Parçalı' : ' Paletli';
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, record.itemCode + productIsPartialTitle + ' ürün sipariş hazırlıktan sepete geri eklendi.' + 'Miktar ' + record.orderAmount);
   };
 
   function InputNumberOnchange(value) {
@@ -131,14 +136,24 @@ const OrderPartial = () => {
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['amount'] = item['quantity'];
         delete item['quantity'];
-        if (item.itemCode === allAmountItem.itemCode && item.isPartial === allAmountItem.isPartial) { item.orderAmount = allAmountItem.amount }
+        if (item.itemCode === allAmountItem.itemCode && item.isPartial === allAmountItem.isPartial) {
+          item.orderAmount = allAmountItem.amount
+          const productIsPartialTitle = allAmountItem.isPartial === true ? ' Parçalı' : ' Paletli';
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, allAmountItem.itemCode + productIsPartialTitle + ' ürün sipariş oluşturmaya hazırlandı.' + 'Miktar ' + allAmountItem.amount);
+        }
       });
     }
     else {//Girilmiş olan sipariş miktarını alır
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['amount'] = item['quantity'];
         delete item['quantity'];
-        if (item.itemCode === productItem.itemCode && item.isPartial === productItem.isPartial) { item.orderAmount = quantity }
+        if (item.itemCode === productItem.itemCode && item.isPartial === productItem.isPartial) {
+          item.orderAmount = quantity
+          if (quantity > 0) {
+            const productIsPartialTitle = allAmountItem.isPartial === true ? ' Parçalı' : ' Paletli';
+            postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productItem.itemCode + productIsPartialTitle + ' ürün sipariş oluşturmaya hazırlandı.' + 'Miktar ' + quantity);
+          }
+        }
       });
     }
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -155,10 +170,10 @@ const OrderPartial = () => {
       body: JSON.stringify(reqBody)
     };
     fetch(siteConfig.api.carts.postCart, requestOptions)
-    .then(response => {
-      const status = apiStatusManagement(response);
-      return status;
-    })
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
       .then(data => {
         if (data) {
           if (data !== 'Unauthorized') {
@@ -195,6 +210,7 @@ const OrderPartial = () => {
       })
       .catch();
   }
+
   //Cart Columns
   const CartColumns = [
     {
@@ -223,8 +239,8 @@ const OrderPartial = () => {
         return (
           <>
             {record.isPartial === true ? (
-              unit==='TOR'?
-              'TOR':'Kutu'
+              unit === 'TOR' ?
+                'TOR' : 'Kutu'
             ) : (unit)}
           </>)
       }
@@ -370,8 +386,7 @@ const OrderPartial = () => {
       <PageHeader>
         {<IntlMessages id="page.CartToOrder" />}
       </PageHeader>
-      
-      <Box   style={{overflow:'scroll'}}>
+      <Box style={{ overflow: 'scroll' }}>
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" onClick={nextOrderPage} style={{ marginBottom: '5px' }}
           >

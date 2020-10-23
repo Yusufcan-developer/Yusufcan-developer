@@ -9,19 +9,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import Scrollbar from '@iso/components/utility/customScrollBar';
 import Popover from '@iso/components/uielements/popover';
-import SingleCart from '@iso/components/Cart/SingleCartModal';
 import ecommerceAction from '@iso/redux/ecommerce/actions';
 import { stripTrailingSlash } from '@iso/lib/helpers/utility';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
-
 import TopbarCartWrapper from './TopbarCart.style';
-
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
 import getInitData from '../../redux/ecommerce/config';
+import enumerations from "@iso/config/enumerations";
 var jwtDecode = require('jwt-decode');
 const {
   initData,
@@ -142,6 +141,7 @@ export default function TopbarAddtoCart() {
 
   //Ürün iptal etme işlemi
   function cancelQuantity(productItem) {
+    const productIsPartialTitle = productItem.isPartial === true ? ' Parçalı' : ' Paletli';
     const newProductQuantity = [];
     _.each(productQuantity, (product, i) => {
       if ((product.itemCode !== productItem.itemCode || product.isPartial !== productItem.isPartial)) {
@@ -149,6 +149,7 @@ export default function TopbarAddtoCart() {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, productItem.itemCode + productIsPartialTitle+ ' Ürün sepetten çıkarıldı.');
     getCartList();
     if (location.pathname === "/checkout") { return window.location.reload(false); }
   }
