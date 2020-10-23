@@ -143,10 +143,11 @@ export default function () {
     if (parsed.user !== undefined) {
       if (Array.isArray(parsed.user)) {
         _.each(parsed.user, (item) => {
-          user.push(item);
+          user.push(parseInt(item));
         });
-      } else { user.push(parsed.user); }
+      } else { user.push(parseInt(parsed.user)); }
     }
+
     setSelectedLogType(type);
     setSelectedLogSource(source);
     setUserIds(user);
@@ -158,7 +159,16 @@ export default function () {
     let userObj = [];
     const params = new URLSearchParams(location.search);
     params.delete('user');
-
+    params.delete('user')
+    params.delete('type');
+    params.delete('source');
+    params.delete('from');
+    params.delete('to');
+    params.delete('keyword');
+    params.delete('pgsize');
+    params.delete('pgindex');
+    params.delete('sortingField');
+    params.delete('sortingOrder');
     if (value.length === 0) { setNewUrlParams(''); params.delete('user'); setUserIds(userObj);}
     else {
       _.filter(value, function (item) {
@@ -192,6 +202,7 @@ export default function () {
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString();}
     let createUrl = null;
+    debugger
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 

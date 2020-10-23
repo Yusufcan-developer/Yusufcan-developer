@@ -75,6 +75,7 @@ const ProductDetail = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
+    const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     let productDeleteItemLog=false;
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
@@ -84,12 +85,14 @@ const ProductDetail = () => {
       if (selectedProduct === undefined) { return; }
       if (selectedProduct.quantity !== 0) {
         const newProductQuantity = [];
+        let setQunatity;
         productQuantity.forEach(productItem => {
           if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
             newProductQuantity.push(productItem);
           } else {
             const itemCode = productItem.itemCode
             const quantity = productItem.quantity - 1;
+            setQunatity=quantity;
             if (quantity === 0) {return productDeleteItemLog=true; }
             newProductQuantity.push({
               itemCode,
@@ -99,14 +102,15 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        if(!productDeleteItemLog){postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' Ürünün miktarı azaltıldı.');}
-        else{postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + ' Ürün sepetten çıkarıldı');}
+        if(!productDeleteItemLog){postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' ürünün miktarı azaltıldı.'+'Miktar '+setQunatity);}
+        else{postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle+' ürün sepetten çıkarıldı.'+'Miktar '+setQunatity);}
       }
     }
   };
   //Adding products to the cart
 
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity) {
+    const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
@@ -120,17 +124,19 @@ const ProductDetail = () => {
         if (selectedQuantity === undefined) { selectedQuantity = 1 }
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + ' Ürün sepete eklendi');
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode +productIsPartialTitle+ ' ürün sepete eklendi.'+'Miktar '+selectedQuantity);
       }
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
         const newProductQuantity = [];
+        let setQunatity;
         productQuantity.forEach(productItem => {
           if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
             newProductQuantity.push(productItem);
           } else {
             const itemCode = productItem.itemCode;
             const quantity = productItem.quantity + 1;
+            setQunatity=quantity;
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -139,7 +145,7 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' Ürünün miktarı arttırıldı.');
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' ürünün miktarı arttırıldı.'+'Miktar '+setQunatity);
       }
     }
   };
@@ -157,11 +163,14 @@ const ProductDetail = () => {
   }
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
+    const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if (event.target.value > 0) {
       const selectedQuantity = event.target.value;
-      if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { return onAddProductCart(productData, true, isPartial, selectedQuantity) }
+      if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { onAddProductCart(productData, true, isPartial, selectedQuantity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle+ ' Ürün sepete eklendi.'+'Miktar '+selectedQuantity);return; }
       else {
         const product = productData;
+        let setQunatity;
         var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
         const newProductQuantity = [];
         productQuantity.forEach(productItem => {
@@ -170,6 +179,7 @@ const ProductDetail = () => {
           } else {
             const itemCode = productItem.itemCode
             const quantity = parseInt(event.target.value);
+            setQunatity=quantity;
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -178,6 +188,7 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' Ürünün miktarı arttırıldı.'+'Miktar '+setQunatity);
       }
     }
   };

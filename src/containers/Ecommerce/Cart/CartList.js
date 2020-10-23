@@ -16,6 +16,7 @@ import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal,
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -31,6 +32,7 @@ import renderFooter from "..//../Reports/ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
 import ReportPagination from "../../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import enumerations from "../../../config/enumerations";
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -94,7 +96,7 @@ const CartList = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    // getVariablesFromUrl(searchQuery)
+    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,'Bayi sepet listeleme');
   }, [pageIndex]);
 
   //Cart Data
@@ -145,6 +147,7 @@ const CartList = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
+    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,'Bayi sepet listeleme yeni arama');
     const params = new URLSearchParams(location.search);
 
     params.delete('keyword');
@@ -256,6 +259,7 @@ const CartList = () => {
     if (dealerCodes === undefined) { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
     else {
       localStorage.setItem('activeUser', dealerCodes);
+      postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+' Bayi sepet oluşturulması için seçildi');
       history.push('/cart'); 
       window.location.reload(false);
     }

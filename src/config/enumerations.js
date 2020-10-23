@@ -28,6 +28,7 @@ export default {
         Cart:'Cart',
         Order:'Order',
         ProductPhotos:'ProductPhotos',
+        Address:'Address',
     }
 
 };
