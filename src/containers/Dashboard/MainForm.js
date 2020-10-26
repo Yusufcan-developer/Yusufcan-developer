@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import {useHistory, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Box from "@iso/components/utility/box";
@@ -8,7 +8,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
-import { Table, Row, Col, Pagination, Typography,  Select } from "antd";
+import { Table, Row, Col, Select } from "antd";
 import Collapse from "@iso/components/uielements/collapse";
 //Fetch
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
@@ -36,7 +36,8 @@ const MainForm = () => {
   document.title = "Ana Ekran - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
   const queryString = require('query-string');
   const history = useHistory();
   const [iconLoading, setIconLoading] = useState(false);
@@ -55,7 +56,7 @@ const MainForm = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General,enumerations.LogTypes.Browse,'DBS ve Cari toplamlar raporu listeleme');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'DBS ve Cari toplamlar raporu listeleme');
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -74,10 +75,10 @@ const MainForm = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, {"dealerCodes": dealerCodes, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndex - 1, "pageCount": pageSize });
 
-  const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange,aggregateData] =
-    usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, {"dealerCodes": dealerCodes, "pageIndex": pageIndexAccount - 1, "pageCount": pageSizeAccount });
+  const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData] =
+    usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccount - 1, "pageCount": pageSizeAccount });
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
   const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
@@ -91,7 +92,6 @@ const MainForm = () => {
 
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
-
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
 
@@ -104,25 +104,27 @@ const MainForm = () => {
       } else { dealerCode.push(parsed.dealer); }
     }
     setDealerCodes(dealerCode);
-    
+
     AccountSetOnChange(true);
     setOnChange(true);
   }
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
-    postSaveLog(enumerations.LogSource.General,enumerations.LogTypes.Browse,'DBS ve Cari toplamlar raporu yeni arama');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'DBS ve Cari toplamlar raporu yeni arama');
     const params = new URLSearchParams(location.search);
 
-    params.delete('dealer');
+    params.delete('dealer'); {
+      _.forEach(dealerCodes, (item) => {
+        params.append('dealer', item); params.toString();
+      });
+      let createUrl = null;
+      if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
+      history.push(`${location.pathname}?${createUrl}`);
 
-    if (dealerCodes.length > 0) params.append('dealer', dealerCodes); params.toString();
-    let createUrl = null;
-    if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
-    history.push(`${location.pathname}?${createUrl}`);
-
-    AccountSetOnChange(true);
-    setOnChange(true);
+      AccountSetOnChange(true);
+      setOnChange(true);
+    }
   }
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -159,16 +161,17 @@ const MainForm = () => {
     _.each(aggregateData, (item, i) => {
       if (item.dealerCode === row.dealerCode) { return aggregateIndex = i }
     });
-    const aggregateFilterData=_.filter(aggregateData, function (Item) {
-      if (Item.dealerCode === row.dealerCode ) {
+    const aggregateFilterData = _.filter(aggregateData, function (Item) {
+      if (Item.dealerCode === row.dealerCode) {
         return true;
-      }});
-      
+      }
+    });
+
     return (<Table
       columns={aggregateColumns}
       dataSource={aggregateFilterData}
-      pagination={true} 
-      scroll={{ x: 'max-content' }}  
+      pagination={true}
+      scroll={{ x: 'max-content' }}
     />);
   };
 
@@ -243,7 +246,7 @@ const MainForm = () => {
       render: (currentAccountCutOffTotals) => numberFormat(currentAccountCutOffTotals),
       align: "right",
     },
-   
+
     {
       title: "Hesap Kesim BakiyeTutarı",
       dataIndex: "lastAccountCutOffBalance",
@@ -269,7 +272,7 @@ const MainForm = () => {
     },
   ];
 
-  let aggregateColumns=[
+  let aggregateColumns = [
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
@@ -293,9 +296,9 @@ const MainForm = () => {
       key: "credit",
       render: (credit) => numberFormat(credit),
       align: "right",
-    },    
+    },
   ]
-  
+
   //Hide order table column
   //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
@@ -385,36 +388,36 @@ const MainForm = () => {
       </PageHeader>
       {infoHeader}
       <Box >
-      <Collapse accordion>
+        <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-      <Row>
-          <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-            <Select
-              showSearch
-              mode="multiple"
-              dropdownMatchSelectWidth={500}
-              style={{ width: '100%' }}
-              placeholder="Bayi seçiniz"
-              optionFilterProp="children"
-              value={dealerCodes}
-              onChange={dealerCodeHandleChange}
-              filterOption={(input, option) =>
-                option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-              }
-            >
-              {lookupDealerChildren}
-            </Select>
-          </Col>
-          <Col  align={'right'} span={newView!=='MobileView'?1:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+            <Row>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Select
+                  showSearch
+                  mode="multiple"
+                  dropdownMatchSelectWidth={500}
+                  style={{ width: '100%' }}
+                  placeholder="Bayi seçiniz"
+                  optionFilterProp="children"
+                  value={dealerCodes}
+                  onChange={dealerCodeHandleChange}
+                  filterOption={(input, option) =>
+                    option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                  }
+                >
+                  {lookupDealerChildren}
+                </Select>
               </Col>
-          <Button type="primary" loading={iconLoading} onClick={dataSearch} >
-            {<IntlMessages id="forms.button.label_Search" />}
-          </Button>
-        </Row>
-        </Panel>
+              <Col align={'right'} span={newView !== 'MobileView' ? 1 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              </Col>
+              <Button type="primary" loading={iconLoading} onClick={dataSearch} >
+                {<IntlMessages id="forms.button.label_Search" />}
+              </Button>
+            </Row>
+          </Panel>
         </Collapse>
       </Box>
-      <Box >      
+      <Box >
         <h2 style={{ marginBottom: '10px' }}>Cari Toplamları</h2>
         <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
@@ -459,7 +462,7 @@ const MainForm = () => {
           loading={loading}
           pagination={false}
           // scroll={{ x: 'calc(700px + 50%)' }}
-          scroll={{ x: 1000 }} 
+          scroll={{ x: 1000 }}
           size="medium"
           bordered={false}
 
@@ -472,7 +475,7 @@ const MainForm = () => {
           current={pageIndex}
           position="bottom"
         />
-      </Box>    
+      </Box>
     </LayoutWrapper>
   );
 }
