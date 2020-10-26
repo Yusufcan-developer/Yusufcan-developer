@@ -62,14 +62,14 @@ function useProductData(url, reqBody, categorie, searchUrl) {
         setLastReqBody(searchUrl);
         setLoading(false);
         setOnChange(false);
-      }).catch(error => setOnChange(false));
+      }).catch(setOnChange(false));
   }
   useEffect(() => {
     const parsed = queryString.parse(location.search);
-    if ((categorie === undefined) && (parsed.keyword === undefined)){return setOnChange(false);}
+    if ((categorie === undefined) && (parsed.keyword === undefined)){fetchUrl();}
      if (categorie === undefined) {
-       if (parsed.keyword !== undefined) {
-         setLoading(true);
+       if (reqBody.keyword !== undefined) {
+        //  setLoading(true);
          fetchUrl();
        }
     }

@@ -345,7 +345,6 @@ export default function () {
       },
       body: JSON.stringify(reqBody)
     };
-    debugger
     await fetch(siteConfig.api.carts.postSaveAddress, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);

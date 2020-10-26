@@ -202,7 +202,6 @@ export default function () {
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString();}
     let createUrl = null;
-    debugger
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 

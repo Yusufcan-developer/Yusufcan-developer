@@ -71,14 +71,18 @@ const OrdersReport = () => {
 
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
-  const [adress, setAdress] = useState();
+  const [address, setAddress] = useState();
   const location = useLocation();
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Browse,'Sipariş raporu listeleme');
     setCurrentPage(pageIndex);
-    getVariablesFromUrl()
+    getVariablesFromUrl();
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    if((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+      getAdress(token.dcode);
+    }
   }, [pageIndex]);
 
   useEffect(() => {
@@ -89,7 +93,7 @@ const OrdersReport = () => {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData] =
-  usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder },searchUrl);
+  usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder,"addressCodes":address },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
@@ -196,11 +200,17 @@ const OrdersReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('address'); 
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
+
+    _.forEach(address, (item) => {
+      params.append('address', item); params.toString();
+    });
+
     if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
     if(sortingField!==undefined){params.append('sortingField', sortingField);}
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
@@ -220,10 +230,12 @@ const OrdersReport = () => {
 
   //Change DealerCode
   async function onChangeDealerCode(value) {
-
     let fieldArrObj = [];
     let regionArrObj = [];
     let dealerArrObj = [];
+    setDealerCodes([]);
+    setFieldCodes([]);
+    setRegionCodes([]);
     const params = new URLSearchParams(location.search);
     params.delete('dec');
     params.delete('rec');
@@ -234,6 +246,7 @@ const OrdersReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
 
+    setLookupAddressChildren([]);
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
       _.filter(value, function (item) {
@@ -247,8 +260,7 @@ const OrdersReport = () => {
         setSelectedDealerCode(value)
         setNewUrlParams(params.toString());
       });
-
-   await getAdress(dealerArrObj);
+      if(dealerArrObj.length===1){await getAdress(dealerArrObj[0]);}
     }
   };
 
@@ -300,7 +312,7 @@ const OrdersReport = () => {
   }
  //Select Component Rol değiştirme 
  function addressHandleChange(value) {
-  setAdress(value);
+  setAddress(value);
 }
   //Get adress
   async function getAdress(dealerCodes) {
@@ -312,7 +324,7 @@ const OrdersReport = () => {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    await fetch(siteConfig.api.lookup.getAddresses.replace('dealerCodes', dealerCodes), requestOptions)
+    await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
@@ -320,7 +332,7 @@ const OrdersReport = () => {
       .then(data => {
         const addressChildren=[];
         _.each(data, (item, i) => {
-          addressChildren.push(<Option key={item.addressCode}>{item.addressTitle}</Option>);
+          addressChildren.push(<Option key={item.addressCode}>{item.addressCode+'-'+item.addressTitle+'-'+item.address2+'-'+item.phone}</Option>);
         });
         setLookupAddressChildren(addressChildren)
       })
@@ -668,9 +680,12 @@ const OrdersReport = () => {
               style={{ width: '100%' }}
               placeholder="Sevk Adresi Seçiniz"
               style={{ marginBottom: '8px', width: '250px' }}
-              value={adress}
-              dropdownMatchSelectWidth={500}
+              value={address}
+              dropdownMatchSelectWidth={750}
               onChange={addressHandleChange}
+              filterOption={(input, option) =>
+                option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+              }
             >
           {lookupAddressChildren}
             </Select>

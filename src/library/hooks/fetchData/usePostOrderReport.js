@@ -23,10 +23,11 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   const [lastReqBody, setLastReqBody] = useState();
   const [sortingField,setSortingField]=useState();
   const [sortingOrder,setSortingOrder]=useState();
+  const [address, setAddress] = useState();
   let orderIdgetUrlItems = '';
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "keyword": searchkey, "pageIndex": currentPage - 1, "pageCount": changePageSize,"sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
+    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "keyword": searchkey, "pageIndex": currentPage - 1, "pageCount": changePageSize,"sortingField": sortingField,"addressCodes":address, "sortingOrder": sortingOrder } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
@@ -87,13 +88,13 @@ function usePostOrderReport(url, reqBody, searchUrl) {
           setOnChange(false);
         }
       })
-      .catch();
+      .catch(setOnChange(false));
   }
   useEffect(() => {
     if (!_.isEqual(lastReqBody, searchUrl)) {
       setLoading(true);
       fetchUrl();
-    }
+    }else{setOnChange(false);}
   }, [currentPage, changePageSize, onChange]);
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData];
 }
