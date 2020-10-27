@@ -233,25 +233,33 @@ const MainForm = () => {
       key: "dealerName",
     },
     {
-      title: "Güncel Hesap Bakiyesi",
-      dataIndex: "currentAccountTotals",
-      key: "currentAccountTotals",
-      render: (currentAccountTotals) => numberFormat(currentAccountTotals),
-      align: "right",
-    },
-    {
-      title: "Hesap Bakiyesi",
+      title: "Cari Hesap Bakiyesi",
       dataIndex: "currentAccountBalance",
       key: "currentAccountBalance",
       render: (currentAccountCutOffTotals) => numberFormat(currentAccountCutOffTotals),
       align: "right",
     },
+    {
+      title: "Güncel Hesap Toplamı",
+      dataIndex: "currentAccountTotals",
+      key: "currentAccountTotals",
+      render: (currentAccountTotals) => numberFormat(currentAccountTotals),
+      align: "right",
+    },
+   
 
     {
-      title: "Hesap Kesim BakiyeTutarı",
+      title: "Hesap Kesim Tutarı",
       dataIndex: "lastAccountCutOffBalance",
       key: "lastAccountCutOffBalance",
       render: (lastAccountCutOffTotals) => numberFormat(lastAccountCutOffTotals),
+      align: "right",
+    },
+    {
+      title: "Kalan Hesap Kesim Bakiyesi",
+      dataIndex: "monthlyAccountCutOffBalance",
+      key: "monthlyAccountCutOffBalance",      
+      render: (monthlyAccountCutOffBalance) => numberFormat(monthlyAccountCutOffBalance),
       align: "right",
     },
     {
@@ -264,7 +272,7 @@ const MainForm = () => {
         tableOptions.sortedInfo.order,
       render: (lastAccountCutOffDate) => moment(lastAccountCutOffDate).format(siteConfig.dateFormat),
       align: "right",
-    },
+    },   
     {
       title: "Hesap Kesim Durumu",
       dataIndex: "accountStatus",

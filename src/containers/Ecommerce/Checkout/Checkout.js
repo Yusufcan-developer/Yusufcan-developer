@@ -592,7 +592,7 @@ export default function () {
                   onCancel={handleCancel}
                   onOk={saveOrder}
                 >
-                  <p>{'Sipariş kaydetme işlemi yapılacaktır.Siparişi düzeltme işlemi için yöneticinize başvurabilirsiniz. Devam etmek istiyor musunuz?'}</p>
+                  <p>{'Sipariş kaydettikten sonra değişiklik yapılamayacaktır. Kaydettikten sonra değişiklik/iptal İçin Seramiksan Satış Destek birimine başvurabilirsiniz.'}</p>
                   <Form
                     form={form}
                     layout="vertical"
