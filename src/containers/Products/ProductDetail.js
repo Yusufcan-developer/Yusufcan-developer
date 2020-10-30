@@ -256,11 +256,17 @@ const ProductDetail = () => {
     },
     {
       title: "Bakiye (" + unit + ")",
-      dataIndex: "balance",
+      dataIndex: "balanceFriendlyText",
       align: "right",
-      key: "balance",
-      render: (balance) => numberFormat(balance)
+      key: "balanceFriendlyText",
     },
+    // {
+    //   title: "Bakiye (" + unit + ")",
+    //   dataIndex: "balance",
+    //   align: "right",
+    //   key: "balance",
+    //   render: (balance) => numberFormat(balance)
+    // },
   ];
 
   return (

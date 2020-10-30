@@ -24,7 +24,7 @@ function useGetCartCheckOut(url) {
       if (activeUser != undefined) { uname = activeUser }
       if (!token.uname) { return 'Unauthorized' }
     
-    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}?includePallet=true`, requestOptions)
+    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}?includePallet=true&checkBalance=true`, requestOptions)
     .then(response => {
       const status = apiStatusManagement(response);
       return status;

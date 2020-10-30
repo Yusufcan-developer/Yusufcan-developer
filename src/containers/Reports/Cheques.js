@@ -43,7 +43,7 @@ const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
 const ChequesReport = () => {
-  document.title = "Çek ve Senetler - Seramiksan B2B";
+  document.title = "Çekler - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
     newView = 'DesktopView';}

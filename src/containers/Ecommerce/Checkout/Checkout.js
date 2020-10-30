@@ -86,7 +86,7 @@ export default function () {
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     getInitData(token.uid);
-    postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Browse, 'Sipariş Oluşturma');  
+    postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Browse, 'Sipariş Oluşturma');
   }, []);
 
   //Get Products
@@ -143,7 +143,7 @@ export default function () {
   //Adres Modal açma
   function handleShowModal() {
     setVisible(true);
-    postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Browse, 'Adres listesi');  
+    postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Browse, 'Adres listesi');
   };
 
   //Yeni Adres Oluşturma Bölümü
@@ -222,7 +222,10 @@ export default function () {
   }
 
   //get adress
-  async function getAdress(dealerCodes) {
+  async function getAdress() {
+
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const dealerCodes = token.dcode;
     //Get User Info  
     const requestOptions = {
       method: "GET",
@@ -270,7 +273,7 @@ export default function () {
   async function getInitData(userId) {
     const hasSaveOrderPermission = await getHasSaveOrderPermission();
     const userData = await getByUserId(userId);
-    const adress = await getAdress(account);
+    const adress = await getAdress();
   }
 
   //Sipariş temizleme işlemi
@@ -334,9 +337,12 @@ export default function () {
 
   //post address
   async function postSaveAddress() {
-    if ((addressTitle === undefined) || (address1 === undefined)|| (city === undefined)|| (town === undefined)|| (address2 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
+
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const dealerCodes = token.dcode;
+    if ((addressTitle === undefined) || (address1 === undefined) || (city === undefined) || (town === undefined) || (address2 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
-    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": account, "addressTitle": addressTitle, "address1": address1, "address1": address2, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
+    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "address1": address2, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
       method: "POST",
       headers: {
@@ -354,9 +360,9 @@ export default function () {
         setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode);
         setVisible(false);
         setCreateAddress(false);
-        message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');        
-        getAdress(account);
-        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add,data.addressTitle+' adres başarılı şekilde oluşturulmuştur.');
+        message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
+        getAdress();
+        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + ' adres başarılı şekilde oluşturulmuştur.');
       })
       .catch(setConfirmLoading(false));
     setConfirmLoading(false);
@@ -364,6 +370,8 @@ export default function () {
 
   //Save Order
   async function postSaveOrder() {
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const dealerCodes = token.dcode;
     setConfirmLoading(true);
     const reqBody = {}
     const requestOptions = {
@@ -374,7 +382,7 @@ export default function () {
       },
       body: JSON.stringify(reqBody)
     };
-    let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', account);
+    let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', dealerCodes);
     newSaveOrderUrl = newSaveOrderUrl.replace('{addressCode}', addressCode);
     await fetch(`${newSaveOrderUrl}`, requestOptions)
       .then(response => {
@@ -383,13 +391,13 @@ export default function () {
       })
       .then(data => {
         if (data !== undefined) {
-          if (data.isSuccess) {
+          if (data.isSuccessfull) {
             setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
             createOrderNo = data.orderNo; setSuccessOrderSave(true);
-            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo+' numaralı sipariş başarılı şekilde oluşturulmuştur.');
+            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo + ' numaralı sipariş başarılı şekilde oluşturulmuştur.');
           } else {
-            message.warning(data.message,10);
-            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, 'Sipariş oluşturma işlemi başarısızdır.'+'Hatanın sebep(leri) '+data.message);
+            message.warning(data.message, 10);
+            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, 'Sipariş oluşturma işlemi başarısızdır.' + 'Hatanın sebep(leri) ' + data.message);
           }
         }
       })
@@ -585,14 +593,16 @@ export default function () {
                 </Modal>
                 <Modal
                   visible={createOrderQuestionVisible}
-                  title={"Sipariş oluşturma"}
+                  title={"Sipariş Onayı"}
                   okText="Tamam"
                   cancelText="İptal"
                   maskClosable={false}
                   onCancel={handleCancel}
                   onOk={saveOrder}
                 >
-                  <p>{'Sipariş kaydettikten sonra değişiklik yapılamayacaktır. Kaydettikten sonra değişiklik/iptal İçin Seramiksan Satış Destek birimine başvurabilirsiniz.'}</p>
+                  <p>Sipariş kaydettikten sonra değişiklik yapılamayacaktır. Kaydettikten sonra değişiklik/iptal İçin Seramiksan Satış Destek birimine başvurabilirsiniz.</p>
+                  <p style={{ marginTop: '20px' }}><b>Önemli Not:</b> Sevkiyat, formdaki bilgilere uygun ödeme şirketimize ulaştığında ve risk limiti dahilinde yapılacaktır.</p>
+                  <p style={{ marginTop: '20px' }}>SAYIN YETKİLİ SATICIMIZ, SİPARİŞ ETTİĞİNİZ, STOKLARIMIZDA MEVCUT OLAN MALZEMELERİ 20 GÜN İÇERİSİNDE TESLİM ALMANIZ GEREKMEKTEDİR. AKSİ TAKDİRDE BEDELİ TARAFINIZCA ÖDEMEK KAYDI İLE GÜNCEL NAKLİYE FİYATLARINDAN SEVK EDİLECEKTİR.</p>
                   <Form
                     form={form}
                     layout="vertical"

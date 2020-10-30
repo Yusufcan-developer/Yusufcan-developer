@@ -79,7 +79,7 @@ export default function SignIn() {
         //dispatch(login()) fonksiyonu redux actionlarında tanımlı değerdir.
         if (data !== undefined) {
           if (data.isPasswordExpired) { setPasswordChangeVisible(true); }
-          else if (data.isSuccess === false) {
+          else if (data.isSuccessfull === false) {
             return loginError()
           }
           else {
