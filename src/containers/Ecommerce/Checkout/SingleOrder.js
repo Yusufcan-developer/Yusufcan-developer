@@ -9,7 +9,10 @@ export default function ({ productItem }) {
         <span>-</span>
         <span>{trimName}</span>
         <span>x</span>
-        <span className="isoQuantity">{productItem.orderAmount}</span>
+        <span className="isoQuantity">{productItem.orderAmount}</span>       
+        {productItem.validationMessage != undefined ? ( <React.Fragment>
+        <br/>
+        <span style={{ color: 'red' }}>{productItem.validationMessage} </span> </React.Fragment>) : null}     
       </p>
       <span className="totalPrice">{numberFormat(productItem.orderCost)} TL</span>
     </div>
