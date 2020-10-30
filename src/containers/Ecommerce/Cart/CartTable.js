@@ -13,7 +13,7 @@ import { direction } from '@iso/lib/helpers/rtl';
 import { Col, Row, Button } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
-
+import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import siteConfig from "@iso/config/site.config";
@@ -38,6 +38,10 @@ export default function CartTable({ style }) {
   const [totalCost, setTotalCost] = useState();
   const [total, setTotal] = useState();
   const [totalVat, setTotalVat] = useState();
+  const [selectedAmout,setSelectedAmount]=useState(0);
+  const [selectedPartialAmout,setSelectedPartialAmount]=useState(0);
+  const [selectedProductItem,setSelectedProductItem]=useState();
+  const [selectedIsPartial,setSelectedIsPartial]=useState();
   const dispatch = useDispatch();
  const { productQuantity } = useSelector(state => state.Ecommerce);
 
@@ -130,6 +134,43 @@ export default function CartTable({ style }) {
       .catch();
     return productInfo;
   }
+  function onChange(e,item,isPartial) {
+    if(isPartial){parseInt(setSelectedPartialAmount(e.target.value));setSelectedIsPartial(isPartial);setSelectedProductItem(item.itemCode);}
+    else{
+    setSelectedAmount(parseInt(e.target.value));setSelectedIsPartial(isPartial);setSelectedProductItem(item.itemCode);}
+  }
+   //Input Number return partial quantity value
+   function inputNumberPartialQuantityValueNew(product, isPartial) {
+
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
+    if((selectedProductItem===product.itemCode)&&(isPartial===selectedIsPartial)){
+
+    if (selectedAmout === undefined) {
+      if (selectedAmout < 1) {
+        return selectedProduct.quantity;
+      }else{
+         {return selectedAmout }
+      }     
+     
+    }
+    else {
+      if(isPartial){
+      if (selectedPartialAmout < 1) {
+        return selectedProduct.quantity;
+      }
+      else {return selectedPartialAmout }
+    }else{
+      if (selectedAmout < 1) {
+        return selectedProduct.quantity;
+      }
+      else {return selectedAmout }
+    }
+    }
+  }
+  else{
+    return selectedProduct.quantity;
+  }
+  }
   //Ürünlerin Getirilmesi
   function renderItems() {
     getCartList();
@@ -203,14 +244,15 @@ export default function CartTable({ style }) {
                       style={{ textAlign: "right", maxHeight: "100px" }}
                       max={1000}
                       defaultValue={1}
-                      value={product.quantity}
+                      value={inputNumberPartialQuantityValueNew(product,product.isPartial)}
                       step={1}
                       onClick={event => onSelectAll(inputId)}
-                      onChange={event => onChangeQuantity(event, product, product.isPartial)}
+                      onChange={event => onChange(event,product,product.isPartial)}
+                      onBlur={event => onChangeQuantity(event, product, product.isPartial,productItem)}
                     />
                   </Col>
                   <Col span={8} style={{ width: '100%' }}>
-                    <Button type="primary" onClick={event => onAddBox(product)} style={{ color: 'white' }}>
+                    <Button type="primary" onClick={event => onAddBox(product,productItem)} style={{ color: 'white' }}>
                       +
               </Button>
                   </Col>
@@ -234,9 +276,12 @@ export default function CartTable({ style }) {
   }
 
   //Redux product quantity change event
-  function onChangeQuantity(event, productData, isPartial = false) {
+  function onChangeQuantity(event, productData, isPartial = false,productItem) {   
+    let inputAmount;
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if (event.target.value > 0) {
+      const amountControl=productAmountControl(productItem,isPartial,parseInt(event.target.value));                
+      if(amountControl===-1){inputAmount=event.target.value}else {inputAmount=amountControl}
       const product = productData;
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
       const newProductQuantity = [];
@@ -246,7 +291,7 @@ export default function CartTable({ style }) {
           newProductQuantity.push(productItem);
         } else {
           const itemCode = productItem.itemCode
-          const quantity = parseInt(event.target.value);
+          const quantity = parseInt(inputAmount);
           setQunatity=quantity;
           newProductQuantity.push({
             itemCode,
@@ -256,6 +301,8 @@ export default function CartTable({ style }) {
         }
       });
       dispatch(changeProductQuantity(newProductQuantity));
+      setSelectedAmount(0);
+      setSelectedPartialAmount(0);
       postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' Ürünün miktarı arttırıldı.'+'Miktar '+setQunatity);
     }
   };
@@ -269,11 +316,15 @@ export default function CartTable({ style }) {
     }
   };
 
-  function onAddBox(product) {
+  function onAddBox(product,productItem) {
+    debugger
     const productIsPartialTitle = product.isPartial === true ? ' Parçalı' : ' Paletli';
     const quantity=product.quantity + 1;
+    const amountControl=productAmountControl(productItem,product.isPartial,parseInt(quantity));                
+    if(amountControl===-1){
     changeQuantity(product.itemCode, product.quantity + 1, product.isPartial);
     postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' ürünün miktarı arttırıldı.'+'Miktar '+quantity);
+    }
   };
 
   //Sepet miktarının değişikliği
@@ -293,6 +344,7 @@ export default function CartTable({ style }) {
     dispatch(changeProductQuantity(newProductQuantity));
     getCartList();
   }
+  
 
   //Sepetten ürünün çıkarılması
   function cancelQuantity(productItem) {
@@ -401,3 +453,4 @@ export default function CartTable({ style }) {
     </React.Fragment>
   );
 }
+
