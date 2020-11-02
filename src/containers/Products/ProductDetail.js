@@ -13,6 +13,7 @@ import Input from '@iso/components/uielements/input';
 import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge, message } from 'antd';
 import { ReactSortable } from "react-sortablejs";
 import _, { select } from 'underscore';
+import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
 
 //Fetch
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
@@ -45,6 +46,8 @@ const ProductDetail = () => {
   const [selectedItemCode, setSelectedItemCode] = useState();
   const [warehouseData, setWarehouseData] = useState();
   const [partialAmount, setPartialAmount] = useState(0);
+  const [selectedAmout, setSelectedAmount] = useState(0);
+  const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
   const history = useHistory();
 
   //Style States
@@ -67,16 +70,16 @@ const ProductDetail = () => {
   //Product Detail Hook
   const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
-  document.title = "Ürün - "+description+" - Seramiksan B2B";
+  document.title = "Ürün - " + description + " - Seramiksan B2B";
 
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün detayı');  
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün detayı');
   }, []);
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
-    let productDeleteItemLog=false;
+    let productDeleteItemLog = false;
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
 
@@ -92,8 +95,8 @@ const ProductDetail = () => {
           } else {
             const itemCode = productItem.itemCode
             const quantity = productItem.quantity - 1;
-            setQunatity=quantity;
-            if (quantity === 0) {return productDeleteItemLog=true; }
+            setQunatity = quantity;
+            if (quantity === 0) { return productDeleteItemLog = true; }
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -102,8 +105,8 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        if(!productDeleteItemLog){postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' ürünün miktarı azaltıldı.'+'Miktar '+setQunatity);}
-        else{postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle+' ürün sepetten çıkarıldı.'+'Miktar '+setQunatity);}
+        if (!productDeleteItemLog) { postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' ürünün miktarı azaltıldı.' + 'Miktar ' + setQunatity); }
+        else { postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + ' ürün sepetten çıkarıldı.' + 'Miktar ' + setQunatity); }
       }
     }
   };
@@ -114,20 +117,25 @@ const ProductDetail = () => {
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
-    if ((!activeUser)|(activeUser===null)) {
-    if ((token.urole === 'fieldmanager')||(token.urole === 'regionmanager') ||(token.urole === 'support'))  { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
+    if ((!activeUser) | (activeUser === null)) {
+      if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
     }
     if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(itemCode)
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
         if (selectedQuantity === undefined) { selectedQuantity = 1 }
+        const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
+        if (amountControl === -1) {
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode +productIsPartialTitle+ ' ürün sepete eklendi.'+'Miktar '+selectedQuantity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + ' ürün sepete eklendi.' + 'Miktar ' + selectedQuantity);
+        }
       }
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+        const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
+        if (amountControl === -1) {
         const newProductQuantity = [];
         let setQunatity;
         productQuantity.forEach(productItem => {
@@ -136,7 +144,7 @@ const ProductDetail = () => {
           } else {
             const itemCode = productItem.itemCode;
             const quantity = productItem.quantity + 1;
-            setQunatity=quantity;
+            setQunatity = quantity;
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -145,8 +153,9 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' ürünün miktarı arttırıldı.'+'Miktar '+setQunatity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' ürünün miktarı arttırıldı.' + 'Miktar ' + setQunatity);
       }
+    }
     }
   };
   function inputNumberShowOrHide() {
@@ -162,24 +171,33 @@ const ProductDetail = () => {
     document.getElementById(id).select();
   }
   //Redux product quantity change event
-  function onChangeQuantity(event, productData, isPartial = false) {
+  function onChangeQuantity(event, productData, isPartial = false) {    
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if (event.target.value > 0) {
       const selectedQuantity = event.target.value;
-      if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) { onAddProductCart(productData, true, isPartial, selectedQuantity);
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle+ ' Ürün sepete eklendi.'+'Miktar '+selectedQuantity);return; }
+      if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) {
+        const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
+        if (amountControl === -1) {
+        onAddProductCart(productData, true, isPartial, selectedQuantity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity); return;
+        }
+      }
       else {
         const product = productData;
         let setQunatity;
         var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
         const newProductQuantity = [];
+        let newQuantity;
+        const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
+        if (amountControl === -1) { newQuantity = event.target.value }
+        else { newQuantity = amountControl }
         productQuantity.forEach(productItem => {
           if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
             newProductQuantity.push(productItem);
           } else {
             const itemCode = productItem.itemCode
-            const quantity = parseInt(event.target.value);
-            setQunatity=quantity;
+            const quantity = parseInt(newQuantity);
+            setQunatity = quantity;
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -188,19 +206,51 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' Ürünün miktarı arttırıldı.'+'Miktar '+setQunatity);
+        setSelectedAmount(0);
+        setSelectedPartialAmount(0);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı arttırıldı.' + 'Miktar ' + newQuantity);
       }
     }
   };
+  function onChange(e, item, isPartial) {
+    if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
+    else {
+      setSelectedAmount(parseInt(e.target.value));
+    }
+  }
+   //Input Number return partial quantity value
+   function inputNumberPartialQuantityValueNew(product, isPartial) {
+
+    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
+    if (selectedProduct === undefined) {
+      if (selectedPartialAmout < 1) {
+        return 0;
+      } else {
+        { return selectedPartialAmout }
+      }
+    }
+    else {
+      if (selectedPartialAmout < 1) {
+        return selectedProduct.quantity;
+      }
+      else { return selectedPartialAmout }
+    }
+  }
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValue(itemCode, isPartial = false) {
     var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
     if (selectedProduct === undefined) {
-      if (partialQuantity) { return 0 }
-      return 0
+      if (selectedAmout < 1) {
+        return 0;
+      } else {
+        { return selectedAmout }
+      }
     }
     else {
-      return selectedProduct.quantity;
+      if (selectedAmout < 1) {
+        return selectedProduct.quantity;
+      }
+      else { return selectedAmout }
     }
   }
   //Get Warehouse Amount Data
@@ -286,8 +336,8 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
             <SwiperWithCustomNav navigationControl={false} >
-              <Card 
-                  style={{textAlign:'center'}}>
+              <Card
+                style={{ textAlign: 'center' }}>
                 {<Image
                   key={`customnav-slider--key${sliderImageUrl || imageUrl}`}
                   src={sliderImageUrl || imageUrl}
@@ -372,7 +422,8 @@ const ProductDetail = () => {
                   <Input
                     id={'Paletli' + itemCode}
                     onClick={event => onSelectAll('Paletli' + itemCode)}
-                    onChange={event => onChangeQuantity(event, productItem)}
+                    onChange={event => onChange(event, productItem, false)}
+                    onBlur={event => onChangeQuantity(event, productItem)}
                     style={{ textAlign: "right" }}
                     maxLength={5}
                     defaultValue={0}
@@ -406,12 +457,13 @@ const ProductDetail = () => {
                     <Input
                       id={'Parçalı' + itemCode}
                       onClick={event => onSelectAll('Parçalı' + itemCode)}
-                      onChange={event => onChangeQuantity(event, productItem, true)}
+                      onChange={event => onChange(event, productItem, true)}
+                      onBlur={event => onChangeQuantity(event, productItem)}
                       style={{ textAlign: "right" }}
                       maxLength={5}
                       defaultValue={1}
                       step={1}
-                      value={inputNumberPartialQuantityValue(itemCode, true)}
+                      value={inputNumberPartialQuantityValueNew(itemCode, true)}
                     />
                   </Col>
                   <Col span={4} style={{ width: '100%' }}>
