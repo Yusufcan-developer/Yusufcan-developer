@@ -343,7 +343,8 @@ const OrdersReport = () => {
   //Excel Oluşturma
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Export,'Sipariş raporu excel oluşturma');
-    ExcelExport(columns, data, 'Geçmiş Siparişler');
+    
+    ExcelExport(columns, data, 'Geçmiş Siparişler',orderDetailData,OrderDetailcolumns);
   }
   //Order Detail Columns
   const OrderDetailcolumns = [    
@@ -351,12 +352,13 @@ const OrdersReport = () => {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
+      width: 150,
     },
     {
       title: "Ürün Açıklaması",
       dataIndex: "itemDescription",
       key: "itemDescription",
-      ellipsis: true,
+      width: 300,
     },
     {
       title: "Miktar",
@@ -365,11 +367,13 @@ const OrdersReport = () => {
       align: "right",
       render: (amount) => numberFormat(amount),
       footerKey: "amount",
+      width: 50,
     },
     {
       title: "Birim",
       dataIndex: "unit",
       key: "unit",
+      width: 50,
     },
     {
       title: "Kalan miktar",
@@ -378,12 +382,14 @@ const OrdersReport = () => {
       align: "right",
       render: (remainingAmount) => numberFormat(remainingAmount),
       footerKey: "remainingAmount",
+      width: 100,
     },
     {
       title: "Birim fiyat",
       dataIndex: "unitPrice",
       key: "unitPrice",
       align: "right",
+      width: 100,
       render: (unitPrice) => numberFormat(unitPrice)
     },
     {
@@ -393,6 +399,17 @@ const OrdersReport = () => {
       align: "right",
       render: (distributionSuggestedAmount) => numberFormat(distributionSuggestedAmount),
       footerKey: "distributionSuggestedAmount",
+      width: 150,
+    },
+
+    {
+      title: "Teslimat Tutarı",
+      dataIndex: "deliveryAmount",
+      key: "deliveryAmount",
+      align: "right",
+      render: (deliveryAmount) => numberFormat(deliveryAmount),
+      footerKey: "deliveryAmount",
+      width: 150,
     },
     {
       title: "Dağıtım Gerçek Tutar",
@@ -401,16 +418,18 @@ const OrdersReport = () => {
       align: "right",
       render: (distributionActualAmount) => numberFormat(distributionActualAmount),
       footerKey: "distributionActualAmount",
+      width: 200,
+      
     },
     {
-      title: "Teslimat Tutarı",
-      dataIndex: "deliveryAmount",
-      key: "deliveryAmount",
+      title: "",
+      dataIndex: "",
+      key: "",
       align: "right",
-      render: (deliveryAmount) => numberFormat(deliveryAmount),
-      footerKey: "deliveryAmount",
+      // render: (distributionActualAmount) => numberFormat(distributionActualAmount),
+      footerKey: "",
+      
     },
-
   ];
 
   //Order Columns
@@ -419,6 +438,7 @@ const OrdersReport = () => {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode",
+      style: { font: { sz: "48", bold: true } },
     },
     {
       title: "Bayi Adı",

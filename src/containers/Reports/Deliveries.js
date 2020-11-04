@@ -332,16 +332,46 @@ const DeliveriesReport = () => {
       align: "center"
     },
     {
-      title: "Palet No",
+      title: "Plaka",
       dataIndex: "plateNo",
       key: "plateNo",
+      align: "center"
+    },
+    {
+      title: "Şoför Adı",
+      dataIndex: "driverName",
+      key: "driverName",
+      align: "center"
+    },
+    {
+      title: "Şoför Telefonu",
+      dataIndex: "driverPhone",
+      key: "driverPhone",
+      align: "center"
+    },
+    {
+      title: "Çıkış Tarihi",
+      dataIndex: "departureDate",
+      key: "departureDate",
+      align: "center",
+      type: "date",
+      sorter: (a, b) => '',
+      sortOrder: tableOptions.sortedInfo.columnKey === 'departureDate' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+      render: (departureDate) => moment(departureDate).format(siteConfig.dateFormat),
+    },
+    {
+      title: "Çıkış Saati",
+      dataIndex: "departureTime",
+      key: "departureTime",
       align: "center"
     },
     {
       title: "Tonaj",
       dataIndex: "tonnage",
       key: "tonnage",
-      align: "center"
+      align: "right",
+      render: (tonnage) => numberFormat(tonnage),
     },
     {
       title: "Bayi Alt Kodu",
