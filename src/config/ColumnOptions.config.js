@@ -1,6 +1,35 @@
 
 export default {
   OrderTableHideColumns: {
+    OrderDetailExcel: [
+      {
+        key: "orderNo",
+      },
+      {
+        key: "orderDate",
+      },
+      {
+        key: "deliveryAmount",
+      },
+      {
+        key: "regionCode",
+      },
+      {
+        key: "regionName",
+      },
+      {
+        key: "fieldCode",
+      },
+      {
+        key: "fieldName",
+      },
+      {
+        key: "regionManager",
+      },
+      {
+        key: "fieldManager",
+      }
+    ],
     Dealer: [
       {
         key: "dealerCode",
@@ -365,37 +394,6 @@ export default {
 
       {
         dataIndex: "fieldManager",
-      }
-    ]
-  },
-  OrderTableHideColumns: {
-    OrderDetailExcel: [
-      {
-        key: "orderNo",
-      },
-      {
-        key: "orderDate",
-      },
-      {
-        key: "deliveryAmount",
-      },
-      {
-        key: "regionCode",
-      },
-      {
-        key: "regionName",
-      },
-      {
-        key: "fieldCode",
-      },
-      {
-        key: "fieldName",
-      },
-      {
-        key: "regionManager",
-      },
-      {
-        key: "fieldManager",
       }
     ]
   },
