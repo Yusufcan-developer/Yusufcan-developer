@@ -23,6 +23,7 @@ export default {
       getDimensions: apiUrl + 'b2b/lookup/product-dimensions',
       getChequeTypes: apiUrl + 'core/lookup/cheque-types',
       getTransactionTypes: apiUrl + 'core/lookup/transaction-types',
+      getDistributionStatusTypes: apiUrl + 'core/lookup/distribution-status',
       getFieldCodes: apiUrl + 'core/lookup/field-codes',
       getRegionCodes: apiUrl + 'core/lookup/region-codes',
       getDealerCodes: apiUrl + 'core/lookup/dealer-codes',

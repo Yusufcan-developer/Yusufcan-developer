@@ -33,7 +33,7 @@ function useProductData(url, reqBody, categorie, searchUrl) {
   const [campaing, setCampaingCode] = useState();
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "keyword": keyword, "salesStatus": salesStatus,"onlyHavingCampaigns":campaing, "surfaces": surface, "colors": color, "dimensions": dimension, "productStatus": productStatus, "categories": productGroup, "pageIndex": currentPage - 1, "pageCount": changePageSize, "sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
+    const reqB = reqBody == null || reqBody == undefined ? { "keyword": keyword, "salesStatus": salesStatus, "onlyHavingCampaigns": campaing, "surfaces": surface, "colors": color, "dimensions": dimension, "productStatus": productStatus, "categories": productGroup, "pageIndex": currentPage - 1, "pageCount": changePageSize, "sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
@@ -66,18 +66,25 @@ function useProductData(url, reqBody, categorie, searchUrl) {
   }
   useEffect(() => {
     const parsed = queryString.parse(location.search);
-    if ((categorie === undefined) && (parsed.keyword === undefined)){fetchUrl();}
-     if (categorie === undefined) {
-       if (reqBody.keyword !== undefined) {
+    if ((categorie === undefined) && (parsed.keyword === undefined)) { return;}
+    if (categorie === undefined) {
+      if (reqBody.keyword !== undefined) {
         //  setLoading(true);
-         fetchUrl();
-       }
+        fetchUrl();
+      }
     }
     else {
-       if (!_.isEqual(lastReqBody, searchUrl)) {
-      setLoading(true);
-      fetchUrl();
-       }
+      if (!_.isEqual(lastReqBody, searchUrl)) {
+        if (parsed.pg !== undefined) {
+          if (categorie === parsed.pg) {
+            setLoading(true);
+            fetchUrl();
+          }
+        } else {
+          setLoading(true);
+          fetchUrl();
+        }
+      }
     }
   }, [currentPage, changePageSize, onChange]);
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray];

@@ -577,7 +577,7 @@ export default function () {
                   onCancel={handleCancelOrderSave}
                 >
                   <React.Fragment>
-                    <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Geçmiş Siparişler menüsünden görüntüleyebilirsiniz.</p>
+                    <p>Siparişiniz <strong>{createOrderNo}</strong> numarasıyla kaydedildi. Siparişlerinizi Raporlar / Siparişler menüsünden görüntüleyebilirsiniz.</p>
                     {
                       itemsWaitingManufacturing && itemsWaitingManufacturing.length > 0 ? (
                         <React.Fragment>
