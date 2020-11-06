@@ -82,7 +82,7 @@ export default function () {
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
     useFetch(`${siteConfig.api.report.postLetters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
@@ -301,7 +301,8 @@ export default function () {
       title: "TR Kodu",
       dataIndex: "trCode",
       key: "trCode",
-      align: "center"
+      align: "center",
+      footerKey:'Genel Toplam',
     },
     {
       title: "Tutar",
@@ -473,7 +474,7 @@ export default function () {
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data)
+            return renderFooter(columns, data ,false ,aggregatesOverall,true)
           }}
         />
         <ReportPagination

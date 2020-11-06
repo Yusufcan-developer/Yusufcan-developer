@@ -87,7 +87,7 @@ export default function () {
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
     useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
@@ -191,7 +191,10 @@ export default function () {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    if (selectedTransactionType.length > 0) params.append('type', selectedTransactionType); params.toString();
+
+    _.filter(selectedTransactionType, function (item) {
+      params.append('type', item); params.toString();
+    });
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -319,13 +322,15 @@ export default function () {
     {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
-      key: "transactionType"
+      key: "transactionType",
+      footerKey:'Genel Toplam',
     },
     {
       title: "Borç",
       dataIndex: "debt",
       key: "debt",
       align: "right",
+      footerKey: "debt",
       render: (debt) => numberFormat(debt),
     },
     {
@@ -333,6 +338,7 @@ export default function () {
       dataIndex: "credit",
       key: "credit",
       align: "right",
+      footerKey: "credit",
       render: (credit) => numberFormat(credit),
     },
     {
@@ -517,7 +523,7 @@ export default function () {
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data)
+            return renderFooter(columns, data ,false ,aggregatesOverall,true)
           }}
         />
         <ReportPagination

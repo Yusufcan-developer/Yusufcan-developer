@@ -34,7 +34,6 @@ export default (columns, data, fileName, dataDetail, detailColumns) => {
       dataTable.push(item);
 
       if (dataDetail.length > 0) {
-        debugger
         //Detail Column Name Array  
         _.each(detailColumns, (columnItem) => {
           detailColumnsName.push(columnItem.title);

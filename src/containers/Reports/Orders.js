@@ -47,7 +47,7 @@ const { Option } = Select;
 let sortingField;
 let sortingOrder;
 const OrdersReport = () => {
-  document.title = "Geçmiş Siparişler - Seramiksan B2B";
+  document.title = "Siparişler - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
     newView = 'DesktopView';}
@@ -92,7 +92,7 @@ const OrdersReport = () => {
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData, aggregatesOverall] =
   usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder,"addressCodes":address },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
@@ -344,7 +344,7 @@ const OrdersReport = () => {
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Export,'Sipariş raporu excel oluşturma');
     
-    ExcelExport(columns, data, 'Geçmiş Siparişler',orderDetailData,OrderDetailcolumns);
+    ExcelExport(columns, data, 'Siparişler',orderDetailData,OrderDetailcolumns);
   }
   //Order Detail Columns
   const OrderDetailcolumns = [    
@@ -374,6 +374,16 @@ const OrdersReport = () => {
       dataIndex: "unit",
       key: "unit",
       width: 50,
+      
+    },
+    {
+      title: "Teslimat Miktarı",
+      dataIndex: "deliveryAmount",
+      key: "deliveryAmount",
+      align: "right",
+      render: (deliveryAmount) => numberFormat(deliveryAmount),
+      footerKey: "deliveryAmount",
+      width: 150,
     },
     {
       title: "Kalan miktar",
@@ -393,26 +403,16 @@ const OrdersReport = () => {
       render: (unitPrice) => numberFormat(unitPrice)
     },
     {
-      title: "Dağıtım Önerilen Miktar",
+      title: "Sevke Hazır Miktar",
       dataIndex: "distributionSuggestedAmount",
       key: "distributionSuggestedAmount",
       align: "right",
       render: (distributionSuggestedAmount) => numberFormat(distributionSuggestedAmount),
       footerKey: "distributionSuggestedAmount",
       width: 150,
-    },
-
+    },   
     {
-      title: "Teslimat Tutarı",
-      dataIndex: "deliveryAmount",
-      key: "deliveryAmount",
-      align: "right",
-      render: (deliveryAmount) => numberFormat(deliveryAmount),
-      footerKey: "deliveryAmount",
-      width: 150,
-    },
-    {
-      title: "Dağıtım Gerçek Tutar",
+      title: "Dağıtımdaki Miktar",
       dataIndex: "distributionActualAmount",
       key: "distributionActualAmount",
       align: "right",
@@ -501,6 +501,7 @@ const OrdersReport = () => {
       title: "Teslimat Adresi",
       dataIndex: "deliveryAddress",
       key: "deliveryAddress",
+      footerKey:'Genel Toplam',
     },
     {
       title: "Toplam",
@@ -745,7 +746,7 @@ const OrdersReport = () => {
           scroll={{ x: 'max-content' }}
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data, true)
+            return renderFooter(columns, data, true, aggregatesOverall, true)
           }}
         />
         <ReportPagination

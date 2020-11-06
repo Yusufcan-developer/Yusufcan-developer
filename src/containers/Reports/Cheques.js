@@ -58,7 +58,7 @@ const ChequesReport = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(-6, 'months').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
@@ -85,7 +85,7 @@ const ChequesReport = () => {
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
     useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
@@ -307,7 +307,8 @@ const ChequesReport = () => {
     {
       title: "Türü",
       dataIndex: "type",
-      key: "type"
+      key: "type",
+      footerKey:'Genel Toplam',
     },
     {
       title: "Tutar",
@@ -534,7 +535,7 @@ const ChequesReport = () => {
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data)
+            return renderFooter(columns, data ,false ,aggregatesOverall,true)
           }}
         />
         <ReportPagination

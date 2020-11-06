@@ -317,7 +317,6 @@ export default function CartTable({ style }) {
   };
 
   function onAddBox(product,productItem) {
-    debugger
     const productIsPartialTitle = product.isPartial === true ? ' Parçalı' : ' Paletli';
     const quantity=product.quantity + 1;
     const amountControl=productAmountControl(productItem,product.isPartial,parseInt(quantity));                

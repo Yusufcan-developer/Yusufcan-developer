@@ -9,15 +9,17 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, TreeSelect } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
+import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 
 //Configs
 import { DownloadOutlined } from '@ant-design/icons';
@@ -32,7 +34,7 @@ import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 import moment from 'moment';
-import 'moment/locale/tr' 
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -44,9 +46,12 @@ let sortingOrder;
 
 export default function () {
   document.title = "Dağıtım Listesi - Seramiksan B2B";
+  const children = [];
+  const Option = SelectOption;
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -63,13 +68,14 @@ export default function () {
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
+  const [selectedStatusType, setSelectedStatusType] = useState();
 
   const queryString = require('query-string');
   const history = useHistory();
 
   //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDistributions,enumerations.LogTypes.Browse,'Dağıtım listesi raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, 'Dağıtım listesi raporu listeleme');
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -82,24 +88,40 @@ export default function () {
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
+    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
+  //Durum Tipleri
+  const [statusTypeData] = useFilterData(`${siteConfig.api.lookup.getDistributionStatusTypes}`, searchUrl);
+  for (let i = 0; i < statusTypeData.length; i++) {
+    children.push(<Option key={statusTypeData[i]}>{statusTypeData[i]}</Option>);
+  }
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+
+    let statusGetType = [];
+    if (parsed.status !== undefined) {
+      if (Array.isArray(parsed.status)) {
+        _.each(parsed.status, (item) => {
+          statusGetType.push(item);
+        });
+      } else { statusGetType.push(parsed.status); }
+    }
+    setSelectedStatusType(statusGetType);
+
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -155,6 +177,7 @@ export default function () {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('status');
     params.delete('pgsize');
     params.delete('pgindex');
     params.delete('sortingField');
@@ -162,21 +185,25 @@ export default function () {
 
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if(sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+  
+    _.filter(selectedStatusType, function (item) {
+      params.append('status', item); params.toString();
+    });
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-    
+
     return setOnChange(true);
   }
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDistributions,enumerations.LogTypes.Browse,'Dağıtım listesi raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, 'Dağıtım listesi raporu yeni arama');
     dataSearch();
   };
 
@@ -211,36 +238,41 @@ export default function () {
     }
   };
 
- //Change from and To date
- function changeTimePicker(value, dateString) {
-  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-}
-
-const handleChange = (pagination, filters, sorter) => {
-  setState({
-    ...tableOptions,
-    ["sortedInfo"]: sorter,
-    ["filteredInfo"]: filters
-  });
-  if (sorter !== undefined) {
-    if (sorter.order === "descend") {
-      sortingOrder='DESC';
-    } else { sortingOrder='ASC'; }
-  
-  sortingField=sorter.field;
-  dataSearch()
+  //Change from and To date
+  function changeTimePicker(value, dateString) {
+    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
   }
-};
 
-   //Search DailerName Tree Select Component
-   function filterTreeNodeDealerCode(value, treeNode) {
+  const handleChange = (pagination, filters, sorter) => {
+    setState({
+      ...tableOptions,
+      ["sortedInfo"]: sorter,
+      ["filteredInfo"]: filters
+    });
+    if (sorter !== undefined) {
+      if (sorter.order === "descend") {
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
+    }
+  };
+
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
       return treeNodeTitle.indexOf(filterValue) !== -1;
     }
     return false;
+  }  
+  
+  //Change Status Type
+  function statusTypeHandleChange(value) {
+    setSelectedStatusType(value);
   }
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -251,7 +283,7 @@ const handleChange = (pagination, filters, sorter) => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
@@ -331,7 +363,8 @@ const handleChange = (pagination, filters, sorter) => {
     {
       title: "Ağırlık Birimi",
       dataIndex: "unitWeight",
-      key: "unitWeight"
+      key: "unitWeight",
+      footerKey:'Genel Toplam',
     },
     {
       title: "Planlanan Miktar",
@@ -431,7 +464,7 @@ const handleChange = (pagination, filters, sorter) => {
 
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDistributions,enumerations.LogTypes.Export,'Dağıtım listesi raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Export, 'Dağıtım listesi raporu excel oluşturma');
     ExcelExport(columns, data, 'Dağıtım Listesi');
   }
   return (
@@ -442,23 +475,23 @@ const handleChange = (pagination, filters, sorter) => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -472,7 +505,7 @@ const handleChange = (pagination, filters, sorter) => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -480,10 +513,34 @@ const handleChange = (pagination, filters, sorter) => {
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button type="primary" onClick={searchButton}>
+                  {<IntlMessages id="forms.button.label_Search" />}
+                </Button>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={newView !== 'MobileView' ? 5 : 0}>
+                <FormItem label={<IntlMessages id="page.statusType" />}></FormItem>
+              </Col>
+
+            </Row>
+            <Row>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Select
+                  mode="multiple"
+                  style={{ marginBottom: '8px', width: '250px' }}
+                  placeholder="Durumu Tipi Seçiniz"
+                  onChange={statusTypeHandleChange}
+                  value={selectedStatusType}
+                >
+                  {children}
+                </Select>
+              </Col>
+              <Col span={newView === 'MobileView' ? 5 : 0} offset={newView === 'MobileView' ? 1 : 0} >
                 <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
@@ -519,7 +576,7 @@ const handleChange = (pagination, filters, sorter) => {
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data)
+            return renderFooter(columns, data ,false ,aggregatesOverall,true)
           }}
         />
         <ReportPagination

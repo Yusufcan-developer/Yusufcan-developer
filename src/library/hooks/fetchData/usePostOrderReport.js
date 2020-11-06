@@ -23,6 +23,7 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   const [lastReqBody, setLastReqBody] = useState();
   const [sortingField,setSortingField]=useState();
   const [sortingOrder,setSortingOrder]=useState();
+  const [aggregates,setAggregatesOverall]=useState();
   const [address, setAddress] = useState();
   let orderIdgetUrlItems = '';
   async function fetchUrl() {
@@ -60,10 +61,12 @@ function usePostOrderReport(url, reqBody, searchUrl) {
           });
           const totalPages = data.totalPages;
           const dataCount = data.totalDataCount;
+          const aggregatesOverall=data.aggregatesOverall;
 
           setTotalDataCount(dataCount);
           setTotalPage(totalPages);
           setData(value);
+          setAggregatesOverall(aggregatesOverall);
 
           setLoading(false);
           setOnChange(false);
@@ -96,6 +99,6 @@ function usePostOrderReport(url, reqBody, searchUrl) {
       fetchUrl();
     }else{setOnChange(false);}
   }, [currentPage, changePageSize, onChange]);
-  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData];
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData,aggregates];
 }
 export { usePostOrderReport };
