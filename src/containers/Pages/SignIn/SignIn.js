@@ -68,7 +68,6 @@ export default function SignIn() {
         })
       };
     }
-    debugger
     fetch(siteConfig.api.security.postAuthenticate, requestOptions)
       .then(response => {
         if (!response.ok) Error(response.statusText);
@@ -77,7 +76,6 @@ export default function SignIn() {
       .then(data => {
         //Kullanıcı girişi başarılı oldugu durumda token değeri alınıyor ve redux'a gönderiliyor.
         //dispatch(login()) fonksiyonu redux actionlarında tanımlı değerdir.
-        debugger
         if (data !== undefined) {
           if (data.isPasswordExpired) { setPasswordChangeVisible(true); }
           else if (data.isSuccessful===false) {
