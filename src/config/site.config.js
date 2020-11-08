@@ -79,6 +79,7 @@ export default {
       getLogTypes:apiUrl+'security/logs/types',
       postLog:apiUrl+'security/logs/search',
       postSaveLog:apiUrl+'security/logs',
+      postForgotPassword:apiUrl+'security/forgot-password',
     },
     image: {
       getProductsOfImages: apiUrl + 'images/products-for-images',
