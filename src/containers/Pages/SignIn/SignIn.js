@@ -27,6 +27,7 @@ export default function SignIn() {
   //Hook state tanımlamaları
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [usernameOrEmail,setUsernameOrEmail]=useState();
   const [passwordChangeVisible, setPasswordChangeVisible] = useState(false);
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
   const [oldPassword, setOldPassword] = useState();
@@ -106,6 +107,30 @@ export default function SignIn() {
     setPasswordChangeVisible(false);
     setForgotPasswordVisible(false);
   };
+
+  async function forgotPassword() {
+    let forgotPassword;
+    const reqBody = {
+      "usernameOrEmail": usernameOrEmail,
+    }
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(siteConfig.api.security.postForgotPassword, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        forgotPassword = data;
+      }).catch(forgotPassword=null);
+    return forgotPassword;
+  }
   //Parola düzenleme fetch işlemi
   async function changePassword() {
     let userData;
@@ -130,12 +155,10 @@ export default function SignIn() {
       }).catch(error => console.log('hata', error));
     return userData;
   }
-  async function handleForgotPasswordOk() {
-    setForgotPasswordVisible(false);
-    // const password = await changePassword();
-
-    // if (password) { message.success('Parola başarıyla değiştirilmiştir.'); setPasswordChangeVisible(false); handleLogin(); }
-    // else { message.error('Parola değiştirme işlemi başarısızdır.'); }
+  async function handleForgotPasswordOk() {    
+    const password = await forgotPassword();
+    if (password.isSuccessful) { message.success(password.message);setForgotPasswordVisible(false); }
+    else { message.error(password.message); }
 
   };
   //Kullanıcı parola değiştirme
@@ -318,7 +341,7 @@ export default function SignIn() {
               <Form.Item
                 label="Kullanıcı Adı veya E-posta"
               >
-                <Input autoComplete={"off"} value={username}/>
+                <Input autoComplete={"off"} value={usernameOrEmail} onChange={event => setUsernameOrEmail(event.target.value)}/>
               </Form.Item>             
             </Form>
           </Modal>
