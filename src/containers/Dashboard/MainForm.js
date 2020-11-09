@@ -18,6 +18,7 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import numberFormat from "@iso/config/numberFormat";
+import renderFooter from "../Reports/ReportSummary";
 
 //Other Library
 import _ from 'underscore';
@@ -74,7 +75,7 @@ const MainForm = () => {
   }, [pageSizeAccount]);
 
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
     usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndex - 1, "pageCount": pageSize });
 
   const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData] =
@@ -172,6 +173,9 @@ const MainForm = () => {
       dataSource={aggregateFilterData}
       pagination={true}
       scroll={{ x: 'max-content' }}
+      summary={() => {
+          return renderFooter(aggregateColumns,aggregateFilterData, false)
+        }}
     />);
   };
 
@@ -190,6 +194,7 @@ const MainForm = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
+      footerKey:'Genel Toplam',
     },
     {
       title: "Güncel DBS Bakiyesi",
@@ -197,6 +202,7 @@ const MainForm = () => {
       key: "currentDbsBalance",
       render: (currentDbsBalance) => numberFormat(currentDbsBalance),
       align: "right",
+      footerKey:'currentDbsBalance',
     },
     {
       title: "Güncel DBS Risk Toplamı",
@@ -204,6 +210,7 @@ const MainForm = () => {
       key: "currentDbsRiskTotal",
       render: (currentDbsRiskTotal) => numberFormat(currentDbsRiskTotal),
       align: "right",
+      footerKey:'currentDbsRiskTotal'
     },
     {
       title: "Onaysız Siparişler",
@@ -211,6 +218,7 @@ const MainForm = () => {
       key: "unapprovedOrders",
       render: (unapprovedOrders) => numberFormat(unapprovedOrders),
       align: "right",
+      footerKey:'unapprovedOrders'
     },
     {
       title: "Bayi DBS Limiti",
@@ -218,6 +226,7 @@ const MainForm = () => {
       key: "dealerDbsLimit",
       render: (dealerDbsLimit) => numberFormat(dealerDbsLimit),
       align: "right",
+      footerKey:'dealerDbsLimit'
     },
   ];
 
@@ -231,6 +240,7 @@ const MainForm = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
+      footerKey:'Genel Toplam',
     },
     {
       title: "Cari Hesap Bakiyesi",
@@ -238,6 +248,7 @@ const MainForm = () => {
       key: "currentAccountBalance",
       render: (currentAccountCutOffTotals) => numberFormat(currentAccountCutOffTotals),
       align: "right",
+      footerKey:'currentAccountBalance'
     },
     {
       title: "Güncel Hesap Toplamı",
@@ -245,6 +256,7 @@ const MainForm = () => {
       key: "currentAccountTotals",
       render: (currentAccountTotals) => numberFormat(currentAccountTotals),
       align: "right",
+      footerKey:'currentAccountTotals'
     },
    
 
@@ -254,6 +266,7 @@ const MainForm = () => {
       key: "lastAccountCutOffBalance",
       render: (lastAccountCutOffTotals) => numberFormat(lastAccountCutOffTotals),
       align: "right",
+      footerKey:'lastAccountCutOffBalance'
     },
     {
       title: "Kalan Hesap Kesim Bakiyesi",
@@ -261,6 +274,7 @@ const MainForm = () => {
       key: "monthlyAccountCutOffBalance",      
       render: (monthlyAccountCutOffBalance) => numberFormat(monthlyAccountCutOffBalance),
       align: "right",
+      footerKey:'monthlyAccountCutOffBalance'
     },
     {
       title: "Son Hesap Kesim Tarihi",
@@ -290,6 +304,7 @@ const MainForm = () => {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
       key: "transactionType",
+      footerKey:'Genel Toplam'
     },
     {
       title: "Borç",
@@ -297,6 +312,7 @@ const MainForm = () => {
       key: "debt",
       render: (debt) => numberFormat(debt),
       align: "right",
+      footerKey:'debt'
     },
     {
       title: "Alacak",
@@ -304,6 +320,7 @@ const MainForm = () => {
       key: "credit",
       render: (credit) => numberFormat(credit),
       align: "right",
+      footerKey:'credit'
     },
   ]
 
@@ -444,6 +461,9 @@ const MainForm = () => {
           bordered={false}
           scroll={{ x: 1000 }}
           expandable={{ 'expandedRowRender': expandedRow }}
+          summary={() => {
+            return renderFooter(columns, data ,true ,aggregatesOverall,true)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
@@ -468,12 +488,13 @@ const MainForm = () => {
           columns={columns}
           dataSource={data}
           loading={loading}
-          pagination={false}
-          // scroll={{ x: 'calc(700px + 50%)' }}
+          pagination={false}         
           scroll={{ x: 1000 }}
           size="medium"
           bordered={false}
-
+          summary={() => {
+            return renderFooter(columns, data ,false ,aggregatesOverall,true)
+          }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
