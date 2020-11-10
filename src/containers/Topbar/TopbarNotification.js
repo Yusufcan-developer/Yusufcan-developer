@@ -1,8 +1,20 @@
-import React from 'react';
+//React
+import React, { useState, useEffect } from "react";
+import { Link, useRouteMatch, useHistory, useLocation } from 'react-router-dom';
+
+//Redux
 import { Popover } from 'antd';
 import { useSelector } from 'react-redux';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
+//Configs
+import numberFormat from "@iso/config/numberFormat";
+import _ from 'underscore';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import siteConfig from "@iso/config/site.config";
+import getInitData from '../../redux/ecommerce/config';
+import enumerations from "@iso/config/enumerations";
+var jwtDecode = require('jwt-decode');
 
 const demoNotifications = [
   {
@@ -15,14 +27,52 @@ const demoNotifications = [
     id: 2,
     name: 'Utku Öztürk',
     notification:
-    'Bilgilendirme amaçlı yapılmıştır.Notification sistemi kontrol ediliyor',
+      'Bilgilendirme amaçlı yapılmıştır.Notification sistemi kontrol ediliyor',
   },
 ];
+//Get Notification
+async function getNotificationList() {
+  let productInfo;
+  // const requestOptions = {
+  //   method: "GET",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //     Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+  //   }
+  // };
+  // const token = jwtDecode(localStorage.getItem("id_token"));
+  // const activeUser = localStorage.getItem("activeUser")
+  // let uname = token.uname;
+  // if (activeUser !== null) { uname = activeUser }
+  // if (!token.uname) { return 'Unauthorized' }
 
+  // await fetch(`${siteConfig.api.carts.getNotificationByUserId}${uname}`, requestOptions)
+  //   .then(response => {
+  //     const status = apiStatusManagement(response, true);
+  //     return status;
+  //   })
+  //   .then(data => {
+  //     cartItem = data.items;
+  //     setTotalPrice(data.totalCost);
+  //     if (data !== 'Unauthorized1') {
+  //       setQuantity(cartItem.length);
+  //       getInitData();//Send Redux Data;        
+  //       //Redux Data refresh
+  //       if ((productQuantity === null) || (quantity !== productQuantity.length)) {
+  //         let productQuantity = localStorage.getItem('cartProductQuantity');
+  //         productQuantity = JSON.parse(productQuantity); dispatch(initData({ productQuantity }));
+  //       }
+  //     }
+  //     else { setQuantity(0) }
+  //   })
+  //   .catch();
+  return productInfo;
+}
 export default function TopbarNotification() {
   const [visible, setVisiblity] = React.useState(false);
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
-
+  
+  getNotificationList();
   function handleVisibleChange() {
     setVisiblity(visible => !visible);
   }

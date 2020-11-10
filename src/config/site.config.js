@@ -80,6 +80,7 @@ export default {
       postLog:apiUrl+'security/logs/search',
       postSaveLog:apiUrl+'security/logs',
       postForgotPassword:apiUrl+'security/forgot-password',
+      getNotificationByUserId: apiUrl + '/api/security/notification/',
     },
     image: {
       getProductsOfImages: apiUrl + 'images/products-for-images',

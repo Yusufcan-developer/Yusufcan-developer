@@ -19,7 +19,7 @@ const options = [
     label: "sidebar.reportTable",
     leftIcon: "ion-ios-paper",
     children: [
-     
+
       {
         key: "reports/orders/",
         label: "sidebar.orderFollowUp",
@@ -61,11 +61,11 @@ const options = [
     key: 'systemAdministrator',
     label: 'sidebar.administrator',
     leftIcon: 'ion-document-text',
-    children: [  
+    children: [
       {
         key: 'admin/users',
         label: 'sidebar.userList',
-      },    
+      },
       {
         key: 'admin/products/photos',
         label: 'sidebar.uploadingPhotos',
@@ -73,6 +73,10 @@ const options = [
       {
         key: 'admin/carts',
         label: 'sidebar.carts',
+      },
+      {
+        key: 'admin/notification',
+        label: 'sidebar.notifications',
       },
       {
         key: 'admin/logs',
@@ -84,13 +88,13 @@ const options = [
     key: 'directorSystem',
     label: 'sidebar.administrator',
     leftIcon: 'ion-document-text',
-    children: [  
-     
+    children: [
+
       {
         key: 'admin/carts',
         label: 'sidebar.carts',
       },
     ],
-  }, 
+  },
 ];
 export default options;
