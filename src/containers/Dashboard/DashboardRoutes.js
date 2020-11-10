@@ -110,6 +110,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/User/Logs')),
   },
   {
+    path: 'admin/notification',
+    component: lazy(() => import('@iso/containers/Notification/Notification')),
+  },
+  {
     path: 'admin/saveUser',
     component: lazy(() => import('@iso/containers/User/SaveUser')),
   }
@@ -117,7 +121,7 @@ const routes = [
 
 export default function AppRouter() {
   let { url } = useRouteMatch();
-  url = stripTrailingSlash(url);
+  url = stripTrailingSlash(url);  
   return (
     <Suspense fallback={<Loader />}>
       <Switch>
