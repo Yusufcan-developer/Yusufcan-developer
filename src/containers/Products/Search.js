@@ -82,7 +82,7 @@ const SearchComponent = () => {
   const [dimension, setDimension] = useState([]);
   const [color, setColor] = useState([]);
   const [surface, setSurface] = useState([]);
-  const [campaing, setCampaingCode] = useState(false);
+  const [campaign, setCampaignCode] = useState(false);
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
 
   //Sorting states
@@ -203,9 +203,9 @@ const SearchComponent = () => {
     }
 
     //Kampanya get url data
-    if (parsed.campaing !== undefined) {
-      if (parsed.campaing === 'true')
-        setCampaingCode(true); else { setCampaingCode(false) }
+    if (parsed.campaign !== undefined) {
+      if (parsed.campaign === 'true')
+        setCampaignCode(true); else { setCampaignCode(false) }
     }
 
     //Product Quality get url data
@@ -244,7 +244,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaing, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -315,12 +315,13 @@ const SearchComponent = () => {
     const params = new URLSearchParams(location.search);
     params.delete('keyword');
     params.delete('pgindex');
-
-    if (keyword.length > 0) {
-      setPageIndex(1);
-      params.append('keyword', keyword);
-      params.append('pgindex', 1);
-      params.toString();
+    if (keyword !== undefined) {
+      if (keyword.length > 0) {
+        setPageIndex(1);
+        params.append('keyword', keyword);
+        params.append('pgindex', 1);
+        params.toString();
+      }
     }
     history.push(`${location.pathname}?${params.toString()}`);
 
@@ -366,12 +367,12 @@ const SearchComponent = () => {
   }
 
 
-  //Campaing Filter Event
+  //campaign Filter Event
   function onChangeCampaing(event) {
-    setCampaingCode(event.target.value)
+    setCampaignCode(event.target.value)
     const params = new URLSearchParams(location.search);
-    params.delete('campaing');
-    params.append('campaing', event.target.value);
+    params.delete('campaign');
+    params.append('campaign', event.target.value);
     params.delete('pgindex');
     params.append('pgindex', 1)
     setPageIndex(1);
@@ -603,21 +604,27 @@ const SearchComponent = () => {
     setSeries([]);
     setColor([]);
     setSurface([]);
-    setCampaingCode(false);
+    setKeyword();
+    setCampaignCode(false);
     if (getProductGroupName !== undefined) {
       let productGroupName = getProductGroupName;
       params.delete('pg');
       setCategory(productGroupName);
       params.append('pg', productGroupName);
       params.toString();
+    } else {
+      if (productCategories.length > 0) {
+        setCategory(productCategories[0]);
+      }
     }
+    params.delete('keyword');
     params.delete('ut');
     params.delete('dm');
     params.delete('se');
     params.delete('clr');
     params.delete('sfc');
     params.delete('pgindex');
-    params.delete('campaing');
+    params.delete('campaign');
     params.append('pgindex', 1);
 
     // setPageIndex(1);
@@ -923,12 +930,14 @@ const SearchComponent = () => {
               value={keyword}
               onKeyDown={keyPress} />
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="filter.category" />} key="0">
+              <Panel header={<IntlMessages id={!!category ? "filter.category" :"filter.category.asterisk"} />} key="0">
                 <RadioGroup onChange={onChangeCategory} options={productCategories}
                   value={category}>
                 </RadioGroup>
               </Panel>
             </Collapse>
+            {!!category ? null :
+              <div style={{ color: 'red', fontSize: '90%' }}>*: Detaylı filtreleme için kategori seçiniz</div>}
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="filter.salesStatus" />} key="1">
                 <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
@@ -943,7 +952,7 @@ const SearchComponent = () => {
             </Collapse>
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="filter.campaing" />} key="1">
-                <RadioGroup onChange={onChangeCampaing} value={campaing} defaultValue={campaing}>
+                <RadioGroup onChange={onChangeCampaing} value={campaign} defaultValue={campaign}>
                   <Radio style={radioStyle} value={false}>
                     Hepsi
                 </Radio>
@@ -1090,7 +1099,7 @@ const SearchComponent = () => {
                             <h3 className="isoCardTitle">{item.itemCode}</h3>
                           </Col>
                           <Col span={18} align="right" >
-                            <Text mark style={{ fontSize: '80%' }}>{item.salableBalanceFriendlyText ? ('Stok: ' + item.salableBalanceFriendlyText) : null}{}</Text>
+                            <Text mark style={{ fontSize: '80%' }}>{item.salableBalanceFriendlyText ? ('Stok: ' + item.salableBalanceFriendlyText) : null}{ }</Text>
                           </Col>
                         </Row>
                         <span className="isoCardDate" style={{ minHeight: '70px' }}>
