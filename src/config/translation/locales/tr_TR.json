@@ -511,6 +511,7 @@
   "page.usersTitle.header": "Kullanıcılar",
   "page.filtered": "Filtreleme",
   "filter.category": "Kategori",
+  "filter.category.asterisk": "Kategori *",
   "filter.salesStatus": "Satış Tipi",
   "filter.campaing": "Kampanya",
   "filter.productType": "Ürün Tipi",
