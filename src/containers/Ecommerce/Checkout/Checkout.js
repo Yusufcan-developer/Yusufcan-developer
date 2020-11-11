@@ -391,7 +391,7 @@ export default function () {
       })
       .then(data => {
         if (data !== undefined) {
-          if (data.isSuccessfull) {
+          if (data.isSuccessful) {
             setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
             createOrderNo = data.orderNo; setSuccessOrderSave(true);
             postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo + ' numaralı sipariş başarılı şekilde oluşturulmuştur.');
