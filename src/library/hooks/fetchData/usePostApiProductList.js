@@ -65,7 +65,6 @@ function useProductData(url, reqBody, categorie, searchUrl) {
       }).catch(setOnChange(false));
   }
   useEffect(() => {
-    debugger
     const parsed = queryString.parse(location.search);
     if ((categorie === undefined) && (parsed.keyword === undefined)) {   setLoading(true);
       fetchUrl();}
@@ -88,6 +87,7 @@ function useProductData(url, reqBody, categorie, searchUrl) {
         }
       }
     }
+    setOnChange(false);
   }, [currentPage, changePageSize, onChange]);
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray];
 }

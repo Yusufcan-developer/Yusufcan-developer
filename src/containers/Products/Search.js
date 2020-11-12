@@ -606,6 +606,7 @@ const SearchComponent = () => {
     setSurface([]);
     setKeyword();
     setCampaignCode(false);
+    
     if (getProductGroupName !== undefined) {
       let productGroupName = getProductGroupName;
       params.delete('pg');
@@ -613,9 +614,11 @@ const SearchComponent = () => {
       params.append('pg', productGroupName);
       params.toString();
     } else {
-      if (productCategories.length > 0) {
-        setCategory(productCategories[0]);
-      }
+      if (parsed.pg === undefined) {
+        if (productCategories.length > 0) {
+          setCategory(productCategories[0]);
+        }
+      }      
     }
     params.delete('keyword');
     params.delete('ut');
