@@ -67,6 +67,7 @@ const SearchComponent = () => {
   const [palletAmount, setPalletAmount] = useState(0);
   const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
   const [selectedAmout, setSelectedAmount] = useState(0);
+  const [selectedItem,  setSelectedItem] = useState();
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
 
   //Page Index,Page Size,Keywor states
@@ -656,7 +657,6 @@ const SearchComponent = () => {
 
   //Input Number return quantity value
   function inputNumberQuantityValue(product) {
-
     var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode);
     if (selectedProduct === undefined) {
       if (partialQuantity) { return 0 }
@@ -664,8 +664,14 @@ const SearchComponent = () => {
     }
     else {
       if (selectedAmout === 0) {
+
         return selectedProduct.quantity;
-      } else { return selectedAmout; }
+      } else { 
+        if(selectedItem===product.itemCode){
+          return selectedAmout; 
+        }
+        else{ return selectedProduct.quantity;}
+        }
     }
   }
 
@@ -728,6 +734,7 @@ const SearchComponent = () => {
   function onChange(e, item, isPartial) {
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
+      setSelectedItem(item.itemCode);
       setSelectedAmount(parseInt(e.target.value));
     }
   }
@@ -772,9 +779,9 @@ const SearchComponent = () => {
             });
           }
         });
+        dispatch(changeProductQuantity(newProductQuantity)); 
         setSelectedAmount(0);
-        setSelectedPartialAmount(0);
-        dispatch(changeProductQuantity(newProductQuantity));       
+        setSelectedPartialAmount(0);      
         if (selectedQuantity > 0) {
           // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürün miktarı güncellendi.' + 'Miktar ' + selectedQuantity);
         }
