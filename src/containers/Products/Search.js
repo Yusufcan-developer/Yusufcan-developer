@@ -671,7 +671,6 @@ const SearchComponent = () => {
 
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValueNew(product, isPartial) {
-
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
     if (selectedProduct === undefined) {
       if (selectedPartialAmout < 1) {
@@ -734,12 +733,13 @@ const SearchComponent = () => {
   }
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
+    debugger
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
 
     const selectedQuantity = event.target.value;
     if ((partialQuantity) && (!productQuantity.find(item => item.itemCode === productData.itemCode && item.isPartial === isPartial))) {
       const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
-      if (amountControl === -1) { return onAddProductCart(productData, true, isPartial, selectedQuantity) }
+      if (amountControl === -1) { setSelectedAmount(0); setSelectedPartialAmount(0); return onAddProductCart(productData, true, isPartial, selectedQuantity) }
       else { setSelectedPartialAmount(amountControl); }
     }
     else {
@@ -747,7 +747,8 @@ const SearchComponent = () => {
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
           onAddProductCart(productData, true, isPartial, selectedQuantity);
-          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity); return;
+          // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity); return;
+          setSelectedAmount(0); setSelectedPartialAmount(0);
         }
       }
       else {
@@ -771,11 +772,11 @@ const SearchComponent = () => {
             });
           }
         });
-        dispatch(changeProductQuantity(newProductQuantity));
         setSelectedAmount(0);
         setSelectedPartialAmount(0);
+        dispatch(changeProductQuantity(newProductQuantity));       
         if (selectedQuantity > 0) {
-          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürün miktarı güncellendi.' + 'Miktar ' + selectedQuantity);
+          // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürün miktarı güncellendi.' + 'Miktar ' + selectedQuantity);
         }
       }
     }
@@ -817,7 +818,7 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
-
+   
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -834,7 +835,7 @@ const SearchComponent = () => {
         if (amountControl === -1) {
           dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
           notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
-          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity);
+          // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity);
         }
       }
       else {
@@ -858,7 +859,7 @@ const SearchComponent = () => {
             }
           });
           dispatch(changeProductQuantity(newProductQuantity));
-          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı arttırıldı.' + 'Miktar ' + setQunatity);
+          // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı arttırıldı.' + 'Miktar ' + setQunatity);
         }
         else {
 
