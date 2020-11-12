@@ -29,54 +29,48 @@ const demoNotifications = [
     notification:
       'Bilgilendirme amaçlı yapılmıştır.Notification sistemi kontrol ediliyor',
   },
-];
-//Get Notification
-async function getNotificationList() {
-  let productInfo;
-  // const requestOptions = {
-  //   method: "GET",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //     Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-  //   }
-  // };
-  // const token = jwtDecode(localStorage.getItem("id_token"));
-  // const activeUser = localStorage.getItem("activeUser")
-  // let uname = token.uname;
-  // if (activeUser !== null) { uname = activeUser }
-  // if (!token.uname) { return 'Unauthorized' }
-
-  // await fetch(`${siteConfig.api.carts.getNotificationByUserId}${uname}`, requestOptions)
-  //   .then(response => {
-  //     const status = apiStatusManagement(response, true);
-  //     return status;
-  //   })
-  //   .then(data => {
-  //     cartItem = data.items;
-  //     setTotalPrice(data.totalCost);
-  //     if (data !== 'Unauthorized1') {
-  //       setQuantity(cartItem.length);
-  //       getInitData();//Send Redux Data;        
-  //       //Redux Data refresh
-  //       if ((productQuantity === null) || (quantity !== productQuantity.length)) {
-  //         let productQuantity = localStorage.getItem('cartProductQuantity');
-  //         productQuantity = JSON.parse(productQuantity); dispatch(initData({ productQuantity }));
-  //       }
-  //     }
-  //     else { setQuantity(0) }
-  //   })
-  //   .catch();
-  return productInfo;
-}
+]
 export default function TopbarNotification() {
   const [visible, setVisiblity] = React.useState(false);
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
-  
+  const [quantity, setQuantity]=useState();
+
   getNotificationList();
+
   function handleVisibleChange() {
     setVisiblity(visible => !visible);
   }
-
+  ;
+  //Get Notification
+  async function getNotificationList() {
+    let productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let uname = token.uname;
+    if (activeUser !== null) { uname = activeUser }
+    if (!token.uname) { return 'Unauthorized' }
+  
+    await fetch(`${siteConfig.api.carts.getNotificationByUserId}${uname}?isRead=${false}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+          setQuantity(data.length);
+        }
+        else { setQuantity(0) }
+      })
+      .catch();
+    return productInfo;
+  }
   const content = (
     <TopbarDropdownWrapper className="topbarNotification">
       <div className="isoDropdownHeader">
@@ -110,7 +104,7 @@ export default function TopbarNotification() {
           className="ion-android-notifications"
           style={{ color: customizedTheme.textColor }}
         />
-        <span>{demoNotifications.length}</span>
+        <span>{quantity}</span>
       </div>
     </Popover>
   );
