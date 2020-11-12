@@ -171,7 +171,7 @@ const ProductDetail = () => {
     document.getElementById(id).select();
   }
   //Redux product quantity change event
-  function onChangeQuantity(event, productData, isPartial = false) {    
+  function onChangeQuantity(event, productData, isPartial) {
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if (event.target.value > 0) {
       const selectedQuantity = event.target.value;
@@ -179,6 +179,8 @@ const ProductDetail = () => {
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
         onAddProductCart(productData, true, isPartial, selectedQuantity);
+        setSelectedAmount(0);
+        setSelectedPartialAmount(0);
         postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity); return;
         }
       }
@@ -220,8 +222,7 @@ const ProductDetail = () => {
   }
    //Input Number return partial quantity value
    function inputNumberPartialQuantityValueNew(product, isPartial) {
-
-    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
+    var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
     if (selectedProduct === undefined) {
       if (selectedPartialAmout < 1) {
         return 0;
@@ -423,7 +424,7 @@ const ProductDetail = () => {
                     id={'Paletli' + itemCode}
                     onClick={event => onSelectAll('Paletli' + itemCode)}
                     onChange={event => onChange(event, productItem, false)}
-                    onBlur={event => onChangeQuantity(event, productItem)}
+                    onBlur={event => onChangeQuantity(event, productItem,false)}
                     style={{ textAlign: "right" }}
                     maxLength={5}
                     defaultValue={0}
@@ -458,7 +459,7 @@ const ProductDetail = () => {
                       id={'Parçalı' + itemCode}
                       onClick={event => onSelectAll('Parçalı' + itemCode)}
                       onChange={event => onChange(event, productItem, true)}
-                      onBlur={event => onChangeQuantity(event, productItem)}
+                      onBlur={event => onChangeQuantity(event, productItem,true)}
                       style={{ textAlign: "right" }}
                       maxLength={5}
                       defaultValue={1}

@@ -17,6 +17,7 @@ import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal,
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { postSaveNotification } from "@iso/lib/hooks/fetchData/postSaveNotification";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -181,6 +182,8 @@ const CartList = () => {
     switch (value.key) {
       case '1':
         localStorage.setItem('activeUser', selectedCart.accountNo);
+        postSaveNotification(enumerations.NotificationTypes.CartUpdate,'Kullanıcı tarafından sepet seçildi');
+        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+' Bayi sepet oluşturulması için seçildi');
         history.push('/cart');
         window.location.reload(false);
         break;
@@ -259,6 +262,7 @@ const CartList = () => {
     if (dealerCodes === undefined) { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
     else {
       localStorage.setItem('activeUser', dealerCodes);
+      postSaveNotification(enumerations.NotificationTypes.CartUpdate,'Kullanıcı tarafından sepet seçildi');
       postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+' Bayi sepet oluşturulması için seçildi');
       history.push('/cart'); 
       window.location.reload(false);

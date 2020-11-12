@@ -1,6 +1,5 @@
 //React
 import React, { useState, useEffect } from "react";
-import { Link, useRouteMatch, useHistory, useLocation } from 'react-router-dom';
 
 //Redux
 import { Popover } from 'antd';
@@ -8,34 +7,21 @@ import { useSelector } from 'react-redux';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
 //Configs
-import numberFormat from "@iso/config/numberFormat";
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
-import getInitData from '../../redux/ecommerce/config';
-import enumerations from "@iso/config/enumerations";
+import Item from "antd/lib/list/Item";
 var jwtDecode = require('jwt-decode');
 
-const demoNotifications = [
-  {
-    id: 1,
-    name: 'Uğur Çamoğlu',
-    notification:
-      'Bilgilendirme amaçlı yapılmıştır.Notification sistemi kontrol ediliyor',
-  },
-  {
-    id: 2,
-    name: 'Utku Öztürk',
-    notification:
-      'Bilgilendirme amaçlı yapılmıştır.Notification sistemi kontrol ediliyor',
-  },
-]
 export default function TopbarNotification() {
   const [visible, setVisiblity] = React.useState(false);
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
-  const [quantity, setQuantity]=useState();
-
-  getNotificationList();
+  const [quantity, setQuantity] = useState();
+  const [notification, setNotification] = useState([]);
+  
+  useEffect(() => {
+    getNotificationList();
+  }, []);
 
   function handleVisibleChange() {
     setVisiblity(visible => !visible);
@@ -53,11 +39,9 @@ export default function TopbarNotification() {
     };
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
-    let uname = token.uname;
-    if (activeUser !== null) { uname = activeUser }
-    if (!token.uname) { return 'Unauthorized' }
-  
-    await fetch(`${siteConfig.api.carts.getNotificationByUserId}${uname}?isRead=${false}`, requestOptions)
+    let uid = token.uid;
+
+    await fetch(`${siteConfig.api.security.getNotificationByUserId}${uid}/?isRead=${false}`, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response, true);
         return status;
@@ -65,12 +49,14 @@ export default function TopbarNotification() {
       .then(data => {
         if (data !== 'Unauthorized1') {
           setQuantity(data.length);
+          setNotification(data);
         }
         else { setQuantity(0) }
       })
       .catch();
     return productInfo;
   }
+  
   const content = (
     <TopbarDropdownWrapper className="topbarNotification">
       <div className="isoDropdownHeader">
@@ -79,10 +65,10 @@ export default function TopbarNotification() {
         </h3>
       </div>
       <div className="isoDropdownBody">
-        {demoNotifications.map(notification => (
-          <a className="isoDropdownListItem" key={notification.id} href="# ">
-            <h5>{notification.name}</h5>
-            <p>{notification.notification}</p>
+        {notification.map(item => (
+          <a className="isoDropdownListItem" key={item.notificationTypeName} href="# ">
+            <h5>{item.notificationTypeName}</h5>
+            <p>{item.description}</p>
           </a>
         ))}
       </div>

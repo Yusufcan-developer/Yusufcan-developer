@@ -5,6 +5,7 @@ import { Link, useRouteMatch, useHistory, useLocation } from 'react-router-dom';
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
 
+
 //Component
 import IntlMessages from '@iso/components/utility/intlMessages';
 import Scrollbar from '@iso/components/utility/customScrollBar';
@@ -35,6 +36,7 @@ export default function TopbarAddtoCart() {
   const queryString = require('query-string');
   const location = useLocation();
   const [quantity, setQuantity] = useState();
+  const [topbarItemCartLastTotal, setTopbarItemCartLastTotal] = useState(-1);
   const [totalPrice, setTotalPrice] = useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const {
@@ -52,6 +54,7 @@ export default function TopbarAddtoCart() {
   //Get Cart
   async function getCartList() {
     let productInfo;
+    let updateTopbarCartItemTotal = 0;
     const requestOptions = {
       method: "GET",
       headers: {
@@ -81,16 +84,39 @@ export default function TopbarAddtoCart() {
             let productQuantity = localStorage.getItem('cartProductQuantity');
             productQuantity = JSON.parse(productQuantity); dispatch(initData({ productQuantity }));
           }
+          //Son redux datasının topbar veritabanı ile eşleştirilmesi
+          let reduxCart = localStorage.getItem('cartProductQuantity');
+          reduxCart = JSON.parse(reduxCart);
+
+          updateTopbarCartItemTotal = _.reduce(reduxCart, (memo, item) => {
+            return memo + item.quantity;
+        }, 0);
         }
         else { setQuantity(0) }
       })
       .catch();
+
+    setTopbarItemCartLastTotal(updateTopbarCartItemTotal)
     return productInfo;
   }
 
   //Ürünler Listesinin render edilmesi SingleCart View js dosyasına yönlendiriliyor.
   function renderProducts() {
-    getCartList();
+
+    //Topbar kontrolünün birden fazla çalışmasını engelleme miktar kontrolleri.
+  
+    let productQuantity = localStorage.getItem('cartProductQuantity');
+    productQuantity = JSON.parse(productQuantity);
+
+    const reduxCartItemTotal = _.reduce(productQuantity, (memo, item) => {
+      return memo + item.quantity;
+  }, 0);
+
+    if (reduxCartItemTotal !== topbarItemCartLastTotal) {
+      // setTopbarItemCartLastTotal(reduxCartItemTotal);
+      getCartList();
+    }
+
     if (!quantity || quantity.length === 0) {
       return (
         <div className="isoNoItemMsg">
@@ -149,7 +175,7 @@ export default function TopbarAddtoCart() {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
-    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, productItem.itemCode + productIsPartialTitle+ ' Ürün sepetten çıkarıldı.');
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, productItem.itemCode + productIsPartialTitle + ' Ürün sepetten çıkarıldı.');
     getCartList();
     if (location.pathname === "/checkout") { return window.location.reload(false); }
   }
