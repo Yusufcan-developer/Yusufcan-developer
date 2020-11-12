@@ -58,8 +58,8 @@ const ChequesReport = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(-6, 'months').toDate()));
-  const [toDate, setToDate] = useState(moment(new Date()));
+  const [fromDate, setFromDate] = useState(moment(new Date()));
+  const [toDate, setToDate] =useState(moment(moment().add(6, 'months').toDate()));
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
