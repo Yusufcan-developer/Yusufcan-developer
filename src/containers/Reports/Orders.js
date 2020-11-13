@@ -50,11 +50,12 @@ const OrdersReport = () => {
   document.title = "Siparişler - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
 
   const queryString = require('query-string');
   const history = useHistory();
-  const [lookupAddressChildren,setLookupAddressChildren] = useState();
+  const [lookupAddressChildren, setLookupAddressChildren] = useState();
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -76,11 +77,11 @@ const OrdersReport = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Browse,'Sipariş raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Browse, 'Sipariş raporu listeleme');
     setCurrentPage(pageIndex);
     getVariablesFromUrl();
     const token = jwtDecode(localStorage.getItem("id_token"));
-    if((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
       getAdress(token.dcode);
     }
   }, [pageIndex]);
@@ -93,24 +94,24 @@ const OrdersReport = () => {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData, aggregatesOverall] =
-  usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder,"addressCodes":address },searchUrl);
+    usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
 
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
-    
+
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
     //Field url data
@@ -170,18 +171,18 @@ const OrdersReport = () => {
       partialUnitData = _.groupBy(orderDetailData[orderDetailIndex].Value, function (item) { return item.unit; });
     }
     else { partialUnitData = null }
-  const r =   _.map(partialUnitData, (item) => {   
-    return (
-      <Table
-        columns={OrderDetailcolumns}
-        dataSource={item}
-        pagination={false}
-        bordered={false}
-        summary={() => {
-          return renderFooter(OrderDetailcolumns, item, false)
-        }}
-      />);
-        });
+    const r = _.map(partialUnitData, (item) => {
+      return (
+        <Table
+          columns={OrderDetailcolumns}
+          dataSource={item}
+          pagination={false}
+          bordered={false}
+          summary={() => {
+            return renderFooter(OrderDetailcolumns, item, false)
+          }}
+        />);
+    });
 
     return (<React.Fragment>{r} </React.Fragment>);
   };
@@ -200,7 +201,7 @@ const OrdersReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
-    params.delete('address'); 
+    params.delete('address');
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -211,8 +212,8 @@ const OrdersReport = () => {
       params.append('address', item); params.toString();
     });
 
-    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if(sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -224,7 +225,7 @@ const OrdersReport = () => {
   }
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Browse,'Sipariş raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Browse, 'Sipariş raporu yeni arama');
     dataSearch();
   };
 
@@ -260,7 +261,7 @@ const OrdersReport = () => {
         setSelectedDealerCode(value)
         setNewUrlParams(params.toString());
       });
-      if(dealerArrObj.length===1){await getAdress(dealerArrObj[0]);}
+      if (dealerArrObj.length === 1) { await getAdress(dealerArrObj[0]); }
     }
   };
 
@@ -289,31 +290,44 @@ const OrdersReport = () => {
     });
     if (sorter !== undefined) {
       if (sorter.order === "descend") {
-        sortingOrder='DESC';
-      } else { sortingOrder='ASC'; }
-    
-    sortingField=sorter.field;
-    dataSearch()
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
     }
   };
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    setPageSize(pageSize);
+    debugger
+    if (isNaN(pageSize)) {
+      setPageSize(9999);
+    }
+    else {
+      setPageSize(pageSize);
+    }
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
+    debugger
+    if (isNaN(pageSize)) {
+      setPageSize(111);
+    }
+    else {
+      setPageSize(pageSize);
+    }
     setPageIndex(current);
-    setPageSize(pageSize);
-    dataSearch(current,pageSize);
+
+    dataSearch(current, pageSize);
   }
- //Select Component Rol değiştirme 
- function addressHandleChange(value) {
-  setAddress(value);
-}
+  //Select Component Rol değiştirme 
+  function addressHandleChange(value) {
+    setAddress(value);
+  }
   //Get adress
   async function getAdress(dealerCodes) {
     //Get User Info  
@@ -330,9 +344,9 @@ const OrdersReport = () => {
         return status;
       })
       .then(data => {
-        const addressChildren=[];
+        const addressChildren = [];
         _.each(data, (item, i) => {
-          addressChildren.push(<Option key={item.addressCode}>{item.addressCode+'-'+item.addressTitle+'-'+item.address2+'-'+item.phone}</Option>);
+          addressChildren.push(<Option key={item.addressCode}>{item.addressCode + '-' + item.addressTitle + '-' + item.address2 + '-' + item.phone}</Option>);
         });
         setLookupAddressChildren(addressChildren)
       })
@@ -342,12 +356,12 @@ const OrdersReport = () => {
 
   //Excel Oluşturma
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportOrders,enumerations.LogTypes.Export,'Sipariş raporu excel oluşturma');
-    
-    ExcelExport(columns, data, 'Siparişler',orderDetailData,OrderDetailcolumns);
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, 'Sipariş raporu excel oluşturma');
+
+    ExcelExport(columns, data, 'Siparişler', orderDetailData, OrderDetailcolumns);
   }
   //Order Detail Columns
-  const OrderDetailcolumns = [    
+  const OrderDetailcolumns = [
     {
       title: "Ürün Kodu",
       dataIndex: "itemCode",
@@ -374,7 +388,6 @@ const OrdersReport = () => {
       dataIndex: "unit",
       key: "unit",
       width: 50,
-      
     },
     {
       title: "Teslimat Miktarı",
@@ -410,7 +423,7 @@ const OrdersReport = () => {
       render: (distributionSuggestedAmount) => numberFormat(distributionSuggestedAmount),
       footerKey: "distributionSuggestedAmount",
       width: 150,
-    },   
+    },
     {
       title: "Dağıtımdaki Miktar",
       dataIndex: "distributionActualAmount",
@@ -419,7 +432,6 @@ const OrdersReport = () => {
       render: (distributionActualAmount) => numberFormat(distributionActualAmount),
       footerKey: "distributionActualAmount",
       width: 200,
-      
     },
     {
       title: "",
@@ -428,7 +440,6 @@ const OrdersReport = () => {
       align: "right",
       // render: (distributionActualAmount) => numberFormat(distributionActualAmount),
       footerKey: "",
-      
     },
   ];
 
@@ -485,7 +496,7 @@ const OrdersReport = () => {
     {
       title: "Belge No",
       dataIndex: "documentId",
-      key: "documentId",     
+      key: "documentId",
     },
     {
       title: "Ödeme",
@@ -501,20 +512,20 @@ const OrdersReport = () => {
       title: "Teslimat Adresi",
       dataIndex: "deliveryAddress",
       key: "deliveryAddress",
-      footerKey:'Genel Toplam',
+      footerKey: 'Genel Toplam',
     },
     {
       title: "Toplam",
       dataIndex: "total",
       key: "total",
-      align: "right",      
+      align: "right",
       render: (total) => numberFormat(total),
       footerKey: "total",
     },
     {
       title: "Durum",
       dataIndex: "status",
-      key: "status",     
+      key: "status",
     },
     {
       title: "Açıklama 1",
@@ -638,24 +649,24 @@ const OrdersReport = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-             
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-          :null}         
-            <Row>            
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   treeData={treeData}
                   value={selectedDealerCode}
@@ -669,7 +680,7 @@ const OrdersReport = () => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -678,44 +689,44 @@ const OrdersReport = () => {
                 />
 
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24} >
-                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz"   style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              
-              <Col span={newView!=='MobileView'?5:0} offset={newView!=='MobileView'?1:0} >
+
+              <Col span={newView !== 'MobileView' ? 5 : 0} offset={newView !== 'MobileView' ? 1 : 0} >
                 <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
             </Row>
             <Row>
-              <Col span={newView!=='MobileView'?5:0} >
+              <Col span={newView !== 'MobileView' ? 5 : 0} >
                 <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
               </Col>
-              <Col span={newView!=='MobileView'?6:0} offset={newView!=='MobileView'?2:0}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} offset={newView !== 'MobileView' ? 2 : 0}>
               </Col>
             </Row>
             <Row>
-            <Select
-              mode={"multiple"}
-              style={{ width: '100%' }}
-              placeholder="Sevk Adresi Seçiniz"
-              style={{ marginBottom: '8px', width: '250px' }}
-              value={address}
-              dropdownMatchSelectWidth={750}
-              onChange={addressHandleChange}
-              filterOption={(input, option) =>
-                option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-              }
-            >
-          {lookupAddressChildren}
-            </Select>
-            <Col span={newView==='MobileView'?5:0} offset={newView==='MobileView'?1:0} >
+              <Select
+                mode={"multiple"}
+                style={{ width: '100%' }}
+                placeholder="Sevk Adresi Seçiniz"
+                style={{ marginBottom: '8px', width: '250px' }}
+                value={address}
+                dropdownMatchSelectWidth={750}
+                onChange={addressHandleChange}
+                filterOption={(input, option) =>
+                  option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                }
+              >
+                {lookupAddressChildren}
+              </Select>
+              <Col span={newView === 'MobileView' ? 5 : 0} offset={newView === 'MobileView' ? 1 : 0} >
                 <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row> 
+            </Row>
           </Panel>
         </Collapse>
       </Box>

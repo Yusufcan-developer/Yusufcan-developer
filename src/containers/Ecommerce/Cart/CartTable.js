@@ -1,24 +1,28 @@
 //React
 import React, { useState, useEffect } from "react";
-import {  useHistory, Link } from 'react-router-dom';
+import { useHistory, Link } from 'react-router-dom';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Component
+import Form from "@iso/components/uielements/form";
 import Input from '@iso/components/uielements/input';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
-import { Col, Row, Button } from "antd";
+import { Col, Row, Button, Modal, message } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
+import IntlMessages from "@iso/components/utility/intlMessages";
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
+
+import { DeleteOutlined, TableOutlined } from '@ant-design/icons';
 
 //Other Library
 import { OrderTable } from '../Checkout/Checkout.styles';
@@ -31,19 +35,22 @@ let cartItem = null;
 export default function CartTable({ style }) {
 
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Sepet ürün listesi');  
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Sepet ürün listesi');
   }, []);
   document.title = "Sepet - Seramiksan B2B";
   let history = useHistory();
   const [totalCost, setTotalCost] = useState();
   const [total, setTotal] = useState();
   const [totalVat, setTotalVat] = useState();
-  const [selectedAmout,setSelectedAmount]=useState(0);
-  const [selectedPartialAmout,setSelectedPartialAmount]=useState(0);
-  const [selectedProductItem,setSelectedProductItem]=useState();
-  const [selectedIsPartial,setSelectedIsPartial]=useState();
+  const [selectedAmout, setSelectedAmount] = useState(0);
+  const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
+  const [selectedProductItem, setSelectedProductItem] = useState();
+  const [selectedIsPartial, setSelectedIsPartial] = useState();
+  const [deleteCartVisible, setDeleteCartVisible] = useState(false);
+  const [title, setTitle] = useState();
   const dispatch = useDispatch();
- const { productQuantity } = useSelector(state => state.Ecommerce);
+  const { productQuantity } = useSelector(state => state.Ecommerce);
+  const [form] = Form.useForm();
 
   async function allCartItemChangeOrderAmount() {
     let sendDatabaseProductList;
@@ -120,7 +127,7 @@ export default function CartTable({ style }) {
 
     await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
       .then(response => {
-        const status = apiStatusManagement(response,true);
+        const status = apiStatusManagement(response, true);
         return status;
       })
       .then(data => {
@@ -134,49 +141,50 @@ export default function CartTable({ style }) {
       .catch();
     return productInfo;
   }
-  function onChange(e,item,isPartial) {
-    if(isPartial){parseInt(setSelectedPartialAmount(e.target.value));setSelectedIsPartial(isPartial);setSelectedProductItem(item.itemCode);}
-    else{
-    setSelectedAmount(parseInt(e.target.value));setSelectedIsPartial(isPartial);setSelectedProductItem(item.itemCode);}
+  function onChange(e, item, isPartial) {
+    if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)); setSelectedIsPartial(isPartial); setSelectedProductItem(item.itemCode); }
+    else {
+      setSelectedAmount(parseInt(e.target.value)); setSelectedIsPartial(isPartial); setSelectedProductItem(item.itemCode);
+    }
   }
-   //Input Number return partial quantity value
-   function inputNumberPartialQuantityValueNew(product, isPartial) {
+  //Input Number return partial quantity value
+  function inputNumberPartialQuantityValueNew(product, isPartial) {
 
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
-    if((selectedProductItem===product.itemCode)&&(isPartial===selectedIsPartial)){
+    if ((selectedProductItem === product.itemCode) && (isPartial === selectedIsPartial)) {
 
-    if (selectedAmout === undefined) {
-      if (selectedAmout < 1) {
-        return selectedProduct.quantity;
-      }else{
-         {return selectedAmout }
-      }     
-     
+      if (selectedAmout === undefined) {
+        if (selectedAmout < 1) {
+          return selectedProduct.quantity;
+        } else {
+          { return selectedAmout }
+        }
+
+      }
+      else {
+        if (isPartial) {
+          if (selectedPartialAmout < 1) {
+            return selectedProduct.quantity;
+          }
+          else { return selectedPartialAmout }
+        } else {
+          if (selectedAmout < 1) {
+            return selectedProduct.quantity;
+          }
+          else { return selectedAmout }
+        }
+      }
     }
     else {
-      if(isPartial){
-      if (selectedPartialAmout < 1) {
-        return selectedProduct.quantity;
-      }
-      else {return selectedPartialAmout }
-    }else{
-      if (selectedAmout < 1) {
-        return selectedProduct.quantity;
-      }
-      else {return selectedAmout }
+      return selectedProduct.quantity;
     }
-    }
-  }
-  else{
-    return selectedProduct.quantity;
-  }
   }
   //Ürünlerin Getirilmesi
   function renderItems() {
     getCartList();
     if (!productQuantity || productQuantity.length === 0) {
       if (!productQuantity || productQuantity.length === 0) {
-        return <React.Fragment> 
+        return <React.Fragment>
           <tr className="isoNoItemMsg" style={{ textAlign: 'center' }}>
             <div className="isoNoItemMsg">
               <div className="isoNoItemMsg">
@@ -190,8 +198,8 @@ export default function CartTable({ style }) {
             </div>
           </tr>
         </React.Fragment>
-     
-      }     
+
+      }
     }
     if (cartItem !== null) {
       return productQuantity.map(product => {
@@ -244,15 +252,15 @@ export default function CartTable({ style }) {
                       style={{ textAlign: "right", maxHeight: "100px" }}
                       max={1000}
                       defaultValue={1}
-                      value={inputNumberPartialQuantityValueNew(product,product.isPartial)}
+                      value={inputNumberPartialQuantityValueNew(product, product.isPartial)}
                       step={1}
                       onClick={event => onSelectAll(inputId)}
-                      onChange={event => onChange(event,product,product.isPartial)}
-                      onBlur={event => onChangeQuantity(event, product, product.isPartial,productItem)}
+                      onChange={event => onChange(event, product, product.isPartial)}
+                      onBlur={event => onChangeQuantity(event, product, product.isPartial, productItem)}
                     />
                   </Col>
                   <Col span={8} style={{ width: '100%' }}>
-                    <Button type="primary" onClick={event => onAddBox(product,productItem)} style={{ color: 'white' }}>
+                    <Button type="primary" onClick={event => onAddBox(product, productItem)} style={{ color: 'white' }}>
                       +
               </Button>
                   </Col>
@@ -269,19 +277,19 @@ export default function CartTable({ style }) {
       });
     }
   }
- 
+
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();
   }
 
   //Redux product quantity change event
-  function onChangeQuantity(event, productData, isPartial = false,productItem) {   
+  function onChangeQuantity(event, productData, isPartial = false, productItem) {
     let inputAmount;
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if (event.target.value > 0) {
-      const amountControl=productAmountControl(productItem,isPartial,parseInt(event.target.value));                
-      if(amountControl===-1){inputAmount=event.target.value}else {inputAmount=amountControl}
+      const amountControl = productAmountControl(productItem, isPartial, parseInt(event.target.value));
+      if (amountControl === -1) { inputAmount = event.target.value } else { inputAmount = amountControl }
       const product = productData;
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
       const newProductQuantity = [];
@@ -292,7 +300,7 @@ export default function CartTable({ style }) {
         } else {
           const itemCode = productItem.itemCode
           const quantity = parseInt(inputAmount);
-          setQunatity=quantity;
+          setQunatity = quantity;
           newProductQuantity.push({
             itemCode,
             quantity,
@@ -303,31 +311,31 @@ export default function CartTable({ style }) {
       dispatch(changeProductQuantity(newProductQuantity));
       setSelectedAmount(0);
       setSelectedPartialAmount(0);
-      postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' Ürünün miktarı arttırıldı.'+'Miktar '+setQunatity);
+      postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı arttırıldı.' + 'Miktar ' + setQunatity);
     }
   };
 
   function onRemoveBox(product) {
     const productIsPartialTitle = product.isPartial === true ? ' Parçalı' : ' Paletli';
     if (product.quantity !== 1) {
-      const quantity=product.quantity - 1;
+      const quantity = product.quantity - 1;
       changeQuantity(product.itemCode, product.quantity - 1, product.isPartial);
-      postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' ürünün miktarı azaltıld.'+'Miktar '+quantity);
+      postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' ürünün miktarı azaltıld.' + 'Miktar ' + quantity);
     }
   };
 
-  function onAddBox(product,productItem) {
+  function onAddBox(product, productItem) {
     const productIsPartialTitle = product.isPartial === true ? ' Parçalı' : ' Paletli';
-    const quantity=product.quantity + 1;
-    const amountControl=productAmountControl(productItem,product.isPartial,parseInt(quantity));                
-    if(amountControl===-1){
-    changeQuantity(product.itemCode, product.quantity + 1, product.isPartial);
-    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode +productIsPartialTitle+ ' ürünün miktarı arttırıldı.'+'Miktar '+quantity);
+    const quantity = product.quantity + 1;
+    const amountControl = productAmountControl(productItem, product.isPartial, parseInt(quantity));
+    if (amountControl === -1) {
+      changeQuantity(product.itemCode, product.quantity + 1, product.isPartial);
+      postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' ürünün miktarı arttırıldı.' + 'Miktar ' + quantity);
     }
   };
 
   //Sepet miktarının değişikliği
-  function changeQuantity(itemCode, quantity, isPartial) {    
+  function changeQuantity(itemCode, quantity, isPartial) {
     const newProductQuantity = [];
     productQuantity.forEach(product => {
       if (product.itemCode !== itemCode || product.isPartial !== isPartial) {
@@ -343,7 +351,7 @@ export default function CartTable({ style }) {
     dispatch(changeProductQuantity(newProductQuantity));
     getCartList();
   }
-  
+
 
   //Sepetten ürünün çıkarılması
   function cancelQuantity(productItem) {
@@ -356,7 +364,7 @@ export default function CartTable({ style }) {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
-    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, productItem.itemCode + productIsPartialTitle+ ' Ürün sepetten çıkarıldı.');
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, productItem.itemCode + productIsPartialTitle + ' Ürün sepetten çıkarıldı.');
   }
 
   //Sepetteki ürünlerin siparişe hazırlanması
@@ -369,36 +377,78 @@ export default function CartTable({ style }) {
   function orderPartial() {
     history.push('/orderPartial');
   }
+  //Cart silme fetch işlemi
+  async function deleteCart() {
+    const newProductQuantity = [];
+    dispatch(changeProductQuantity(newProductQuantity));
+    getCartList();
+  }
+
+  //Sepet Silme işlemi
+  async function handleCartDeleteOk() {
+    await deleteCart();
+    message.success('Sepet başarıyla silinmiştir.'); setDeleteCartVisible(false);
+    return getCartList();
+  };
+
+  //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
+  function handleCancel() {
+    setDeleteCartVisible(false);
+  };
+
+  function removeCartItemShowModal() {
+
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    if (token === undefined) { return }
+    const activeUser = localStorage.getItem("activeUser")
+    let uname = token.uname;
+    if (activeUser != undefined) {
+      uname = activeUser + ' hesabına ait sepetteki tüm ürünler silinecektir. Devam etmek istiyor musunuz?'
+    }
+    else {
+      uname = 'Sepetinizdeki ürünler silinecektir. Devam etmek istiyor musunuz?'
+    }
+    setTitle(uname);
+
+    setDeleteCartVisible(true);
+  }
+
   const classname = style != null ? style : '';
   return (
     <React.Fragment>
-     <PageHeader>Sepet Detayı</PageHeader>
+      <PageHeader>Sepet Detayı</PageHeader>
+      <Col span={8} offset={16} align="right" >
+        <Button type="primary" danger size="small" style={{ marginBottom: '5px' }}
+          icon={<DeleteOutlined />} onClick={removeCartItemShowModal} >
+          {<IntlMessages id="forms.button.cartAllRemove" />}
+        </Button>
+      </Col>
       <ProductsTable className={`isoCartTable ${classname}`}>
-        <table className="sticky-column" style={{overflow:'scroll'}}>
-        <thead>
-          <tr >
-            <th className="isoItemRemove" />
-            <th className="isoItemImage" />
-            <th className="isoItemName">Ürün</th>
-            <th className="isoItemPrice">Birim Fiyat</th>
-            <th className="isoItemUnit">Birim</th>
-            <th className="isoItemPalet">Sepete Eklenen</th>
-            <th className="isoItemQuantity">Miktar</th>
-            <th className="isoItemPriceTotal">Tutar</th>
-          </tr>
-        </thead>
+        <table className="sticky-column" style={{ overflow: 'auto' }}>
+          <thead>
+            <tr >
+              <th className="isoItemRemove" />
+              <th className="isoItemImage" />
+              <th className="isoItemName">Ürün</th>
+              <th className="isoItemPrice">Birim Fiyat</th>
+              <th className="isoItemUnit">Birim</th>
+              <th className="isoItemPalet">Sepete Eklenen</th>
+              <th className="isoItemQuantity">Miktar</th>
+              <th className="isoItemPriceTotal">Tutar</th>
+            </tr>
+          </thead>
 
-        <tbody>
-          {renderItems()}
-          <tr className="isoTotalBill">
-            <td className="isoItemRemove" />
-            <td className="isoItemImage" />
-            <td className="isoItemName" />
-            <td className="isoItemPrice" />
-            <td className="isoItemUnit" />
-            <td className="isoItemPalet" />
-            <OrderTable className="isoOrderInfo">
-                <div className="isoOrderTable">                  
+          <tbody>
+            {renderItems()}
+            <tr className="isoTotalBill">
+              <td className="isoItemRemove" />
+              <td className="isoItemImage" />
+              <td className="isoItemName" />
+              <td className="isoItemPrice" />
+              <td className="isoItemUnit" />
+              <td className="isoItemPalet" />
+              <OrderTable className="isoOrderInfo">
+                <div className="isoOrderTable">
                   <div className="isoOrderTableFooter">
                     <span>Toplam</span>
                     <span>{totalCost != undefined ? (numberFormat(total)) : (0)} TL</span>
@@ -410,45 +460,65 @@ export default function CartTable({ style }) {
                   <div className="isoOrderTableFooter">
                     <span>Genel Toplam</span>
                     <span>{totalCost != undefined ? (numberFormat(totalCost)) : (0)} TL</span>
-                  </div>                 
+                  </div>
                 </div>
               </OrderTable>
-          </tr>
-         
-        </tbody>
-       
-        <tfoot>
-          <tr>
-            <td
-              style={{
-                border: '1px',
-                width: '100%',
-                paddingRight: `${direction === 'rtl' ? '0' : '25px'}`,
-                paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
-              }}
-            >
-            </td>
-            <td
-              style={{
-                paddingRight: `${direction === 'rtl' ? '0' : '25px'}`,
-                paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
-              }}
-            >
-            </td>
-            <td>
-              <Button onClick={allProductToOrder}>
-                Tümünden Sipariş Oluştur
+            </tr>
+
+          </tbody>
+
+          <tfoot>
+            <tr>
+              <td
+                style={{
+                  border: '1px',
+                  width: '100%',
+                  paddingRight: `${direction === 'rtl' ? '0' : '25px'}`,
+                  paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
+                }}
+              >
+              </td>
+              <td
+                style={{
+                  paddingRight: `${direction === 'rtl' ? '0' : '25px'}`,
+                  paddingLeft: `${direction === 'rtl' ? '25px' : '0'}`,
+                }}
+              >
+              </td>
+              <td>
+                <Button onClick={allProductToOrder}>
+                  Tümünden Sipariş Oluştur
               </Button>
-            </td>
-            <td>
-              <Button onClick={orderPartial} >
-                Kısmi Sipariş Oluştur
+              </td>
+              <td>
+                <Button onClick={orderPartial} >
+                  Kısmi Sipariş Oluştur
               </Button>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </ProductsTable>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </ProductsTable>
+      <Modal
+        visible={deleteCartVisible}
+        title={"Dikkat! Sepet Silme"}
+        okText="Sil"
+        cancelText="İptal"
+        maskClosable={false}
+        onCancel={handleCancel}
+        onOk={handleCartDeleteOk}
+      >
+        <p>{title}</p>
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{
+            modifier: 'public',
+          }}
+        >
+        </Form>
+      </Modal>
     </React.Fragment>
   );
 }

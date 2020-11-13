@@ -188,7 +188,7 @@ const CartList = () => {
         window.location.reload(false);
         break;
       case '2':
-        setAccountNo(selectedCart.accountNo)
+        setAccountNo(selectedCart.accountNo);
         setDeleteCartVisible(true);
         break;
       default:
