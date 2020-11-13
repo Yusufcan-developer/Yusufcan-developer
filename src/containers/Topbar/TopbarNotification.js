@@ -30,30 +30,30 @@ export default function TopbarNotification() {
   //Get Notification
   async function getNotificationList() {
     let productInfo;
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      }
-    };
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    let uid = token.uid;
+    // const requestOptions = {
+    //   method: "GET",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+    //   }
+    // };
+    // const token = jwtDecode(localStorage.getItem("id_token"));
+    // const activeUser = localStorage.getItem("activeUser")
+    // let uid = token.uid;
 
-    await fetch(`${siteConfig.api.security.getNotificationByUserId}${uid}/?isRead=${false}`, requestOptions)
-      .then(response => {
-        const status = apiStatusManagement(response, true);
-        return status;
-      })
-      .then(data => {
-        if (data !== 'Unauthorized1') {
-          setQuantity(data.length);
-          setNotification(data);
-        }
-        else { setQuantity(0) }
-      })
-      .catch();
+    // await fetch(`${siteConfig.api.security.getNotificationByUserId}${uid}/?isRead=${false}`, requestOptions)
+    //   .then(response => {
+    //     const status = apiStatusManagement(response, true);
+    //     return status;
+    //   })
+    //   .then(data => {
+    //     if (data !== 'Unauthorized1') {
+    //       setQuantity(data.length);
+    //       setNotification(data);
+    //     }
+    //     else { setQuantity(0) }
+    //   })
+    //   .catch();
     return productInfo;
   }
   
