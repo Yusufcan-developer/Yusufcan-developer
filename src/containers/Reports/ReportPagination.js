@@ -17,6 +17,7 @@ export default (props) => {
             pageSize={pageSize}
             total={total}
             current={current}
+            pageSizeOptions={['10','20','30','50','100','500']}
             showTotal={total => `Toplam ${total} kayıt`}
             hideOnSinglePage
             style={style}

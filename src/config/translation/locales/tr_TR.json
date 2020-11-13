@@ -46,6 +46,7 @@
   "forms.button.createAddress": "Yeni Adres",
   "forms.button.createOrder": "Sipariş Oluştur",
   "forms.button.addUser": "Yeni Kullanıcı",
+  "forms.button.cartAllRemove":"Sepeti Temizle",
   "sidebar.formsWithValidation": "Forms With Validation",
   "sidebar.progress": "Progress",
   "sidebar.button": "Button",
