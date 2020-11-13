@@ -1242,7 +1242,7 @@ const SearchComponent = () => {
                             <Col span={20} align="middle">
                               <Button
                                 type="primary" style={{ width: '100%' }}
-                                onClick={event => onAddProductCart(item)}>{<IntlMessages id={item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'product.cart.add'} />}
+                                onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'}
                               </Button>
                             </Col>
                           </Row>
