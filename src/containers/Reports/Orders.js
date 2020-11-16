@@ -300,28 +300,15 @@ const OrdersReport = () => {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    debugger
-    if (isNaN(pageSize)) {
-      setPageSize(9999);
-    }
-    else {
-      setPageSize(pageSize);
-    }
+    setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current, pageSize) {
-    debugger
-    if (isNaN(pageSize)) {
-      setPageSize(111);
-    }
-    else {
-      setPageSize(pageSize);
-    }
+    setPageSize(pageSize);
     setPageIndex(current);
-
     dataSearch(current, pageSize);
   }
   //Select Component Rol değiştirme 
