@@ -406,7 +406,7 @@ export default function CartTable({ style }) {
       uname = activeUser + ' hesabına ait sepetteki tüm ürünler silinecektir. Devam etmek istiyor musunuz?'
     }
     else {
-      uname = 'Sepetinizdeki ürünler silinecektir. Devam etmek istiyor musunuz?'
+      uname = 'Sepetinizdeki tüm ürünler silinecektir. Devam etmek istiyor musunuz?'
     }
     setTitle(uname);
 
