@@ -33,10 +33,11 @@ var jwtDecode = require('jwt-decode');
 const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
-
+  const [cartChangeItem,setCartChangeItem]=useState(false);
   useEffect(() => {
+    getCartList();
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Sepet ürün listesi');
-  }, []);
+  }, [cartChangeItem]);
   document.title = "Sepet - Seramiksan B2B";
   let history = useHistory();
   const [totalCost, setTotalCost] = useState();
@@ -45,7 +46,7 @@ export default function CartTable({ style }) {
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
   const [selectedProductItem, setSelectedProductItem] = useState();
-  const [selectedIsPartial, setSelectedIsPartial] = useState();
+  const [selectedIsPartial, setSelectedIsPartial] = useState();  
   const [deleteCartVisible, setDeleteCartVisible] = useState(false);
   const [title, setTitle] = useState();
   const dispatch = useDispatch();
@@ -110,7 +111,7 @@ export default function CartTable({ style }) {
   }
   //Get Cart
   async function getCartList() {
-
+    let updateTopbarCartItemTotal = 0;
     let productInfo;
     const requestOptions = {
       method: "GET",
@@ -134,9 +135,9 @@ export default function CartTable({ style }) {
         cartItem = data.items;
         setTotalCost(data.totalOverallCost);
         setTotal(data.totalCost);
-        setTotalVat(data.totalVat);
+        setTotalVat(data.totalVat);        
+        setCartChangeItem(false);     
         getInitData();
-
       })
       .catch();
     return productInfo;
@@ -178,10 +179,10 @@ export default function CartTable({ style }) {
     else {
       return selectedProduct.quantity;
     }
+    setCartChangeItem(true);
   }
   //Ürünlerin Getirilmesi
   function renderItems() {
-    getCartList();
     if (!productQuantity || productQuantity.length === 0) {
       if (!productQuantity || productQuantity.length === 0) {
         return <React.Fragment>
@@ -311,6 +312,7 @@ export default function CartTable({ style }) {
       dispatch(changeProductQuantity(newProductQuantity));
       setSelectedAmount(0);
       setSelectedPartialAmount(0);
+      setCartChangeItem(true);
       postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı arttırıldı.' + 'Miktar ' + setQunatity);
     }
   };
@@ -349,14 +351,14 @@ export default function CartTable({ style }) {
       }
     });
     dispatch(changeProductQuantity(newProductQuantity));
-    getCartList();
+    setCartChangeItem(true);
   }
 
 
   //Sepetten ürünün çıkarılması
   function cancelQuantity(productItem) {
     const productIsPartialTitle = productItem.isPartial === true ? ' Parçalı' : ' Paletli';
-    getCartList();
+    setCartChangeItem(true)
     const newProductQuantity = [];
     _.each(productQuantity, (product) => {
       if ((product.itemCode !== productItem.itemCode || product.isPartial !== productItem.isPartial)) {
@@ -381,14 +383,14 @@ export default function CartTable({ style }) {
   async function deleteCart() {
     const newProductQuantity = [];
     dispatch(changeProductQuantity(newProductQuantity));
-    getCartList();
+    setCartChangeItem(true);
   }
 
   //Sepet Silme işlemi
   async function handleCartDeleteOk() {
     await deleteCart();
     message.success('Sepet başarıyla silinmiştir.'); setDeleteCartVisible(false);
-    return getCartList();
+    return setCartChangeItem(true);
   };
 
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
