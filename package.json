@@ -109,7 +109,7 @@
     "redux-mock-store": "^1.5.3"
   },
   "scripts": {
-    "start": "cross-env HTTPS=true react-scripts start",
+    "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "serve": "serve -s build",
     "test": "react-scripts test --env=jsdom",
