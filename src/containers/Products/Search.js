@@ -740,7 +740,6 @@ const SearchComponent = () => {
   }
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
-    debugger
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
 
     const selectedQuantity = event.target.value;

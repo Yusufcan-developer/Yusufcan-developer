@@ -319,9 +319,13 @@ const UserList = () => {
   async function handleOk() {
     //Kullanıcı düzenleme işlemi
     const userInfo = await saveUser();
-    if (userInfo) { message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false); 
-    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,userInfo.username+' kullanıcı başarıyla kaydedilmiştir.');}
-    else { message.error('Kullanıcı kaydetme işlemi başarısızdır.');  postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,'Kullanıcı kaydedilememiştir.');}
+    if(userInfo.isSuccessful===false){
+      message.error(userInfo.message);  postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,'Kullanıcı kaydedilememiştir.');
+    }else{
+      message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false); 
+      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,userInfo.username+' kullanıcı başarıyla kaydedilmiştir.');
+    }
+
     modalSelectedValueClear();
     return setOnChange(true);
   };
@@ -776,7 +780,7 @@ const UserList = () => {
             </Select>
           </Form.Item>
           <Form.Item label="Hesap" >
-            <Switch checkedChildren="Açık" unCheckedChildren="Kapalı" onChange={isLockedChange} defaultChecked={!isLocked} />
+            <Switch checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
           </Form.Item>
           <Form.Item label="Ad" onChange={event => setFirstName(event.target.value)} >
             <Input value={firstName} />
