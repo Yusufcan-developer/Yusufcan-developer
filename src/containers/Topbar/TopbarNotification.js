@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { Popover } from 'antd';
 import { useSelector } from 'react-redux';
 import IntlMessages from '@iso/components/utility/intlMessages';
+import Scrollbar from '@iso/components/utility/customScrollBar';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
 //Configs
 import _ from 'underscore';
@@ -41,7 +42,7 @@ export default function TopbarNotification() {
     // const activeUser = localStorage.getItem("activeUser")
     // let uid = token.uid;
 
-    // await fetch(`${siteConfig.api.security.getNotificationByUserId}${uid}/?isRead=${false}`, requestOptions)
+    // await fetch(`${siteConfig.api.security.getNotification}${uid}/?isRead=${false}`, requestOptions)
     //   .then(response => {
     //     const status = apiStatusManagement(response, true);
     //     return status;
@@ -64,6 +65,7 @@ export default function TopbarNotification() {
           <IntlMessages id="sidebar.notification" />
         </h3>
       </div>
+      <Scrollbar style={{ height: 300 }}>
       <div className="isoDropdownBody">
         {notification.map(item => (
           <a className="isoDropdownListItem" key={item.notificationTypeName} href="# ">
@@ -72,11 +74,12 @@ export default function TopbarNotification() {
           </a>
         ))}
       </div>
+      </Scrollbar>
       <a className="isoViewAllBtn" href="# ">
         <IntlMessages id="topbar.viewAll" />
       </a>
     </TopbarDropdownWrapper>
-  );
+  );  
   return (
     <Popover
       content={content}
