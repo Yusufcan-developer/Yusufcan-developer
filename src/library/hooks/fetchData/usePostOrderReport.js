@@ -12,23 +12,13 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   const [totalPage, setTotalPage] = useState(1);
   const [changePageSize, setChangePageSize] = useState();
   const [currentPage, setCurrentPage] = useState();
-  const [dealerCodes, setDealerCodes] = useState();
-  const [regionCodes, setRegionCodes] = useState();
-  const [fieldCodes, setFieldCodes] = useState();
-  const [from, setFrom] = useState();
-  const [to, setTo] = useState();
-  const [searchkey, setSearchKey] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [lastReqBody, setLastReqBody] = useState();
-  const [sortingField,setSortingField]=useState();
-  const [sortingOrder,setSortingOrder]=useState();
   const [aggregates,setAggregatesOverall]=useState();
-  const [address, setAddress] = useState();
   let orderIdgetUrlItems = '';
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "keyword": searchkey, "pageIndex": currentPage - 1, "pageCount": changePageSize,"sortingField": sortingField,"addressCodes":address, "sortingOrder": sortingOrder } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
@@ -94,6 +84,7 @@ function usePostOrderReport(url, reqBody, searchUrl) {
       .catch(setOnChange(false));
   }
   useEffect(() => {
+    debugger
     if (!_.isEqual(lastReqBody, searchUrl)) {
       setLoading(true);
       fetchUrl();
