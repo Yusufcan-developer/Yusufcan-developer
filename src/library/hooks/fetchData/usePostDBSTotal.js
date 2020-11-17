@@ -28,7 +28,7 @@ function usePostDBSTotalReport(url, reqBody) {
       body: JSON.stringify(reqBody)
     };
 
-    await fetch(url, requestOptions) //Order Fetch
+    await fetch(url, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
@@ -37,8 +37,8 @@ function usePostDBSTotalReport(url, reqBody) {
         if (data) {
           const totalPages = data.totalPages;
           const dataCount = data.totalDataCount;
-          const aggregatesOverall=data.aggregatesOverall;
-          
+          const aggregatesOverall = data.aggregatesOverall;
+
           setData(data.data);
           setTotalDataCount(dataCount);
           setTotalPage(totalPages);

@@ -25,7 +25,7 @@ import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr'
 import { usePostDBSTotalReport } from "../../library/hooks/fetchData/usePostDBSTotal";
-import { usePostCariToplamlarReport } from "../../library/hooks/fetchData/usePostCariToplamlar";
+import { usePostAccountBalancesReport } from "../../library/hooks/fetchData/usePostAccountBalances";
 import ReportPagination from "../Reports//ReportPagination";
 import enumerations from "../../config/enumerations";
 moment.locale('tr');
@@ -46,11 +46,10 @@ const MainForm = () => {
     sortedInfo: "",
     filteredInfo: ""
   });
-  const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(20)
-  const [pageIndexAccount, setPageIndexAccount] = useState(1);
-  const [pageSizeAccount, setPageSizeAccount] = useState(20);
-  const [startingPageIndex, setStartingPageIndex] = useState(1);
+  const [pageIndexDBSTotal, setPageIndexDBSTotal] = useState(1);
+  const [pageSizeDBSTotal, setPageSizeDBSTotal] = useState(20)
+  const [pageIndexAccountBalance, setPageIndexAccountBalance] = useState(1);
+  const [pageSizeAccountBalance, setPageSizeAccountBalance] = useState(20);
   const [dealerCodes, setDealerCodes] = useState()
   const location = useLocation();
   const [newUrlParams, setNewUrlParams] = useState('')
@@ -58,28 +57,30 @@ const MainForm = () => {
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'DBS ve Cari toplamlar raporu listeleme');
-    getVariablesFromUrl();
-    setCurrentPage(pageIndex);
-  }, [pageIndex]);
+    if (pageIndexDBSTotal === 1) {
+      getVariablesFromUrl();
+    }
+    setCurrentPage(pageIndexDBSTotal);
+  }, [pageIndexDBSTotal]);
 
   useEffect(() => {
-    setChangePageSize(pageSize);
-  }, [pageSize]);
+    setChangePageSize(pageSizeDBSTotal);
+  }, [pageSizeDBSTotal]);
 
   useEffect(() => {
-    setCurrentPageAccount(pageIndexAccount);
-  }, [pageIndexAccount]);
+    setCurrentPageAccount(pageIndexAccountBalance);
+  }, [pageIndexAccountBalance]);
 
   useEffect(() => {
-    setChangePageSizeAccount(pageSizeAccount);
-  }, [pageSizeAccount]);
+    setChangePageSizeAccount(pageSizeAccountBalance);
+  }, [pageSizeAccountBalance]);
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndex - 1, "pageCount": pageSize });
+    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal });
 
-  const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData] =
-    usePostCariToplamlarReport(`${siteConfig.api.report.postCariTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccount - 1, "pageCount": pageSizeAccount });
+  const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData,expandData] =
+    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance });
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
   const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
@@ -93,8 +94,6 @@ const MainForm = () => {
 
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
 
     let dealerCode = [];
     if (parsed.dealer !== undefined) {
@@ -106,12 +105,12 @@ const MainForm = () => {
     }
     setDealerCodes(dealerCode);
 
-    AccountSetOnChange(true);
-    setOnChange(true);
+    // AccountSetOnChange(true);
+    // setOnChange(true);
   }
 
   //Get Search Data
-  function dataSearch(selectedPageIndex, selectedPageSize) {
+  function dataSearch() {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'DBS ve Cari toplamlar raporu yeni arama');
     const params = new URLSearchParams(location.search);
 
@@ -130,39 +129,35 @@ const MainForm = () => {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
-    setPageSize(pageSize);
-    setPageIndex(current);
-    // dataSearch(current, pageSize);
+    setPageSizeDBSTotal(pageSize);
+    setPageIndexDBSTotal(current);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current, pageSize) {
-    setPageIndex(current);
-    setPageSize(pageSize);
-    // dataSearch(current,pageSize);
+    setPageIndexDBSTotal(current);
+    setPageSizeDBSTotal(pageSize);
   }
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowCariToplamlarSizeChange(current, pageSize) {
-    setPageSizeAccount(pageSize);
-    setPageIndexAccount(current);
-    // dataSearch(current, pageSize);
+    setPageSizeAccountBalance(pageSize);
+    setPageIndexAccountBalance(current);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentCariToplamlarPageChange(current, pageSize) {
-    setPageIndexAccount(current);
-    setPageSizeAccount(pageSize);
-    //  dataSearch(current,pageSize);
+    setPageIndexAccountBalance(current);
+    setPageSizeAccountBalance(pageSize);
   }
 
   //Cari Toplamlar Kalemleri Expand İşlemi
   function expandedRow(row, index) {
     let aggregateIndex;
-    _.each(aggregateData, (item, i) => {
+    _.each(expandData, (item, i) => {
       if (item.dealerCode === row.dealerCode) { return aggregateIndex = i }
     });
-    const aggregateFilterData = _.filter(aggregateData, function (Item) {
+    const aggregateFilterData = _.filter(expandData, function (Item) {
       if (Item.dealerCode === row.dealerCode) {
         return true;
       }
@@ -174,8 +169,8 @@ const MainForm = () => {
       pagination={true}
       scroll={{ x: 'max-content' }}
       summary={() => {
-          return renderFooter(aggregateColumns,aggregateFilterData, false)
-        }}
+        return renderFooter(aggregateColumns, aggregateFilterData, false)
+      }}
     />);
   };
 
@@ -194,7 +189,7 @@ const MainForm = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
-      footerKey:'Genel Toplam',
+      footerKey: 'Genel Toplam',
     },
     {
       title: "Güncel DBS Bakiyesi",
@@ -202,7 +197,7 @@ const MainForm = () => {
       key: "currentDbsBalance",
       render: (currentDbsBalance) => numberFormat(currentDbsBalance),
       align: "right",
-      footerKey:'currentDbsBalance',
+      footerKey: 'currentDbsBalance',
     },
     {
       title: "Güncel DBS Risk Toplamı",
@@ -210,7 +205,7 @@ const MainForm = () => {
       key: "currentDbsRiskTotal",
       render: (currentDbsRiskTotal) => numberFormat(currentDbsRiskTotal),
       align: "right",
-      footerKey:'currentDbsRiskTotal'
+      footerKey: 'currentDbsRiskTotal'
     },
     {
       title: "Onaysız Siparişler",
@@ -218,7 +213,7 @@ const MainForm = () => {
       key: "unapprovedOrders",
       render: (unapprovedOrders) => numberFormat(unapprovedOrders),
       align: "right",
-      footerKey:'unapprovedOrders'
+      footerKey: 'unapprovedOrders'
     },
     {
       title: "Bayi DBS Limiti",
@@ -226,7 +221,7 @@ const MainForm = () => {
       key: "dealerDbsLimit",
       render: (dealerDbsLimit) => numberFormat(dealerDbsLimit),
       align: "right",
-      footerKey:'dealerDbsLimit'
+      footerKey: 'dealerDbsLimit'
     },
   ];
 
@@ -240,7 +235,7 @@ const MainForm = () => {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
-      footerKey:'Genel Toplam',
+      footerKey: 'Genel Toplam',
     },
     {
       title: "Cari Hesap Bakiyesi",
@@ -248,7 +243,7 @@ const MainForm = () => {
       key: "currentAccountBalance",
       render: (currentAccountCutOffTotals) => numberFormat(currentAccountCutOffTotals),
       align: "right",
-      footerKey:'currentAccountBalance'
+      footerKey: 'currentAccountBalance'
     },
     {
       title: "Güncel Hesap Toplamı",
@@ -256,9 +251,9 @@ const MainForm = () => {
       key: "currentAccountTotals",
       render: (currentAccountTotals) => numberFormat(currentAccountTotals),
       align: "right",
-      footerKey:'currentAccountTotals'
+      footerKey: 'currentAccountTotals'
     },
-   
+
 
     {
       title: "Hesap Kesim Tutarı",
@@ -266,15 +261,15 @@ const MainForm = () => {
       key: "lastAccountCutOffBalance",
       render: (lastAccountCutOffTotals) => numberFormat(lastAccountCutOffTotals),
       align: "right",
-      footerKey:'lastAccountCutOffBalance'
+      footerKey: 'lastAccountCutOffBalance'
     },
     {
       title: "Kalan Hesap Kesim Bakiyesi",
       dataIndex: "monthlyAccountCutOffBalance",
-      key: "monthlyAccountCutOffBalance",      
+      key: "monthlyAccountCutOffBalance",
       render: (monthlyAccountCutOffBalance) => numberFormat(monthlyAccountCutOffBalance),
       align: "right",
-      footerKey:'monthlyAccountCutOffBalance'
+      footerKey: 'monthlyAccountCutOffBalance'
     },
     {
       title: "Son Hesap Kesim Tarihi",
@@ -286,7 +281,7 @@ const MainForm = () => {
         tableOptions.sortedInfo.order,
       render: (lastAccountCutOffDate) => moment(lastAccountCutOffDate).format(siteConfig.dateFormat),
       align: "right",
-    },   
+    },
     {
       title: "Hesap Kesim Durumu",
       dataIndex: "accountStatus",
@@ -304,7 +299,7 @@ const MainForm = () => {
       title: "İşlem Tipi",
       dataIndex: "transactionType",
       key: "transactionType",
-      footerKey:'Genel Toplam'
+      footerKey: 'Genel Toplam'
     },
     {
       title: "Borç",
@@ -312,7 +307,7 @@ const MainForm = () => {
       key: "debt",
       render: (debt) => numberFormat(debt),
       align: "right",
-      footerKey:'debt'
+      footerKey: 'debt'
     },
     {
       title: "Alacak",
@@ -320,7 +315,7 @@ const MainForm = () => {
       key: "credit",
       render: (credit) => numberFormat(credit),
       align: "right",
-      footerKey:'credit'
+      footerKey: 'credit'
     },
   ]
 
@@ -392,26 +387,11 @@ const MainForm = () => {
     }
   }
 
-  let infoHeader = null;
-  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    // infoHeader = (
-    //   // <Col span={12}>
-    //   //   <Form.Item label="Bayi Kodu">
-    //   //     <span className="ant-form-text">{code}</span>
-    //   //   </Form.Item>
-    //   //   <Form.Item label="Unvanı">
-    //   //     <span className="ant-form-text">{name}</span>
-    //   //   </Form.Item>
-    //   // </Col>
-    // );
-  }
-
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.mainForm.header" />}
       </PageHeader>
-      {infoHeader}
       <Box >
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
@@ -447,9 +427,9 @@ const MainForm = () => {
         <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
           onChange={currentCariToplamlarPageChange}
-          pageSize={pageSizeAccount}
+          pageSize={pageSizeAccountBalance}
           total={AccountTotalDataCount}
-          current={pageIndexAccount}
+          current={pageIndexAccountBalance}
           position="top"
         />
         <Table
@@ -462,15 +442,15 @@ const MainForm = () => {
           scroll={{ x: 1000 }}
           expandable={{ 'expandedRowRender': expandedRow }}
           summary={() => {
-            return renderFooter(columns, data ,true ,aggregatesOverall,true)
+            return renderFooter(AccountColumns, accountData, true, aggregateData, true)
           }}
         />
         <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
           onChange={currentCariToplamlarPageChange}
-          pageSize={pageSizeAccount}
+          pageSize={pageSizeAccountBalance}
           total={AccountTotalDataCount}
-          current={pageIndexAccount}
+          current={pageIndexAccountBalance}
           position="bottom"
         />
       </Box>
@@ -479,29 +459,29 @@ const MainForm = () => {
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
-          pageSize={pageSize}
+          pageSize={pageSizeDBSTotal}
           total={totalDataCount}
-          current={pageIndex}
+          current={pageIndexDBSTotal}
           position="top"
         />
         <Table
           columns={columns}
           dataSource={data}
           loading={loading}
-          pagination={false}         
+          pagination={false}
           scroll={{ x: 1000 }}
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data ,false ,aggregatesOverall,true)
+            return renderFooter(columns, data, false, aggregatesOverall, true)
           }}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
           onChange={currentPageChange}
-          pageSize={pageSize}
+          pageSize={pageSizeDBSTotal}
           total={totalDataCount}
-          current={pageIndex}
+          current={pageIndexDBSTotal}
           position="bottom"
         />
       </Box>

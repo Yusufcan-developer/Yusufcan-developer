@@ -4,7 +4,7 @@ import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
-function usePostCariToplamlarReport(url, reqBody) {
+function usePostAccountBalancesReport(url, reqBody) {
   const [data, setData] = useState([]);
   const [aggregateData, setAggregateData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +14,7 @@ function usePostCariToplamlarReport(url, reqBody) {
   const [dealerCodes, setDealerCodes] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
+  const [aggregates, setAggregatesOverall] = useState();
 
   async function fetchUrl() {
     const reqB = reqBody == null || reqBody == undefined ? { "dealerCodes": dealerCodes, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
@@ -36,6 +37,7 @@ function usePostCariToplamlarReport(url, reqBody) {
           const dealerCodeArray = [];
           const totalPages = data.totalPages;
           const dataCount = data.totalDataCount;
+          const aggregatesOverall = data.aggregatesOverall;
           const value = data.data.slice();
           value.forEach((item, index) => {
             item.key = index;
@@ -44,10 +46,11 @@ function usePostCariToplamlarReport(url, reqBody) {
           setData(data.data);
           setTotalDataCount(dataCount);
           setTotalPage(totalPages);
+          setAggregatesOverall(aggregatesOverall);
           setLoading(false);
           setOnChange(false);
 
-          const reqAggregateBody = { "DealerCodes": dealerCodeArray };
+          const reqAggregateBody = { "DealerCodes": dealerCodeArray,  "pageCount":1000000000 };
           const requestAggregateOptions = {
             method: "POST",
             headers: {
@@ -57,7 +60,7 @@ function usePostCariToplamlarReport(url, reqBody) {
             body: JSON.stringify(reqAggregateBody)
           };
           let aggregateUrl = siteConfig.api.report.postAggregate;
-          return fetch(`${aggregateUrl}`, requestAggregateOptions) //Order Detail Fetch
+          return fetch(`${aggregateUrl}`, requestAggregateOptions)
             .then(response => {
               if (!response.ok) return Promise.reject(response);
               return response.json();
@@ -74,6 +77,6 @@ function usePostCariToplamlarReport(url, reqBody) {
     setLoading(true);
     fetchUrl();
   }, [currentPage, changePageSize, onChange]);
-  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregateData];
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregates,aggregateData];
 }
-export { usePostCariToplamlarReport };
+export { usePostAccountBalancesReport };

@@ -113,7 +113,6 @@ export default function TopbarAddtoCart() {
   }, 0);
 
     if (reduxCartItemTotal !== topbarItemCartLastTotal) {
-      // setTopbarItemCartLastTotal(reduxCartItemTotal);
       getCartList();
     }
 
