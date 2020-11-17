@@ -58,7 +58,7 @@ export default {
       postLetters: apiUrl + 'core/report/letters',
       postTransactions: apiUrl + 'core/report/transactions',
       postDBSTotal: apiUrl + 'core/report/dbs-totals',
-      postCariTotal: apiUrl + 'core/report/account-balances',
+      postAccountBalances: apiUrl + 'core/report/account-balances',
       postAggregate: apiUrl + 'core/report/transactions/aggregate',
       postRegionalGoals: apiUrl + 'core/report/regional-goals',
     },
