@@ -150,7 +150,7 @@ export default function SignIn() {
         const status = apiStatusManagement(response);
         return status;
       })
-      .then(data => {
+      .then(data => {        
         userData = data;
       }).catch(error => console.log('hata', error));
     return userData;
@@ -165,9 +165,11 @@ export default function SignIn() {
   async function handlePasswordOk() {
     const password = await changePassword();
 
-    if (password) { message.success('Parola başarıyla değiştirilmiştir.'); setPasswordChangeVisible(false); handleLogin(); }
-    else { message.error('Parola değiştirme işlemi başarısızdır.'); }
-
+    if(password.isSuccessful===false){
+      message.error(password.message);
+    }else{
+      message.success('Parola başarıyla değiştirilmiştir.'); setPasswordChangeVisible(false); handleLogin();
+    }
   };
   return (
     <SignInStyleWrapper className="isoSignInPage">

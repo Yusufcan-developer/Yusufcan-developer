@@ -42,7 +42,8 @@ const UserList = () => {
   document.title = "Kullanıcılar - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
 
   const [searchKey, setSearchKey] = useState('');
   const [userId, setUserId] = useState(-1);
@@ -167,7 +168,7 @@ const UserList = () => {
 
   //Kullanıcı listesi
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,] =
-  useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+    useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
@@ -205,7 +206,7 @@ const UserList = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
-    postSaveLog(enumerations.LogSource.Users,enumerations.LogTypes.Browse,'Kullanıclar listesi yeni arama');
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, 'Kullanıclar listesi yeni arama');
     const params = new URLSearchParams(location.search)
 
     params.delete('keyword');
@@ -299,9 +300,11 @@ const UserList = () => {
   async function handleDeleteUserOk() {
     const user = await deleteUser(userId);
 
-    if (user) { message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false); 
-    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete,userId+' kullanıcı parolası değiştirilmiştir.'); }
-    else { message.error('Kullanıcı silme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete,userId+' kullanıcı parolası değiştirlememiştir.'); }
+    if (user.isSuccessful === false) { message.error('Kullanıcı silme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + ' kullanıcı parolası değiştirlememiştir.'); }
+    else {
+      message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false);
+      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + ' kullanıcı parolası değiştirilmiştir.');
+    }
     return setOnChange(true);
   };
 
@@ -309,9 +312,11 @@ const UserList = () => {
   async function handlePasswordOk() {
     const password = await changePassword();
 
-    if (password) { message.success('Parola başarıyla değiştirilmiştir.'); cancelAndClearValues(); setForgotPasswordVisible(false);
-    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update,username+' kullanıcı parolası değiştirilmiştir.'); }
-    else { message.error('Parola değiştirme işlemi başarısızdır.');postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update,username+' kullanıcı parolası değiştirlemedi.');  }
+    if (password.isSuccessful === false) { message.error('Parola değiştirme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + ' kullanıcı parolası değiştirlemedi.'); }
+    else {
+      message.success('Parola başarıyla değiştirilmiştir.'); cancelAndClearValues(); setForgotPasswordVisible(false);
+      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + ' kullanıcı parolası değiştirilmiştir.');
+    }
     return setOnChange(true);
   };
 
@@ -319,11 +324,11 @@ const UserList = () => {
   async function handleOk() {
     //Kullanıcı düzenleme işlemi
     const userInfo = await saveUser();
-    if(userInfo.isSuccessful===false){
-      message.error(userInfo.message);  postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,'Kullanıcı kaydedilememiştir.');
-    }else{
-      message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false); 
-      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add,userInfo.username+' kullanıcı başarıyla kaydedilmiştir.');
+    if (userInfo.isSuccessful === false) {
+      message.error(userInfo.message); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add, 'Kullanıcı kaydedilememiştir.');
+    } else {
+      message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false);
+      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add, userInfo.username + ' kullanıcı başarıyla kaydedilmiştir.');
     }
 
     modalSelectedValueClear();
@@ -458,7 +463,7 @@ const UserList = () => {
   async function changePassword() {
     let userData;
     const reqBody = {
-      "username": username, "oldPassword": oldPassword || '' , "newPassword": newPassword
+      "username": username, "oldPassword": oldPassword || '', "newPassword": newPassword
     }
     const requestOptions = {
       method: "POST",
@@ -506,7 +511,7 @@ const UserList = () => {
 
   //Yeni Kullanıcı Ekleme işlemi için Modal açma
   function addNewUser() {
-    postSaveLog(enumerations.LogSource.Users,enumerations.LogTypes.Browse,'Yeni kullanıcı ekleme');
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, 'Yeni kullanıcı ekleme');
     setVisible(true);
   }
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -648,23 +653,23 @@ const UserList = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.roleTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.isLocked" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.roleTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.isLocked" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select
                   mode={"multiple"}
                   style={{ marginBottom: '8px', width: '250px' }}
@@ -675,17 +680,17 @@ const UserList = () => {
                   {lookupRoleNameChildren}
                 </Select>
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select value={isActive} defaultValue={null} style={{ width: 120 }} style={{ marginBottom: '8px', width: '250px' }} onChange={handleChangeIsActive}>
                   <Option value={null}>Hepsi</Option>
                   <Option value={true}>Açık</Option>
                   <Option value={false}>Kapalı</Option>
                 </Select>
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col offset={1} span={newView!=='MobileView'?5:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col offset={1} span={newView !== 'MobileView' ? 5 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Button type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
@@ -866,11 +871,11 @@ const UserList = () => {
           <Form.Item
             label="Kullanıcı Adı"
           >
-            <Input  value={username} disabled={true} />
+            <Input value={username} disabled={true} />
           </Form.Item>
           <Form.Item name="description" label="Eski Parola"
           >
-            <Input.Password  autoComplete={"off"} value={oldPassword} onChange={event => setOldPassword(event.target.value)} />
+            <Input.Password autoComplete={"off"} value={oldPassword} onChange={event => setOldPassword(event.target.value)} />
           </Form.Item>
           <Form.Item
             label="Yeni Parola"

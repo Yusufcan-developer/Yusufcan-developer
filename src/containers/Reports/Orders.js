@@ -189,6 +189,7 @@ const OrdersReport = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
+    
     const params = new URLSearchParams(location.search);
 
     params.delete('dec');
@@ -211,7 +212,7 @@ const OrdersReport = () => {
     _.forEach(address, (item) => {
       params.append('address', item); params.toString();
     });
-
+   
     if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
     if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
