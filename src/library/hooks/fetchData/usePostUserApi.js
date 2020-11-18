@@ -15,8 +15,6 @@ function useUserFetch(url, reqBody) {
   const [isActive, setIsActive] = useState();
 
   async function fetchUrl() {
-
-    const reqB = reqBody == null || reqBody == undefined ? { "keyword": searchkey, "isActive": isActive, "roleNames": roleNames, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
