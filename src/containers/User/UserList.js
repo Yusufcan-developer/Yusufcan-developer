@@ -274,6 +274,7 @@ const UserList = () => {
   //Kullanıcı düznleme modalına verileri gönderme işlemi Burada veriler state atılıyor ve modal aktif hale getirliyor.
   async function setModalUserInfo(record) {
     const userInfo = await getByUserId(record.id);
+
     setUserId(record.id);
     setUsername(userInfo.username);
     setFirstName(userInfo.firstName);
@@ -304,7 +305,8 @@ const UserList = () => {
     else {
       message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false);
       postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + ' kullanıcı parolası değiştirilmiştir.');
-    }
+      setUserId(-1);
+    }    
     return setOnChange(true);
   };
 
@@ -316,6 +318,7 @@ const UserList = () => {
     else {
       message.success('Parola başarıyla değiştirilmiştir.'); cancelAndClearValues(); setForgotPasswordVisible(false);
       postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + ' kullanıcı parolası değiştirilmiştir.');
+      setUserId(-1);
     }
     return setOnChange(true);
   };

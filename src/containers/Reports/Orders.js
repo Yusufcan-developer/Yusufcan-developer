@@ -69,7 +69,6 @@ const OrdersReport = () => {
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState();
-
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
   const [address, setAddress] = useState();
@@ -156,6 +155,8 @@ const OrdersReport = () => {
         dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
       }
     });
+    onChangeDealerCode(newDealarCode);
+    
     return setOnChange(true);
   }
 
@@ -188,14 +189,12 @@ const OrdersReport = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
-    
     const params = new URLSearchParams(location.search);
-    if(newUrlParams.length>0){
+
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
     params.delete('address');
-  }
     params.delete('from')
     params.delete('to');
     params.delete('keyword');

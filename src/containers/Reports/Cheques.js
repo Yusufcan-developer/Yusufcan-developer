@@ -78,10 +78,10 @@ const ChequesReport = () => {
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
-  useEffect(() => {
-    getVariablesFromUrl()
-    setChangePageSize(pageSize);
-  }, [pageSize]);
+  // useEffect(() => {
+  //   getVariablesFromUrl()
+  //   setChangePageSize(pageSize);
+  // }, [pageSize]);
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
@@ -165,6 +165,8 @@ const ChequesReport = () => {
         dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
       }
     });
+    onChangeDealerCode(newDealarCode);
+    
     return setOnChange(true);
   }
 
@@ -195,7 +197,11 @@ const ChequesReport = () => {
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     if (serialNumber) { params.append('sno', serialNumber); params.toString(); }
-    if (selectedCheckqueType.length > 0) params.append('type', selectedCheckqueType); params.toString();
+
+    _.filter(selectedCheckqueType, function (item) {
+      params.append('type', item); params.toString();
+    });
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -220,6 +226,7 @@ const ChequesReport = () => {
     params.delete('fic');
     params.delete('from')
     params.delete('to');
+    params.delete('type');
     params.delete('keyword');
     params.delete('serialNumber');
     params.delete('ctype');

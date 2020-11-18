@@ -80,12 +80,6 @@ export default function () {
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
-  useEffect(() => {
-    getVariablesFromUrl()
-    console.log("pageSize!", pageSize);
-    setChangePageSize(pageSize);
-  }, [pageSize]);
-
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
@@ -164,6 +158,8 @@ export default function () {
         dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
       }
     });
+    onChangeDealerCode(newDealarCode);
+    
     return setOnChange(true);
   }
 
