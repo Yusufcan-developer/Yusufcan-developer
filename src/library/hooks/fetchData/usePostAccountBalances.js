@@ -17,7 +17,6 @@ function usePostAccountBalancesReport(url, reqBody) {
   const [aggregates, setAggregatesOverall] = useState();
 
   async function fetchUrl() {
-    const reqB = reqBody == null || reqBody == undefined ? { "dealerCodes": dealerCodes, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
@@ -26,7 +25,7 @@ function usePostAccountBalancesReport(url, reqBody) {
       },
       body: JSON.stringify(reqBody)
     };
-
+    if(reqBody.dealerCodes!==undefined){
     await fetch(url, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
@@ -59,6 +58,7 @@ function usePostAccountBalancesReport(url, reqBody) {
             },
             body: JSON.stringify(reqAggregateBody)
           };
+          if(dealerCodeArray.length>0){
           let aggregateUrl = siteConfig.api.report.postAggregate;
           return fetch(`${aggregateUrl}`, requestAggregateOptions)
             .then(response => {
@@ -70,9 +70,10 @@ function usePostAccountBalancesReport(url, reqBody) {
             })
             .catch();
         }
+      }
       })
       .catch();
-  }
+  }}
   useEffect(() => {
     setLoading(true);
     fetchUrl();

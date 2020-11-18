@@ -10,6 +10,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { Table, Row, Col, Select } from "antd";
 import Collapse from "@iso/components/uielements/collapse";
+
 //Fetch
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
@@ -28,8 +29,10 @@ import { usePostDBSTotalReport } from "../../library/hooks/fetchData/usePostDBST
 import { usePostAccountBalancesReport } from "../../library/hooks/fetchData/usePostAccountBalances";
 import ReportPagination from "../Reports//ReportPagination";
 import enumerations from "../../config/enumerations";
+
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
+
 const { Panel } = Collapse;
 const { Option } = Select;
 
@@ -39,6 +42,7 @@ const MainForm = () => {
   if (window.innerWidth > 1220) {
     newView = 'DesktopView';
   }
+
   const queryString = require('query-string');
   const history = useHistory();
   const [iconLoading, setIconLoading] = useState(false);
@@ -75,11 +79,12 @@ const MainForm = () => {
     setChangePageSizeAccount(pageSizeAccountBalance);
   }, [pageSizeAccountBalance]);
 
+  
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
     usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal });
 
-  const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData,expandData] =
+  const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData, expandData] =
     usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance });
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
@@ -91,8 +96,6 @@ const MainForm = () => {
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
-
-    //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
 
     let dealerCode = [];
@@ -104,9 +107,6 @@ const MainForm = () => {
       } else { dealerCode.push(parsed.dealer); }
     }
     setDealerCodes(dealerCode);
-
-    // AccountSetOnChange(true);
-    // setOnChange(true);
   }
 
   //Get Search Data

@@ -1,24 +1,19 @@
 // hooks.js
 import { useState, useEffect } from "react";
-import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
-function usePostDBSTotalReport(url, reqBody) {
+function usePostDBSTotalReport(url, reqBody, searchUrl) {
   const [data, setData] = useState([]);
-  const [orderDetailData, setOrderDetailData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
   const [changePageSize, setChangePageSize] = useState();
   const [currentPage, setCurrentPage] = useState();
-  const [dealerCodes, setDealerCodes] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
-  const [orderIdArray, setOrderIdArray] = useState();
   const [aggregates, setAggregatesOverall] = useState();
 
   async function fetchUrl() {
-    const reqB = reqBody == null || reqBody == undefined ? { "dealerCodes": dealerCodes, "pageIndex": currentPage - 1, "pageCount": changePageSize } : reqBody;
     const requestOptions = {
       method: "POST",
       headers: {
@@ -27,7 +22,7 @@ function usePostDBSTotalReport(url, reqBody) {
       },
       body: JSON.stringify(reqBody)
     };
-
+    if(reqBody.dealerCodes!==undefined){
     await fetch(url, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
@@ -49,6 +44,7 @@ function usePostDBSTotalReport(url, reqBody) {
       })
       .catch();
   }
+}
   useEffect(() => {
     setLoading(true);
     fetchUrl();
