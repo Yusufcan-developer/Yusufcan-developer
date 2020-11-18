@@ -11,26 +11,14 @@ function useFetch(url, reqBody, searchUrl) {
   const [currentPage, setCurrentPage] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
-  const [dealerCodes, setDealerCodes] = useState();
-  const [regionCodes, setRegionCodes] = useState();
-  const [fieldCodes, setFieldCodes] = useState();
-  const [serialNumber, setSerialNumber] = useState();
-  const [status, setStatus] = useState();
   const [code, setCode] = useState();
   const [name, setName] = useState();
-  const [selectedCheckqueType, setSelectedCheckqueType] = useState();
-  const [selectedTransactionType, setSelectedTransactionType] = useState();
-  const [from, setFrom] = useState();
-  const [to, setTo] = useState();
-  const [searchkey, setSearchKey] = useState();
   const [lastReqBody, setLastReqBody] = useState();
-  const [sortingField,setSortingField]=useState();
-  const [sortingOrder,setSortingOrder]=useState();
-  const [aggregates,setAggregatesOverall]=useState();
+  const [aggregates, setAggregatesOverall] = useState();
 
   async function fetchUrl() {
 
-    const reqB = reqBody == null || reqBody == undefined ? { "DealerCodes": dealerCodes, "Regioncodes": regionCodes, "FieldCodes": fieldCodes, "from": from, "to": to, "transactionTypes": selectedTransactionType, "types": selectedCheckqueType, "keyword": searchkey,"status": status, "serialNumbers": serialNumber, "pageIndex": currentPage - 1, "pageCount": changePageSize,"sortingField": sortingField, "sortingOrder": sortingOrder } : reqBody;
+    setLastReqBody(searchUrl);
     const requestOptions = {
       method: "POST",
       headers: {
@@ -46,37 +34,42 @@ function useFetch(url, reqBody, searchUrl) {
       })
       .then(data => {
         if (data.data !== undefined) {
-        const value = data.data.slice();
-        value.forEach((item, index) => {
-          item.key = index;
-          setCode(item.dealerCode);
-          setName(item.dealerName)
-        });
-        const totalPages = data.totalPages;
-        const dataCount = data.totalDataCount;
-        const aggregatesOverall=data.aggregatesOverall;
-        
-        setTotalDataCount(dataCount);
-        setTotalPage(totalPages);
-        setData(value);
-        setLoading(false);
-        setOnChange(false);
-        setLastReqBody(searchUrl);
-        setAggregatesOverall(aggregatesOverall);
-      } else {
-        setLoading(false);
-        setOnChange(false);
-      }
-    })
+          const value = data.data.slice();
+          value.forEach((item, index) => {
+            item.key = index;
+            setCode(item.dealerCode);
+            setName(item.dealerName)
+          });
+          const totalPages = data.totalPages;
+          const dataCount = data.totalDataCount;
+          const aggregatesOverall = data.aggregatesOverall;
+
+          setTotalDataCount(dataCount);
+          setTotalPage(totalPages);
+          setData(value);
+          setLoading(false);
+          setOnChange(false);
+          setAggregatesOverall(aggregatesOverall);
+        } else {
+          setLoading(false);
+          setOnChange(false);
+        }
+      })
       .catch();
   }
   useEffect(() => {
-    if (!_.isEqual(lastReqBody, searchUrl)) {
-      setLoading(true);
-      fetchUrl();
+    if ((reqBody.DealerCodes === undefined) & (reqBody.regionCodes === undefined) & (reqBody.fieldCodes === undefined)) {
+      setLoading(false);
+      setOnChange(false);
+    }
+    else {
+      if (!_.isEqual(lastReqBody, searchUrl)) {
+        setLoading(true);
+        fetchUrl();
+      }else { setOnChange(false); }
     }
   }, [currentPage, changePageSize, onChange]);
-  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,aggregates, code, name];
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregates, code, name];
 }
 
 export { useFetch };

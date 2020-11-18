@@ -72,14 +72,9 @@ const DeliveriesReport = () => {
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
     postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, 'Sevkiyat raporu listeleme');
-    getVariablesFromUrl()
     setCurrentPage(pageIndex);
+    getVariablesFromUrl();
   }, [pageIndex]);
-
-  useEffect(() => {
-    getVariablesFromUrl()
-    // setChangePageSize(pageSize);
-  }, [pageSize]);
 
   let searchUrl = queryString.parse(location.search);
   //Bayi,Bölge ve Saha kodlarının getirilmesi
@@ -141,7 +136,8 @@ const DeliveriesReport = () => {
         dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
       }
     });
-
+    onChangeDealerCode(newDealarCode);
+    
     return setOnChange(true);
   }
 
