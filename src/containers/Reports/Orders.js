@@ -188,9 +188,8 @@ const OrdersReport = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
-    
     const params = new URLSearchParams(location.search);
-    if(newUrlParams.length>0){
+    if((newUrlParams.length>0)&&(selectedDealerCode.length>0)){
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
