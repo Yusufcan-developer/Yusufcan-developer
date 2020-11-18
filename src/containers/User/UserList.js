@@ -804,6 +804,7 @@ const UserList = () => {
           </Form.Item>
           <Form.Item label="Bayi Kodu">
             <Select
+              showSearch
               mode={(dealerCodeSelectModSingle === true) ? ("single") : ("multiple")}
               style={{ width: '100%' }}
               placeholder="Bayi Kodu seçiniz"
