@@ -5,7 +5,7 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import _ from 'underscore';
 import moment from 'moment';
 function usePostOrderReport(url, reqBody, searchUrl) {
-  
+
   const [data, setData] = useState([]);
   const [orderDetailData, setOrderDetailData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,10 +15,9 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [lastReqBody, setLastReqBody] = useState();
-  const [aggregates,setAggregatesOverall]=useState();
+  const [aggregates, setAggregatesOverall] = useState();
   let orderIdgetUrlItems = '';
   async function fetchUrl() {
-
     const requestOptions = {
       method: "POST",
       headers: {
@@ -51,7 +50,7 @@ function usePostOrderReport(url, reqBody, searchUrl) {
           });
           const totalPages = data.totalPages;
           const dataCount = data.totalDataCount;
-          const aggregatesOverall=data.aggregatesOverall;
+          const aggregatesOverall = data.aggregatesOverall;
 
           setTotalDataCount(dataCount);
           setTotalPage(totalPages);
@@ -85,11 +84,17 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   }
   useEffect(() => {
     debugger
-    if (!_.isEqual(lastReqBody, searchUrl)) {
-      setLoading(true);
-      fetchUrl();
-    }else{setOnChange(false);}
+    if ((reqBody.DealerCodes === undefined) & (reqBody.regionCodes === undefined) & (reqBody.fieldCodes === undefined)) {
+      setLoading(false);
+      setOnChange(false);
+    }
+    else {
+      if (!_.isEqual(lastReqBody, searchUrl)) {
+        setLoading(true);
+        fetchUrl();
+      } else { setOnChange(false); }
+    }
   }, [currentPage, changePageSize, onChange]);
-  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData,aggregates];
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData, aggregates];
 }
 export { usePostOrderReport };
