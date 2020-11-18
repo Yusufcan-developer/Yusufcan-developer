@@ -13,14 +13,14 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import { Table, Row, Col, TreeSelect, Tag, Select } from "antd";
-import { Scrollbars } from 'react-custom-scrollbars';
+
 //Fetch
 import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
-//Styles
-import { DownloadOutlined, TableOutlined } from '@ant-design/icons';
 
+//Styles
+import { DownloadOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -101,7 +101,6 @@ const OrdersReport = () => {
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
-
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
 
@@ -191,10 +190,12 @@ const OrdersReport = () => {
   function dataSearch(selectedPageIndex, selectedPageSize) {
     
     const params = new URLSearchParams(location.search);
-
+    if(newUrlParams.length>0){
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
+    params.delete('address');
+  }
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
@@ -202,7 +203,6 @@ const OrdersReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
-    params.delete('address');
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -212,7 +212,6 @@ const OrdersReport = () => {
     _.forEach(address, (item) => {
       params.append('address', item); params.toString();
     });
-   
     if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
     if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
@@ -247,6 +246,7 @@ const OrdersReport = () => {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('address');
 
     setLookupAddressChildren([]);
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }

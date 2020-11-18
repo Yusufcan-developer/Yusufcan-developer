@@ -32,21 +32,22 @@ export default (columns, data, fileName, dataDetail, detailColumns) => {
         });
       }
       dataTable.push(item);
-
-      if (dataDetail.length > 0) {
-        //Detail Column Name Array  
-        _.each(detailColumns, (columnItem) => {
-          detailColumnsName.push(columnItem.title);
-          viewerDetailColumns.push(columnItem.dataIndex);
-          if (columnItem.type === 'date') { dateTypeColumns.push(columnItem.dataIndex); }
-        });
-        dataTable.push(detailColumnsName);
-        //Detail Data
-        _.each(itemDetail.Value, (detail) => {
-          detail = _.pick(detail, viewerDetailColumns);
-          dataTable.push(detail);
-        })
-        dataTable.push([])
+      if (detailColumns !== undefined) {
+        if (dataDetail.length > 0) {
+          //Detail Column Name Array  
+          _.each(detailColumns, (columnItem) => {
+            detailColumnsName.push(columnItem.title);
+            viewerDetailColumns.push(columnItem.dataIndex);
+            if (columnItem.type === 'date') { dateTypeColumns.push(columnItem.dataIndex); }
+          });
+          dataTable.push(detailColumnsName);
+          //Detail Data
+          _.each(itemDetail.Value, (detail) => {
+            detail = _.pick(detail, viewerDetailColumns);
+            dataTable.push(detail);
+          })
+          dataTable.push([])
+        }
       }
     })
   }
