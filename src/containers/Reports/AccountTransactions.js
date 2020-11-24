@@ -35,6 +35,7 @@ import renderFooter from "./ReportSummary";
 import ExcelExport from "../Reports/ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
+import logMessage from '@iso/config/logMessage';
 import enumerations from "../../config/enumerations";
 import 'moment/locale/tr'
 moment.locale('tr');
@@ -75,7 +76,7 @@ export default function () {
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportAccountTransactions,enumerations.LogTypes.Browse,'Cari hareketler raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportAccountTransactions,enumerations.LogTypes.Browse,logMessage.Reports.TransactionAccount.browse);
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -201,7 +202,7 @@ export default function () {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccountTransactions,enumerations.LogTypes.Browse,'Cari hareketler raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportAccountTransactions,enumerations.LogTypes.Browse,logMessage.Reports.TransactionAccount.search);
     dataSearch();
   };
 
@@ -409,7 +410,7 @@ export default function () {
   }
   //Excel Oluşturma
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccountTransactions,enumerations.LogTypes.Export,'Cari hareketler raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportAccountTransactions,enumerations.LogTypes.Export,logMessage.Reports.TransactionAccount.exportExcel);
     ExcelExport(columns, data, 'Cari Hareketler');
   }
   return (

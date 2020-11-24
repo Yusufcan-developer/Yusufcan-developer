@@ -14,6 +14,8 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
+import { func } from "prop-types";
+import logMessage from '@iso/config/logMessage';
 var jwtDecode = require('jwt-decode');
 const { logout } = authAction;
 
@@ -31,7 +33,10 @@ export default function TopbarUser(props) {
   function handleVisibleChange() {
     setVisibility(visible => !visible);
   }
-
+  function userLogOut() {
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.logout);
+    dispatch(logout());
+  }
   const content = (
     <TopbarDropdownWrapper className="isoUserDropdown">
       {/* <Link className="isoDropdownLink" to={'/my-profile'}>
@@ -40,7 +45,7 @@ export default function TopbarUser(props) {
       <a className="isoDropdownLink" onClick={() => showPasswordModal()}>
         <IntlMessages id="themeSwitcher.settings" />
       </a>
-      <div className="isoDropdownLink" onClick={() => dispatch(logout())}>
+      <div className="isoDropdownLink" onClick={() => userLogOut()}>
         <IntlMessages id="topbar.logout" />
       </div>
     </TopbarDropdownWrapper>

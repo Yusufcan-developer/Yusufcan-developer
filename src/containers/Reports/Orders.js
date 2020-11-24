@@ -36,6 +36,7 @@ import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr';
 import enumerations from "../../config/enumerations";
+import logMessage from '@iso/config/logMessage';
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -76,7 +77,7 @@ const OrdersReport = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Browse, 'Sipariş raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Browse, logMessage.Reports.Order.browse);
     setCurrentPage(pageIndex);
     getVariablesFromUrl();
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -224,7 +225,7 @@ const OrdersReport = () => {
   }
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Browse, 'Sipariş raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Browse, logMessage.Reports.Order.search);
     dataSearch();
   };
 
@@ -343,7 +344,7 @@ const OrdersReport = () => {
 
   //Excel Oluşturma
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, 'Sipariş raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export,logMessage.Reports.Order.exportExcel);
 
     ExcelExport(columns, data, 'Siparişler', orderDetailData, OrderDetailcolumns);
   }

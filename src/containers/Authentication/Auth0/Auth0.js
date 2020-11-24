@@ -3,6 +3,8 @@ import Auth0Lock from 'auth0-lock';
 import history from '@iso/lib/helpers/history';
 import Auth0Config from '@iso/config/auth0.config';
 import { notification } from '@iso/components';
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import enumerations from "@iso/config/enumerations";
 
 class Auth0 extends EventEmitter {
   lock = new Auth0Lock(

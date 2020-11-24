@@ -30,6 +30,7 @@ import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
 
 //Other Library
 import _ from 'underscore';
+import logMessage from '@iso/config/logMessage';
 
 //Desing style
 import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
@@ -96,7 +97,7 @@ const SearchComponent = () => {
   const [selectedItemCode, setSelectedItemCode] = useState();
 
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün listeleme');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
     if (category === undefined) {
@@ -753,7 +754,7 @@ const SearchComponent = () => {
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
           onAddProductCart(productData, true, isPartial, selectedQuantity);
-          // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity); return;
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
           setSelectedAmount(0); setSelectedPartialAmount(0);
         }
       }
@@ -807,7 +808,7 @@ const SearchComponent = () => {
             const itemCode = productItem.itemCode;
             const quantity = productItem.quantity - 1;
             setQunatity = quantity;
-            if (quantity === 0) { return postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + ' Ürün sepetten çıkarıldı.'); }
+            if (quantity === 0) { return postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + logMessage.Carts.removeProduct); }
             newProductQuantity.push({
               itemCode,
               quantity,
@@ -817,7 +818,7 @@ const SearchComponent = () => {
         });
         dispatch(changeProductQuantity(newProductQuantity));
         if (setQunatity > 0) {
-          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı azaltıldı.' + 'Miktar ' + setQunatity);
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.decreaseProduct + setQunatity);
         }
       }
     }
@@ -841,7 +842,7 @@ const SearchComponent = () => {
         if (amountControl === -1) {
           dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
           notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
-          // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity);
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
         }
       }
       else {
@@ -865,7 +866,7 @@ const SearchComponent = () => {
             }
           });
           dispatch(changeProductQuantity(newProductQuantity));
-          // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı arttırıldı.' + 'Miktar ' + setQunatity);
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.increaseProduct + setQunatity);
         }
         else {
 

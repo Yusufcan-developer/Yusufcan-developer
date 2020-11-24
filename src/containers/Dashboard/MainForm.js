@@ -29,6 +29,7 @@ import { usePostDBSTotalReport } from "../../library/hooks/fetchData/usePostDBST
 import { usePostAccountBalancesReport } from "../../library/hooks/fetchData/usePostAccountBalances";
 import ReportPagination from "../Reports//ReportPagination";
 import enumerations from "../../config/enumerations";
+import logMessage from '@iso/config/logMessage';
 
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -60,7 +61,7 @@ const MainForm = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'DBS ve Cari toplamlar raporu listeleme');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse,logMessage.MainForm.browse);
     if (pageIndexDBSTotal === 1) {
       getVariablesFromUrl();
     }
@@ -111,7 +112,7 @@ const MainForm = () => {
 
   //Get Search Data
   function dataSearch() {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'DBS ve Cari toplamlar raporu yeni arama');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.MainForm.search);
     const params = new URLSearchParams(location.search);
 
     params.delete('dealer'); {

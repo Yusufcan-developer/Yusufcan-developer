@@ -12,6 +12,7 @@ export async function postSaveLog(selectedLogSource,selectedLogType,description,
   let logData;
   const activeUser = localStorage.getItem("activeUser");
   const token = jwtDecode(localStorage.getItem("id_token"));
+  debugger
   if(token===undefined){return  history.replace('/');}
   let accountNo = undefined;
   if (activeUser != undefined) { accountNo = activeUser }

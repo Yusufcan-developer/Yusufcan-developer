@@ -34,6 +34,7 @@ import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 import moment from 'moment';
 import 'moment/locale/tr';
+import logMessage from '@iso/config/logMessage';
 import enumerations from "../../config/enumerations";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -71,7 +72,7 @@ const DeliveriesReport = () => {
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, 'Sevkiyat raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse,logMessage.Reports.Deliveries.browse);
     setCurrentPage(pageIndex);
     getVariablesFromUrl();
   }, [pageIndex]);
@@ -174,7 +175,7 @@ const DeliveriesReport = () => {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, 'Sevkiyat raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse,logMessage.Reports.Deliveries.search);
     dataSearch();
   };
 
@@ -257,7 +258,7 @@ const DeliveriesReport = () => {
 
   //Excel Oluşturma
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, 'Sevkiyat raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export,logMessage.Reports.Deliveries.exportExcel);
     ExcelExport(columns, data, 'Sevkiyatlar');
   }
 

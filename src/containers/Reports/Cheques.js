@@ -34,6 +34,7 @@ import ExcelExport from "./ExcelExport";
 import moment from 'moment';
 import enumerations from "../../config/enumerations";
 import 'moment/locale/tr'
+import logMessage from "../../config/logMessage";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -427,7 +428,7 @@ const ChequesReport = () => {
 
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Export,'Çek ve Senet raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Export,logMessage.Reports.Cheques.excelExport);
     ExcelExport(columns, data, 'Çek-Senet');
   }
 

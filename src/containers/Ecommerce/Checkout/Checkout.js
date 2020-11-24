@@ -45,6 +45,7 @@ import 'moment/locale/tr'
 import moment, { duration } from 'moment';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
+import logMessage from '@iso/config/logMessage';
 
 moment.locale('tr')
 var jwtDecode = require('jwt-decode');
@@ -86,7 +87,7 @@ export default function () {
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     getInitData(token.uid);
-    postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Browse, 'Sipariş Oluşturma');
+    postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Browse, logMessage.Order.browse);
   }, []);
 
   //Get Products
@@ -143,7 +144,7 @@ export default function () {
   //Adres Modal açma
   function handleShowModal() {
     setVisible(true);
-    postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Browse, 'Adres listesi');
+    postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Browse, logMessage.Address.browse);
   };
 
   //Yeni Adres Oluşturma Bölümü
@@ -362,7 +363,7 @@ export default function () {
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
         getAdress();
-        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + ' adres başarılı şekilde oluşturulmuştur.');
+        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle +logMessage.Address.saveAddress);
       })
       .catch(setConfirmLoading(false));
     setConfirmLoading(false);
@@ -394,10 +395,10 @@ export default function () {
           if (data.isSuccessful) {
             setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
             createOrderNo = data.orderNo; setSuccessOrderSave(true);
-            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo + ' numaralı sipariş başarılı şekilde oluşturulmuştur.');
+            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo + logMessage.Order.saveOrderSuccess);
           } else {
             message.warning(data.message, 10);
-            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, 'Sipariş oluşturma işlemi başarısızdır.' + 'Hatanın sebep(leri) ' + data.message);
+            postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, logMessage.Order.saveOrderError + data.message);
           }
         }
       })

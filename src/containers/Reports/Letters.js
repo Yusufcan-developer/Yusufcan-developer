@@ -32,6 +32,7 @@ import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
 import moment from 'moment';
 import enumerations from "../../config/enumerations";
+import logMessage from "../../config/logMessage";
 import 'moment/locale/tr' 
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -69,7 +70,7 @@ export default function () {
 
   //Burada ki useEffect'ler page index page size  hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Browse,'Teminat mektubu raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Browse,logMessage.Reports.Letters.browse);
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -172,7 +173,7 @@ export default function () {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Browse,'Teminat raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Browse,logMessage.Reports.Letters.search);
     dataSearch();
   };
 
@@ -252,7 +253,7 @@ export default function () {
   }
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Export,'Teminat mektubu raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Export,logMessage.Reports.Letters.exportExcel);
     ExcelExport(columns, data, 'Teminat Mektubu');
   }
   let columns = [

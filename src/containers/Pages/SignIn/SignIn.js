@@ -14,6 +14,9 @@ import SignInStyleWrapper from './SignIn.styles';
 import { Modal, Alert, message } from "antd";
 import Form from "@iso/components/uielements/form";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import enumerations from "@iso/config/enumerations";
+import logMessage from '@iso/config/logMessage';
 
 const { login } = authAction;
 const { clearMenu } = appAction;
@@ -87,6 +90,7 @@ export default function SignIn() {
             localStorage.removeItem('activeUser');
             dispatch(login(data.token));
             dispatch(clearMenu()); history.push('/products/categories');
+            postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.login);
             }
           }         
         }

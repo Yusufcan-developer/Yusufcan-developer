@@ -32,6 +32,7 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ExcelExport from "./ExcelExport";
 import moment from 'moment';
 import enumerations from "../../config/enumerations";
+import logMessage from "../../config/logMessage";
 import 'moment/locale/tr' 
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -69,7 +70,7 @@ export default function () {
 
   //Burada ki useEffect'ler page index page size göre verileri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Browse,'Cari kayıtlar raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Browse,logMessage.Reports.Accounts.browse);
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -174,7 +175,7 @@ export default function () {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Browse,'Cari kayıtlar raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Browse,logMessage.Reports.Accounts.search);
     dataSearch();
   };
 
@@ -405,7 +406,7 @@ export default function () {
 
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Export,'Cari kayıtlar raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Export,logMessage.Reports.Accounts.exportExcel);
     ExcelExport(columns, data, 'Cari Kayıtlar');
   }
   return (
