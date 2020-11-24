@@ -25,6 +25,7 @@ import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import numberFormat from "@iso/config/numberFormat";
 import enumerations from "@iso/config/enumerations";
+import logMessage from '@iso/config/logMessage';
 
 //Styles
 import PageHeader from '@iso/components/utility/pageHeader';
@@ -73,7 +74,7 @@ const ProductDetail = () => {
   document.title = "Ürün - " + description + " - Seramiksan B2B";
 
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Ürün detayı');
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.ProductDetail.browse);
   }, []);
 
   //removing items from the cart
@@ -105,8 +106,8 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        if (!productDeleteItemLog) { postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' ürünün miktarı azaltıldı.' + 'Miktar ' + setQunatity); }
-        else { postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + ' ürün sepetten çıkarıldı.' + 'Miktar ' + setQunatity); }
+        if (!productDeleteItemLog) { postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.decreaseProduct + setQunatity); }
+        else { postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + logMessage.Carts.removeProduct + setQunatity); }
       }
     }
   };
@@ -129,7 +130,7 @@ const ProductDetail = () => {
         if (amountControl === -1) {
         dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
         notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + ' ürün sepete eklendi.' + 'Miktar ' + selectedQuantity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
         }
       }
       else {
@@ -153,7 +154,7 @@ const ProductDetail = () => {
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + ' ürünün miktarı arttırıldı.' + 'Miktar ' + setQunatity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + logMessage.Carts.increaseProduct + setQunatity);
       }
     }
     }
@@ -181,7 +182,7 @@ const ProductDetail = () => {
         onAddProductCart(productData, true, isPartial, selectedQuantity);
         setSelectedAmount(0);
         setSelectedPartialAmount(0);
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + ' Ürün sepete eklendi.' + 'Miktar ' + selectedQuantity); return;
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity); return;
         }
       }
       else {
@@ -210,7 +211,7 @@ const ProductDetail = () => {
         dispatch(changeProductQuantity(newProductQuantity));
         setSelectedAmount(0);
         setSelectedPartialAmount(0);
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürünün miktarı arttırıldı.' + 'Miktar ' + newQuantity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.increaseProduct+ newQuantity);
       }
     }
   };

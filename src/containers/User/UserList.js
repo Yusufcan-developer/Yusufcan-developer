@@ -33,6 +33,7 @@ import Collapse from "@iso/components/uielements/collapse";
 //Other Library
 import moment from 'moment';
 import _, { object, values, each } from 'underscore';
+import logMessage from '@iso/config/logMessage';
 
 const { Panel } = Collapse;
 const FormItem = Form.Item;
@@ -105,7 +106,7 @@ const UserList = () => {
   useEffect(() => {
     setCurrentPage(localCurrentPage);
     getVariablesFromUrl();
-    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, 'Kullanıcılar listesi');
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, logMessage.User.browse);
   }, [localCurrentPage]);
 
   //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
@@ -206,7 +207,7 @@ const UserList = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
-    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, 'Kullanıclar listesi yeni arama');
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, logMessage.User.search);
     const params = new URLSearchParams(location.search)
 
     params.delete('keyword');
@@ -301,10 +302,10 @@ const UserList = () => {
   async function handleDeleteUserOk() {
     const user = await deleteUser(userId);
 
-    if (user.isSuccessful === false) { message.error('Kullanıcı silme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + ' kullanıcı parolası değiştirlememiştir.'); }
+    if (user.isSuccessful === false) { message.error('Kullanıcı silme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + logMessage.User.deleteError); }
     else {
       message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false);
-      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + ' kullanıcı parolası değiştirilmiştir.');
+      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + logMessage.User.deleteSuccess);
       setUserId(-1);
     }    
     return setOnChange(true);
@@ -314,10 +315,10 @@ const UserList = () => {
   async function handlePasswordOk() {
     const password = await changePassword();
 
-    if (password.isSuccessful === false) { message.error('Parola değiştirme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + ' kullanıcı parolası değiştirlemedi.'); }
+    if (password.isSuccessful === false) { message.error('Parola değiştirme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + logMessage.User.changePasswordError); }
     else {
       message.success('Parola başarıyla değiştirilmiştir.'); cancelAndClearValues(); setForgotPasswordVisible(false);
-      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + ' kullanıcı parolası değiştirilmiştir.');
+      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + logMessage.User.changePasswordSuccess);
       setUserId(-1);
     }
     return setOnChange(true);
@@ -328,10 +329,10 @@ const UserList = () => {
     //Kullanıcı düzenleme işlemi
     const userInfo = await saveUser();
     if (userInfo.isSuccessful === false) {
-      message.error(userInfo.message); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add, 'Kullanıcı kaydedilememiştir.');
+      message.error(userInfo.message); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add, logMessage.User.saveUserError);
     } else {
       message.success('Kullanıcı başarıyla kaydedilmiştir.'); cancelAndClearValues(); setVisible(false);
-      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add, userInfo.username + ' kullanıcı başarıyla kaydedilmiştir.');
+      postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Add, userInfo.username + logMessage.User.saveUserSuccess);
     }
 
     modalSelectedValueClear();
@@ -514,7 +515,7 @@ const UserList = () => {
 
   //Yeni Kullanıcı Ekleme işlemi için Modal açma
   function addNewUser() {
-    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, 'Yeni kullanıcı ekleme');
+    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse,logMessage.User.addUser);
     setVisible(true);
   }
   /**Pagination : Tablo  pageSize'ı değiştirir*/

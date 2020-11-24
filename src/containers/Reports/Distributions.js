@@ -33,6 +33,7 @@ import renderFooter from "./ReportSummary";
 import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
+import logMessage from "../../config/logMessage";
 import moment from 'moment';
 import 'moment/locale/tr'
 moment.locale('tr');
@@ -75,7 +76,7 @@ export default function () {
 
   //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, 'Dağıtım listesi raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, logMessage.Reports.Distributions.browse);
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -199,7 +200,7 @@ export default function () {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, 'Dağıtım listesi raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, logMessage.Reports.Distributions.search);
     dataSearch();
   };
 
@@ -460,7 +461,7 @@ export default function () {
 
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Export, 'Dağıtım listesi raporu excel oluşturma');
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Export, logMessage.Reports.Distributions.exportExcel);
     ExcelExport(columns, data, 'Dağıtım Listesi');
   }
   return (

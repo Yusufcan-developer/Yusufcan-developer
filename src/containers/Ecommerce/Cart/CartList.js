@@ -39,6 +39,7 @@ import enumerations from "../../../config/enumerations";
 // import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
+import logMessage from '@iso/config/logMessage';
 import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -97,7 +98,7 @@ const CartList = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,'Bayi sepet listeleme');
+    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,logMessage.Carts.browse);
   }, [pageIndex]);
 
   //Cart Data
@@ -148,7 +149,7 @@ const CartList = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
-    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,'Bayi sepet listeleme yeni arama');
+    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,logMessage.Carts.search);
     const params = new URLSearchParams(location.search);
 
     params.delete('keyword');
@@ -183,7 +184,7 @@ const CartList = () => {
       case '1':
         localStorage.setItem('activeUser', selectedCart.accountNo);
         postSaveNotification(enumerations.NotificationTypes.CartUpdate,'Kullanıcı tarafından sepet seçildi');
-        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+' Bayi sepet oluşturulması için seçildi');
+        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+logMessage.Carts.selectedCart);
         history.push('/cart');
         window.location.reload(false);
         break;
@@ -263,7 +264,7 @@ const CartList = () => {
     else {
       localStorage.setItem('activeUser', dealerCodes);
       postSaveNotification(enumerations.NotificationTypes.CartUpdate,'Kullanıcı tarafından sepet seçildi');
-      postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+' Bayi sepet oluşturulması için seçildi');
+      postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+logMessage.Carts.selectedCart);
       history.push('/cart'); 
       window.location.reload(false);
     }
