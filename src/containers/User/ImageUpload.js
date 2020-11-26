@@ -1,14 +1,8 @@
 
 import React from 'react';
-import queryString from 'query-string';
-import {
-    BrowserRouter as Router,
-    Switch,
-    useLocation
-  } from "react-router-dom";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import Uppy from '@uppy/core';
-import { Dashboard, ProgressBar } from '@uppy/react';
+import { Dashboard } from '@uppy/react';
 import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 import turkishLocale from '@uppy/locales/lib/tr_TR';
@@ -16,7 +10,7 @@ import * as _ from 'underscore';
 import { ReactSortable } from "react-sortablejs";
 import { Form } from 'antd';
 import { Input, Card, Modal, Button, Row, Col, Select, message, Divider, Popconfirm, Tag, Badge, Alert } from 'antd';
-import { DeleteFilled, DragOutlined, CloseOutlined } from '@ant-design/icons';
+import { DeleteFilled, DragOutlined } from '@ant-design/icons';
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import PageHeader from "@iso/components/utility/pageHeader";
@@ -115,7 +109,7 @@ class ImageUpload extends React.Component {
         this.uppy.close()
         this.sendImagesThrottled.cancel();
         this.updateImageThrottled.cancel();
-        this.updateSortedImagesThrottled.cancel();       
+        this.updateSortedImagesThrottled.cancel();
     }
 
     componentDidMount() {
@@ -151,7 +145,6 @@ class ImageUpload extends React.Component {
             .then(response => response.json())
             .then(imageTypes => {
                 this.setState({ imageTypes: imageTypes })
-                this.getVariablesFromUrl();
             }).catch(error => console.log(error));
     }
 
@@ -182,11 +175,6 @@ class ImageUpload extends React.Component {
                     productCode: productCode
                 });
             }).catch(error => console.log(error));
-    }
-
-    getVariablesFromUrl() {
-        let query = window.location.search.substring(1);
-        if(query!==''){let productItemCode = query.split("&"); this.setState({productCode:productItemCode[0]}); this.getProductImages(productItemCode[0]);}        
     }
 
     //api' ye dosya gönderme
@@ -426,7 +414,9 @@ class ImageUpload extends React.Component {
     }
 
     render() {
+        debugger
         const { productList, productImages, imageTypes, btnUpdateOrder, isDialogOpen, dialogImageId, categoricalImageList, productCode } = this.state;
+        
         return (
             <LayoutWrapper>
                 <PageHeader>
@@ -445,7 +435,7 @@ class ImageUpload extends React.Component {
                     </Row>
                     <Row>
                         {/* select product, search */}
-                        <Col style={{ padding: '25px' }} span={10}>
+                        <Col style={{ padding: '25px' }} md={12} sm={12} xs={24}>
                             <Form initialValues={{ remember: true }} ref={this.formRef} onFinish={this.sendImagesThrottled}>
                                 <Form.Item name="product" rules={[{ required: true, message: 'Lütfen bir ürün seçiniz!' }]}>
                                     <Select showSearch
@@ -494,7 +484,7 @@ class ImageUpload extends React.Component {
                         </Col>
 
                         {/* image display , delete, update, sort*/}
-                        <Col span={14}>
+                        <Col md={12} sm={12} xs={24}>
                             <div style={{ margin: '35px' }}>
                                 {productImages.length > 0 ?
                                     <div>
@@ -518,7 +508,7 @@ class ImageUpload extends React.Component {
                                                     setList={newState => this.updateState(newState)} handle=".handle" animation={150}>
                                                     {
                                                         imageList.map(image =>
-                                                            <Col span={6}
+                                                            <Col md={12} sm={12} xs={24}
                                                                 key={image.imageId}
                                                                 style={{ padding: '10px', order: productList.some(item => item.mainImageId === image.imageId) ? -1 : 1 }}
                                                                 onDrop={this.handleDrop}

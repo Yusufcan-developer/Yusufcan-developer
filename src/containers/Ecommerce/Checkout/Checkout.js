@@ -5,20 +5,16 @@ import { useHistory } from 'react-router-dom';
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import Box from '@iso/components/utility/box';
-import OrderInfo from './OrderInfo';
 import { CheckoutContents } from './Checkout.styles';
-import { useSelector } from 'react-redux';
 import Button from '@iso/components/uielements/button';
 import SingleOrderInfo from './SingleOrder';
 import { OrderTable } from './Checkout.styles';
-import Select, { SelectOption } from '@iso/components/uielements/select';
 import InputBox from './InputBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
-import { BillingFormWrapper, InputBoxWrapper } from './Checkout.styles';
+import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
-import { Col, Row, Modal, Table, Input, Space, message, Alert } from "antd";
+import { Col, Modal, Table, Input, Space, message, Alert } from "antd";
 import Form from "@iso/components/uielements/form";
-import Textarea from '@iso/components/uielements/input';
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
@@ -27,22 +23,14 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 //Styles
 import { PlusOutlined } from '@ant-design/icons';
 import {
-  ActionBtn,
   Fieldset,
-  Label,
-  TitleWrapper,
-  ButtonHolders,
-  ActionWrapper,
-  ComponentTitle,
-  TableWrapper,
-  StatusTag,
 } from '../../FirestoreCRUD/Article/Article.styles';
 
 //Other Library
 import _ from 'underscore';
 import numberFormat from "@iso/config/numberFormat";
 import 'moment/locale/tr'
-import moment, { duration } from 'moment';
+import moment from 'moment';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
@@ -76,7 +64,6 @@ export default function () {
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
   const history = useHistory();
 
-  const { confirm } = Modal;
   const [data, changeCart] = useGetCartCheckOut();
   const token = jwtDecode(localStorage.getItem("id_token"));
   const activeUser = localStorage.getItem("activeUser")
