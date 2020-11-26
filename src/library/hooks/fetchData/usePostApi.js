@@ -6,7 +6,6 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 function useFetch(url, reqBody, searchUrl) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalPage, setTotalPage] = useState(1);
   const [changePageSize, setChangePageSize] = useState();
   const [currentPage, setCurrentPage] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
@@ -40,12 +39,10 @@ function useFetch(url, reqBody, searchUrl) {
             setCode(item.dealerCode);
             setName(item.dealerName)
           });
-          const totalPages = data.totalPages;
           const dataCount = data.totalDataCount;
           const aggregatesOverall = data.aggregatesOverall;
 
           setTotalDataCount(dataCount);
-          setTotalPage(totalPages);
           setData(value);
           setLoading(false);
           setOnChange(false);

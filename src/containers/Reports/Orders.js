@@ -461,7 +461,7 @@ const OrdersReport = () => {
       sorter: (a, b) => (''),
       sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-      render: (orderDate) => moment(orderDate).format(siteConfig.dateFormat),
+      render: (orderDate,record) => moment(orderDate).format(siteConfig.dateFormat)+' '+record.orderTimeStr,
     },
     {
       title: "Cari/DBS",

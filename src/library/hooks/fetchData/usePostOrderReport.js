@@ -9,7 +9,6 @@ function usePostOrderReport(url, reqBody, searchUrl) {
   const [data, setData] = useState([]);
   const [orderDetailData, setOrderDetailData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalPage, setTotalPage] = useState(1);
   const [changePageSize, setChangePageSize] = useState();
   const [currentPage, setCurrentPage] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
@@ -48,12 +47,10 @@ function usePostOrderReport(url, reqBody, searchUrl) {
             item.key = index;
             orderIdArrayH.push(item.orderNo);
           });
-          const totalPages = data.totalPages;
           const dataCount = data.totalDataCount;
           const aggregatesOverall = data.aggregatesOverall;
 
           setTotalDataCount(dataCount);
-          setTotalPage(totalPages);
           setData(value);
           setAggregatesOverall(aggregatesOverall);
 

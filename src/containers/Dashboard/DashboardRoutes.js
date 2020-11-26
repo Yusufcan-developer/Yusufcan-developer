@@ -113,10 +113,6 @@ const routes = [
     path: 'admin/notification',
     component: lazy(() => import('@iso/containers/Notification/Notification')),
   },
-  {
-    path: 'admin/saveUser',
-    component: lazy(() => import('@iso/containers/User/SaveUser')),
-  }
 ];
 
 export default function AppRouter() {
