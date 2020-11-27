@@ -414,7 +414,6 @@ class ImageUpload extends React.Component {
     }
 
     render() {
-        debugger
         const { productList, productImages, imageTypes, btnUpdateOrder, isDialogOpen, dialogImageId, categoricalImageList, productCode } = this.state;
         
         return (

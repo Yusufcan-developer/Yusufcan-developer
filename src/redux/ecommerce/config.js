@@ -3,7 +3,6 @@ import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
 import history from '@iso/lib/helpers/history';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
-
 var jwtDecode = require('jwt-decode');
 
 export default function getInitData() {

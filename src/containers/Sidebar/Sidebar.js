@@ -217,7 +217,7 @@ export default function Sidebar() {
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         newColumn = _.without(options, _.findWhere(options, {
-          key: 'systemAdministrator'
+          key: 'systemAdministrator1'
         }
         ))
       }

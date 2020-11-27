@@ -48,6 +48,8 @@ export default {
       postSaveAddress: apiUrl + 'core/accounts/addresses',
       postSaveOrder:apiUrl+'b2b/carts/save-order/{accountNo}/{addressCode}',
       getHasSaveOrderPermission:apiUrl+'b2b/carts/save-order/has-permission',
+      postStartEditingBehalfOf:apiUrl+'b2b/carts/account/{accountNo}/start-editing-behalf-of',
+      postEndEditingBehalfOf:apiUrl+'b2b/carts/account/{accountNo}/end-editing-behalf-of',
     },
     report: {
       postOrders: apiUrl + 'core/report/orders',
@@ -71,6 +73,7 @@ export default {
     security: {
       postAccounts: apiUrl + 'core/accounts',
       getAccountsTree: apiUrl + 'core/accounts-tree',
+      getNotificationType:apiUrl+'security/notifications/types',
       getRoles: apiUrl + 'security/roles',
       getUser: apiUrl + 'security/users/',
       postAuthenticate: apiUrl + 'security/authenticate',
@@ -80,9 +83,9 @@ export default {
       postLog:apiUrl+'security/logs/search',
       postSaveLog:apiUrl+'security/logs',
       postForgotPassword:apiUrl+'security/forgot-password',
-      getNotificationByUserId: apiUrl + '/api/security/notification/',
-      getNotificationByUserId: apiUrl + 'security/notification/',
-      postSaveNotification:apiUrl+'security/notification',
+      postNotification: apiUrl + 'security/notifications/search',
+      getNotificationByUserId:apiUrl+'security/users/{userId}/notifications',
+      postIsRead:apiUrl+'security/notifications/{notificationId}/read'
     },
     image: {
       getProductsOfImages: apiUrl + 'images/products-for-images',

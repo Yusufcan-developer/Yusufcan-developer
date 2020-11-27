@@ -6,6 +6,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { Card, Row, Col } from "antd";
 import TopbarAddtoCart from '../Topbar/TopbarAddToCart';
+import TopbarNotification from '../Topbar/TopbarNotification';
 const { Meta } = Card;
 
 //Kategoriler Grup Bilgisi.
@@ -45,6 +46,7 @@ const ProductGroupList = () => {
     newView = 'DesktopView';}
   
   TopbarAddtoCart();
+  TopbarNotification();
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>
