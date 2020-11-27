@@ -12,13 +12,13 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect } from "antd";
+import { Table, Row, Col, Tag, Modal } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
-import { usePostLogFetch } from "@iso/lib/hooks/fetchData/usePostLog";
+import { usePostNotificationFetch } from "@iso/lib/hooks/fetchData/usePostNotification";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
-import { useUserFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
+
 //Style
 import { DownloadOutlined } from '@ant-design/icons';
 
@@ -26,14 +26,13 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
-import numberFormat from "@iso/config/numberFormat";
-import renderFooter from "../Reports/ReportSummary";
-
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr'
+import { bool } from "prop-types";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -49,23 +48,20 @@ export default function () {
   if (window.innerWidth > 1220) {
     newView = 'DesktopView';
   }
-  const children = [];
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
-  const [roleNames, setRoleNames] = useState();
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
-  const [userIds, setUserIds] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
-  const [selectedLogType, setSelectedLogType] = useState();
-  const [selectedLogSource, setSelectedLogSource] = useState();
+  const [selectedNotificationType, setSelectedNotificationType] = useState();
+  const [selectedIsRead, setSelectedIsRead] = useState();
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
@@ -76,36 +72,18 @@ export default function () {
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
-  useEffect(() => {
-    getVariablesFromUrl()
-    setChangePageSize(pageSize);
-  }, [pageSize]);
-
+  const token = jwtDecode(localStorage.getItem("id_token"));
   let searchUrl = queryString.parse(location.search);
+  let uid = parseInt(token.uid);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-  usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource,"logTypes": selectedLogType,"userIds": userIds, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  }, searchUrl);
+    usePostNotificationFetch(`${siteConfig.api.security.postNotification}`, { "notificationTypes": selectedNotificationType, "isRead": selectedIsRead, "userIds": [uid], "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
- //Kullanıcı listesi
- const [userData] =
- useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": null, "roleNames": roleNames, "pageIndex": 0, "pageCount": 10000000 });
-  const lookupDealerChildren = [];
-  _.each(userData, (item, i) => {
-    lookupDealerChildren.push(<Option key={item.id}>{ item.firstName===''?item.username + '-'+item.title: item.username + '-' + item.firstName +' '+item.lastName}</Option>);
-  });
-
-  //Log Tipleri
-  const [logTypeData] = useFilterData(`${siteConfig.api.security.getLogTypes}`, searchUrl);
-  const lookUpLogType = [];
-  _.each(logTypeData, (item) => {
-    lookUpLogType.push(<Option key={item.Key}>{ item.Value}</Option>);
-  });
-
-  //Log Source
-  const [logSourceData] = useFilterData(`${siteConfig.api.security.getLogSources}`, searchUrl);
-  const lookUpLogSource = [];
-  _.each(logSourceData, (item) => {
-    lookUpLogSource.push(<Option key={item.Key}>{ item.Value}</Option>);
+  //Notifcation Tipleri
+  const [notifacationTypeData] = useFilterData(`${siteConfig.api.security.getNotificationType}`, searchUrl);
+  const lookUpNotificationType = [];
+  _.each(notifacationTypeData, (item) => {
+    lookUpNotificationType.push(<Option key={item.Key}>{item.Value}</Option>);
   });
 
   //Url'i çözümleme işlemi
@@ -114,13 +92,18 @@ export default function () {
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
-    
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    if (parsed.isRead !== undefined) {
+      if (parsed.isRead === 'true') { setSelectedIsRead(true) }
+      else if (parsed.isRead === 'false') { setSelectedIsRead(false) }
+      else { setSelectedIsRead(null) }
+    }
+
     let type = [];
     if (parsed.type !== undefined) {
       if (Array.isArray(parsed.type)) {
@@ -129,61 +112,17 @@ export default function () {
         });
       } else { type.push(parsed.type); }
     }
-
-    let source = [];
-    if (parsed.source !== undefined) {
-      if (Array.isArray(parsed.source)) {
-        _.each(parsed.source, (item) => {
-          source.push(item);
-        });
-      } else { source.push(parsed.source); }
-    }
-
-    let user = [];
-    if (parsed.user !== undefined) {
-      if (Array.isArray(parsed.user)) {
-        _.each(parsed.user, (item) => {
-          user.push(parseInt(item));
-        });
-      } else { user.push(parseInt(parsed.user)); }
-    }
-
-    setSelectedLogType(type);
-    setSelectedLogSource(source);
-    setUserIds(user);
-
+    setSelectedNotificationType(type);
     return setOnChange(true);
-    }
-  
-  function dealerCodeHandleChange(value) {
-    let userObj = [];
-    const params = new URLSearchParams(location.search);
-    params.delete('user');
-    params.delete('user')
-    params.delete('type');
-    params.delete('source');
-    params.delete('from');
-    params.delete('to');
-    params.delete('keyword');
-    params.delete('pgsize');
-    params.delete('pgindex');
-    params.delete('sortingField');
-    params.delete('sortingOrder');
-    if (value.length === 0) { setNewUrlParams(''); params.delete('user'); setUserIds(userObj);}
-    else {
-      _.filter(value, function (item) {
-        userObj.push(parseInt(item)); params.append('user', item); params.toString();
-      });}
-      setUserIds(userObj);
-      setNewUrlParams(params.toString());
   }
+
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    params.delete('user')
+
+    params.delete('isRead');
     params.delete('type');
-    params.delete('source');
     params.delete('from');
     params.delete('to');
     params.delete('keyword');
@@ -191,16 +130,20 @@ export default function () {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
-
+    if (selectedIsRead !== undefined) { params.append('isRead', selectedIsRead); }
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if (sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
-    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString();}
+    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    _.filter(selectedNotificationType, function (item) {
+      params.append('type', item); params.toString();
+    });
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -213,12 +156,11 @@ export default function () {
     dataSearch();
   };
 
-
- //Change from and To date
- function changeTimePicker(value, dateString) {
-  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-}
+  //Change from and To date
+  function changeTimePicker(value, dateString) {
+    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
 
   const handleChange = (pagination, filters, sorter) => {
     setState({
@@ -228,11 +170,11 @@ export default function () {
     });
     if (sorter !== undefined) {
       if (sorter.order === "descend") {
-        sortingOrder='DESC';
-      } else { sortingOrder='ASC'; }
-    
-    sortingField=sorter.field;
-    dataSearch()
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
     }
   };
 
@@ -250,85 +192,15 @@ export default function () {
     dataSearch(current, pageSize);
   }
 
-  //Change Source
-  function logSourceHandleChange(value) {
-    let sourceObj = [];
-    const params = new URLSearchParams(location.search);
-    params.delete('user');
-    params.delete('source');
-    params.delete('from');
-    params.delete('to');
-    params.delete('keyword');
-    params.delete('pgsize');
-    params.delete('pgindex');
-    params.delete('sortingField');
-    params.delete('sortingOrder');
-
-    if (value.length === 0) { setNewUrlParams(''); params.delete('source'); setSelectedLogSource(sourceObj);}
-    else {
-      _.filter(value, function (item) {
-        sourceObj.push(item); params.append('source', item); params.toString();
-      });}
-      setSelectedLogSource(sourceObj);
-      setNewUrlParams(params.toString());
-  }
-  //Change Log Type
-  function logTypeHandleChange(value) {
-    let typeObj = [];
-    const params = new URLSearchParams(location.search);
-    params.delete('user')
-    params.delete('type');
-    params.delete('from');
-    params.delete('to');
-    params.delete('keyword');
-    params.delete('pgsize');
-    params.delete('pgindex');
-    params.delete('sortingField');
-    params.delete('sortingOrder');
-
-    if (value.length === 0) { setNewUrlParams(''); params.delete('type'); setSelectedLogType(typeObj);}
-    else {
-      _.filter(value, function (item) {
-        typeObj.push(item); params.append('type', item); params.toString();
-      });}
-      setSelectedLogType(typeObj);
-      setNewUrlParams(params.toString());
+  //Change Notification Type
+  function notificationTypeHandleChange(value) {
+    setSelectedNotificationType(value);
   }
   let columns = [
     {
-      title: "Kullanıcı Adı",
-      dataIndex: "userFullName",
-      key: "userFullName"
-    },
-    {
-      title: "Hesap No",
-      dataIndex: "accountNo",
-      key: "accountNo"
-    },
-    {
-      title: "Kullanıcı Hesap Adı",
-      dataIndex: "accountName",
-      key: "accountName"
-    },
-    {
-      title: "Tarih",
-      dataIndex: "date",
-      key: "date",
-      type: "date",
-      render: (date) => moment(date).format(siteConfig.dateFormatAddTime),
-      sorter: (a, b) => (''),
-      sortOrder: tableOptions.sortedInfo.columnKey === 'date' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-    },
-    {
-      title: "Olay Kaynağı",
-      dataIndex: "logSourceName",
+      title: "Bildirim Tipi",
+      dataIndex: "notificationTypeName",
       key: "logSource",
-    },
-    {
-      title: "Olay Tipi",
-      dataIndex: "logTypeName",
-      key: "logType",
     },
     {
       title: "Açıklama",
@@ -336,15 +208,51 @@ export default function () {
       key: "description",
     },
     {
-      title: "İp Adresi",
-      dataIndex: "ipAddress",
-      key: "ipAddress",
+      title: "Okundu Durumu",
+      dataIndex: "isRead",
+      key: "isRead",
+      render: isRead => (
+        <>
+          {!isRead ? (
+            <Tag color={'red'} key={false}>
+              {'Okunmadı'}
+            </Tag>
+          ) : (
+              <Tag color={'green'} key={true}>
+                {'Okundu'}
+              </Tag>
+            )}
+        </>
+      ),
     },
-    
+    {
+      title: "Oluşturan",
+      dataIndex: "createdByUserId",
+      key: "createdByUserId",
+    },
+    {
+      title: "Oluşturulma Tarihi",
+      dataIndex: "createdOn",
+      key: "createdOn",
+      type: "createdOn",
+      render: (createdOn) => (moment(createdOn).format(siteConfig.dateFormatAddTime)),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'createdOn' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: "Okunma Tarihi",
+      dataIndex: "readOn",
+      key: "readOn",
+      type: "readOn",
+      render: (readOn) => (readOn !== null ? moment(readOn).format(siteConfig.dateFormatAddTime) : '-'),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'readOn' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
   ];
 
   //Hide order table column
-  const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
   else if (token.urole === 'fieldmanager') {
     const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Field;
@@ -379,9 +287,49 @@ export default function () {
       }
     }
   }
+  function statusHandleChange(value) {
+    setSelectedIsRead(value);
+  }
   //Excel Oluşturma
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Bildirim');
+  }
+  async function postNotificationIsred(notificationId) {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    let newPostIsReadUrl = siteConfig.api.security.postIsRead.replace('{notificationId}', notificationId);
+    await fetch(`${newPostIsReadUrl}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+        }
+      })
+      .catch();
+  }
+  function selectedNotification(item) {
+    postNotificationIsred(item.id);
+    Modal.info({
+      okText: 'Tamam',
+      width: 500,
+      title: item.notificationTypeName,
+      content: (
+        <div>
+          <br />
+          <p>{(moment(item.createdOn).format(siteConfig.dateFormatAddTime))}</p>
+          <br />
+          <p>{item.description}</p>
+        </div>
+      ),
+      onOk() { window.location.reload(true);},
+    });
   }
   return (
     <LayoutWrapper>
@@ -391,40 +339,51 @@ export default function () {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.isReadStatus" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.users" />}></FormItem>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Select
+                  showSearch
+                  mode="single"
+                  dropdownMatchSelectWidth={200}
+                  style={{ marginBottom: '8px', width: '250px' }}
+                  placeholder="Bildirim Durumu Seçiniz"
+                  optionFilterProp="children"
+                  value={selectedIsRead}
+                  onChange={statusHandleChange}
+                >
+                  <Option value={true} label="Okundu">
+                    <div className="demo-option-label-item">
+                      Okundu
+      </div>
+                  </Option>
+                  <Option value={false} label="Okunmadı">
+                    <div className="demo-option-label-item">
+                      Okunmadı
+      </div>
+                  </Option>
+                  <Option value={null} label="Hepsi">
+                    <div className="demo-option-label-item">
+                      Hepsi
+      </div>
+                  </Option>
+                </Select>
               </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-              <Select
-              showSearch
-              mode="multiple"
-              dropdownMatchSelectWidth={500}
-              style={{ marginBottom: '8px', width: '250px' }}
-              placeholder="Kullanıcı Seçiniz"
-              optionFilterProp="children"
-              value={userIds}
-              onChange={dealerCodeHandleChange}
-              filterOption={(input, option) =>
-                option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {lookupDealerChildren}
-            </Select>
-              </Col>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -432,53 +391,41 @@ export default function () {
                   style={{ marginBottom: '8px', width: '250px' }}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={newView!=='MobileView'?5:0} offset={newView!=='MobileView'?1:0} >
+              <Col span={newView !== 'MobileView' ? 5 : 0} offset={newView !== 'MobileView' ? 1 : 0} >
                 <Button type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
             </Row>
             <Row>
-              <Col span={newView!=='MobileView'?6:0} >
-                <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
-              </Col>
-              <Col span={newView!=='MobileView'?6:0} >
-                <FormItem label={<IntlMessages id="page.logSources" />}></FormItem>
+              <Col span={newView !== 'MobileView' ? 6 : 0} >
+                <FormItem label={<IntlMessages id="page.notificationTypes" />}></FormItem>
               </Col>
             </Row>
             <Row>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: '250px' }}
-                  placeholder="Olay Tipi Seçiniz"
-                  onChange={logTypeHandleChange}
-                  value={selectedLogType}
+                  style={{ marginBottom: '8px', width: '320px' }}
+                  placeholder="Bildirim Tipi Seçiniz"
+                  onChange={notificationTypeHandleChange}
+                  value={selectedNotificationType}
                 >
-                  {lookUpLogType}
+                  {lookUpNotificationType}
                 </Select>
-              
+
               </Col>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Select
-                  mode="multiple"
-                  style={{ marginBottom: '8px', width: '250px' }}
-                  placeholder="Olay Kaynağı Seçiniz"
-                  onChange={logSourceHandleChange}
-                  value={selectedLogSource}
-                >
-                  {lookUpLogSource}
-                </Select>
-                <Col span={newView==='MobileView'?5:0} offset={newView==='MobileView'?1:0} >
-                <Button type="primary" onClick={searchButton}>
-                  {<IntlMessages id="forms.button.label_Search" />}
-                </Button>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Col span={newView === 'MobileView' ? 5 : 0} offset={newView === 'MobileView' ? 1 : 0} >
+                  <Button type="primary" onClick={searchButton}>
+                    {<IntlMessages id="forms.button.label_Search" />}
+                  </Button>
+                </Col>
               </Col>
-              </Col>
-            </Row>           
+            </Row>
           </Panel>
         </Collapse>
       </Box>
@@ -504,10 +451,12 @@ export default function () {
           onChange={handleChange}
           loading={loading}
           pagination={false}
-          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          onRow={(record) => ({
+            onClick: () => (selectedNotification(record))
+          })}
         />
         <ReportPagination
           onShowSizeChange={onShowSizeChange}

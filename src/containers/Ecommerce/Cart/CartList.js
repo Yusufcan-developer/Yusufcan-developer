@@ -17,7 +17,6 @@ import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal,
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
-import { postSaveNotification } from "@iso/lib/hooks/fetchData/postSaveNotification";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -53,7 +52,8 @@ const CartList = () => {
   document.title = "Sepet Listesi - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
   //Bayi Kodu Tekli veya çoklu seçim kontrolü
   const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
 
@@ -98,7 +98,7 @@ const CartList = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,logMessage.Carts.browse);
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Browse, logMessage.Carts.browse);
   }, [pageIndex]);
 
   //Cart Data
@@ -110,17 +110,6 @@ const CartList = () => {
   _.each(lookupDealerTreeData, (item, i) => {
     lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
   });
-
-  //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
-
-    //Url değerini alıyoruz.
-    const parsed = queryString.parse(location.search);
-
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-  }
 
   //Sipariş Kalemleri Görüntüleme
   async function onExpand(expandedKeys) {
@@ -149,7 +138,7 @@ const CartList = () => {
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
-    postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Browse,logMessage.Carts.search);
+    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Browse, logMessage.Carts.search);
     const params = new URLSearchParams(location.search);
 
     params.delete('keyword');
@@ -170,6 +159,33 @@ const CartList = () => {
     dataSearch();
   }
 
+  async function postStartEditingBehalfOf(accountNo) {
+    try {
+      const reqBody = {};
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+        },
+        body: JSON.stringify(reqBody)
+      };
+      let newStartBehalfOfUrl = siteConfig.api.carts.postStartEditingBehalfOf.replace('{accountNo}', accountNo);
+      await fetch(`${newStartBehalfOfUrl}`, requestOptions)
+        .then(response => {
+          const status = apiStatusManagement(response);
+          return status;
+        })
+        .then(data => {
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, dealerCodes + logMessage.Carts.selectedCart);
+        })
+        .catch();
+    }
+    catch (err) {
+      console.log(err);
+    }
+  };
+
   //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
   const menu = (
     <Menu onClick={handleMenuClick}>
@@ -179,12 +195,11 @@ const CartList = () => {
   );
 
   //Menü Secimlerine Göre Modal açma işlemleri
-  function handleMenuClick(value) {
+  async function handleMenuClick(value) {
     switch (value.key) {
       case '1':
         localStorage.setItem('activeUser', selectedCart.accountNo);
-        postSaveNotification(enumerations.NotificationTypes.CartUpdate,'Kullanıcı tarafından sepet seçildi');
-        postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+logMessage.Carts.selectedCart);
+        await postStartEditingBehalfOf(selectedCart.accountNo);
         history.push('/cart');
         window.location.reload(false);
         break;
@@ -258,14 +273,13 @@ const CartList = () => {
       setDealerCodes(value);
     }
   }
-  
-  function handleCreateCart() {
+
+  async function handleCreateCart() {
     if (dealerCodes === undefined) { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
     else {
       localStorage.setItem('activeUser', dealerCodes);
-      postSaveNotification(enumerations.NotificationTypes.CartUpdate,'Kullanıcı tarafından sepet seçildi');
-      postSaveLog(enumerations.LogSource.Cart,enumerations.LogTypes.Add,dealerCodes+logMessage.Carts.selectedCart);
-      history.push('/cart'); 
+      await postStartEditingBehalfOf(dealerCodes);
+      history.push('/cart');
       window.location.reload(false);
     }
   }
@@ -379,7 +393,7 @@ const CartList = () => {
           </Row>
           : null}
         <Row>
-          <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+          <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
             <Select
               showSearch
               style={{ width: '100%' }}
@@ -394,8 +408,8 @@ const CartList = () => {
               {lookupDealerChildren}
             </Select>
           </Col>
-          <Col span={newView!=='MobileView'?1:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-              </Col>
+          <Col span={newView !== 'MobileView' ? 1 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+          </Col>
           <Button type="primary" loading={iconLoading} onClick={handleCreateCart}>
             {<IntlMessages id="forms.button.label_Choose" />}
           </Button>

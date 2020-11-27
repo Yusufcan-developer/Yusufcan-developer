@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 
 //Redux
-import { Popover } from 'antd';
+import { Popover, Modal } from 'antd';
 import { useSelector } from 'react-redux';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import Scrollbar from '@iso/components/utility/customScrollBar';
@@ -11,7 +11,9 @@ import TopbarDropdownWrapper from './TopbarDropdown.styles';
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
-import Item from "antd/lib/list/Item";
+import moment from 'moment';
+import 'moment/locale/tr'
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 export default function TopbarNotification() {
@@ -19,45 +21,81 @@ export default function TopbarNotification() {
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const [quantity, setQuantity] = useState();
   const [notification, setNotification] = useState([]);
-  
+
   useEffect(() => {
     getNotificationList();
   }, []);
 
   function handleVisibleChange() {
     setVisiblity(visible => !visible);
-  }
-  ;
+  };
+
   //Get Notification
   async function getNotificationList() {
-    let productInfo;
-    // const requestOptions = {
-    //   method: "GET",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-    //   }
-    // };
-    // const token = jwtDecode(localStorage.getItem("id_token"));
-    // const activeUser = localStorage.getItem("activeUser")
-    // let uid = token.uid;
-
-    // await fetch(`${siteConfig.api.security.getNotification}${uid}/?isRead=${false}`, requestOptions)
-    //   .then(response => {
-    //     const status = apiStatusManagement(response, true);
-    //     return status;
-    //   })
-    //   .then(data => {
-    //     if (data !== 'Unauthorized1') {
-    //       setQuantity(data.length);
-    //       setNotification(data);
-    //     }
-    //     else { setQuantity(0) }
-    //   })
-    //   .catch();
-    return productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser")
+    let uid = token.uid;
+    let newGetNotificationUrl = siteConfig.api.security.getNotificationByUserId.replace('{userId}', uid);
+    await fetch(`${newGetNotificationUrl}/?isRead=${false}&pageIndex=0&pageCount=10`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+          setQuantity(data.totalDataCount);
+          setNotification(data.data);
+        }
+        else { setQuantity(0) }
+      })
+      .catch();
   }
-  
+  async function postNotificationIsred(notificationId) {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    let newPostIsReadUrl = siteConfig.api.security.postIsRead.replace('{notificationId}', notificationId);
+    await fetch(`${newPostIsReadUrl}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+        }
+      })
+      .catch();
+  }
+  function selectedNotification(item) {
+    postNotificationIsred(item.id);
+    setVisiblity(visible => !visible);
+    Modal.info({
+      okText: 'Tamam',
+      width: 500,
+      title: item.notificationTypeName,
+      content: (
+        <div>
+          <br />
+          <p>{(moment(item.createdOn).format(siteConfig.dateFormatAddTime))}</p>
+          <br />
+          <p>{item.description}</p>
+        </div>
+      ),
+      onOk() { window.location.reload(true);},
+    });
+  }
+
   const content = (
     <TopbarDropdownWrapper className="topbarNotification">
       <div className="isoDropdownHeader">
@@ -66,20 +104,25 @@ export default function TopbarNotification() {
         </h3>
       </div>
       <Scrollbar style={{ height: 300 }}>
-      <div className="isoDropdownBody">
-        {notification.map(item => (
-          <a className="isoDropdownListItem" key={item.notificationTypeName} href="# ">
-            <h5>{item.notificationTypeName}</h5>
-            <p>{item.description}</p>
-          </a>
-        ))}
-      </div>
+        <div className="isoDropdownBody">
+
+          {_.map(notification, (item) => {
+            return (
+              <a className="isoDropdownListItem" key={item.notificationTypeName} onClick={event => {
+                selectedNotification(item);
+              }}>
+                <h5>{(moment(item.createdOn).format(siteConfig.dateFormatAddTime))}</h5>
+                <p>{item.description}</p>
+              </a>
+            )
+          })}
+        </div>
       </Scrollbar>
-      <a className="isoViewAllBtn" href="# ">
+      <a className="isoViewAllBtn" href="/admin/notification?isRead=false">
         <IntlMessages id="topbar.viewAll" />
       </a>
     </TopbarDropdownWrapper>
-  );  
+  );
   return (
     <Popover
       content={content}
@@ -96,5 +139,6 @@ export default function TopbarNotification() {
         <span>{quantity}</span>
       </div>
     </Popover>
+
   );
 }

@@ -37,7 +37,7 @@ export default function CartTable({ style }) {
   const [cartChangeItem,setCartChangeItem]=useState(false);
   useEffect(() => {
     getCartList();
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Carts.productList);
+    // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Carts.productList);
   }, [cartChangeItem]);
   document.title = "Sepet - Seramiksan B2B";
   let history = useHistory();
