@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import {useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Layout } from 'antd';
 import options from './options';
 import optionsLocal from './optionsLocal';
@@ -25,7 +25,7 @@ export default function Sidebar() {
   let newColumn;
   const token = jwtDecode(localStorage.getItem("id_token"));
   const dispatch = useDispatch();
-  var url = window.location.href.toString().slice(0,16);
+  var url = window.location.href.toString().slice(0, 16);
   const {
     view,
     openKeys,
@@ -37,9 +37,9 @@ export default function Sidebar() {
   const customizedTheme = useSelector(
     state => state.ThemeSwitcher.sidebarTheme
   );
-  
+
   useEffect(() => {
-    menuOpenOrCloseCollapse(['reportTable'],true);
+    menuOpenOrCloseCollapse(['reportTable'], true);
   }, []);
 
   function handleClick(e) {
@@ -54,8 +54,8 @@ export default function Sidebar() {
     }
   }
 
-  function menuOpenOrCloseCollapse(newOpenKeys,firstOpen=false) {
-   
+  function menuOpenOrCloseCollapse(newOpenKeys, firstOpen = false) {
+
     const latestOpenKey = newOpenKeys.find(
       key => !(openKeys.indexOf(key) > -1)
     );
@@ -108,163 +108,118 @@ export default function Sidebar() {
     color: customizedTheme.textColor,
   };
   if (url === 'http://localhost') {  //Local
-  console.log("location.href : ",url)
-  return (
-    <SidebarWrapper>
-      <Sider
-        trigger={null}
-        collapsible={true}
-        collapsed={isCollapsed}
-        width={240}
-        className="isomorphicSidebar"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        style={styling}
-        sidebarOpen={true}
-      >
-        <Logo collapsed={isCollapsed} />
-        <Scrollbars style={{ height: height - 70 }}>
-          <Menu
-            onClick={handleClick}
-            theme="dark"
-            className="isoDashboardMenu"
-            mode={mode}
-            openKeys={isCollapsed ? [] : openKeys}
-            selectedKeys={current}
-            onOpenChange={onOpenChange}
-          >
-            {optionsLocal.map(singleOption => (
-              <SidebarMenu
-                key={singleOption.key}
-                submenuStyle={submenuStyle}
-                submenuColor={submenuColor}
-                singleOption={singleOption}
-              />
-            ))}           
-          </Menu>
-        </Scrollbars>
-      </Sider>
-    </SidebarWrapper>
-  );
-}else 
-  //Get Token and Token Decode
-  
-  if (token.urole === 'admin') { newColumn=options
-    const getHideColumns = options;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        newColumn = _.without(options, _.findWhere(options, {
-          key: 'directorSystem'
-        }
-        ))
-      }
-    }
-  }
-  else if (token.urole === 'fieldmanager') {
-    newColumn=options
-    const getHideColumns = options;
+    console.log("location.href : ", url)
+    return (
+      <SidebarWrapper>
+        <Sider
+          trigger={null}
+          collapsible={true}
+          collapsed={isCollapsed}
+          width={240}
+          className="isomorphicSidebar"
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          style={styling}
+          sidebarOpen={true}
+        >
+          <Logo collapsed={isCollapsed} />
+          <Scrollbars style={{ height: height - 70 }}>
+            <Menu
+              onClick={handleClick}
+              theme="dark"
+              className="isoDashboardMenu"
+              mode={mode}
+              openKeys={isCollapsed ? [] : openKeys}
+              selectedKeys={current}
+              onOpenChange={onOpenChange}
+            >
+              {optionsLocal.map(singleOption => (
+                <SidebarMenu
+                  key={singleOption.key}
+                  submenuStyle={submenuStyle}
+                  submenuColor={submenuColor}
+                  singleOption={singleOption}
+                />
+              ))}
+            </Menu>
+          </Scrollbars>
+        </Sider>
+      </SidebarWrapper>
+    );
+  } else
+    //Get Token and Token Decode
 
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        newColumn = _.without(options, _.findWhere(options, {
-          key: 'systemAdministrator'
-        }
-        ))
-      }
+    if (token.urole === 'admin') {
+      newColumn = options.sideBarMenu.Admin;
     }
-  }
-  else if (token.urole === 'regionmanager') {
-    newColumn=options
-    const getHideColumns = options;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        newColumn = _.without(options, _.findWhere(options, {
-          key: 'systemAdministrator'
-        }
-        ))
-      }
-    }
-  }
-  else if(token.urole==='support'){
-    newColumn=options
-    const getHideColumns = options;
 
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        newColumn = _.without(options, _.findWhere(options, {
-          key: 'systemAdministrator'
-        }
-        ))
-      }
+    else if (token.urole === 'fieldmanager') {
+      newColumn = options.sideBarMenu.FieldManager;      
     }
-  }
-  else if(token.urole==='director'){
-    newColumn=options
-    const getHideColumns = options;
+    else if (token.urole === 'regionmanager') {
+      newColumn = options.sideBarMenu.RegionManager;
+    }
+    else if (token.urole === 'support') {
+      newColumn = options.sideBarMenu.Support;
+    }
+    else if (token.urole === 'director') {
+      newColumn = options
+      const getHideColumns = options;
 
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        newColumn = _.without(options, _.findWhere(options, {
-          key: 'systemAdministrator'
+      if (getHideColumns.length > 0) {
+        for (let index = 0; index < getHideColumns.length; index++) {
+          newColumn = _.without(options, _.findWhere(options, {
+            key: 'systemAdministrator'
+          }
+          ))
         }
-        ))
       }
     }
+    else if (token.urole === 'dealersv') {
+      newColumn = options.sideBarMenu.Dealersv;
+    }
+    else if (token.urole === 'dealerwhouse') {
+      newColumn = options.sideBarMenu.Dealerwhouse;
+    }
+    else if(token.urole === 'dealerlimited'){
+      newColumn = options.sideBarMenu.Dealerlimited;
+    }
+  {
+    return (
+      <SidebarWrapper>
+        <Sider
+          trigger={null}
+          collapsible={true}
+          collapsed={isCollapsed}
+          width={240}
+          className="isomorphicSidebar"
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          style={styling}
+        >
+          <Logo collapsed={isCollapsed} />
+          <Scrollbars style={{ height: height - 70 }}>
+            <Menu
+              onClick={handleClick}
+              theme="dark"
+              className="isoDashboardMenu"
+              mode={mode}
+              openKeys={isCollapsed ? [] : openKeys}
+              selectedKeys={current}
+              onOpenChange={onOpenChange}
+            >
+              {newColumn.map(singleOption => (
+                <SidebarMenu
+                  key={singleOption.key}
+                  submenuStyle={submenuStyle}
+                  submenuColor={submenuColor}
+                  singleOption={singleOption}
+                />
+              ))}
+            </Menu>
+          </Scrollbars>
+        </Sider>
+      </SidebarWrapper>
+    );
   }
-  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    const getHideColumns = options;
-
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        newColumn = _.without(options, _.findWhere(options, {
-          key: 'systemAdministrator1'
-        }
-        ))
-      }
-    }
-    if (newColumn.length > 0) {
-      for (let index = 0; index < newColumn.length; index++) {
-        newColumn = _.without(newColumn, _.findWhere(newColumn, {
-          key: 'directorSystem'
-        }
-        ))
-      }
-    }
-  }
- { return (
-    <SidebarWrapper>
-      <Sider
-        trigger={null}
-        collapsible={true}
-        collapsed={isCollapsed}
-        width={240}
-        className="isomorphicSidebar"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-        style={styling}
-      >
-        <Logo collapsed={isCollapsed} />
-        <Scrollbars style={{ height: height - 70 }}>
-          <Menu
-            onClick={handleClick}
-            theme="dark"
-            className="isoDashboardMenu"
-            mode={mode}
-            openKeys={isCollapsed ? [] : openKeys}
-            selectedKeys={current}
-            onOpenChange={onOpenChange}
-          >
-            {newColumn.map(singleOption => (
-              <SidebarMenu
-                key={singleOption.key}
-                submenuStyle={submenuStyle}
-                submenuColor={submenuColor}
-                singleOption={singleOption}
-              />
-            ))}           
-          </Menu>
-        </Scrollbars>
-      </Sider>
-    </SidebarWrapper>
-  );}
 }
