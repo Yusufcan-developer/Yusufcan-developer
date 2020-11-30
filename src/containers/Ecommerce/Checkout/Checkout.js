@@ -224,14 +224,16 @@ export default function () {
     };
     await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
       .then(response => {
-        const status = apiStatusManagement(response);
+        const status = apiStatusManagement(response, true);
         return status;
       })
       .then(data => {
-        setAdress(data);
+        if (data !== 'Unauthorized1') {
+          setAdress(data);
+        }
+        else { setAdress([]) }
       })
       .catch();
-    return user;
   }
 
   //get has save order permission
@@ -259,9 +261,9 @@ export default function () {
 
   //get adress and user id function
   async function getInitData(userId) {
-    const hasSaveOrderPermission = await getHasSaveOrderPermission();
-    const userData = await getByUserId(userId);
-    const adress = await getAdress();
+    await getHasSaveOrderPermission();
+    await getByUserId(userId);
+    await getAdress();
   }
 
   //Sipariş temizleme işlemi
@@ -601,7 +603,7 @@ export default function () {
                   >
                   </Form>
                 </Modal>
-                
+
                 <label>{<IntlMessages id="page.addressTitle" />}  {<span className="asterisk">*</span>}</label>
                 <div className="isoInputFieldset">
                   <Input.Search
@@ -614,48 +616,48 @@ export default function () {
                   />
 
                 </div>
-                
-                  {adressItem===undefined ? null :<React.Fragment>
-                <div className="isoInputFieldset">
-                  <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
-                    onChange={onChangeAddress1}
-                    value={address1}
-                    disabled
-                  />
-                </div>
-                <div className="isoInputFieldset">
-                  <InputBox label={<IntlMessages id="checkout.billingform.address2" />}
-                    onChange={onChangeAddress2}
-                    value={address2}
-                    disabled
-                  />
-                </div>
 
-                <div className="isoInputFieldset">
+                {adressItem === undefined ? null : <React.Fragment>
+                  <div className="isoInputFieldset">
+                    <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
+                      onChange={onChangeAddress1}
+                      value={address1}
+                      disabled
+                    />
+                  </div>
+                  <div className="isoInputFieldset">
+                    <InputBox label={<IntlMessages id="checkout.billingform.address2" />}
+                      onChange={onChangeAddress2}
+                      value={address2}
+                      disabled
+                    />
+                  </div>
 
-                  <InputBox label={<IntlMessages id="checkout.billingform.mobile" />}
-                    onChange={onChangePhone}
-                    value={phone}
-                    disabled
-                  />
-                  <InputBox label={<IntlMessages id="checkout.billingform.country" />}
-                    value={country}
-                    disabled
-                  />
-                </div>
-                <div className="isoInputFieldset">
-                  <InputBox label={<IntlMessages id="checkout.billingform.city" />}
-                    onChange={event => onChangeCity(event)}
-                    value={city}
-                    disabled
-                  />
-                  <InputBox label={<IntlMessages id="checkout.billingform.town" />}
-                    onChange={event => onChangeAddressTown(event)}
-                    value={town}
-                    disabled
-                  />
-                </div>
-                </React.Fragment>  }
+                  <div className="isoInputFieldset">
+
+                    <InputBox label={<IntlMessages id="checkout.billingform.mobile" />}
+                      onChange={onChangePhone}
+                      value={phone}
+                      disabled
+                    />
+                    <InputBox label={<IntlMessages id="checkout.billingform.country" />}
+                      value={country}
+                      disabled
+                    />
+                  </div>
+                  <div className="isoInputFieldset">
+                    <InputBox label={<IntlMessages id="checkout.billingform.city" />}
+                      onChange={event => onChangeCity(event)}
+                      value={city}
+                      disabled
+                    />
+                    <InputBox label={<IntlMessages id="checkout.billingform.town" />}
+                      onChange={event => onChangeAddressTown(event)}
+                      value={town}
+                      disabled
+                    />
+                  </div>
+                </React.Fragment>}
                 {/* Ödeme özet bilgileri ve sipariş oluşturma */}
               </BillingFormWrapper>
               <OrderTable className="isoOrderInfo">

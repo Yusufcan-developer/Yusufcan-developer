@@ -37,6 +37,12 @@ export default function TopbarUser(props) {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.logout);
     dispatch(logout());
   }
+  let newView = 'MobileView';
+  if (window.innerWidth > 1220) {
+    newView = 'DesktopView';
+  } else if (window.innerWidth > 767) {
+    newView = 'TabView';
+  }
   const content = (
     <TopbarDropdownWrapper className="isoUserDropdown">
       {/* <Link className="isoDropdownLink" to={'/my-profile'}>
@@ -106,14 +112,11 @@ export default function TopbarUser(props) {
         arrowPointAtCenter={true}
         placement="bottomLeft"
       >
-        {/* <div className="isoImgWrapper">
-        <img alt="user" src={userpic} />   
-      </div> */}
         <i
           className="ion-android-contact"
           style={{ color: customizedTheme.textColor }}
         />
-        <h5 style={{ display: 'inline', marginLeft: '10px' }}>{displayName}</h5>
+        {newView !== 'MobileView' ? <h5 style={{ display: 'inline', marginLeft: '10px' }}>{displayName}</h5> : null}
       </Popover>
       <Modal
         visible={forgotPasswordVisible}
