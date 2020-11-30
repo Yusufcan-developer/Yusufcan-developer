@@ -1121,7 +1121,7 @@ const SearchComponent = () => {
                         </span> */}
                         <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
                           {item.canBeSoldPartially ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
-                          <Tooltip trigger={'click'} title={
+                          <Tooltip trigger={["click","hover"]} title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />
                               {item.m2Box ? ('1 Kutu: ' + item.m2Box + ' ' + item.unit) : null}{item.m2Box ? <br /> : null}

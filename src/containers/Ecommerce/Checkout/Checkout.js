@@ -69,6 +69,7 @@ export default function () {
   const activeUser = localStorage.getItem("activeUser")
   let account = token.uname;
 
+  let  createAddressButtonVisible=true;
   if (activeUser != undefined) { account = activeUser }
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -429,7 +430,9 @@ export default function () {
       render: () => <a>Seç</a>,
     },
   ];
-
+  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    createAddressButtonVisible=false;
+  }
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -463,7 +466,7 @@ export default function () {
                   >
                     <Col span={8} offset={16} align="right" >
                       <Button type="primary" size="small" style={{ marginBottom: '5px' }}
-                        icon={<PlusOutlined />} onClick={onCreateAddress} >
+                        icon={<PlusOutlined />} disabled={createAddressButtonVisible} onClick={onCreateAddress} >
                         {<IntlMessages id="forms.button.createAddress" />}
                       </Button>
                     </Col>

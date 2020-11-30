@@ -29,7 +29,7 @@ export default (props) => {
             showTotal={total => `Toplam ${total} kayıt`}
             hideOnSinglePage
             style={style}
-        /> :  <Pagination
+        /> : <React.Fragment>{position==='bottom'?<span>{`Toplam ${total} kayıt`} </span> :null } <Pagination
             simple
             onShowSizeChange={onShowSizeChange}
             onChange={onChange}
@@ -37,9 +37,8 @@ export default (props) => {
             total={total}
             current={current}
             pageSizeOptions={['10', '20', '30', '50', '100', '500']}
-            showTotal={total => `Toplam ${total} kayıt`}
             hideOnSinglePage
             style={style}
-        />}
+        /> </React.Fragment>}
        </React.Fragment>);
 }
