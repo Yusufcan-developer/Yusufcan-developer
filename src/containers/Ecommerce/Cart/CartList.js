@@ -480,7 +480,6 @@ const CartList = () => {
           expandable={{ 'expandedRowRender': expandedRow }}
           pagination={false}
           onExpand={onExpand}
-          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}

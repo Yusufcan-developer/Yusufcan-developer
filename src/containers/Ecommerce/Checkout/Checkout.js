@@ -350,7 +350,7 @@ export default function () {
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
         getAdress();
-        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle +logMessage.Address.saveAddress);
+        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + logMessage.Address.saveAddress);
       })
       .catch(setConfirmLoading(false));
     setConfirmLoading(false);
@@ -601,6 +601,7 @@ export default function () {
                   >
                   </Form>
                 </Modal>
+                
                 <label>{<IntlMessages id="page.addressTitle" />}  {<span className="asterisk">*</span>}</label>
                 <div className="isoInputFieldset">
                   <Input.Search
@@ -608,20 +609,25 @@ export default function () {
                     important
                     onSearch={handleShowModal}
                     disabled={!hasOrderSavePermission}
+                    placeholder={'Sevk adresi seçiniz'}
+                    onClick={handleShowModal}
                   />
+
                 </div>
+                
+                  {adressItem===undefined ? null :<React.Fragment>
                 <div className="isoInputFieldset">
                   <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
                     onChange={onChangeAddress1}
                     value={address1}
-                    readOnly
+                    disabled
                   />
                 </div>
                 <div className="isoInputFieldset">
                   <InputBox label={<IntlMessages id="checkout.billingform.address2" />}
                     onChange={onChangeAddress2}
                     value={address2}
-                    readOnly
+                    disabled
                   />
                 </div>
 
@@ -630,25 +636,26 @@ export default function () {
                   <InputBox label={<IntlMessages id="checkout.billingform.mobile" />}
                     onChange={onChangePhone}
                     value={phone}
-                    readOnly
+                    disabled
                   />
                   <InputBox label={<IntlMessages id="checkout.billingform.country" />}
                     value={country}
-                    readOnly
+                    disabled
                   />
                 </div>
                 <div className="isoInputFieldset">
                   <InputBox label={<IntlMessages id="checkout.billingform.city" />}
                     onChange={event => onChangeCity(event)}
                     value={city}
-                    readOnly
+                    disabled
                   />
                   <InputBox label={<IntlMessages id="checkout.billingform.town" />}
                     onChange={event => onChangeAddressTown(event)}
                     value={town}
-                    readOnly
+                    disabled
                   />
                 </div>
+                </React.Fragment>  }
                 {/* Ödeme özet bilgileri ve sipariş oluşturma */}
               </BillingFormWrapper>
               <OrderTable className="isoOrderInfo">

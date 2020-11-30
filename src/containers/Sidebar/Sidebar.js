@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { Layout } from 'antd';
 import options from './options';
-import optionsLocal from './optionsLocal';
 import Scrollbars from '@iso/components/utility/customScrollBar';
 import Menu from '@iso/components/uielements/menu';
 import appActions from '@iso/redux/app/actions';
@@ -107,83 +106,32 @@ export default function Sidebar() {
   const submenuColor = {
     color: customizedTheme.textColor,
   };
-  if (url === 'http://localhost') {  //Local
-    console.log("location.href : ", url)
-    return (
-      <SidebarWrapper>
-        <Sider
-          trigger={null}
-          collapsible={true}
-          collapsed={isCollapsed}
-          width={240}
-          className="isomorphicSidebar"
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          style={styling}
-          sidebarOpen={true}
-        >
-          <Logo collapsed={isCollapsed} />
-          <Scrollbars style={{ height: height - 70 }}>
-            <Menu
-              onClick={handleClick}
-              theme="dark"
-              className="isoDashboardMenu"
-              mode={mode}
-              openKeys={isCollapsed ? [] : openKeys}
-              selectedKeys={current}
-              onOpenChange={onOpenChange}
-            >
-              {optionsLocal.map(singleOption => (
-                <SidebarMenu
-                  key={singleOption.key}
-                  submenuStyle={submenuStyle}
-                  submenuColor={submenuColor}
-                  singleOption={singleOption}
-                />
-              ))}
-            </Menu>
-          </Scrollbars>
-        </Sider>
-      </SidebarWrapper>
-    );
-  } else
-    //Get Token and Token Decode
 
-    if (token.urole === 'admin') {
-      newColumn = options.sideBarMenu.Admin;
-    }
-
-    else if (token.urole === 'fieldmanager') {
-      newColumn = options.sideBarMenu.FieldManager;      
-    }
-    else if (token.urole === 'regionmanager') {
-      newColumn = options.sideBarMenu.RegionManager;
-    }
-    else if (token.urole === 'support') {
-      newColumn = options.sideBarMenu.Support;
-    }
-    else if (token.urole === 'director') {
-      newColumn = options
-      const getHideColumns = options;
-
-      if (getHideColumns.length > 0) {
-        for (let index = 0; index < getHideColumns.length; index++) {
-          newColumn = _.without(options, _.findWhere(options, {
-            key: 'systemAdministrator'
-          }
-          ))
-        }
-      }
-    }
-    else if (token.urole === 'dealersv') {
-      newColumn = options.sideBarMenu.Dealersv;
-    }
-    else if (token.urole === 'dealerwhouse') {
-      newColumn = options.sideBarMenu.Dealerwhouse;
-    }
-    else if(token.urole === 'dealerlimited'){
-      newColumn = options.sideBarMenu.Dealerlimited;
-    }
+  //SidebarMenu Desing
+  if (token.urole === 'admin') {
+    newColumn = options.sideBarMenu.Admin;
+  }
+  else if (token.urole === 'fieldmanager') {
+    newColumn = options.sideBarMenu.FieldManager;
+  }
+  else if (token.urole === 'regionmanager') {
+    newColumn = options.sideBarMenu.RegionManager;
+  }
+  else if (token.urole === 'support') {
+    newColumn = options.sideBarMenu.Support;
+  }
+  else if (token.urole === 'director') {
+    newColumn = options.sideBarMenu.Director;
+  }
+  else if (token.urole === 'dealersv') {
+    newColumn = options.sideBarMenu.Dealersv;
+  }
+  else if (token.urole === 'dealerwhouse') {
+    newColumn = options.sideBarMenu.Dealerwhouse;
+  }
+  else if (token.urole === 'dealerlimited') {
+    newColumn = options.sideBarMenu.Dealerlimited;
+  }
   {
     return (
       <SidebarWrapper>
