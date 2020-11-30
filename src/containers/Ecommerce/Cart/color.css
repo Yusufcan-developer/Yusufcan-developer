@@ -13,3 +13,6 @@
   .table-item  {
     text-decoration: line-through;
   }
+  .table-background-color-notification-isRead {
+    background:#ddd
+  }
