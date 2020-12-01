@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import Input, { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message } from "antd";
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message, BackTop } from "antd";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -39,7 +39,7 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 import {
-  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined
+  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined, UpOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
 var jwtDecode = require('jwt-decode');
@@ -68,7 +68,7 @@ const SearchComponent = () => {
   const [palletAmount, setPalletAmount] = useState(0);
   const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
   const [selectedAmout, setSelectedAmount] = useState(0);
-  const [selectedItem,  setSelectedItem] = useState();
+  const [selectedItem, setSelectedItem] = useState();
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
 
   //Page Index,Page Size,Keywor states
@@ -608,7 +608,7 @@ const SearchComponent = () => {
     setSurface([]);
     setKeyword();
     setCampaignCode(false);
-    
+
     if (getProductGroupName !== undefined) {
       let productGroupName = getProductGroupName;
       params.delete('pg');
@@ -620,7 +620,7 @@ const SearchComponent = () => {
         if (productCategories.length > 0) {
           setCategory(productCategories[0]);
         }
-      }      
+      }
     }
     params.delete('keyword');
     params.delete('ut');
@@ -667,12 +667,12 @@ const SearchComponent = () => {
       if (selectedAmout === 0) {
 
         return selectedProduct.quantity;
-      } else { 
-        if(selectedItem===product.itemCode){
-          return selectedAmout; 
+      } else {
+        if (selectedItem === product.itemCode) {
+          return selectedAmout;
         }
-        else{ return selectedProduct.quantity;}
-        }
+        else { return selectedProduct.quantity; }
+      }
     }
   }
 
@@ -779,9 +779,9 @@ const SearchComponent = () => {
             });
           }
         });
-        dispatch(changeProductQuantity(newProductQuantity)); 
+        dispatch(changeProductQuantity(newProductQuantity));
         setSelectedAmount(0);
-        setSelectedPartialAmount(0);      
+        setSelectedPartialAmount(0);
         if (selectedQuantity > 0) {
           // postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + ' Ürün miktarı güncellendi.' + 'Miktar ' + selectedQuantity);
         }
@@ -825,7 +825,7 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
-   
+
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -917,14 +917,24 @@ const SearchComponent = () => {
     <React.Fragment>
       <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
         <PageHeader>Ürün Arama</PageHeader>
-        {newView === 'MobileView' || newView === 'TabletView' ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
+        {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
           className="ant-btn-primary isoAlgoliaSidebarToggle"
           onClick={() => {
             setState({ ...state, collapsed: !state.collapsed });
           }}
         >
           {btnText}
-        </Button> : null}
+        </Button> : null}<Col style={{ width: '100%' }} align="right">
+            {state.collapsed !== true ?
+              <Button shape="circle"
+                onClick={() => {
+                  setState({ ...state, collapsed: !state.collapsed });
+                }}
+              >
+                <CloseOutlined />
+              </Button> : null
+            }
+          </Col></React.Fragment> : null}
         <div className="isoAlgoliaMainWrapper">
           <SidebarWrapper className="isoAlgoliaSidebar">
             {newView === 'MobileView' ?
@@ -935,13 +945,13 @@ const SearchComponent = () => {
               </Col> : null
             }
 
-            <InputSearch placeholder="Ürün kodu veya ürün adı ara" // value={search}
+            <InputSearch placeholder="Ürün kodu veya ürün adı ara"
               onChange={onchangeInputSearch}
               onSearch={onSearch}
               value={keyword}
               onKeyDown={keyPress} />
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id={!!category ? "filter.category" :"filter.category.asterisk"} />} key="0">
+              <Panel header={<IntlMessages id={!!category ? "filter.category" : "filter.category.asterisk"} />} key="0">
                 <RadioGroup onChange={onChangeCategory} options={productCategories}
                   value={category}>
                 </RadioGroup>
@@ -1061,7 +1071,7 @@ const SearchComponent = () => {
             <Row style={{ marginBottom: '10px' }}>
               {newView === 'MobileView' ?
                 null : <Col span={16}>
-                  <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
+                  <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler<SortAscendingOutlined /></Button>
                   <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                   <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
                 </Col>}
@@ -1121,7 +1131,7 @@ const SearchComponent = () => {
                         </span> */}
                         <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
                           {item.canBeSoldPartially ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
-                          <Tooltip trigger={["click","hover"]} title={
+                          <Tooltip trigger={["click", "hover"]} title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />
                               {item.m2Box ? ('1 Kutu: ' + item.m2Box + ' ' + item.unit) : null}{item.m2Box ? <br /> : null}
@@ -1277,6 +1287,7 @@ const SearchComponent = () => {
                       </div>
                     </SingleCardWrapper>
                   ))}
+
                   <Pagination onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
                     pageSize={pageSize}
