@@ -43,19 +43,22 @@ const ProductGroupList = () => {
   let products = localStorage.getItem('cartProductQuantity');
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
-  
+    newView = 'DesktopView';
+  }
+
   TopbarAddtoCart();
   TopbarNotification();
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>
       <Box>
+
         <Row gutter={[24, 16]}>
           {categories.map((item) => (
-            <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-            {/* Seçilen kategori grubuna göre Id alınıp ürün listeleme sayfasına geçiyor.*/}
+            <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              {/* Seçilen kategori grubuna göre Id alınıp ürün listeleme sayfasına geçiyor.*/}
               <Link to={`${'/products/search'}/?pg=${item.Id}`}>
+
                 <Card
                   hoverable
                   style={{ width: 300, marginTop: 16 }}
@@ -68,10 +71,13 @@ const ProductGroupList = () => {
                     />
                   }
                 >
-                  <Meta
+                  {newView === 'MobileView' ? <Meta
+                    style={{ textAlign: 'center' }}
                     title={item.title}
                     description={item.description}
-                  />
+                  /> : <Meta
+                      title={item.title}
+                      description={item.description} />}
                 </Card>
               </Link>
             </Col>
