@@ -469,7 +469,7 @@ const DeliveriesReport = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
@@ -478,14 +478,14 @@ const DeliveriesReport = () => {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
                 />
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input style={{ marginBottom: '8px', width: '250px' }} size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col xs={{ offset: 0, span: 24 }} sm={{ offset: 1, span: 2 }}  >
-                <Button  style={{  width: '100%'}} type="primary" onClick={searchButton}>
+                <Button  style={{  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

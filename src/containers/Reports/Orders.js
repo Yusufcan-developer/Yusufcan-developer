@@ -157,7 +157,7 @@ const OrdersReport = () => {
       }
     });
     onChangeDealerCode(newDealarCode);
-    
+
     return setOnChange(true);
   }
 
@@ -344,7 +344,7 @@ const OrdersReport = () => {
 
   //Excel Oluşturma
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export,logMessage.Reports.Order.exportExcel);
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
 
     ExcelExport(columns, data, 'Siparişler', orderDetailData, OrderDetailcolumns);
   }
@@ -461,7 +461,7 @@ const OrdersReport = () => {
       sorter: (a, b) => (''),
       sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-      render: (orderDate,record) => moment(orderDate).format(siteConfig.dateFormat)+' '+record.orderTimeStr,
+      render: (orderDate, record) => moment(orderDate).format(siteConfig.dateFormat) + ' ' + record.orderTimeStr,
     },
     {
       title: "Cari/DBS",
@@ -645,12 +645,6 @@ const OrdersReport = () => {
                 <Col span={6} >
                   <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
                 </Col>
-                <Col span={6} >
-                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-                </Col>
-
-                <Col span={5} offset={1}>
-                </Col>
               </Row>
               : null}
             <Row>
@@ -664,7 +658,7 @@ const OrdersReport = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
@@ -673,48 +667,44 @@ const OrdersReport = () => {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
                 />
-
-              </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" style={{ marginBottom: '8px', width: '250px' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
-              </Col>
-
-              <Col span={newView !== 'MobileView' ? 5 : 0} offset={newView !== 'MobileView' ? 1 : 0} >
-                <Button type="primary" onClick={searchButton}>
-                  {<IntlMessages id="forms.button.label_Search" />}
-                </Button>
               </Col>
             </Row>
             <Row>
-              <Col span={newView !== 'MobileView' ? 5 : 0} >
+              <Col span={newView !== 'MobileView' ? 6 : 0} >
                 <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} offset={newView !== 'MobileView' ? 2 : 0}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} >
+                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
               </Col>
             </Row>
             <Row>
-              <Select
-                mode={"multiple"}
-                style={{ width: '100%' }}
-                placeholder="Sevk Adresi Seçiniz"
-                style={{ marginBottom: '8px', width: '250px' }}
-                value={address}
-                dropdownMatchSelectWidth={750}
-                onChange={addressHandleChange}
-                filterOption={(input, option) =>
-                  option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-                }
-              >
-                {lookupAddressChildren}
-              </Select>
-              <Col span={newView === 'MobileView' ? 5 : 0} offset={newView === 'MobileView' ? 1 : 0} >
-                <Button type="primary" onClick={searchButton}>
-                  {<IntlMessages id="forms.button.label_Search" />}
-                </Button>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Select
+                  mode={"multiple"}
+                  style={{ width: '100%' }}
+                  placeholder="Sevk Adresi Seçiniz"
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  value={address}
+                  dropdownMatchSelectWidth={750}
+                  onChange={addressHandleChange}
+                  filterOption={(input, option) =>
+                    option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                  }
+                >
+                  {lookupAddressChildren}
+                </Select>
               </Col>
-            </Row>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              </Col>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                {<IntlMessages id="forms.button.label_Search" />}
+              </Button>
+            </Col>
+            </Row>         
           </Panel>
         </Collapse>
       </Box>

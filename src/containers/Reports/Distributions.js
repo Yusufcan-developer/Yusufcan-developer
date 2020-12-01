@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from 'react-router-dom';
+import { NavLink, useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -479,12 +479,7 @@ export default function () {
                 </Col>
                 <Col span={6} >
                   <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-                </Col>
-                <Col span={6} >
-                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-                </Col>
-                <Col span={5} offset={1}>
-                </Col>
+                </Col>                
               </Row>
               : null}
             <Row>
@@ -498,7 +493,7 @@ export default function () {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
@@ -507,29 +502,25 @@ export default function () {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
                 />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
-              </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button type="primary" onClick={searchButton}>
-                  {<IntlMessages id="forms.button.label_Search" />}
-                </Button>
-              </Col>
             </Row>
-            <Row>
-              <Col span={newView !== 'MobileView' ? 5 : 0}>
+            {newView!=='MobileView'?
+            <Row>            
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
                 <FormItem label={<IntlMessages id="page.statusType" />}></FormItem>
               </Col>
-
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
             </Row>
+            :null}
             <Row>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
                   placeholder="Durumu Tipi Seçiniz"
                   onChange={statusTypeHandleChange}
                   value={selectedStatusType}
@@ -537,8 +528,12 @@ export default function () {
                   {children}
                 </Select>
               </Col>
-              <Col span={newView === 'MobileView' ? 5 : 0} offset={newView === 'MobileView' ? 1 : 0} >
-                <Button type="primary" onClick={searchButton}>
+
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Input size="small" placeholder="Anahtar kelime" value={searchKey} style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} onChange={event => setSearchKey(event.target.value)} />
+              </Col>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

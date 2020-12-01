@@ -415,10 +415,11 @@ const MainForm = () => {
                 </Select>
               </Col>
               <Col align={'right'} span={newView !== 'MobileView' ? 1 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-              </Col>
-              <Button type="primary" loading={iconLoading} onClick={dataSearch} >
+              
+              <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={dataSearch} >
                 {<IntlMessages id="forms.button.label_Search" />}
               </Button>
+              </Col>
             </Row>
           </Panel>
         </Collapse>
