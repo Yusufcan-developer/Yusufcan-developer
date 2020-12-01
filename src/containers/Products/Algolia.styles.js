@@ -6,7 +6,7 @@ const WDAlgoliaSearchPageWrapper = styled.div`
   overflow: hidden;
 
   @media only screen and (max-width: 767px) {
-    padding: 50px 15px;
+    padding: 5px 2.5px;
   }
 
   @media only screen and (min-width: 768px) and (max-width: 991px) {

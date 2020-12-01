@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, TreeSelect, Tag, Select } from "antd";
+import { Table, Row, Col, TreeSelect, Tag, Select, BackTop } from "antd";
 
 //Fetch
 import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
@@ -561,7 +561,7 @@ const OrdersReport = () => {
       key: "fieldManager",
     },
   ];
-
+  
   //Hide order table column
   //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
@@ -630,11 +630,11 @@ const OrdersReport = () => {
     }
   }
   return (
-    <LayoutWrapper>
+    <LayoutWrapper>  
       <PageHeader>
         {<IntlMessages id="page.orderFollowUp.header" />}
       </PageHeader>
-      <Box>
+      <Box>      
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {newView !== 'MobileView' ?
@@ -709,7 +709,7 @@ const OrdersReport = () => {
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box >
+      <Box >       
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
@@ -746,7 +746,7 @@ const OrdersReport = () => {
           current={pageIndex}
           position="bottom"
         />
-      </Box>
+      </Box>    
     </LayoutWrapper>
   );
 }
