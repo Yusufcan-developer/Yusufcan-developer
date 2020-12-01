@@ -668,15 +668,13 @@ const UserList = () => {
                 <Col span={6} >
                   <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                 </Col>
-                <Col span={5} offset={1}>
-                </Col>
               </Row>
               : null}
             <Row>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select
                   mode={"multiple"}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Rol seçiniz"
                   value={filterRole}
                   onChange={filterRoleChange}
@@ -685,17 +683,17 @@ const UserList = () => {
                 </Select>
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Select value={isActive} defaultValue={null} style={{ width: 120 }} style={{ marginBottom: '8px', width: '250px' }} onChange={handleChangeIsActive}>
+                <Select value={isActive} defaultValue={null} style={{marginBottom: '8px',  width: newView !== 'MobileView' ? '250px' : '100%' }}  onChange={handleChangeIsActive}>
                   <Option value={null}>Hepsi</Option>
                   <Option value={true}>Açık</Option>
                   <Option value={false}>Kapalı</Option>
                 </Select>
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" style={{marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col offset={1} span={newView !== 'MobileView' ? 5 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button style={{ width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

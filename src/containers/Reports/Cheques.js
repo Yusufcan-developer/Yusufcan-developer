@@ -464,14 +464,14 @@ const ChequesReport = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
               <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Çek Türü Seçiniz"
                   onChange={chequeHandleChange}
                   value={selectedCheckqueType}
@@ -484,31 +484,29 @@ const ChequesReport = () => {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
             </Row>
             {newView!=='MobileView'?
             <Row>
-              <Col span={5}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
                 <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
               </Col>
-              <Col span={5} offset={1}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={6} offset={2}>
               </Col>
             </Row>
             :null}
             <Row>
-              <Col span={newView!=='MobileView'?5:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Input size="small" placeholder="Seri No" value={serialNumber} onChange={event => setSerialNumber([event.target.value])} />
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} value={serialNumber} onChange={event => setSerialNumber([event.target.value])} />
               </Col>
-              <Col span={newView!=='MobileView'?5:0} offset={1} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={5} align="right">
-                <Button type="primary" onClick={searchButton}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }}  type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

@@ -58,7 +58,7 @@ export default function () {
     filteredInfo: ""
   });
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(2);
+  const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
@@ -324,218 +324,212 @@ export default function () {
       })
       .then(data => {
         if (data !== 'Unauthorized1') {
-          countControl+=1;
+          countControl += 1;
           if (multipleIdPost) {
-            if (countControl === selectedItemsId.length){
-              countControl=0;
-              window.location.reload(true);              
+            if (countControl === selectedItemsId.length) {
+              countControl = 0;
+              window.location.reload(true);
+            }
           }
         }
-      }
       })
-      .catch ();
-}
-async function multiplePostNotificationIsRead() {
-  _.each(selectedItemsId, (item) => {
-    postNotificationIsread(item, true);
-  });
-}
-function selectedNotification(item) {
-  postNotificationIsread(item.id);
-  Modal.info({
-    okText: 'Tamam',
-    width: 500,
-    title: item.notificationTypeName,
-    content: (
-      <div>
-        <br />
-        <p>{(moment(item.createdOn).format(siteConfig.dateFormatAddTime))}</p>
-        <br />
-        <p>{item.description}</p>
-      </div>
-    ),
-    onOk() { window.location.reload(true); },
-  });
-}
-// rowSelection object indicates the need for row selection
-const rowSelection = {
-  onSelect: (record, selected, selectedRows) => {
-    let selectedIds = []
-    if (selectedRows.length > 0) {
-      _.each(selectedRows, (item) => {
-        if (item !== undefined) {
-          selectedIds.push(item.id);
-        }
-      });
-      setSelectedItemsId(selectedIds);
-      selectedTotalCount = selectedIds.length;
-      setHasSelected(true);
+      .catch();
+  }
+  async function multiplePostNotificationIsRead() {
+    _.each(selectedItemsId, (item) => {
+      postNotificationIsread(item, true);
+    });
+  }
+  function selectedNotification(item) {
+    if (!item.isRead) {
+      postNotificationIsread(item.id);
     }
-    else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
-  },
-  onSelectAll: (record, selected, selectedRows) => {
-    let selectedIds = []
-    if (record) {
-      _.each(selectedRows, (item) => {
-        selectedIds.push(item.id);
-      });
+    Modal.info({
+      okText: 'Tamam',
+      width: 500,
+      title: item.notificationTypeName,
+      content: (
+        <div>
+          <br />
+          <p>{(moment(item.createdOn).format(siteConfig.dateFormatAddTime))}</p>
+          <br />
+          <p>{item.description}</p>
+        </div>
+      ),
+      onOk() { if (!item.isRead) { window.location.reload(true); } },
+    });
+  }
+  // rowSelection object indicates the need for row selection
+  const rowSelection = {
+    onSelect: (record, selected, selectedRows) => {
+      let selectedIds = []
       if (selectedRows.length > 0) {
+        _.each(selectedRows, (item) => {
+          if (item !== undefined) {
+            selectedIds.push(item.id);
+          }
+        });
         setSelectedItemsId(selectedIds);
         selectedTotalCount = selectedIds.length;
         setHasSelected(true);
       }
+      else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+    },
+    onSelectAll: (record, selected, selectedRows) => {
+      let selectedIds = []
+      if (record) {
+        _.each(selectedRows, (item) => {
+          selectedIds.push(item.id);
+        });
+        if (selectedRows.length > 0) {
+          setSelectedItemsId(selectedIds);
+          selectedTotalCount = selectedIds.length;
+          setHasSelected(true);
+        }
+      }
+      else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
     }
-    else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
-  }
-};
-return (
-  <LayoutWrapper>
-    <PageHeader>
-      {<IntlMessages id="page.notification.header" />}
-    </PageHeader>
-    <Box>
-      <Collapse accordion>
-        <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView !== 'MobileView' ?
+  };
+  return (
+    <LayoutWrapper>
+      <PageHeader>
+        {<IntlMessages id="page.notification.header" />}
+      </PageHeader>
+      <Box>
+        <Collapse accordion>
+          <Panel header={<IntlMessages id="page.filtered" />} key="0">
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.isReadStatus" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.isReadStatus" />}></FormItem>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Select
+                  showSearch
+                  mode="single"
+                  dropdownMatchSelectWidth={200}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  placeholder="Bildirim Durumu Seçiniz"
+                  optionFilterProp="children"
+                  value={selectedIsRead}
+                  onChange={statusHandleChange}
+                >
+                  <Option value={true} label="Okundu">
+                    <div className="demo-option-label-item">
+                      Okundu
+      </div>
+                  </Option>
+                  <Option value={false} label="Okunmadı">
+                    <div className="demo-option-label-item">
+                      Okunmadı
+      </div>
+                  </Option>
+                  <Option value={null} label="Hepsi">
+                    <div className="demo-option-label-item">
+                      Hepsi
+      </div>
+                  </Option>
+                </Select>
               </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <RangePicker
+                  format={siteConfig.dateFormat}
+                  onChange={changeTimePicker}
+                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                />
               </Col>
             </Row>
-            : null}
-          <Row>
-            <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-              <Select
-                showSearch
-                mode="single"
-                dropdownMatchSelectWidth={200}
-                style={{ marginBottom: '8px', width: '250px' }}
-                placeholder="Bildirim Durumu Seçiniz"
-                optionFilterProp="children"
-                value={selectedIsRead}
-                onChange={statusHandleChange}
-              >
-                <Option value={true} label="Okundu">
-                  <div className="demo-option-label-item">
-                    Okundu
-      </div>
-                </Option>
-                <Option value={false} label="Okunmadı">
-                  <div className="demo-option-label-item">
-                    Okunmadı
-      </div>
-                </Option>
-                <Option value={null} label="Hepsi">
-                  <div className="demo-option-label-item">
-                    Hepsi
-      </div>
-                </Option>
-              </Select>
-            </Col>
-            <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-              <RangePicker
-                format={siteConfig.dateFormat}
-                onChange={changeTimePicker}
-                defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                style={{ marginBottom: '8px', width: '250px' }}
-              />
-            </Col>
-            <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-              <Input size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
-            </Col>
-            <Col span={newView !== 'MobileView' ? 5 : 0} offset={newView !== 'MobileView' ? 1 : 0} >
-              <Button type="primary" onClick={searchButton}>
-                {<IntlMessages id="forms.button.label_Search" />}
-              </Button>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={newView !== 'MobileView' ? 6 : 0} >
-              <FormItem label={<IntlMessages id="page.notificationTypes" />}></FormItem>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-              <Select
-                mode="multiple"
-                style={{ marginBottom: '8px', width: '320px' }}
-                placeholder="Bildirim Tipi Seçiniz"
-                onChange={notificationTypeHandleChange}
-                value={selectedNotificationType}
-              >
-                {lookUpNotificationType}
-              </Select>
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                  <FormItem label={<IntlMessages id="page.notificationTypes" />}></FormItem>
+                </Col>
+                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+              </Row> : null}
+            <Row>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Select
+                  mode="multiple"
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '320px' : '100%' }}
+                  placeholder="Bildirim Tipi Seçiniz"
+                  onChange={notificationTypeHandleChange}
+                  value={selectedNotificationType}
+                >
+                  {lookUpNotificationType}
+                </Select>
 
-            </Col>
-            <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-              <Col span={newView === 'MobileView' ? 5 : 0} offset={newView === 'MobileView' ? 1 : 0} >
-                <Button type="primary" onClick={searchButton}>
+              </Col>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              </Col>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Col>
-          </Row>
-        </Panel>
-      </Collapse>
-    </Box>
-    {/* Data list volume */}
-    <Box>
-      <Col span={8} offset={16} align="right" >
-        <Button type="primary" size="small" style={{ marginBottom: '5px' }}
-          icon={<DownloadOutlined />} onClick={exportExcelButton}>
-          {<IntlMessages id="forms.button.exportExcel" />}
-        </Button>
-      </Col>
-      <ReportPagination
-        onShowSizeChange={onShowSizeChange}
-        onChange={currentPageChange}
-        pageSize={pageSize}
-        total={totalDataCount}
-        current={pageIndex}
-        position="top"
-      />
-      <div style={{ marginBottom: 16 }}>
-        <Button type="primary" disabled={!hasSelected} loading={selectAllLoading} onClick={() => (multiplePostNotificationIsRead())}>
-          Okundu Olarak İşaretle
+            </Row>
+          </Panel>
+        </Collapse>
+      </Box>
+      {/* Data list volume */}
+      <Box>
+        <Col span={8} offset={16} align="right" >
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
+            icon={<DownloadOutlined />} onClick={exportExcelButton}>
+            {<IntlMessages id="forms.button.exportExcel" />}
           </Button>
-        <span style={{ marginLeft: 8 }}>
-          {hasSelected ? `${selectedTotalCount} Öğe seçildi` : ''}
-        </span>
-      </div>
-      <Table
-        columns={columns}
-        dataSource={dataAddKeyValue}
-        onChange={handleChange}
-        loading={loading}
-        pagination={false}
-        scroll={{ x: 'max-content' }}
-        size="medium"
-        bordered={false}
-        rowSelection={{
-          ...rowSelection
-        }}
-        rowClassName={(record, index) => (record.isRead === true ? 'black' : "table-background-color-notification-isRead")}
-        onRow={(record) => ({
-          onClick: () => (selectedNotification(record))
-        })}
-      />
-      <ReportPagination
-        onShowSizeChange={onShowSizeChange}
-        onChange={currentPageChange}
-        pageSize={pageSize}
-        total={totalDataCount}
-        current={pageIndex}
-        position="bottom"
-      />
-    </Box>
-  </LayoutWrapper>
-);
+        </Col>
+        <ReportPagination
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          pageSize={pageSize}
+          total={totalDataCount}
+          current={pageIndex}
+          position="top"
+        />
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" disabled={!hasSelected} loading={selectAllLoading} onClick={() => (multiplePostNotificationIsRead())}>
+            Okundu Olarak İşaretle
+          </Button>
+          <span style={{ marginLeft: 8 }}>
+            {hasSelected ? `${selectedTotalCount} Öğe seçildi` : ''}
+          </span>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={dataAddKeyValue}
+          onChange={handleChange}
+          loading={loading}
+          pagination={false}
+          scroll={{ x: 'max-content' }}
+          size="medium"
+          bordered={false}
+          rowSelection={{
+            ...rowSelection
+          }}
+          rowClassName={(record, index) => (record.isRead === true ? 'black' : "table-background-color-notification-isRead")}
+          onRow={(record) => ({
+            onClick: () => (selectedNotification(record))
+          })}
+        />
+        <ReportPagination
+          onShowSizeChange={onShowSizeChange}
+          onChange={currentPageChange}
+          pageSize={pageSize}
+          total={totalDataCount}
+          current={pageIndex}
+          position="bottom"
+        />
+      </Box>
+    </LayoutWrapper>
+  );
 }
