@@ -45,12 +45,22 @@ export default function TopbarAddtoCart() {
     loadingInitData,
     viewTopbarCart,
   } = useSelector(state => state.Ecommerce);
+  // let newView = 'MobileView';
+  // if (window.innerWidth > 1220) {
+  //   newView = 'DesktopView';
+  // }
+  let newView = 'MobileView';
+  if (window.innerWidth > 768) {
+    newView = 'DesktopView';
+  }
+
   function hide() {
     dispatch(changeViewTopbarCart(false));
   }
   function handleVisibleChange() {
     dispatch(changeViewTopbarCart(!viewTopbarCart));
   }
+
   //Get Cart
   async function getCartList() {
     let productInfo;
@@ -90,7 +100,7 @@ export default function TopbarAddtoCart() {
 
           updateTopbarCartItemTotal = _.reduce(reduxCart, (memo, item) => {
             return memo + item.quantity;
-        }, 0);
+          }, 0);
         }
         else { setQuantity(0) }
       })
@@ -104,13 +114,13 @@ export default function TopbarAddtoCart() {
   function renderProducts() {
 
     //Topbar kontrolünün birden fazla çalışmasını engelleme miktar kontrolleri.
-  
+
     let productQuantity = localStorage.getItem('cartProductQuantity');
     productQuantity = JSON.parse(productQuantity);
 
     const reduxCartItemTotal = _.reduce(productQuantity, (memo, item) => {
       return memo + item.quantity;
-  }, 0);
+    }, 0);
 
     if (reduxCartItemTotal !== topbarItemCartLastTotal) {
       getCartList();
@@ -191,9 +201,8 @@ export default function TopbarAddtoCart() {
       </div>
       <div className="isoDropdownFooterLinks">
         <Link to={`${url}/cart`} onClick={hide}>
-          <IntlMessages id="topbar.viewCart" />
+          {newView === 'MobileView' ? <span style={{ fontWeight: 'Bold', fontSize: '80%' }}>Sepeti görüntüle</span> : <IntlMessages id="topbar.viewCart" />}
         </Link>
-
         <h3>
           <IntlMessages id="topbar.totalPrice" />:{' '}
           <span>{numberFormat(totalPrice)} TL</span>

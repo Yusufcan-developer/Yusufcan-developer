@@ -683,17 +683,18 @@ const UserList = () => {
                 </Select>
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Select value={isActive} defaultValue={null} style={{marginBottom: '8px',  width: newView !== 'MobileView' ? '250px' : '100%' }}  onChange={handleChangeIsActive}>
+                <Select value={isActive} defaultValue={null} style={{marginBottom: '6px',  width: newView !== 'MobileView' ? '250px' : '100%' }}  onChange={handleChangeIsActive}>
                   <Option value={null}>Hepsi</Option>
                   <Option value={true}>Açık</Option>
                   <Option value={false}>Kapalı</Option>
                 </Select>
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={newView !== 'MobileView' ? 8 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Input placeholder="Anahtar kelime" style={{marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
+
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button style={{ width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton}>
+                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

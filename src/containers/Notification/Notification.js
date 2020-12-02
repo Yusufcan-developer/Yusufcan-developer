@@ -223,7 +223,6 @@ export default function () {
       title: "Okundu Durumu",
       dataIndex: "isRead",
       key: "isRead",
-      width: 180,
       render: isRead => (
         <>
           {!isRead ? (
@@ -242,7 +241,6 @@ export default function () {
       title: "Oluşturan",
       dataIndex: "createdByUserId",
       key: "createdByUserId",
-      width: 120,
     },
     {
       title: "Oluşturulma Tarihi",
@@ -510,7 +508,8 @@ export default function () {
           onChange={handleChange}
           loading={loading}
           pagination={false}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 'calc(700px + 50%)' }}
+          // scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
           rowSelection={{
