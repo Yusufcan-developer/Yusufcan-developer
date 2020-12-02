@@ -177,6 +177,13 @@ export default function () {
     dataSearch();
   };
 
+    //Keyword 'Enter' search
+    const keyPress = e => {
+      if (e.keyCode === 13) {
+        dataSearch();
+      }
+    }
+    
   //Change DealerCode
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
@@ -433,7 +440,7 @@ export default function () {
                 />
               </Col>
               <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Input size="small" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} placeholder="Anahtar kelime" value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
                 <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary"  onClick={searchButton}>

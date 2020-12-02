@@ -84,28 +84,28 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-  usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource,"logTypes": selectedLogType,"userIds": userIds, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  }, searchUrl);
+    usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource, "logTypes": selectedLogType, "userIds": userIds, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
- //Kullanıcı listesi
- const [userData] =
- useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": null, "roleNames": roleNames, "pageIndex": 0, "pageCount": 10000000 });
+  //Kullanıcı listesi
+  const [userData] =
+    useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": null, "roleNames": roleNames, "pageIndex": 0, "pageCount": 10000000 });
   const lookupDealerChildren = [];
   _.each(userData, (item, i) => {
-    lookupDealerChildren.push(<Option key={item.id}>{ item.firstName===''?item.username + '-'+item.title: item.username + '-' + item.firstName +' '+item.lastName}</Option>);
+    lookupDealerChildren.push(<Option key={item.id}>{item.firstName === '' ? item.username + '-' + item.title : item.username + '-' + item.firstName + ' ' + item.lastName}</Option>);
   });
 
   //Log Tipleri
   const [logTypeData] = useFilterData(`${siteConfig.api.security.getLogTypes}`, searchUrl);
   const lookUpLogType = [];
   _.each(logTypeData, (item) => {
-    lookUpLogType.push(<Option key={item.Key}>{ item.Value}</Option>);
+    lookUpLogType.push(<Option key={item.Key}>{item.Value}</Option>);
   });
 
   //Log Source
   const [logSourceData] = useFilterData(`${siteConfig.api.security.getLogSources}`, searchUrl);
   const lookUpLogSource = [];
   _.each(logSourceData, (item) => {
-    lookUpLogSource.push(<Option key={item.Key}>{ item.Value}</Option>);
+    lookUpLogSource.push(<Option key={item.Key}>{item.Value}</Option>);
   });
 
   //Url'i çözümleme işlemi
@@ -114,13 +114,13 @@ export default function () {
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
-    
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+
     let type = [];
     if (parsed.type !== undefined) {
       if (Array.isArray(parsed.type)) {
@@ -153,8 +153,8 @@ export default function () {
     setUserIds(user);
 
     return setOnChange(true);
-    }
-  
+  }
+
   function dealerCodeHandleChange(value) {
     let userObj = [];
     const params = new URLSearchParams(location.search);
@@ -169,13 +169,14 @@ export default function () {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
-    if (value.length === 0) { setNewUrlParams(''); params.delete('user'); setUserIds(userObj);}
+    if (value.length === 0) { setNewUrlParams(''); params.delete('user'); setUserIds(userObj); }
     else {
       _.filter(value, function (item) {
         userObj.push(parseInt(item)); params.append('user', item); params.toString();
-      });}
-      setUserIds(userObj);
-      setNewUrlParams(params.toString());
+      });
+    }
+    setUserIds(userObj);
+    setNewUrlParams(params.toString());
   }
 
   //Get Search Data
@@ -196,11 +197,11 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if (sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
-    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString();}
+    if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -214,11 +215,11 @@ export default function () {
   };
 
 
- //Change from and To date
- function changeTimePicker(value, dateString) {
-  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-}
+  //Change from and To date
+  function changeTimePicker(value, dateString) {
+    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
 
   const handleChange = (pagination, filters, sorter) => {
     setState({
@@ -228,11 +229,11 @@ export default function () {
     });
     if (sorter !== undefined) {
       if (sorter.order === "descend") {
-        sortingOrder='DESC';
-      } else { sortingOrder='ASC'; }
-    
-    sortingField=sorter.field;
-    dataSearch()
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
     }
   };
 
@@ -264,13 +265,14 @@ export default function () {
     params.delete('sortingField');
     params.delete('sortingOrder');
 
-    if (value.length === 0) { setNewUrlParams(''); params.delete('source'); setSelectedLogSource(sourceObj);}
+    if (value.length === 0) { setNewUrlParams(''); params.delete('source'); setSelectedLogSource(sourceObj); }
     else {
       _.filter(value, function (item) {
         sourceObj.push(item); params.append('source', item); params.toString();
-      });}
-      setSelectedLogSource(sourceObj);
-      setNewUrlParams(params.toString());
+      });
+    }
+    setSelectedLogSource(sourceObj);
+    setNewUrlParams(params.toString());
   }
   //Change Log Type
   function logTypeHandleChange(value) {
@@ -286,13 +288,14 @@ export default function () {
     params.delete('sortingField');
     params.delete('sortingOrder');
 
-    if (value.length === 0) { setNewUrlParams(''); params.delete('type'); setSelectedLogType(typeObj);}
+    if (value.length === 0) { setNewUrlParams(''); params.delete('type'); setSelectedLogType(typeObj); }
     else {
       _.filter(value, function (item) {
         typeObj.push(item); params.append('type', item); params.toString();
-      });}
-      setSelectedLogType(typeObj);
-      setNewUrlParams(params.toString());
+      });
+    }
+    setSelectedLogType(typeObj);
+    setNewUrlParams(params.toString());
   }
   let columns = [
     {
@@ -340,7 +343,7 @@ export default function () {
       dataIndex: "ipAddress",
       key: "ipAddress",
     },
-    
+
   ];
 
   //Hide order table column
@@ -379,6 +382,12 @@ export default function () {
       }
     }
   }
+  //Keyword 'Enter' search
+  const keyPress = e => {
+    if (e.keyCode === 13) {
+      dataSearch();
+    }
+  }
   //Excel Oluşturma
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Kullanıcı Olay Günlügü');
@@ -391,61 +400,61 @@ export default function () {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.users" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.users" />}></FormItem>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Select
+                  showSearch
+                  mode="multiple"
+                  dropdownMatchSelectWidth={500}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  placeholder="Kullanıcı Seçiniz"
+                  optionFilterProp="children"
+                  value={userIds}
+                  onChange={dealerCodeHandleChange}
+                  filterOption={(input, option) =>
+                    option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {lookupDealerChildren}
+                </Select>
               </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-              <Select
-              showSearch
-              mode="multiple"
-              dropdownMatchSelectWidth={500}
-              style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
-              placeholder="Kullanıcı Seçiniz"
-              optionFilterProp="children"
-              value={userIds}
-              onChange={dealerCodeHandleChange}
-              filterOption={(input, option) =>
-                option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {lookupDealerChildren}
-            </Select>
-              </Col>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
             </Row>
             <Row>
-              <Col span={newView!=='MobileView'?6:0} >
+              <Col span={newView !== 'MobileView' ? 6 : 0} >
                 <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
               </Col>
-              <Col span={newView!=='MobileView'?6:0} >
+              <Col span={newView !== 'MobileView' ? 6 : 0} >
                 <FormItem label={<IntlMessages id="page.logSources" />}></FormItem>
               </Col>
             </Row>
             <Row>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
@@ -455,9 +464,9 @@ export default function () {
                 >
                   {lookUpLogType}
                 </Select>
-              
+
               </Col>
-              <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
@@ -469,12 +478,12 @@ export default function () {
                 </Select>
 
               </Col>
-                <Col span={newView!=='MobileView'?6:0} md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
-            </Row>           
+            </Row>
           </Panel>
         </Collapse>
       </Box>

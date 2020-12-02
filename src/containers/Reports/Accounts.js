@@ -33,7 +33,7 @@ import ExcelExport from "./ExcelExport";
 import moment from 'moment';
 import enumerations from "../../config/enumerations";
 import logMessage from "../../config/logMessage";
-import 'moment/locale/tr' 
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -47,7 +47,8 @@ export default function () {
   document.title = "Cari Kayıtlar - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
@@ -70,7 +71,7 @@ export default function () {
 
   //Burada ki useEffect'ler page index page size göre verileri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Browse,logMessage.Reports.Accounts.browse);
+    postSaveLog(enumerations.LogSource.ReportAccounts, enumerations.LogTypes.Browse, logMessage.Reports.Accounts.browse);
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -78,10 +79,10 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.security.postAccounts}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
+    useFetch(`${siteConfig.api.security.postAccounts}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
@@ -89,12 +90,12 @@ export default function () {
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -138,7 +139,7 @@ export default function () {
       }
     });
     onChangeDealerCode(newDealarCode);
-    
+
     return setOnChange(true);
   }
 
@@ -161,23 +162,30 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if(sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-    
+
     return setOnChange(true);
   }
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Browse,logMessage.Reports.Accounts.search);
+    postSaveLog(enumerations.LogSource.ReportAccounts, enumerations.LogTypes.Browse, logMessage.Reports.Accounts.search);
     dataSearch();
   };
+
+  //Keyword 'Enter' search
+  const keyPress = e => {
+    if (e.keyCode === 13) {
+      dataSearch();
+    }
+  }
 
   //Change DealerCode
   function onChangeDealerCode(value) {
@@ -210,14 +218,14 @@ export default function () {
     }
   };
 
- //Change from and To date
- function changeTimePicker(value, dateString) {
-  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-}
+  //Change from and To date
+  function changeTimePicker(value, dateString) {
+    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
 
-   //Search DailerName Tree Select Component
-   function filterTreeNodeDealerCode(value, treeNode) {
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
@@ -225,7 +233,7 @@ export default function () {
     }
     return false;
   }
-  
+
   const handleChange = (pagination, filters, sorter) => {
     setState({
       ...tableOptions,
@@ -234,11 +242,11 @@ export default function () {
     });
     if (sorter !== undefined) {
       if (sorter.order === "descend") {
-        sortingOrder='DESC';
-      } else { sortingOrder='ASC'; }
-    
-    sortingField=sorter.field;
-    dataSearch()
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
     }
   };
 
@@ -304,7 +312,7 @@ export default function () {
       title: "Saha Yöneticisi",
       dataIndex: "fieldManager",
       key: "fieldManager"
-    },   
+    },
     {
       title: "Bakiye",
       dataIndex: "balance",
@@ -329,17 +337,17 @@ export default function () {
       render: (financialStatus) => (
         <>
           {financialStatus === 9 ? (
-               (<Tag color={'Red'} key={financialStatus}>
-                {financialStatus}
-              </Tag>)
-            
+            (<Tag color={'Red'} key={financialStatus}>
+              {financialStatus}
+            </Tag>)
+
           ) : (
-            <Tag color={'Grey'} key={financialStatus}>
+              <Tag color={'Grey'} key={financialStatus}>
                 {financialStatus}
               </Tag>)}
         </>
       ),
-    },    
+    },
     {
       title: "Adres",
       dataIndex: "address",
@@ -406,7 +414,7 @@ export default function () {
 
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccounts,enumerations.LogTypes.Export,logMessage.Reports.Accounts.exportExcel);
+    postSaveLog(enumerations.LogSource.ReportAccounts, enumerations.LogTypes.Export, logMessage.Reports.Accounts.exportExcel);
     ExcelExport(columns, data, 'Cari Kayıtlar');
   }
   return (
@@ -417,23 +425,23 @@ export default function () {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -443,23 +451,23 @@ export default function () {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Input size="small" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}  placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Input size="small" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} placeholder="Anahtar kelime" value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
-                <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

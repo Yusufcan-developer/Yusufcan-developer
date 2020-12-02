@@ -229,6 +229,12 @@ const OrdersReport = () => {
     dataSearch();
   };
 
+  //Keyword 'Enter' search
+  const keyPress = e => {
+    if (e.keyCode === 13) {
+      dataSearch();
+    }
+  }
   //Change DealerCode
   async function onChangeDealerCode(value) {
     let fieldArrObj = [];
@@ -561,7 +567,7 @@ const OrdersReport = () => {
       key: "fieldManager",
     },
   ];
-  
+
   //Hide order table column
   //Get Token and Token Decode
   const token = jwtDecode(localStorage.getItem("id_token"));
@@ -630,11 +636,11 @@ const OrdersReport = () => {
     }
   }
   return (
-    <LayoutWrapper>  
+    <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.orderFollowUp.header" />}
       </PageHeader>
-      <Box>      
+      <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {newView !== 'MobileView' ?
@@ -658,7 +664,7 @@ const OrdersReport = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
@@ -667,7 +673,7 @@ const OrdersReport = () => {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
             </Row>
@@ -685,7 +691,7 @@ const OrdersReport = () => {
                   mode={"multiple"}
                   style={{ width: '100%' }}
                   placeholder="Sevk Adresi Seçiniz"
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                   value={address}
                   dropdownMatchSelectWidth={750}
                   onChange={addressHandleChange}
@@ -697,19 +703,19 @@ const OrdersReport = () => {
                 </Select>
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-              <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
-                {<IntlMessages id="forms.button.label_Search" />}
-              </Button>
-            </Col>
-            </Row>         
+                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                  {<IntlMessages id="forms.button.label_Search" />}
+                </Button>
+              </Col>
+            </Row>
           </Panel>
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box >       
+      <Box >
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
@@ -746,7 +752,7 @@ const OrdersReport = () => {
           current={pageIndex}
           position="bottom"
         />
-      </Box>    
+      </Box>
     </LayoutWrapper>
   );
 }

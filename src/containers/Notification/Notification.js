@@ -166,7 +166,12 @@ export default function () {
   const searchButton = () => {
     dataSearch();
   };
-
+   //Keyword 'Enter' search
+   const keyPress = e => {
+    if (e.keyCode === 13) {
+      dataSearch();
+    }
+  }
   //Change from and To date
   function changeTimePicker(value, dateString) {
     setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
@@ -467,7 +472,7 @@ export default function () {
 
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
