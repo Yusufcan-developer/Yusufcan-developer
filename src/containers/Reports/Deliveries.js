@@ -72,7 +72,7 @@ const DeliveriesReport = () => {
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse,logMessage.Reports.Deliveries.browse);
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, logMessage.Reports.Deliveries.browse);
     setCurrentPage(pageIndex);
     getVariablesFromUrl();
   }, [pageIndex]);
@@ -138,7 +138,7 @@ const DeliveriesReport = () => {
       }
     });
     onChangeDealerCode(newDealarCode);
-    
+
     return setOnChange(true);
   }
 
@@ -175,10 +175,16 @@ const DeliveriesReport = () => {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse,logMessage.Reports.Deliveries.search);
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, logMessage.Reports.Deliveries.search);
     dataSearch();
   };
 
+  //Keyword 'Enter' search
+  const keyPress = e => {
+    if (e.keyCode === 13) {
+      dataSearch();
+    }
+  }
   //Change DealerCode
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
@@ -258,7 +264,7 @@ const DeliveriesReport = () => {
 
   //Excel Oluşturma
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export,logMessage.Reports.Deliveries.exportExcel);
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
     ExcelExport(columns, data, 'Sevkiyatlar');
   }
 
@@ -469,7 +475,7 @@ const DeliveriesReport = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
@@ -478,14 +484,14 @@ const DeliveriesReport = () => {
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} size="small" placeholder="Anahtar kelime" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} size="small" placeholder="Anahtar kelime" value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col xs={{ offset: 0, span: 24 }} sm={{ offset: 1, span: 2 }}  >
-                <Button  style={{  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                <Button style={{ width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

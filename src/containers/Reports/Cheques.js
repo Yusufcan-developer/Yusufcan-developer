@@ -47,7 +47,8 @@ const ChequesReport = () => {
   document.title = "Çekler - Seramiksan B2B";
   let newView = 'MobileView';
   if (window.innerWidth > 1220) {
-    newView = 'DesktopView';}
+    newView = 'DesktopView';
+  }
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
@@ -60,7 +61,7 @@ const ChequesReport = () => {
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(new Date()));
-  const [toDate, setToDate] =useState(moment(moment().add(6, 'months').toDate()));
+  const [toDate, setToDate] = useState(moment(moment().add(6, 'months').toDate()));
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
@@ -74,7 +75,7 @@ const ChequesReport = () => {
 
   //Burada ki useEffect'ler page index page size değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Browse,'Çek ve Senet raporu listeleme');
+    postSaveLog(enumerations.LogSource.ReportCheques, enumerations.LogTypes.Browse, 'Çek ve Senet raporu listeleme');
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -87,13 +88,13 @@ const ChequesReport = () => {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+  const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Çek Tipleri
-  const [chequeTypeData] = useFilterData(`${siteConfig.api.lookup.getChequeTypes}`,searchUrl);
+  const [chequeTypeData] = useFilterData(`${siteConfig.api.lookup.getChequeTypes}`, searchUrl);
   for (let i = 0; i < chequeTypeData.length; i++) {
     children.push(<Option key={chequeTypeData[i]}>{chequeTypeData[i]}</Option>);
   }
@@ -104,13 +105,13 @@ const ChequesReport = () => {
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.sno !== undefined) { setSerialNumber([parsed.sno]); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
 
     let checkType = [];
     if (parsed.type !== undefined) {
@@ -167,14 +168,14 @@ const ChequesReport = () => {
       }
     });
     onChangeDealerCode(newDealarCode);
-    
+
     return setOnChange(true);
   }
 
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-
+    
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -192,12 +193,12 @@ const ChequesReport = () => {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if(sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    if (serialNumber) { params.append('sno', serialNumber); params.toString(); }
+    if (serialNumber[0]!=='') { params.append('sno', serialNumber); params.toString(); }
 
     _.filter(selectedCheckqueType, function (item) {
       params.append('type', item); params.toString();
@@ -206,15 +207,22 @@ const ChequesReport = () => {
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-    
+
     return setOnChange(true);
   }
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Browse,'Çek ve Senet raporu yeni arama');
+    postSaveLog(enumerations.LogSource.ReportCheques, enumerations.LogTypes.Browse, 'Çek ve Senet raporu yeni arama');
     dataSearch();
   };
+
+  //Keyword 'Enter' search
+  const keyPress = e => {
+    if (e.keyCode === 13) {
+      dataSearch();
+    }
+  }
 
   //Change DealerCode
   function onChangeDealerCode(value) {
@@ -229,7 +237,7 @@ const ChequesReport = () => {
     params.delete('to');
     params.delete('type');
     params.delete('keyword');
-    params.delete('serialNumber');
+    params.delete('sno');
     params.delete('ctype');
     params.delete('pgsize');
     params.delete('pgindex');
@@ -250,11 +258,11 @@ const ChequesReport = () => {
     }
   };
 
- //Change from and To date
- function changeTimePicker(value, dateString) {
-  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-}
+  //Change from and To date
+  function changeTimePicker(value, dateString) {
+    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
 
   //Change Cheques Type
   function chequeHandleChange(value) {
@@ -279,11 +287,11 @@ const ChequesReport = () => {
     });
     if (sorter !== undefined) {
       if (sorter.order === "descend") {
-        sortingOrder='DESC';
-      } else { sortingOrder='ASC'; }
-    
-    sortingField=sorter.field;
-    dataSearch()
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
     }
   };
 
@@ -295,7 +303,7 @@ const ChequesReport = () => {
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
@@ -316,7 +324,7 @@ const ChequesReport = () => {
       title: "Türü",
       dataIndex: "type",
       key: "type",
-      footerKey:'Genel Toplam',
+      footerKey: 'Genel Toplam',
     },
     {
       title: "Tutar",
@@ -428,7 +436,7 @@ const ChequesReport = () => {
 
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportCheques,enumerations.LogTypes.Export,logMessage.Reports.Cheques.excelExport);
+    postSaveLog(enumerations.LogSource.ReportCheques, enumerations.LogTypes.Export, logMessage.Reports.Cheques.excelExport);
     ExcelExport(columns, data, 'Çek-Senet');
   }
 
@@ -440,21 +448,21 @@ const ChequesReport = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.chequesType" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.chequesType" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -468,7 +476,7 @@ const ChequesReport = () => {
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
@@ -479,7 +487,7 @@ const ChequesReport = () => {
                   {children}
                 </Select>
               </Col>
-              <Col span={newView!=='MobileView'?6:0}  md={newView!=='MobileView'?null:12} sm={newView!=='MobileView'?null:12} xs={newView!=='MobileView'?null:24}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
@@ -488,25 +496,25 @@ const ChequesReport = () => {
                 />
               </Col>
             </Row>
-            {newView!=='MobileView'?
+            {newView !== 'MobileView' ?
+              <Row>
+                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                  <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
+                </Col>
+                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+              </Row>
+              : null}
             <Row>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
+                <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={serialNumber} onKeyDown={keyPress} onChange={event => setSerialNumber([event.target.value])} />
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} value={serialNumber} onChange={event => setSerialNumber([event.target.value])} />
-              </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'  }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }}  type="primary" onClick={searchButton}>
+                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -541,7 +549,7 @@ const ChequesReport = () => {
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data ,false ,aggregatesOverall,true)
+            return renderFooter(columns, data, false, aggregatesOverall, true)
           }}
         />
         <ReportPagination
