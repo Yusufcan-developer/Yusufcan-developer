@@ -45,15 +45,7 @@ export default function TopbarAddtoCart() {
     loadingInitData,
     viewTopbarCart,
   } = useSelector(state => state.Ecommerce);
-  // let newView = 'MobileView';
-  // if (window.innerWidth > 1220) {
-  //   newView = 'DesktopView';
-  // }
-  let newView = 'MobileView';
-  if (window.innerWidth > 768) {
-    newView = 'DesktopView';
-  }
-
+  
   function hide() {
     dispatch(changeViewTopbarCart(false));
   }
@@ -201,7 +193,7 @@ export default function TopbarAddtoCart() {
       </div>
       <div className="isoDropdownFooterLinks">
         <Link to={`${url}/cart`} onClick={hide}>
-          {newView === 'MobileView' ? <span style={{ fontWeight: 'Bold', fontSize: '80%' }}>Sepeti görüntüle</span> : <IntlMessages id="topbar.viewCart" />}
+        <IntlMessages id="topbar.viewCart" />
         </Link>
         <h3>
           <IntlMessages id="topbar.totalPrice" />:{' '}
