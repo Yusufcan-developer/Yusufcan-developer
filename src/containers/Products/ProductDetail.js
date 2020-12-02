@@ -59,6 +59,11 @@ const ProductDetail = () => {
     wrapperCol: { span: 16 },
   };
 
+  let newView = 'MobileView';
+  if (window.innerWidth > 769) {
+    newView = 'DesktopView';
+  } else if (window.innerHeight > 767) { newView = 'TabletView' }
+
   const contentStyle = {
     height: '250px',
     color: '#FF5733',
@@ -128,35 +133,35 @@ const ProductDetail = () => {
         if (selectedQuantity === undefined) { selectedQuantity = 1 }
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
-        dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
-        notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
+          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
+          notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
         }
       }
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
         if (amountControl === -1) {
-        const newProductQuantity = [];
-        let setQunatity;
-        productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
-            newProductQuantity.push(productItem);
-          } else {
-            const itemCode = productItem.itemCode;
-            const quantity = productItem.quantity + 1;
-            setQunatity = quantity;
-            newProductQuantity.push({
-              itemCode,
-              quantity,
-              isPartial,
-            });
-          }
-        });
-        dispatch(changeProductQuantity(newProductQuantity));
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + logMessage.Carts.increaseProduct + setQunatity);
+          const newProductQuantity = [];
+          let setQunatity;
+          productQuantity.forEach(productItem => {
+            if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+              newProductQuantity.push(productItem);
+            } else {
+              const itemCode = productItem.itemCode;
+              const quantity = productItem.quantity + 1;
+              setQunatity = quantity;
+              newProductQuantity.push({
+                itemCode,
+                quantity,
+                isPartial,
+              });
+            }
+          });
+          dispatch(changeProductQuantity(newProductQuantity));
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + logMessage.Carts.increaseProduct + setQunatity);
+        }
       }
-    }
     }
   };
   function inputNumberShowOrHide() {
@@ -179,10 +184,10 @@ const ProductDetail = () => {
       if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) {
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
-        onAddProductCart(productData, true, isPartial, selectedQuantity);
-        setSelectedAmount(0);
-        setSelectedPartialAmount(0);
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity); return;
+          onAddProductCart(productData, true, isPartial, selectedQuantity);
+          setSelectedAmount(0);
+          setSelectedPartialAmount(0);
+          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity); return;
         }
       }
       else {
@@ -211,7 +216,7 @@ const ProductDetail = () => {
         dispatch(changeProductQuantity(newProductQuantity));
         setSelectedAmount(0);
         setSelectedPartialAmount(0);
-        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.increaseProduct+ newQuantity);
+        postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.increaseProduct + newQuantity);
       }
     }
   };
@@ -221,8 +226,8 @@ const ProductDetail = () => {
       setSelectedAmount(parseInt(e.target.value));
     }
   }
-   //Input Number return partial quantity value
-   function inputNumberPartialQuantityValueNew(product, isPartial) {
+  //Input Number return partial quantity value
+  function inputNumberPartialQuantityValueNew(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
     if (selectedProduct === undefined) {
       if (selectedPartialAmout < 1) {
@@ -334,7 +339,7 @@ const ProductDetail = () => {
         <Breadcrumb.Item>Ürün Detayı</Breadcrumb.Item>
       </Breadcrumb>
       <Row style={rowStyle} gutter={gutter} justify="start">
-        <PageHeader >{itemCode + " - " + description}</PageHeader>
+        <PageHeader >{itemCode!==undefined?itemCode:''} - {description!==undefined?description:''}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
             <SwiperWithCustomNav navigationControl={false} >
@@ -365,7 +370,34 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
             <Row>
-              <Col span={12}>
+              {newView !== 'MobileView' ?<React.Fragment> <Col span={12}>
+                <Form {...layout}>
+                {itemCode!==undefined? 
+                  <Form.Item label="Ürün Kodu" >
+                  <span className="ant-form-text">{itemCode || '-'}</span>
+                  </Form.Item>:null}
+                  {series!==undefined?
+                  <Form.Item label="Seri">
+                  <span className="ant-form-text">{series || '-'}</span>
+                  </Form.Item>:null}
+                  {color !==undefined?
+                    <Form.Item label="Renk">
+                    <span className="ant-form-text">{color || '-'}</span>
+                  </Form.Item>:null}
+                  {dimension!==undefined?
+                  <Form.Item label="Ebat">
+                    <span className="ant-form-text">{dimension || '-'}</span>
+                  </Form.Item> :null}
+                  {notes != undefined ? (
+                    <Form.Item label="Not">
+                      <Tag color="purple">
+                        {notes}
+                      </Tag>
+                    </Form.Item>
+                  ) : (<Form.Item> </Form.Item>)}
+                </Form>
+              </Col></React.Fragment>
+               :<Col span={12}>
                 <Form {...layout}>
                   <Form.Item label="Ürün Kodu">
                     <span className="ant-form-text">{itemCode || '-'}</span>
@@ -387,8 +419,8 @@ const ProductDetail = () => {
                     </Form.Item>
                   ) : (<Form.Item> </Form.Item>)}
                 </Form>
-              </Col>
-              <Col span={12}>
+              </Col>}
+               <Col span={12}> 
                 {productionStatus === 'OUTLET' ? (
                   <Row >
                     <Col align="right" span={24}>
@@ -412,79 +444,90 @@ const ProductDetail = () => {
                 </Row>
               </Col>
             </Row>
-            <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
-              <Row align="middle">
-                <Col span={4} align="right">
-                  <Button type="primary" onClick={event => onRemoveProductCart(data, true, false)}>
-                    {removeItem === true ? (< IntlMessages id="---" />) : (<IntlMessages id="-" />)}
+            <div>
+              <div
+                style={{
+                  borderBottom: '1px solid #E9E9E9',
+                  paddingBottom: '15px',
+                }}
+              >
+                <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
+                  <Row align="middle">
+                    <Col span={4} align="right">
+                      <Button type="primary" onClick={event => onRemoveProductCart(data, true, false)}>
+                        {removeItem === true ? (< IntlMessages id="---" />) : (<IntlMessages id="-" />)}
 
-                  </Button>
-                </Col>
-                <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                  <Input
-                    id={'Paletli' + itemCode}
-                    onClick={event => onSelectAll('Paletli' + itemCode)}
-                    onChange={event => onChange(event, productItem, false)}
-                    onBlur={event => onChangeQuantity(event, productItem,false)}
-                    style={{ textAlign: "right" }}
-                    maxLength={5}
-                    defaultValue={0}
-                    step={1}
-                    value={inputNumberPartialQuantityValue(itemCode)}
-                  />
-                </Col>
-                <Col span={4}>
-                  <Button type="primary" onClick={event => onAddProductCart(data, true, false)}>
-                    {<IntlMessages id="+" />}
-                  </Button>
-                </Col>
-                <Space size={2}>
-                  <Col span={4}>
-                    <Tag color="blue">
-                      1 Palet: {m2Pallet} {unit}
-                    </Tag>
-                  </Col>
-                </Space>
-              </Row>
-            </Form.Item>
-            {canBeSoldPartially === true ? (
-              <Form.Item label='Parçalı Satış (KUTU)'>
-                <Row align="middle">
-                  <Col span={4} align="right">
-                    <Button type="primary" onClick={event => onRemoveProductCart(data, true, true)}>
-                      {<IntlMessages id="-" />}
-                    </Button>
-                  </Col>
-                  <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                    <Input
-                      id={'Parçalı' + itemCode}
-                      onClick={event => onSelectAll('Parçalı' + itemCode)}
-                      onChange={event => onChange(event, productItem, true)}
-                      onBlur={event => onChangeQuantity(event, productItem,true)}
-                      style={{ textAlign: "right" }}
-                      maxLength={5}
-                      defaultValue={1}
-                      step={1}
-                      value={inputNumberPartialQuantityValueNew(itemCode, true)}
-                    />
-                  </Col>
-                  <Col span={4} style={{ width: '100%' }}>
-                    <Button type="primary" onClick={event => onAddProductCart(data, true, true)}>
-                      {<IntlMessages id="+" />}
-                    </Button>
-                  </Col>
-                  <Space size={5}>
-                    <Col span={4}>
-                      <Tag color="blue">
-                        1 Kutu: {m2Box} {unit}
-                      </Tag>
+                      </Button>
                     </Col>
-                    <Tag color="blue">
-                      {numberFormat(data.partialPrice)} {"TL"}
-                    </Tag>
-                  </Space>
-                </Row>
-              </Form.Item>) : (null)}
+                    <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                      <Input
+                        id={'Paletli' + itemCode}
+                        onClick={event => onSelectAll('Paletli' + itemCode)}
+                        onChange={event => onChange(event, productItem, false)}
+                        onBlur={event => onChangeQuantity(event, productItem, false)}
+                        style={{ textAlign: "right" }}
+                        maxLength={5}
+                        defaultValue={0}
+                        step={1}
+                        value={inputNumberPartialQuantityValue(itemCode)}
+                      />
+                    </Col>
+                    <Col span={4}>
+                      <Button type="primary" onClick={event => onAddProductCart(data, true, false)}>
+                        {<IntlMessages id="+" />}
+                      </Button>
+                    </Col>
+                    <Space size={2}>
+                      <Col span={4}>
+                        <Tag color="blue">
+                          1 Palet: {m2Pallet} {unit}
+                        </Tag>
+                      </Col>
+                    </Space>
+                  </Row>
+                </Form.Item>
+              </div>
+              <br />
+              {canBeSoldPartially === true ? (
+                <Form.Item label='Parçalı Satış (KUTU)'>
+                  <Row align="middle">
+                    <Col span={4} align="right">
+                      <Button type="primary" onClick={event => onRemoveProductCart(data, true, true)}>
+                        {<IntlMessages id="-" />}
+                      </Button>
+                    </Col>
+                    <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                      <Input
+                        id={'Parçalı' + itemCode}
+                        onClick={event => onSelectAll('Parçalı' + itemCode)}
+                        onChange={event => onChange(event, productItem, true)}
+                        onBlur={event => onChangeQuantity(event, productItem, true)}
+                        style={{ textAlign: "right" }}
+                        maxLength={5}
+                        defaultValue={1}
+                        step={1}
+                        value={inputNumberPartialQuantityValueNew(itemCode, true)}
+                      />
+                    </Col>
+                    <Col span={4} style={{ width: '100%' }}>
+                      <Button type="primary" onClick={event => onAddProductCart(data, true, true)}>
+                        {<IntlMessages id="+" />}
+                      </Button>
+                    </Col>
+                    <Col span={4} style={{ width: '100%' }}>
+                      <Space size={5}>
+                        <Col span={4}>
+                          <Tag color="blue">
+                            1 Kutu: {m2Box} {unit}
+                          </Tag>
+                        </Col>
+                        <Tag color="blue">
+                          {numberFormat(data.partialPrice)} {"TL"}
+                        </Tag>
+                      </Space>
+                    </Col>
+                  </Row>
+                </Form.Item>) : (null)} </div>
             <Table
               columns={columns}
               dataSource={warehouseDataList}
