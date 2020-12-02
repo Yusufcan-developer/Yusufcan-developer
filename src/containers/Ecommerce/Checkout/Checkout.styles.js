@@ -253,7 +253,20 @@ const WDOrderTable = styled.div`
         line-height: 1.2;
       }
     }
+    .isoOrderTableFooterMobile {
+      width: 90%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
 
+      span {
+        font-size: 14px;
+        font-weight: 500;
+        color: ${palette('text', 0)};
+        line-height: 1.2;
+      }
+    }
     button {
       height: 42px;
       ${borderRadius('2px')};

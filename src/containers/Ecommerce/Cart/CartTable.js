@@ -35,6 +35,10 @@ const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
   const [cartChangeItem,setCartChangeItem]=useState(false);
+  let newView = 'MobileView';
+  if (window.innerWidth > 766) {
+    newView = 'DesktopView';
+  }
   useEffect(() => {
     getCartList();
     // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Carts.productList);
@@ -441,7 +445,6 @@ export default function CartTable({ style }) {
               <th className="isoItemPriceTotal">Tutar</th>
             </tr>
           </thead>
-
           <tbody>
             {renderItems()}
             <tr className="isoTotalBill">
@@ -453,15 +456,15 @@ export default function CartTable({ style }) {
               <td className="isoItemPalet" />
               <OrderTable className="isoOrderInfo">
                 <div className="isoOrderTable">
-                  <div className="isoOrderTableFooter">
+                  <div  className={newView === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"} >
                     <span>Toplam</span>
                     <span>{totalCost != undefined ? (numberFormat(total)) : (0)} TL</span>
                   </div>
-                  <div className="isoOrderTableFooter">
+                  <div className={newView === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
                     <span>KDV</span>
                     <span>{totalCost != undefined ? (numberFormat(totalVat)) : (0)} TL</span>
                   </div>
-                  <div className="isoOrderTableFooter">
+                  <div className={newView === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
                     <span>Genel Toplam</span>
                     <span>{totalCost != undefined ? (numberFormat(totalCost)) : (0)} TL</span>
                   </div>

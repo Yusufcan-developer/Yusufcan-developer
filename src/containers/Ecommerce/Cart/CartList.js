@@ -396,7 +396,7 @@ const CartList = () => {
           <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
             <Select
               showSearch
-              style={{ marginBottom: '8px',width: '100%' }}
+              style={{ marginBottom: '8px', width: '100%' }}
               placeholder="Hesap Kodu seçiniz"
               optionFilterProp="children"
               value={dealerCodes}
@@ -410,7 +410,7 @@ const CartList = () => {
           </Col>
           <Col span={newView !== 'MobileView' ? 1 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
           </Col>
-          <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={handleCreateCart}>
+          <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={handleCreateCart}>
             {<IntlMessages id="forms.button.label_Choose" />}
           </Button>
         </Row>
@@ -459,10 +459,6 @@ const CartList = () => {
       {/* Data list volume */}
       <Box >
         <Col span={8} offset={16} align="right" >
-          {/* <Button type="primary" size="small" style={{ marginBottom: '5px' }} loading={iconLoading}
-            icon={<DownloadOutlined />} onClick={exportExcelButton}>
-            {<IntlMessages id="forms.button.exportExcel" />}
-          </Button> */}
         </Col>
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
