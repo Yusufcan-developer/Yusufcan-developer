@@ -25,7 +25,7 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
 
 //Style
-import { DownOutlined, PoweroffOutlined, UserAddOutlined } from '@ant-design/icons';
+import { DownOutlined, SettingOutlined, UserAddOutlined } from '@ant-design/icons';
 import UserModel from './UserModel';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -86,7 +86,7 @@ const UserList = () => {
 
   const [objectRole, setObjectRole] = useState();
   const [isLocked, setIsLocked] = useState();
-  const [isActive, setIsActive] = useState(null);
+  const [isActive, setIsActive] = useState();
   const [userInfoFieldCodes, setUserInfoFieldCodes] = useState();
   const [title, setTitle] = useState();
   const [componentSize, setComponentSize] = useState('default');
@@ -648,7 +648,7 @@ const UserList = () => {
       render: (text, record) => (
         <Dropdown overlay={menu} trigger={['hover']} onVisibleChange={event => { setSelectedUser(record) }} >
           <Button >
-            İşlemler  <DownOutlined />
+          {newView==='MobileView'?<SettingOutlined />:'İşlemler'}  <DownOutlined />
           </Button>
         </Dropdown>
       ),
@@ -688,7 +688,7 @@ const UserList = () => {
                 </Select>
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Select value={isActive} defaultValue={null} style={{marginBottom: '6px',  width: newView !== 'MobileView' ? '250px' : '100%' }}  onChange={handleChangeIsActive}>
+                <Select placeholder='Hesap durumu' value={isActive} style={{marginBottom: '6px',  width: newView !== 'MobileView' ? '250px' : '100%' }}  onChange={handleChangeIsActive}>
                   <Option value={null}>Hepsi</Option>
                   <Option value={true}>Açık</Option>
                   <Option value={false}>Kapalı</Option>

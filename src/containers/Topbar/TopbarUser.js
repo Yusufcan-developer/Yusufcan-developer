@@ -194,7 +194,7 @@ export default function TopbarUser(props) {
               }),
             ]}
           >
-            <Input value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} />
+            <Input.Password autoComplete={"off"} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} />
           </Form.Item>
         </Form>
       </Modal>
