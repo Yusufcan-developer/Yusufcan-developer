@@ -71,7 +71,6 @@ function useCartListData(url, reqBody,searchUrl) {
       .catch();
   }  
   useEffect(() => {
-    debugger
     if (!_.isEqual(lastReqBody, searchUrl)) {
     setLoading(true);
     fetchUrl(); } else { setOnChange(false); }

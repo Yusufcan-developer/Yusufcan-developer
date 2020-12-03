@@ -14,5 +14,10 @@
     text-decoration: line-through;
   }
   .table-background-color-notification-isRead {
+    cursor: pointer; 
     background:#ddd
+  }
+  .table-background-color-notification-isUnRead {
+    cursor: pointer; 
+    color: black;
   }

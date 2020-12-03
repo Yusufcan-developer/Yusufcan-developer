@@ -475,7 +475,7 @@ export default function () {
                 <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                <Button style={{ marginBottom: '8px',width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -514,13 +514,12 @@ export default function () {
           loading={loading}
           pagination={false}
           scroll={{ x: 'calc(700px + 50%)' }}
-          // scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
           rowSelection={{
             ...rowSelection
           }}
-          rowClassName={(record, index) => (record.isRead === true ? 'black' : "table-background-color-notification-isRead")}
+          rowClassName={(record, index) => (record.isRead === true ? 'table-background-color-notification-isUnRead' : "table-background-color-notification-isRead")}
           onRow={(record) => ({
             onClick: () => (selectedNotification(record))
           })}
