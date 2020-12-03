@@ -82,7 +82,7 @@ const CartList = () => {
     filteredInfo: ""
   });
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [selectedCart, setSelectedCart] = useState();
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
@@ -98,11 +98,13 @@ const CartList = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
+    // getVariablesFromUrl();
     postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Browse, logMessage.Carts.browse);
   }, [pageIndex]);
 
+  let searchUrl = queryString.parse(location.search);
   //Cart Data
-  const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}`);
+  const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}&pageIndex=${pageIndex-1}&pageCount=${pageSize}`,{},searchUrl);
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
   const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
@@ -110,7 +112,16 @@ const CartList = () => {
   _.each(lookupDealerTreeData, (item, i) => {
     lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
   });
-
+  // //Url'i çözümleme işlemi
+  // function getVariablesFromUrl() {
+  //   //Url değerini alıyoruz.
+  //   const parsed = queryString.parse(location.search);
+   
+  //   if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
+  //   if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
+    
+  //   return setOnChange(true);
+  // }
   //Sipariş Kalemleri Görüntüleme
   async function onExpand(expandedKeys) {
     setExpandedKeys(expandedKeys);

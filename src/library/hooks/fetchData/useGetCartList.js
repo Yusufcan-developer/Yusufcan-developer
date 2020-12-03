@@ -4,7 +4,7 @@ import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
-function useCartListData(url, reqBody) {
+function useCartListData(url, reqBody,searchUrl) {
   const [data, setData] = useState([]);
   const [cartDetail,setCartDetail]=useState();
   const [loading, setLoading] = useState(true);
@@ -12,8 +12,11 @@ function useCartListData(url, reqBody) {
   const [currentPage, setCurrentPage] = useState();
   const [onChange, setOnChange] = useState(false);
   const [totalDataCount, setTotalDataCount] = useState();
-  
+  const [lastReqBody, setLastReqBody] = useState();
+
   async function fetchUrl() {  
+    
+    setLastReqBody(searchUrl);
     const reqB = reqBody == null || reqBody==undefined ? {"pageIndex": currentPage - 1,"pageCount": changePageSize } : reqBody; 
     const requestOptions = {
       method: "GET",
@@ -68,8 +71,10 @@ function useCartListData(url, reqBody) {
       .catch();
   }  
   useEffect(() => {
+    debugger
+    if (!_.isEqual(lastReqBody, searchUrl)) {
     setLoading(true);
-    fetchUrl();
+    fetchUrl(); } else { setOnChange(false); }
   }, [ onChange]);
   return [data, loading , setOnChange,cartDetail,totalDataCount];
 }
