@@ -225,7 +225,6 @@ const OrdersReport = () => {
   }
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Browse, logMessage.Reports.Order.search);
     dataSearch();
   };
 
@@ -351,7 +350,6 @@ const OrdersReport = () => {
   //Excel Oluşturma
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
-
     ExcelExport(columns, data, 'Siparişler', orderDetailData, OrderDetailcolumns);
   }
   //Order Detail Columns

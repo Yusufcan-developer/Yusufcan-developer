@@ -112,7 +112,6 @@ const MainForm = () => {
 
   //Get Search Data
   function dataSearch() {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.MainForm.search);
     const params = new URLSearchParams(location.search);
 
     params.delete('dealer'); {

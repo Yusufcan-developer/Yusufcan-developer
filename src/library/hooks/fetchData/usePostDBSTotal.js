@@ -40,7 +40,7 @@ function usePostDBSTotalReport(url, reqBody, searchUrl) {
           setLoading(false);
           setOnChange(false);
           setAggregatesOverall(aggregatesOverall);
-        }
+        }       
       })
       .catch();
   }

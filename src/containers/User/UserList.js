@@ -514,8 +514,7 @@ const UserList = () => {
   }
 
   //Yeni Kullanıcı Ekleme işlemi için Modal açma
-  function addNewUser() {
-    postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse,logMessage.User.addUser);
+  function addNewUser() {   
     setVisible(true);
   }
   /**Pagination : Tablo  pageSize'ı değiştirir*/

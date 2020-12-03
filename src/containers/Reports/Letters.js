@@ -57,7 +57,7 @@ export default function () {
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
-  const [toDate, setToDate] = useState(moment(new Date()));
+  const [toDate, setToDate] = useState(moment(new Date('2100-02-02')));
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
@@ -173,7 +173,6 @@ export default function () {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Browse,logMessage.Reports.Letters.search);
     dataSearch();
   };
 

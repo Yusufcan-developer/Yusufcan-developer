@@ -3,6 +3,8 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import TopbarSearchModal from './TopbarSearchModal.styles';
 import { Input } from "antd";
+import { key } from 'styled-theme';
+import { func } from 'prop-types';
 export default function TopbarSearch() {
 
   const location = useLocation();
@@ -34,7 +36,14 @@ export default function TopbarSearch() {
       setKeyword();
     }
   }
-  
+  function onClickSearch() {
+    if (keyword !== undefined) {
+      setVisiblity(false);
+      history.push(`${'/products/search'}/?keyword=${keyword}`)
+      if (location.pathname === '/products/search/') { window.location.reload(false); }
+    }
+    setKeyword();
+  }
   function showModal() {
     setVisiblity(true);
   };
@@ -61,18 +70,19 @@ export default function TopbarSearch() {
         width="60%"
         footer={null}
       >
-        <div className="isoSearchContainer">
-          {visible ?<Input
+        {/* <div className="isoSearchContainer"> */}
+          {visible ?<Input.Search
             id="InputTopbarSearch"
             size="large"
             placeholder="Ürünlerde ara"
             value={keyword}
             onChange={onchange}
+            onSearch={onClickSearch}
             onKeyDown={keyPress}
             onBlur={handleBlur}
           />:null}
 
-        </div>
+        {/* </div> */}
       </TopbarSearchModal>
     </div>
   );

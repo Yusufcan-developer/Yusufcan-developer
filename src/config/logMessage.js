@@ -12,52 +12,52 @@ export default {
         changePasswordSuccess:' Parola başarıyla değiştirilmiştir.',
         saveUserError:' Kullanıcı kaydedilememiştir',
         saveUserSuccess:' Kullanıcı başarıyla kaydedilmiştir',
-        addUser:'Yeni kullanıcı ekleme',
+        // addUser:'Yeni kullanıcı ekleme',
     },
     MainForm: {
-        browse: 'DBS ve Cari toplamlar raporu listeleme',
-        search: 'DBS ve Cari toplamlar raporu yeni arama',
+        browse: 'DBS ve Cari toplamlar raporu sayfası ziyaret edildi.',
+        // search: 'DBS ve Cari toplamlar raporu yeni arama',
     },
     Reports: {
         Order: {
-            browse: 'Sipariş raporu listeleme',
-            search: 'Sipariş raporu yeni arama',
-            exportExcel: 'Sipariş raporu excel oluşturma',
+            browse: 'Sipariş raporu sayfası ziyaret edildi.',
+            // search: 'Sipariş raporu yeni arama',
+            exportExcel: 'Sipariş raporu excele aktarıldı.',
         },
         Deliveries:
         {
-            browse: 'Sevkiyat raporu listeleme',
-            search: 'Sevkiyat raporu yeni arama',
-            exportExcel: 'Sevkiyat raporu excel oluşturma'
+            browse: 'Sevkiyat raporu sayfası ziyaret edildi.',
+            // search: 'Sevkiyat raporu yeni arama',
+            exportExcel: 'Sevkiyat raporu excele aktarıldı.'
         },
         TransactionAccount: {
-            browse: 'Cari hareketler raporu listeleme',
-            search: 'Cari hareketler raporu yeni arama',
-            exportExcel: 'Cari hareketler raporu excel oluşturma'
+            browse: 'Cari hareketler raporu sayfası ziyaret edildi.',
+            // search: 'Cari hareketler raporu yeni arama',
+            exportExcel: 'Cari hareketler raporu excele aktarıldı.'
         },
         Cheques:
         {
-            browse: 'Çek ve Senet raporu listeleme',
-            search: 'Çek ve Senet raporu yeni arama',
-            exportExcel: 'Çek ve Senet raporu excel oluşturma'
+            browse: 'Çek ve Senet raporu raporu sayfası ziyaret edildi.',
+            // search: 'Çek ve Senet raporu yeni arama',
+            exportExcel: 'Çek ve Senet raporu excele aktarıldı.'
         },
         Letters: 
         {
-            browse: 'Teminat mektubu raporu listeleme',
-            search: 'Teminat raporu yeni arama',
-            exportExcel: 'Teminat mektubu raporu excel oluşturma'
+            browse: 'Teminat mektubu raporu sayfası ziyaret edildi.',
+            // search: 'Teminat raporu yeni arama',
+            exportExcel: 'Teminat mektubu raporu excele aktarıldı.'
         },
         Accounts:
         {
-            browse:'Cari kayıtlar raporu listeleme',
-            search: 'Cari kayıtlar raporu yeni arama',
-            exportExcel: 'Cari kayıtlar raporu excel oluşturma'
+            browse:'Cari kayıtlar raporu sayfası ziyaret edildi.',
+            // search: 'Cari kayıtlar raporu yeni arama',
+            exportExcel: 'Cari kayıtlar raporu excele aktarıldı.'
         },
         Distributions:
         {
-            browse:'Dağıtım listesi raporu listeleme',
-            search: 'Dağıtım listesi raporu yeni arama',
-            exportExcel: 'Dağıtım listesi raporu excel oluşturma'
+            browse:'Dağıtım listesi raporu sayfası ziyaret edildi.',
+            // search: 'Dağıtım listesi raporu yeni arama',
+            exportExcel: 'Dağıtım listesi raporu excele aktarıldı.'
         }
     },
     Carts:{

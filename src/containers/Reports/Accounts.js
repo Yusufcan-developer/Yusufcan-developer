@@ -176,7 +176,6 @@ export default function () {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccounts, enumerations.LogTypes.Browse, logMessage.Reports.Accounts.search);
     dataSearch();
   };
 

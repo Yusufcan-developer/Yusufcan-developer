@@ -175,7 +175,6 @@ const DeliveriesReport = () => {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, logMessage.Reports.Deliveries.search);
     dataSearch();
   };
 
