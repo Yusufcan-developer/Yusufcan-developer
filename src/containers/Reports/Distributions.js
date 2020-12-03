@@ -197,10 +197,9 @@ export default function () {
 
     return setOnChange(true);
   }
-
+  
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, logMessage.Reports.Distributions.search);
     dataSearch();
   };
    //Keyword 'Enter' search

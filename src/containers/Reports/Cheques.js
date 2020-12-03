@@ -103,7 +103,6 @@ const ChequesReport = () => {
   function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
-
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
@@ -175,7 +174,7 @@ const ChequesReport = () => {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    
+
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -198,7 +197,9 @@ const ChequesReport = () => {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    if (serialNumber[0]!=='') { params.append('sno', serialNumber); params.toString(); }
+    if (serialNumber !== undefined) {
+      if (serialNumber[0] !== '') { params.append('sno', serialNumber); params.toString(); } else { setSerialNumber(undefined) }
+    }
 
     _.filter(selectedCheckqueType, function (item) {
       params.append('type', item); params.toString();
@@ -213,7 +214,6 @@ const ChequesReport = () => {
 
   //Search Button Event
   const searchButton = () => {
-    postSaveLog(enumerations.LogSource.ReportCheques, enumerations.LogTypes.Browse, 'Çek ve Senet raporu yeni arama');
     dataSearch();
   };
 
