@@ -421,18 +421,18 @@ const CartList = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
+          {newView !== 'MobileView' ?
             <Row>
-              <Col span={6}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
               </Col>
-              <Col span={6} >
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
               </Col>
-              <Col span={5} offset={1}>
-              </Col>
             </Row>
+            : null}
             <Row>
-              <Col span={6}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   // treeData={{}}
                   value={selectedDealerCode}
@@ -440,15 +440,15 @@ const CartList = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Hesap Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: '250px' }}
+                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'}}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={6}>
-                <Input size="small" placeholder="" value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'}} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={5} offset={1}>
-                <Button type="primary" loading={iconLoading} onClick={searchButton}>
+              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

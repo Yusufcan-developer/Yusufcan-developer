@@ -45,8 +45,8 @@ function useCartListData(url, reqBody) {
           accountsNo.push(item.accountNo);
         });
        
-        setData(data.data);  
-        setTotalDataCount(data.data.totalDataCount);
+        setData(data.data);
+        setTotalDataCount(data.totalDataCount);
         setLoading(false); 
         setOnChange(false);
         _.each(accountsNo,(item)=> {        
