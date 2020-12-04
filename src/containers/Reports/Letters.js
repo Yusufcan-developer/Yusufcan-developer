@@ -406,7 +406,7 @@ export default function () {
                 <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
               </Col>
               <Col span={6} >
-                <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                <FormItem label={<IntlMessages id="page.endDateRangeTitle" />}></FormItem>
               </Col>
               <Col span={6} >
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>

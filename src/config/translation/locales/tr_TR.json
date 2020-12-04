@@ -482,6 +482,7 @@
   "page.accountNo": "Hesap Kodu",
   "page.roleTitle": "Rol",
   "page.dateRangeTitle": "Tarih Aralığı",
+  "page.endDateRangeTitle": "Bitiş Tarihi",
   "page.addressTitle": "Sevk Adresi",
   "page.isLocked": "Hesap Durumu",
   "page.chequesType": "Çek Türü",
