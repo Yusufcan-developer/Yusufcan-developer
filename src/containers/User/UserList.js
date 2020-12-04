@@ -38,6 +38,7 @@ import logMessage from '@iso/config/logMessage';
 const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { Option } = Select;
+let selectedRoleName;
 
 const UserList = () => {
   document.title = "Kullanıcılar - Seramiksan B2B";
@@ -289,6 +290,7 @@ const UserList = () => {
     setRegionCodes(userInfo.regionCodes || []);
     setTitle(userInfo.title);
 
+    selectedRoleName = userInfo.role.roleName;
     fieldRegionAndDealearVisible(userInfo.role.roleName);
     // setVisible(true);
   };
@@ -307,7 +309,7 @@ const UserList = () => {
       message.success('Kullanıcı başarıyla silinmiştir.'); cancelAndClearValues(); setDeleteUserVisible(false);
       postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Delete, userId + logMessage.User.deleteSuccess);
       setUserId(-1);
-    }    
+    }
     return setOnChange(true);
   };
 
@@ -326,6 +328,25 @@ const UserList = () => {
 
   //Kullanıcı Düzenleme kayıt işlemi
   async function handleOk() {
+    //Kullanıcı rollerine göre tanımlama kontrolü
+    if (!role) { return message.error('Rol seçiniz'); }
+    else {
+      if ((selectedRoleName === 'dealerwhouse') || (selectedRoleName === 'dealerlimited') || (selectedRoleName === 'dealersv')) {
+        if (!dealerCodes) { return message.error('Bayi kodu seçimi yapınız'); }
+        else if (dealerCodes.length === 0) { return message.error('Bayi kodu seçimi yapınız'); }
+      }
+      else if (selectedRoleName === 'regionmanager') {
+        if (!regionCodes) { return message.error('Bölge kodu seçimi yapınız') }
+        else if (regionCodes.length === 0) {
+          return message.error('Bölge kodu seçimi yapınız');
+        }
+      }
+      else if (selectedRoleName === 'fieldmanager') {
+        if (!fieldCodes) { return message.error('Saha kodu seçimi yapınız') }
+        else if (fieldCodes.length === 0) { return message.error('Saha kodu seçimi yapınız') }
+      }
+    }
+
     //Kullanıcı düzenleme işlemi
     const userInfo = await saveUser();
     if (userInfo.isSuccessful === false) {
@@ -430,6 +451,7 @@ const UserList = () => {
       setFieldVisible(false);
       setDealerCodeSelectModSingle(false);
     }
+    selectedRoleName = roleName;
   }
   //User Modal secilen öğelerin temizlenmesi
   function modalSelectedValueClear(roleName) {
@@ -514,7 +536,7 @@ const UserList = () => {
   }
 
   //Yeni Kullanıcı Ekleme işlemi için Modal açma
-  function addNewUser() {   
+  function addNewUser() {
     setVisible(true);
   }
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -532,8 +554,8 @@ const UserList = () => {
     setlocalCurrentPage(current);
     dataSearch(current, pageSize);
   }
-   //Keyword 'Enter' search
-   const keyPress = e => {
+  //Keyword 'Enter' search
+  const keyPress = e => {
     if (e.keyCode === 13) {
       dataSearch();
     }
@@ -641,14 +663,14 @@ const UserList = () => {
     },
     {
       // title: newView!=='MobileView'? "İşlemler":'',
-      title:'',
+      title: '',
       dataIndex: "title",
       key: "title",
       fixed: "right",
       render: (text, record) => (
         <Dropdown overlay={menu} trigger={['hover']} onVisibleChange={event => { setSelectedUser(record) }} >
           <Button >
-          {newView==='MobileView'?<SettingOutlined />:'İşlemler'}  <DownOutlined />
+            {newView === 'MobileView' ? <SettingOutlined /> : 'İşlemler'}  <DownOutlined />
           </Button>
         </Dropdown>
       ),
@@ -688,14 +710,14 @@ const UserList = () => {
                 </Select>
               </Col>
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Select placeholder='Hesap durumu' value={isActive} style={{marginBottom: '6px',  width: newView !== 'MobileView' ? '250px' : '100%' }}  onChange={handleChangeIsActive}>
+                <Select placeholder='Hesap durumu' value={isActive} style={{ marginBottom: '6px', width: newView !== 'MobileView' ? '250px' : '100%' }} onChange={handleChangeIsActive}>
                   <Option value={null}>Hepsi</Option>
                   <Option value={true}>Açık</Option>
                   <Option value={false}>Kapalı</Option>
                 </Select>
               </Col>
               <Col span={newView !== 'MobileView' ? 8 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input placeholder="Anahtar kelime" style={{marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+                <Input placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
 
               <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
