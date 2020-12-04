@@ -640,7 +640,8 @@ const UserList = () => {
       key: "email",
     },
     {
-      title: "İşlemler",
+      // title: newView!=='MobileView'? "İşlemler":'',
+      title:'',
       dataIndex: "title",
       key: "title",
       fixed: "right",

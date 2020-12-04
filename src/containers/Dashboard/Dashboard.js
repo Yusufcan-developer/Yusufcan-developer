@@ -7,7 +7,7 @@ import siteConfig from '@iso/config/site.config';
 import Sidebar from '../Sidebar/Sidebar';
 import Topbar from '../Topbar/Topbar';
 import DashboardRoutes from './DashboardRoutes';
-
+import ErrorBoundary from '../../ErrorBoundary';
 import { DashboardContainer, DashboardGlobalStyles } from './Dashboard.styles';
 
 const { Content, Footer } = Layout;
@@ -36,6 +36,7 @@ export default function Dashboard() {
     dispatch(toggleAll(width, height));
   }, [width, height, dispatch]);
   return (
+    <ErrorBoundary>
     <DashboardContainer>
       <DashboardGlobalStyles />
       <Layout style={{ height: height }}>
@@ -57,5 +58,6 @@ export default function Dashboard() {
        
       </Layout>
     </DashboardContainer>
+     </ErrorBoundary>
   );
 }
