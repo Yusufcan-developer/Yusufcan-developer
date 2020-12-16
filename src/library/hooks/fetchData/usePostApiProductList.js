@@ -48,12 +48,7 @@ function useProductData(url, reqBody, categorie, searchUrl) {
         return status;
       })
       .then(data => {
-        const orderIdArrayH = [];
-        const value = data.data.slice();
-        value.forEach((item, index) => {
-          item.key = index;
-          orderIdArrayH.push(item.orderNo);
-        });
+        const value = data.data.slice();     
         const totalPages = data.totalPages;
         const dataCount = data.totalDataCount;
         setTotalDataCount(dataCount);
@@ -89,7 +84,7 @@ function useProductData(url, reqBody, categorie, searchUrl) {
     }
     setOnChange(false);
   }, [currentPage, changePageSize, onChange]);
-  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderIdArray];
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange];
 }
 
 export { useProductData };

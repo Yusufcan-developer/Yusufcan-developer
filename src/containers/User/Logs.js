@@ -19,6 +19,7 @@ import Select, { SelectOption } from '@iso/components/uielements/select';
 import { usePostLogFetch } from "@iso/lib/hooks/fetchData/usePostLog";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { useUserFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
+
 //Style
 import { DownloadOutlined } from '@ant-design/icons';
 
@@ -26,8 +27,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
-import numberFormat from "@iso/config/numberFormat";
-import renderFooter from "../Reports/ReportSummary";
+import viewType from '@iso/config/viewType';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
@@ -43,12 +43,8 @@ const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
 export default function () {
-
   document.title = "Olay Günlükleri - Seramiksan B2B";
-  let newView = 'MobileView';
-  if (window.innerWidth > 1220) {
-    newView = 'DesktopView';
-  }
+
   const children = [];
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
@@ -392,6 +388,8 @@ export default function () {
   const exportExcelButton = () => {
     ExcelExport(columns, data, 'Kullanıcı Olay Günlügü');
   }
+
+  const view = viewType('Logs');
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -400,7 +398,7 @@ export default function () {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-            {newView !== 'MobileView' ?
+            {view !== 'MobileView' ?
               <Row>
                 <Col span={6}>
                   <FormItem label={<IntlMessages id="page.users" />}></FormItem>
@@ -416,12 +414,12 @@ export default function () {
               </Row>
               : null}
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   showSearch
                   mode="multiple"
                   dropdownMatchSelectWidth={500}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Kullanıcı Seçiniz"
                   optionFilterProp="children"
                   value={userIds}
@@ -433,31 +431,31 @@ export default function () {
                   {lookupDealerChildren}
                 </Select>
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
             </Row>
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} >
+              <Col span={view !== 'MobileView' ? 6 : 0} >
                 <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} >
+              <Col span={view !== 'MobileView' ? 6 : 0} >
                 <FormItem label={<IntlMessages id="page.logSources" />}></FormItem>
               </Col>
             </Row>
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Olay Tipi Seçiniz"
                   onChange={logTypeHandleChange}
                   value={selectedLogType}
@@ -466,10 +464,10 @@ export default function () {
                 </Select>
 
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Olay Kaynağı Seçiniz"
                   onChange={logSourceHandleChange}
                   value={selectedLogSource}
@@ -478,8 +476,8 @@ export default function () {
                 </Select>
 
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

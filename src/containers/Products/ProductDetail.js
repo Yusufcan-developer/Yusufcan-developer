@@ -10,8 +10,7 @@ import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
-import { Row, Col, Descriptions, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge, message } from 'antd';
-import { ReactSortable } from "react-sortablejs";
+import { Row, Col, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge, message } from 'antd';
 import _, { select } from 'underscore';
 import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
 
@@ -26,6 +25,7 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import numberFormat from "@iso/config/numberFormat";
 import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
+import viewType from '@iso/config/viewType';
 
 //Styles
 import PageHeader from '@iso/components/utility/pageHeader';
@@ -58,11 +58,6 @@ const ProductDetail = () => {
     labelCol: { span: 8, },
     wrapperCol: { span: 16 },
   };
-
-  let newView = 'MobileView';
-  if (window.innerWidth > 769) {
-    newView = 'DesktopView';
-  } else if (window.innerHeight > 767) { newView = 'TabletView' }
 
   const contentStyle = {
     height: '250px',
@@ -325,7 +320,7 @@ const ProductDetail = () => {
     //   render: (balance) => numberFormat(balance)
     // },
   ];
-
+  const view = viewType('ProductDetail');
   return (
     <LayoutWrapper>
       <Breadcrumb>
@@ -370,7 +365,7 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
             <Row>
-              {newView !== 'MobileView' ?<React.Fragment> <Col span={12}>
+              {view !== 'MobileView' ?<React.Fragment> <Col span={12}>
                 <Form {...layout}>
                 {itemCode!==undefined? 
                   <Form.Item label="Ürün Kodu" >
