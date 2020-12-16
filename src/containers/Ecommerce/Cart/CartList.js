@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Actions from '@iso/redux/themeSwitcher/actions';
 import config from '@iso/redux/ecommerce/config'
 import ecommerceActions from '@iso/redux/ecommerce/actions';
+
 //Styles
 import { DownOutlined } from '@ant-design/icons';
 
@@ -33,6 +34,7 @@ import numberFormat from "@iso/config/numberFormat";
 import ReportPagination from "../../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "../../../config/enumerations";
+import viewType from '@iso/config/viewType';
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -50,10 +52,7 @@ const { Option } = Select;
 
 const CartList = () => {
   document.title = "Sepet Listesi - Seramiksan B2B";
-  let newView = 'MobileView';
-  if (window.innerWidth > 1220) {
-    newView = 'DesktopView';
-  }
+
   //Bayi Kodu Tekli veya çoklu seçim kontrolü
   const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
 
@@ -112,16 +111,7 @@ const CartList = () => {
   _.each(lookupDealerTreeData, (item, i) => {
     lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
   });
-  // //Url'i çözümleme işlemi
-  // function getVariablesFromUrl() {
-  //   //Url değerini alıyoruz.
-  //   const parsed = queryString.parse(location.search);
-   
-  //   if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-  //   if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    
-  //   return setOnChange(true);
-  // }
+
   //Sipariş Kalemleri Görüntüleme
   async function onExpand(expandedKeys) {
     setExpandedKeys(expandedKeys);
@@ -389,6 +379,8 @@ const CartList = () => {
       ),
     }
   ];
+
+  const view = viewType('CartList');
   return (
 
     <LayoutWrapper>
@@ -396,7 +388,7 @@ const CartList = () => {
         {<IntlMessages id="page.CreateCarts.header" />}
       </PageHeader>
       <Box>
-        {newView !== 'MobileView' ?
+        {view !== 'MobileView' ?
           <Row>
             <Col span={6}>
               <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
@@ -404,7 +396,7 @@ const CartList = () => {
           </Row>
           : null}
         <Row>
-          <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+          <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
             <Select
               showSearch
               style={{ marginBottom: '8px', width: '100%' }}
@@ -419,9 +411,9 @@ const CartList = () => {
               {lookupDealerChildren}
             </Select>
           </Col>
-          <Col span={newView !== 'MobileView' ? 1 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+          <Col span={view !== 'MobileView' ? 1 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
           </Col>
-          <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={handleCreateCart}>
+          <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={handleCreateCart}>
             {<IntlMessages id="forms.button.label_Choose" />}
           </Button>
         </Row>
@@ -432,18 +424,18 @@ const CartList = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {newView !== 'MobileView' ?
+          {view !== 'MobileView' ?
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
               </Col>
             </Row>
             : null}
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   // treeData={{}}
                   value={selectedDealerCode}
@@ -451,15 +443,15 @@ const CartList = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Hesap Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'}}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'}}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%'}} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'}} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

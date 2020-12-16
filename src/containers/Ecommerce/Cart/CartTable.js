@@ -23,7 +23,8 @@ import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
-import { DeleteOutlined, TableOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
+import viewType from '@iso/config/viewType';
 
 //Other Library
 import { OrderTable } from '../Checkout/Checkout.styles';
@@ -35,10 +36,8 @@ const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
   const [cartChangeItem,setCartChangeItem]=useState(false);
-  let newView = 'MobileView';
-  if (window.innerWidth > 766) {
-    newView = 'DesktopView';
-  }
+  const view = viewType('CartTable');
+
   useEffect(() => {
     getCartList();
     // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Carts.productList);
@@ -456,15 +455,15 @@ export default function CartTable({ style }) {
               <td className="isoItemPalet" />
               <OrderTable className="isoOrderInfo">
                 <div className="isoOrderTable">
-                  <div  className={newView === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"} >
+                  <div  className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"} >
                     <span>Toplam</span>
                     <span>{totalCost != undefined ? (numberFormat(total)) : (0)} TL</span>
                   </div>
-                  <div className={newView === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
+                  <div className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
                     <span>KDV</span>
                     <span>{totalCost != undefined ? (numberFormat(totalVat)) : (0)} TL</span>
                   </div>
-                  <div className={newView === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
+                  <div className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
                     <span>Genel Toplam</span>
                     <span>{totalCost != undefined ? (numberFormat(totalCost)) : (0)} TL</span>
                   </div>

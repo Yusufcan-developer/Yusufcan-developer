@@ -27,6 +27,7 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
+import viewType from '@iso/config/viewType';
 
 //Other Library
 import _ from 'underscore';
@@ -45,10 +46,7 @@ let sortingField;
 let sortingOrder;
 const ChequesReport = () => {
   document.title = "Çekler - Seramiksan B2B";
-  let newView = 'MobileView';
-  if (window.innerWidth > 1220) {
-    newView = 'DesktopView';
-  }
+ 
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
@@ -439,7 +437,7 @@ const ChequesReport = () => {
     postSaveLog(enumerations.LogSource.ReportCheques, enumerations.LogTypes.Export, logMessage.Reports.Cheques.excelExport);
     ExcelExport(columns, data, 'Çek-Senet');
   }
-
+  const view = viewType('Reports');
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -448,7 +446,7 @@ const ChequesReport = () => {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-            {newView !== 'MobileView' ?
+            {view !== 'MobileView' ?
               <Row>
                 <Col span={6}>
                   <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
@@ -462,7 +460,7 @@ const ChequesReport = () => {
               </Row>
               : null}
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -472,14 +470,14 @@ const ChequesReport = () => {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Çek Türü Seçiniz"
                   onChange={chequeHandleChange}
                   value={selectedCheckqueType}
@@ -487,34 +485,34 @@ const ChequesReport = () => {
                   {children}
                 </Select>
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
             </Row>
-            {newView !== 'MobileView' ?
+            {view !== 'MobileView' ?
               <Row>
-                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                   <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
                 </Col>
-                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                   <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                 </Col>
               </Row>
               : null}
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={serialNumber} onKeyDown={keyPress} onChange={event => setSerialNumber([event.target.value])} />
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={serialNumber} onKeyDown={keyPress} onChange={event => setSerialNumber([event.target.value])} />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

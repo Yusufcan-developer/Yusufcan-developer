@@ -27,6 +27,8 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import viewType from '@iso/config/viewType';
+
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
 import { strikeout } from "../Ecommerce/Cart/color.css";
@@ -47,10 +49,7 @@ let selectedTotalCount = 0;
 export default function () {
 
   document.title = "Bildirimler - Seramiksan B2B";
-  let newView = 'MobileView';
-  if (window.innerWidth > 1220) {
-    newView = 'DesktopView';
-  }
+
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
@@ -393,6 +392,7 @@ export default function () {
       else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
     }
   };
+  const view = viewType('Notifications');
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -401,7 +401,7 @@ export default function () {
       <Box>
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-            {newView !== 'MobileView' ?
+            {view !== 'MobileView' ?
               <Row>
                 <Col span={6}>
                   <FormItem label={<IntlMessages id="page.isReadStatus" />}></FormItem>
@@ -412,12 +412,12 @@ export default function () {
               </Row>
               : null}
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   showSearch
                   mode="single"
                   dropdownMatchSelectWidth={200}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Bildirim Durumu Seçiniz"
                   optionFilterProp="children"
                   value={selectedIsRead}
@@ -440,29 +440,29 @@ export default function () {
                   </Option>
                 </Select>
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <RangePicker
                   format={siteConfig.dateFormat}
                   onChange={changeTimePicker}
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 />
               </Col>
             </Row>
-            {newView !== 'MobileView' ?
+            {view !== 'MobileView' ?
               <Row>
-                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                   <FormItem label={<IntlMessages id="page.notificationTypes" />}></FormItem>
                 </Col>
-                <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                   <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                 </Col>
               </Row> : null}
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '320px' : '100%' }}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '320px' : '100%' }}
                   placeholder="Bildirim Tipi Seçiniz"
                   onChange={notificationTypeHandleChange}
                   value={selectedNotificationType}
@@ -471,11 +471,11 @@ export default function () {
                 </Select>
 
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: newView !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-                <Button style={{ marginBottom: '8px',width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px',width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

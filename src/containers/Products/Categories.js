@@ -7,6 +7,8 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import { Card, Row, Col } from "antd";
 import TopbarAddtoCart from '../Topbar/TopbarAddToCart';
 import TopbarNotification from '../Topbar/TopbarNotification';
+import viewType from '@iso/config/viewType';
+
 const { Meta } = Card;
 
 //Kategoriler Grup Bilgisi.
@@ -41,13 +43,10 @@ const categories = [
 const ProductGroupList = () => {
   document.title = "Kategoriler - Seramiksan B2B";
   let products = localStorage.getItem('cartProductQuantity');
-  let newView = 'MobileView';
-  if (window.innerWidth > 1220) {
-    newView = 'DesktopView';
-  }
 
   TopbarAddtoCart();
   TopbarNotification();
+  const view = viewType('Categories');
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>
@@ -55,7 +54,7 @@ const ProductGroupList = () => {
 
         <Row gutter={[24, 16]}>
           {categories.map((item) => (
-            <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {/* Seçilen kategori grubuna göre Id alınıp ürün listeleme sayfasına geçiyor.*/}
               <Link to={`${'/products/search'}/?pg=${item.Id}`}>
 
@@ -71,7 +70,7 @@ const ProductGroupList = () => {
                     />
                   }
                 >
-                  {newView === 'MobileView' ? <Meta
+                  {view === 'MobileView' ? <Meta
                     style={{ textAlign: 'center' }}
                     title={item.title}
                     description={item.description}

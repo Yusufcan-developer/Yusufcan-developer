@@ -30,6 +30,7 @@ import { usePostAccountBalancesReport } from "../../library/hooks/fetchData/useP
 import ReportPagination from "../Reports//ReportPagination";
 import enumerations from "../../config/enumerations";
 import logMessage from '@iso/config/logMessage';
+import viewType from '@iso/config/viewType';
 
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -39,10 +40,6 @@ const { Option } = Select;
 
 const MainForm = () => {
   document.title = "Ana Ekran - Seramiksan B2B";
-  let newView = 'MobileView';
-  if (window.innerWidth > 1220) {
-    newView = 'DesktopView';
-  }
 
   const queryString = require('query-string');
   const history = useHistory();
@@ -61,7 +58,7 @@ const MainForm = () => {
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse,logMessage.MainForm.browse);
+    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.MainForm.browse);
     if (pageIndexDBSTotal === 1) {
       getVariablesFromUrl();
     }
@@ -80,7 +77,7 @@ const MainForm = () => {
     setChangePageSizeAccount(pageSizeAccountBalance);
   }, [pageSizeAccountBalance]);
 
-  
+
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
     usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal });
@@ -386,7 +383,7 @@ const MainForm = () => {
       }));
     }
   }
-
+  const view = viewType('Reports');
   return (
     <LayoutWrapper>
       <PageHeader>
@@ -396,7 +393,7 @@ const MainForm = () => {
         <Collapse accordion>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
-              <Col span={newView !== 'MobileView' ? 6 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   showSearch
                   mode="multiple"
@@ -413,9 +410,9 @@ const MainForm = () => {
                   {lookupDealerChildren}
                 </Select>
               </Col>
-              <Col span={newView !== 'MobileView' ? 1 : 0} md={newView !== 'MobileView' ? null : 12} sm={newView !== 'MobileView' ? null : 12} xs={newView !== 'MobileView' ? null : 24}>
-          </Col>
-              <Button style={{ marginBottom: '8px',  width: newView !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={dataSearch} >
+              <Col span={view !== 'MobileView' ? 1 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+              </Col>
+              <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={dataSearch} >
                 {<IntlMessages id="forms.button.label_Search" />}
               </Button>
             </Row>
