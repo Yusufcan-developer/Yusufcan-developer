@@ -60,9 +60,11 @@ function useProductData(url, reqBody, categorie, searchUrl) {
       }).catch(setOnChange(false));
   }
   useEffect(() => {
+    debugger
     const parsed = queryString.parse(location.search);
-    if ((categorie === undefined) && (parsed.keyword === undefined)) {   setLoading(true);
-      fetchUrl();}
+    if ((categorie === undefined) && (parsed.keyword === undefined)) {   setLoading(false);
+      // fetchUrl();
+    }
     if (categorie === undefined) {
       if (reqBody.keyword !== undefined) {
         setLoading(true);
