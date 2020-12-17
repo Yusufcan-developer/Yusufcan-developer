@@ -64,7 +64,6 @@ const ProductGroupList = () => {
                   loading={false}
                   cover={
                     < img
-                      alt="example"
                       src={item.imageUrl}
                       style={{ height: '180px' }}
                     />
