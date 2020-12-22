@@ -381,6 +381,7 @@ const CartList = () => {
   ];
 
   const view = viewType('CartList');
+  const filterView=viewType('Filter');
   return (
 
     <LayoutWrapper>
@@ -422,7 +423,7 @@ const CartList = () => {
         {<IntlMessages id="page.ActiveCarts.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
           {view !== 'MobileView' ?
             <Row>

@@ -674,13 +674,14 @@ const OrdersReport = () => {
     }
   }
   const view = viewType('Reports');
+  const filterView=viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.orderFollowUp.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {view !== 'MobileView' ?
               <Row>
