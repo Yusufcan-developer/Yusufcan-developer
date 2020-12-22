@@ -46,7 +46,7 @@ let sortingField;
 let sortingOrder;
 const ChequesReport = () => {
   document.title = "Çekler - Seramiksan B2B";
- 
+
   const [tableOptions, setState] = useState({
     sortedInfo: '',
     filteredInfo: ''
@@ -88,7 +88,7 @@ const ChequesReport = () => {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey,"status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -119,7 +119,7 @@ const ChequesReport = () => {
     if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
 
-    let getStatus= [];
+    let getStatus = [];
     if (parsed.status !== undefined) {
       if (Array.isArray(parsed.status)) {
         _.each(parsed.status, (item) => {
@@ -524,26 +524,20 @@ const ChequesReport = () => {
             </Row>
             {view !== 'MobileView' ?
               <Row>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.status" />}></FormItem>
+                </Col>
                 <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                   <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
                 </Col>
                 <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                   <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                 </Col>
-                <Col span={6} >
-                  <FormItem label={<IntlMessages id="page.status" />}></FormItem>
-                </Col>
               </Row>
               : null}
             <Row>
-              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={serialNumber} onKeyDown={keyPress} onChange={event => setSerialNumber([event.target.value])} />
-              </Col>
-              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
-              </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-              <Select
+                <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Durum Seçiniz"
@@ -552,6 +546,12 @@ const ChequesReport = () => {
                 >
                   {statusChildren}
                 </Select>
+              </Col>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={serialNumber} onKeyDown={keyPress} onChange={event => setSerialNumber([event.target.value])} />
+              </Col>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
