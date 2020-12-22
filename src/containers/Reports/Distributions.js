@@ -20,6 +20,7 @@ import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Configs
 import { DownloadOutlined } from '@ant-design/icons';
@@ -68,6 +69,8 @@ export default function () {
   const [newUrlParams, setNewUrlParams] = useState('')
   const location = useLocation();
   const [selectedStatusType, setSelectedStatusType] = useState();
+  const [address, setAddress] = useState();
+  const [lookupAddressChildren, setLookupAddressChildren] = useState();
 
   const queryString = require('query-string');
   const history = useHistory();
@@ -77,12 +80,16 @@ export default function () {
     postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, logMessage.Reports.Distributions.browse);
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+      getAdress(token.dcode);
+    }
   }, [pageIndex]);
 
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address  }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -115,6 +122,16 @@ export default function () {
     }
     setSelectedStatusType(statusGetType);
 
+    let getAddress=[];
+    if (parsed.address !== undefined) {
+      if (Array.isArray(parsed.address)) {
+        _.each(parsed.address, (item) => {
+          getAddress.push(item);
+        });
+      } else { getAddress.push(parsed.address); }
+    }
+    setAddress(getAddress);
+    
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -177,6 +194,7 @@ export default function () {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('address');
 
     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -189,6 +207,11 @@ export default function () {
     _.filter(selectedStatusType, function (item) {
       params.append('status', item); params.toString();
     });
+
+    _.forEach(address, (item) => {
+      params.append('address', item); params.toString();
+    });
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -207,7 +230,7 @@ export default function () {
     }
   }
   //Change DealerCode
-  function onChangeDealerCode(value) {
+  async function onChangeDealerCode(value) {
     let fieldArrObj = [];
     let regionArrObj = [];
     let dealerArrObj = [];
@@ -220,6 +243,7 @@ export default function () {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('address');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -234,6 +258,7 @@ export default function () {
         setSelectedDealerCode(value)
         setNewUrlParams(params.toString());
       });
+      if (dealerArrObj.length === 1) { await getAdress(dealerArrObj[0]); }
     }
   };
 
@@ -288,6 +313,35 @@ export default function () {
     dataSearch(current, pageSize);
   }
 
+ //Select Component Rol değiştirme 
+  function addressHandleChange(value) {
+    setAddress(value);
+  }
+//Get adress
+async function getAdress(dealerCodes) {
+  //Get User Info  
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+    }
+  };
+  await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
+    .then(response => {
+      const status = apiStatusManagement(response);
+      return status;
+    })
+    .then(data => {
+      const addressChildren = [];
+      _.each(data, (item, i) => {
+        addressChildren.push(<Option key={item.addressCode}>{item.addressCode + '-' + item.addressTitle + '-' + item.address2 + '-' + item.phone}</Option>);
+      });
+      setLookupAddressChildren(addressChildren)
+    })
+    .catch();
+  return data;
+}
   let columns = [
     {
       title: "Bayi Kodu",
@@ -478,12 +532,15 @@ export default function () {
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {view !== 'MobileView' ?
               <Row>
-                <Col span={6}>
+                <Col span={view !== 'MobileView' ? 6 : 0} >
                   <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
                 </Col>
-                <Col span={6} >
+                <Col span={view !== 'MobileView' ? 6 : 0} >
                   <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-                </Col>                
+                </Col>  
+                <Col span={view !== 'MobileView' ? 6 : 0} >
+                <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+              </Col>              
               </Row>
               : null}
             <Row>
@@ -508,6 +565,22 @@ export default function () {
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'  }}
                 />
+              </Col>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Select
+                  mode={"multiple"}
+                  style={{ width: '100%' }}
+                  placeholder="Sevk Adresi Seçiniz"
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                  value={address}
+                  dropdownMatchSelectWidth={750}
+                  onChange={addressHandleChange}
+                  filterOption={(input, option) =>
+                    option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                  }
+                >
+                  {lookupAddressChildren}
+                </Select>
               </Col>
             </Row>
             {view!=='MobileView'?
