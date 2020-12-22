@@ -17,7 +17,7 @@ export default {
       getProductTypes: apiUrl + 'b2b/lookup/product-types',
       getSeries: apiUrl + 'b2b/lookup/product-series',
       getColors: apiUrl + 'b2b/lookup/product-colors',
-      getSurfaces: apiUrl + 'b2b/lookup/product-surfaces',
+      getSurfaces: apiUrl + 'b2b/lookup/product-surfaces',      
       getProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
       productionStatusData: apiUrl + 'b2b/lookup/product-production-status',
       getDimensions: apiUrl + 'b2b/lookup/product-dimensions',
@@ -28,6 +28,8 @@ export default {
       getRegionCodes: apiUrl + 'core/lookup/region-codes',
       getDealerCodes: apiUrl + 'core/lookup/dealer-codes',
       getAddresses: apiUrl + 'core/accounts/{dealerCodes}/addresses',
+      getOrderStatus:apiUrl+'core/lookup/order-status',
+      getChequeStatus:apiUrl+'core/lookup/cheque-status',
       postProductCategories: apiUrl + 'b2b/lookup/product-categories',
       postProductTypes: apiUrl + 'b2b/lookup/product-types',
       postSeries: apiUrl + 'b2b/lookup/product-series',
@@ -36,6 +38,7 @@ export default {
       postProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
       postproductionStatusData: apiUrl + 'b2b/lookup/product-production-status',
       postDimensions: apiUrl + 'b2b/lookup/product-dimensions',
+      
 
     },
 

@@ -18,6 +18,7 @@ import { Table, Row, Col, TreeSelect, Tag, Select, BackTop } from "antd";
 import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 
 //Styles
 import { DownloadOutlined } from '@ant-design/icons';
@@ -59,6 +60,7 @@ const OrdersReport = () => {
     sortedInfo: "",
     filteredInfo: ""
   });
+  const statusChildren = [];
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
@@ -70,6 +72,7 @@ const OrdersReport = () => {
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('');
   const [address, setAddress] = useState();
+  const [status, setSelectedStatus] = useState();
   const location = useLocation();
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
@@ -91,10 +94,16 @@ const OrdersReport = () => {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData, aggregatesOverall] =
-    usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+    usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey,"status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
+
+  //Status
+  const [statusType] = useFilterData(`${siteConfig.api.lookup.getOrderStatus}`, searchUrl);
+  for (let i = 0; i < statusType.length; i++) {
+    statusChildren.push(<Option key={statusType[i]}>{statusType[i]}</Option>);
+  }
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
@@ -108,6 +117,27 @@ const OrdersReport = () => {
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+
+    let getStatus= [];
+    if (parsed.status !== undefined) {
+      if (Array.isArray(parsed.status)) {
+        _.each(parsed.status, (item) => {
+          getStatus.push(item);
+        });
+      } else { getStatus.push(parsed.status); }
+    }
+    setSelectedStatus(getStatus);
+
+    let getAddress=[];
+    if (parsed.address !== undefined) {
+      if (Array.isArray(parsed.address)) {
+        _.each(parsed.address, (item) => {
+          getAddress.push(item);
+        });
+      } else { getAddress.push(parsed.address); }
+    }
+    setAddress(getAddress);
+    
     let newDealarCode = []
 
     //Field url data
@@ -200,6 +230,7 @@ const OrdersReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('status');
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -209,6 +240,11 @@ const OrdersReport = () => {
     _.forEach(address, (item) => {
       params.append('address', item); params.toString();
     });
+
+    _.filter(status, function (item) {
+      params.append('status', item); params.toString();
+    });
+
     if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
     if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
@@ -249,6 +285,7 @@ const OrdersReport = () => {
     params.delete('pgsize');
     params.delete('pgindex');
     params.delete('address');
+    params.delete('status');
 
     setLookupAddressChildren([]);
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
@@ -318,6 +355,12 @@ const OrdersReport = () => {
   function addressHandleChange(value) {
     setAddress(value);
   }
+
+  //Change Status Type
+  function statusHandleChange(value) {
+    setSelectedStatus(value);
+  }
+  
   //Get adress
   async function getAdress(dealerCodes) {
     //Get User Info  
@@ -647,6 +690,9 @@ const OrdersReport = () => {
                 <Col span={6} >
                   <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
                 </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.status" />}></FormItem>
+                </Col>
               </Row>
               : null}
             <Row>
@@ -671,6 +717,17 @@ const OrdersReport = () => {
                   defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                   style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 />
+              </Col>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+              <Select
+                  mode="multiple"
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                  placeholder="Durum Seçiniz"
+                  onChange={statusHandleChange}
+                  value={status}
+                >
+                  {statusChildren}
+                </Select>
               </Col>
             </Row>
             <Row>

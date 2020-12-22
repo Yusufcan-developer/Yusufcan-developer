@@ -52,6 +52,7 @@ const ChequesReport = () => {
     filteredInfo: ''
   });
   const children = [];
+  const statusChildren = [];
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
   const [serialNumber, setSerialNumber] = useState();
@@ -65,6 +66,7 @@ const ChequesReport = () => {
   const [fieldCodes, setFieldCodes] = useState()
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [selectedCheckqueType, setSelectedCheckqueType] = useState();
+  const [status, setSelectedStatus] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
 
   const location = useLocation();
@@ -86,7 +88,7 @@ const ChequesReport = () => {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey,"status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -97,6 +99,13 @@ const ChequesReport = () => {
     children.push(<Option key={chequeTypeData[i]}>{chequeTypeData[i]}</Option>);
   }
 
+  //Status
+  const [statusType] = useFilterData(`${siteConfig.api.lookup.getChequeStatus}`, searchUrl);
+  for (let i = 0; i < statusType.length; i++) {
+    if (statusType[i] === null) { statusChildren.push(<Option key={''}>{''}</Option>); } else {
+      statusChildren.push(<Option key={statusType[i]}>{statusType[i]}</Option>);
+    }
+  }
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
 
@@ -109,6 +118,16 @@ const ChequesReport = () => {
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+
+    let getStatus= [];
+    if (parsed.status !== undefined) {
+      if (Array.isArray(parsed.status)) {
+        _.each(parsed.status, (item) => {
+          getStatus.push(item);
+        });
+      } else { getStatus.push(parsed.status); }
+    }
+    setSelectedStatus(getStatus);
 
     let checkType = [];
     if (parsed.type !== undefined) {
@@ -185,6 +204,7 @@ const ChequesReport = () => {
     params.delete('type');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('status');
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -201,6 +221,10 @@ const ChequesReport = () => {
 
     _.filter(selectedCheckqueType, function (item) {
       params.append('type', item); params.toString();
+    });
+
+    _.filter(status, function (item) {
+      params.append('status', item); params.toString();
     });
 
     let createUrl = null;
@@ -307,6 +331,10 @@ const ChequesReport = () => {
     dataSearch(current, pageSize);
   }
 
+  //Change Status Type
+  function statusHandleChange(value) {
+    setSelectedStatus(value);
+  }
   let columns = [
     {
       title: "Bayi Kodu",
@@ -502,6 +530,9 @@ const ChequesReport = () => {
                 <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                   <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                 </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.status" />}></FormItem>
+                </Col>
               </Row>
               : null}
             <Row>
@@ -510,6 +541,17 @@ const ChequesReport = () => {
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                 <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+              </Col>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+              <Select
+                  mode="multiple"
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                  placeholder="Durum Seçiniz"
+                  onChange={statusHandleChange}
+                  value={status}
+                >
+                  {statusChildren}
+                </Select>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
