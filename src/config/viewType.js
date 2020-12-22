@@ -1,6 +1,12 @@
 
 export default function viewType(formName) {
     let newView = 'MobileView';
+
+    if(formName === 'Filter'){
+        if (window.innerWidth > 766) {
+            newView = 'DesktopView';
+        }
+    }
     if (formName === 'Reports') {
         if (window.innerWidth > 1220) {
             newView = 'DesktopView';

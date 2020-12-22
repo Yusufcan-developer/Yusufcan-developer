@@ -22,6 +22,7 @@ import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "../Reports/ReportSummary";
 
 //Other Library
+import ExcelExport from "../Reports/ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr'
@@ -31,6 +32,7 @@ import ReportPagination from "../Reports//ReportPagination";
 import enumerations from "../../config/enumerations";
 import logMessage from '@iso/config/logMessage';
 import viewType from '@iso/config/viewType';
+import { DownloadOutlined } from '@ant-design/icons';
 
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -175,6 +177,17 @@ const MainForm = () => {
   function dealerCodeHandleChange(value) {
     setDealerCodes(value);
   }
+   //Excel Oluşturma
+   const exportExcelButton = () => {
+    // postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
+    ExcelExport(AccountColumns, accountData, 'Cari Toplamlar');
+  }
+    //Excel Oluşturma
+    const exportDBSExcelButton = () => {
+      // postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
+      ExcelExport(columns, data, 'DBS Toplamları');
+    }
+
   //DBS Toplamlar Columns
   let columns = [
     {
@@ -384,13 +397,14 @@ const MainForm = () => {
     }
   }
   const view = viewType('Reports');
+  const filterView=viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.mainForm.header" />}
       </PageHeader>
       <Box >
-        <Collapse accordion>
+        <Collapse accordion  defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }  >
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -420,6 +434,12 @@ const MainForm = () => {
         </Collapse>
       </Box>
       <Box >
+      <Col span={8} offset={16} align="right" >
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
+            icon={<DownloadOutlined />} onClick={exportExcelButton}>
+            {<IntlMessages id="forms.button.exportExcel" />}
+          </Button>
+        </Col>
         <h2 style={{ marginBottom: '10px' }}>Cari Toplamları</h2>
         <ReportPagination
           onShowSizeChange={onShowCariToplamlarSizeChange}
@@ -452,6 +472,12 @@ const MainForm = () => {
         />
       </Box>
       <Box >
+      <Col span={8} offset={16} align="right" >
+          <Button type="primary" size="small" style={{ marginBottom: '5px' }}
+            icon={<DownloadOutlined />} onClick={exportDBSExcelButton}>
+            {<IntlMessages id="forms.button.exportExcel" />}
+          </Button>
+        </Col>
         <h2 style={{ marginBottom: '10px' }}>DBS Toplamları</h2>
         <ReportPagination
           onShowSizeChange={onShowSizeChange}
