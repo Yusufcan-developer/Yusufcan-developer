@@ -41,6 +41,7 @@
   "sidebar.editor": "Editor",
   "forms.button.next": "Devam",
   "forms.button.label_Search": "Ara",
+  "forms.button.generatePassword": "Parola Üret",
   "forms.button.label_Choose": "Sepet Oluştur",
   "forms.button.exportExcel": "Excel",
   "forms.button.createAddress": "Yeni Adres",

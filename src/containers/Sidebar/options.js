@@ -79,6 +79,10 @@ export default {
             key: 'admin/logs',
             label: 'sidebar.logs',
           },
+          // {
+          //   key: 'user/DealerUserList',
+          //   label: 'sidebar.userList',
+          // },
         ],
       },
     ],
@@ -428,6 +432,10 @@ export default {
               key: 'admin/notification',
               label: 'sidebar.notifications',
             },
+            // {
+            //   key: 'user/DealerUserList',
+            //   label: 'sidebar.userList',
+            // },
           ],
         },
       ],

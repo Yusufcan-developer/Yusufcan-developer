@@ -221,7 +221,7 @@ const CartList = () => {
     });
   };
 
-  /**Pagination : Tablo  pageSize'ı değiştirir*/
+  /**Pagination : Tablo pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);

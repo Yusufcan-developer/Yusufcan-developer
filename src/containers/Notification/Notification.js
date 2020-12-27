@@ -12,7 +12,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Tag, Modal } from "antd";
+import { Table, Row, Col, Tag, Modal, Radio } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
@@ -59,11 +59,13 @@ export default function () {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [newUrlParams, setNewUrlParams] = useState('');
   const [selectedNotificationType, setSelectedNotificationType] = useState();
   const [selectedIsRead, setSelectedIsRead] = useState();
+  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
+  const [privateDate, setPrivateDate] = useState('Bugun');
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
@@ -102,7 +104,7 @@ export default function () {
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
@@ -165,8 +167,8 @@ export default function () {
   const searchButton = () => {
     dataSearch();
   };
-   //Keyword 'Enter' search
-   const keyPress = e => {
+  //Keyword 'Enter' search
+  const keyPress = e => {
     if (e.keyCode === 13) {
       dataSearch();
     }
@@ -210,6 +212,44 @@ export default function () {
   //Change Notification Type
   function notificationTypeHandleChange(value) {
     setSelectedNotificationType(value);
+  }
+
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+  }
+
+  //Change Cheques Type
+  function privateDateHandleChange(value) {
+    setPrivateDate(value);
+
+    if (value === 'SonBirHafta') {
+      setFromDate(moment(moment().subtract(7, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'Bugun') {
+      setFromDate(moment(moment().subtract(0, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonUcGun') {
+      setFromDate(moment(moment().subtract(3, 'days').toDate()));
+      setToDate(moment(new Date()));
+    } else if (value === 'SonBirAy') {
+      setFromDate(moment(moment().subtract(30, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonUcAy') {
+      setFromDate(moment(moment().subtract(90, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonAltiAy') {
+      setFromDate(moment(moment().subtract(180, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonBirYil') {
+      setFromDate(moment(moment().subtract(366, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
   }
   let columns = [
     {
@@ -393,14 +433,14 @@ export default function () {
     }
   };
   const view = viewType('Notifications');
-  const filterView=viewType('Filter');
+  const filterView = viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.notification.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {view !== 'MobileView' ?
               <Row>
@@ -408,7 +448,7 @@ export default function () {
                   <FormItem label={<IntlMessages id="page.isReadStatus" />}></FormItem>
                 </Col>
                 <Col span={6} >
-                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                 </Col>
               </Row>
               : null}
@@ -442,12 +482,7 @@ export default function () {
                 </Select>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <RangePicker
-                  format={siteConfig.dateFormat}
-                  onChange={changeTimePicker}
-                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                />
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
             </Row>
             {view !== 'MobileView' ?
@@ -456,7 +491,7 @@ export default function () {
                   <FormItem label={<IntlMessages id="page.notificationTypes" />}></FormItem>
                 </Col>
                 <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
                 </Col>
               </Row> : null}
             <Row>
@@ -473,10 +508,51 @@ export default function () {
 
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+                <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem} style={view === 'MobileView' ? null : { marginLeft: '-30px' }}>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={1} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <Select
+                        placeholder="Tarih aralığı seçiniz"
+                        disabled={selectedRadioItem === 1 ? false : true}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        onChange={privateDateHandleChange}
+                        optionFilterProp="children"
+                        value={privateDate}
+                      >
+                        <Option value="Bugun">Bugün</Option>
+                        <Option value="SonUcGun">Son 3 gün</Option>
+                        <Option value="SonBirHafta">Son 1 Hafta</Option>
+                        <Option value="SonBirAy">Son 1 Ay</Option>
+                        <Option value="SonUcAy">Son 3 Ay</Option>
+                        <Option value="SonAltiAy">Son 6 Ay</Option>
+                        <Option value="SonBirYil">Son 1 Yıl</Option>
+                      </Select>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={2} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} size="small">
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <RangePicker
+                        disabled={selectedRadioItem === 2 ? false : true}
+                        format={siteConfig.dateFormat}
+                        onChange={changeTimePicker}
+                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                      />
+                    </Col>
+                  </Row>
+                </Radio.Group>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Button style={{ marginBottom: '8px',width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>

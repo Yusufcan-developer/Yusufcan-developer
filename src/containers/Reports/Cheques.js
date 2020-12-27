@@ -8,7 +8,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect } from "antd";
+import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -61,6 +61,8 @@ const ChequesReport = () => {
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(new Date()));
   const [toDate, setToDate] = useState(moment(moment().add(6, 'months').toDate()));
+  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
+  const [privateDate, setPrivateDate] = useState('GelecekAltiAy');
   const [dealerCodes, setDealerCodes] = useState()
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState()
@@ -80,15 +82,10 @@ const ChequesReport = () => {
     setCurrentPage(pageIndex);
   }, [pageIndex]);
 
-  // useEffect(() => {
-  //   getVariablesFromUrl()
-  //   setChangePageSize(pageSize);
-  // }, [pageSize]);
-
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -111,7 +108,7 @@ const ChequesReport = () => {
 
     const parsed = queryString.parse(location.search);
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.sno !== undefined) { setSerialNumber([parsed.sno]); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
@@ -465,15 +462,39 @@ const ChequesReport = () => {
     postSaveLog(enumerations.LogSource.ReportCheques, enumerations.LogTypes.Export, logMessage.Reports.Cheques.excelExport);
     ExcelExport(columns, data, 'Çek-Senet');
   }
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+  }
+
+  //Change Cheques Type
+  function privateDateHandleChange(value) {
+    setPrivateDate(value);
+    if (value === 'GelecekOnbesGun') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(15, 'days').toDate()));
+    }
+    else if (value === 'GelecekBirAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(30, 'days').toDate()));
+    }
+    else if (value === 'GelecekUcAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(90, 'days').toDate()));
+    } else if (value === 'GelecekAltiAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(180, 'days').toDate()));
+    }
+  }
   const view = viewType('Reports');
-  const filterView=viewType('Filter');
+  const filterView = viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.checkingReportsTitle.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {view !== 'MobileView' ?
               <Row>
@@ -484,7 +505,7 @@ const ChequesReport = () => {
                   <FormItem label={<IntlMessages id="page.chequesType" />}></FormItem>
                 </Col>
                 <Col span={6} >
-                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                 </Col>
               </Row>
               : null}
@@ -515,12 +536,8 @@ const ChequesReport = () => {
                 </Select>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <RangePicker
-                  format={siteConfig.dateFormat}
-                  onChange={changeTimePicker}
-                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                />
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+
               </Col>
             </Row>
             {view !== 'MobileView' ?
@@ -532,7 +549,7 @@ const ChequesReport = () => {
                   <FormItem label={<IntlMessages id="page.serialNumber" />}></FormItem>
                 </Col>
                 <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                  <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
                 </Col>
               </Row>
               : null}
@@ -552,7 +569,47 @@ const ChequesReport = () => {
                 <Input size="small" placeholder="Seri No" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={serialNumber} onKeyDown={keyPress} onChange={event => setSerialNumber([event.target.value])} />
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem} style={view === 'MobileView' ? null : { marginLeft: '-30px' }}>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={1} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <Select
+                        placeholder="Tarih aralığı seçiniz"
+                        disabled={selectedRadioItem === 1 ? false : true}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        onChange={privateDateHandleChange}
+                        optionFilterProp="children"
+                        value={privateDate}
+                      >
+                        <Option value="GelecekBirHafta">Gelecek 1 hafta</Option>
+                        <Option value="GelecekOnbesGun">Gelecek 15 gün</Option>
+                        <Option value="GelecekBirAy">Gelecek 1 ay</Option>
+                        <Option value="GelecekUcAy">Gelecek 3 ay</Option>
+                        <Option value="GelecekAltiAy">Gelecek 6 ay</Option>
+                      </Select>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={2} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} size="small">
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <RangePicker
+                        disabled={selectedRadioItem === 2 ? false : true}
+                        format={siteConfig.dateFormat}
+                        onChange={changeTimePicker}
+                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                      />
+                    </Col>
+                  </Row>
+                </Radio.Group>
+
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>

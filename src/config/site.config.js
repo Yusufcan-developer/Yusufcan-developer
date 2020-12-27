@@ -71,7 +71,8 @@ export default {
       postUsers: apiUrl + 'security/users/search',
       postUser: apiUrl + 'security/users',
       deleteUser: apiUrl + 'security/users/',
-
+      getRestrictedUsers: apiUrl+'security/restricted-users/search',
+      postRestrictedUser:apiUrl+'security/restricted-users'
     },
     security: {
       postAccounts: apiUrl + 'core/accounts',
@@ -88,7 +89,11 @@ export default {
       postForgotPassword:apiUrl+'security/forgot-password',
       postNotification: apiUrl + 'security/notifications/search',
       getNotificationByUserId:apiUrl+'security/users/{userId}/notifications',
-      postIsRead:apiUrl+'security/notifications/{notificationId}/read'
+      postIsRead:apiUrl+'security/notifications/{notificationId}/read',
+      getRestrictedRole:apiUrl+'security/restricted-users/roles',
+      getGenerateUsername:apiUrl+'security/restricted-users/generate-username',
+      getGeneratePassword:apiUrl+'security/generate-password',
+      
     },
     image: {
       getProductsOfImages: apiUrl + 'images/products-for-images',

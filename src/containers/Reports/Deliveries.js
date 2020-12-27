@@ -12,7 +12,8 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, TreeSelect } from "antd";
+import { Table, Row, Col, TreeSelect, Radio } from "antd";
+import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
@@ -37,6 +38,7 @@ import moment from 'moment';
 import 'moment/locale/tr';
 import logMessage from '@iso/config/logMessage';
 import enumerations from "../../config/enumerations";
+import { func } from "prop-types";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -55,18 +57,21 @@ const DeliveriesReport = () => {
   });
 
   const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(20)
+  const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
-  const [dealerCodes, setDealerCodes] = useState()
-  const [regionCodes, setRegionCodes] = useState()
-  const [fieldCodes, setFieldCodes] = useState()
+  const [dealerCodes, setDealerCodes] = useState();
+  const [regionCodes, setRegionCodes] = useState();
+  const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
-  const [newUrlParams, setNewUrlParams] = useState('')
+  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
+  const [newUrlParams, setNewUrlParams] = useState('');
+  const [privateDate, setPrivateDate] = useState('Bugun');
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
+  const Option = SelectOption;
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
@@ -87,7 +92,7 @@ const DeliveriesReport = () => {
   function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2);setPrivateDate(null); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
@@ -258,13 +263,48 @@ const DeliveriesReport = () => {
     setPageSize(pageSize);
     dataSearch(current, pageSize);
   }
-
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+  }
   //Excel Oluşturma
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
     ExcelExport(columns, data, 'Sevkiyatlar');
   }
+  //Change Cheques Type
+  function privateDateHandleChange(value) {
 
+    setPrivateDate(value);
+        
+        if (value === 'SonBirHafta') {
+            setFromDate(moment(moment().subtract(7, 'days').toDate()));
+            setToDate(moment(new Date()));
+        }
+        else if (value === 'Bugun') {
+            setFromDate(moment(moment().subtract(0, 'days').toDate()));
+            setToDate(moment(new Date()));
+        }
+        else if (value === 'SonUcGun') {
+            setFromDate(moment(moment().subtract(3, 'days').toDate()));
+            setToDate(moment(new Date()));
+        } else if (value === 'SonBirAy') {
+            setFromDate(moment(moment().subtract(30, 'days').toDate()));
+            setToDate(moment(new Date()));
+        }
+        else if(value==='SonUcAy'){
+            setFromDate(moment(moment().subtract(90, 'days').toDate()));
+            setToDate(moment(new Date()));
+        }
+        else if(value==='SonAltiAy'){
+            setFromDate(moment(moment().subtract(180, 'days').toDate()));
+            setToDate(moment(new Date()));
+        }
+        else if(value==='SonBirYil'){
+            setFromDate(moment(moment().subtract(366, 'days').toDate()));
+            setToDate(moment(new Date()));
+        }
+  }
   let columns = [
     {
       title: "Bayi Kodu",
@@ -439,14 +479,14 @@ const DeliveriesReport = () => {
     }
   }
   const view = viewType('Reports');
-  const filterView=viewType('Filter');
+  const filterView = viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.shippingReportsTitle.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] :null}>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {view !== 'MobileView' ?
               <Row>
@@ -479,12 +519,49 @@ const DeliveriesReport = () => {
                 />
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <RangePicker
-                  format={siteConfig.dateFormat}
-                  onChange={changeTimePicker}
-                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                />
+                <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem}>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={1} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} size="small">
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <Select
+                        placeholder="Tarih aralığı seçiniz"
+                        disabled={selectedRadioItem === 1 ? false : true}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        onChange={privateDateHandleChange}
+                        optionFilterProp="children"
+                        value={privateDate}
+                      >
+                        <Option value="Bugun">Bugün</Option>
+                        <Option value="SonUcGun">Son 3 gün</Option>
+                        <Option value="SonBirHafta">Son 1 Hafta</Option>
+                        <Option value="SonBirAy">Son 1 Ay</Option>
+                        <Option value="SonUcAy">Son 3 Ay</Option>
+                        <Option value="SonAltiAy">Son 6 Ay</Option>
+                        <Option value="SonBirYil">Son 1 Yıl</Option>
+                      </Select>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={2} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <RangePicker
+                        disabled={selectedRadioItem === 2 ? false : true}
+                        format={siteConfig.dateFormat}
+                        onChange={changeTimePicker}
+                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                      />
+                    </Col>
+                  </Row>
+                </Radio.Group>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Input style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} size="small" placeholder="Anahtar kelime" value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
