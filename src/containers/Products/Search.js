@@ -1125,7 +1125,12 @@ const SearchComponent = () => {
                         </Row>
                         <span className="isoCardDate" style={{ minHeight: '70px' }}>
                           {item.description}
-                        </span>
+                          <br />
+                          <Col  align="center" >
+                          {item.descriptionExtra}
+                          </Col>                   
+                        </span> 
+                        
                         {/* <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span> */}

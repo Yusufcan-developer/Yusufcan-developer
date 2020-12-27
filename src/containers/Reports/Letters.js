@@ -9,10 +9,11 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect } from "antd";
+import { Table, Row, Col, Pagination, TreeSelect, Radio } from "antd";
 import Input from '@iso/components/uielements/input';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
+import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
@@ -34,7 +35,7 @@ import ExcelExport from "./ExcelExport";
 import moment from 'moment';
 import enumerations from "../../config/enumerations";
 import logMessage from "../../config/logMessage";
-import 'moment/locale/tr' 
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -62,14 +63,15 @@ export default function () {
   const [fieldCodes, setFieldCodes] = useState()
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
-
+  const [privateDate, setPrivateDate] = useState('Tumu');
+  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
-
+  const Option = SelectOption;
   //Burada ki useEffect'ler page index page size  hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Browse,logMessage.Reports.Letters.browse);
+    postSaveLog(enumerations.LogSource.ReportLetters, enumerations.LogTypes.Browse, logMessage.Reports.Letters.browse);
     getVariablesFromUrl()
     setCurrentPage(pageIndex);
   }, [pageIndex]);
@@ -77,9 +79,9 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postLetters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": moment(fromDate, 'DD-MM-YYYY'), "to": moment(toDate, 'DD-MM-YYYY'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder  },searchUrl);
+    useFetch(`${siteConfig.api.report.postLetters}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
   //Bayi,Bölge ve Saha kodlarının getirilmesi
-  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`,searchUrl);
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
@@ -87,12 +89,12 @@ export default function () {
     const parsed = queryString.parse(location.search);
 
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));}
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField=parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder=parsed.sortingOrder; }
+    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
+    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -136,7 +138,7 @@ export default function () {
       }
     });
     onChangeDealerCode(newDealarCode);
-    
+
     return setOnChange(true);
   }
   //Get Search Data
@@ -158,15 +160,15 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if(sortingOrder!==undefined){params.append('sortingOrder', sortingOrder);}
-    if(sortingField!==undefined){params.append('sortingField', sortingField);}
+    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
+    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-    
+
     return setOnChange(true);
   }
 
@@ -175,13 +177,13 @@ export default function () {
     dataSearch();
   };
 
-    //Keyword 'Enter' search
-    const keyPress = e => {
-      if (e.keyCode === 13) {
-        dataSearch();
-      }
+  //Keyword 'Enter' search
+  const keyPress = e => {
+    if (e.keyCode === 13) {
+      dataSearch();
     }
-    
+  }
+
   //Change DealerCode
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
@@ -213,14 +215,14 @@ export default function () {
     }
   };
 
- //Change from and To date
- function changeTimePicker(value, dateString) {
-  setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-}
+  //Change from and To date
+  function changeTimePicker(value, dateString) {
+    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
 
-   //Search DailerName Tree Select Component
-   function filterTreeNodeDealerCode(value, treeNode) {
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
     if (value && treeNode && treeNode.title) {
       const filterValue = value.toLocaleLowerCase('tr')
       const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
@@ -237,11 +239,11 @@ export default function () {
     });
     if (sorter !== undefined) {
       if (sorter.order === "descend") {
-        sortingOrder='DESC';
-      } else { sortingOrder='ASC'; }
-    
-    sortingField=sorter.field;
-    dataSearch()
+        sortingOrder = 'DESC';
+      } else { sortingOrder = 'ASC'; }
+
+      sortingField = sorter.field;
+      dataSearch()
     }
   };
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -251,14 +253,14 @@ export default function () {
     dataSearch(current, pageSize);
   }
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
-  function currentPageChange(current,pageSize) {
+  function currentPageChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
   //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportLetters,enumerations.LogTypes.Export,logMessage.Reports.Letters.exportExcel);
+    postSaveLog(enumerations.LogSource.ReportLetters, enumerations.LogTypes.Export, logMessage.Reports.Letters.exportExcel);
     ExcelExport(columns, data, 'Teminat Mektubu');
   }
   let columns = [
@@ -276,7 +278,7 @@ export default function () {
       title: "Bitiş Tarihi",
       dataIndex: "toDate",
       key: "toDate",
-      render: (toDate) =>(toDate!==null?moment(toDate).format(siteConfig.dateFormat):'-'),
+      render: (toDate) => (toDate !== null ? moment(toDate).format(siteConfig.dateFormat) : '-'),
       sorter: (a, b) => (''),
       sortOrder: tableOptions.sortedInfo.columnKey === 'toDate' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
@@ -304,7 +306,7 @@ export default function () {
       dataIndex: "trCode",
       key: "trCode",
       align: "center",
-      footerKey:'Genel Toplam',
+      footerKey: 'Genel Toplam',
     },
     {
       title: "Tutar",
@@ -391,34 +393,66 @@ export default function () {
       }
     }
   }
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+  }
 
+  //Change Cheques Type
+  function privateDateHandleChange(value) {
+    setPrivateDate(value);
+
+    if (value === 'Tumu') {
+      setFromDate(moment(moment().subtract(180, 'days').toDate()));
+      setToDate(moment(new Date('2100-02-02')));
+    }
+    if (value === 'GelecekBirHafta') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(7, 'days').toDate()));
+    }
+    if (value === 'GelecekOnbesGun') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(15, 'days').toDate()));
+    }
+    else if (value === 'GelecekBirAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(30, 'days').toDate()));
+    }
+    else if (value === 'GelecekUcAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(90, 'days').toDate()));
+    } else if (value === 'GelecekAltiAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(180, 'days').toDate()));
+    }
+  }
   const view = viewType('Reports');
-  const filterView=viewType('Filter');
+  const filterView = viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.GuaranteeLetterTitle.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {view!=='MobileView'?
+            {view !== 'MobileView' ?
+              <Row>
+                <Col span={6}>
+                  <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.endDateRangeTitle" />}></FormItem>
+                </Col>
+                <Col span={6} >
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+                <Col span={5} offset={1}>
+                </Col>
+              </Row>
+              : null}
             <Row>
-              <Col span={6}>
-                <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.endDateRangeTitle" />}></FormItem>
-              </Col>
-              <Col span={6} >
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-              <Col span={5} offset={1}>
-              </Col>
-            </Row>
-            :null}
-            <Row>
-              <Col span={view!=='MobileView'?6:0}  md={view!=='MobileView'?null:12} sm={view!=='MobileView'?null:12} xs={view!=='MobileView'?null:24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <TreeSelect
                   treeData={treeData}
                   onChange={onChangeDealerCode}
@@ -428,23 +462,59 @@ export default function () {
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Bayi Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'}}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
                 />
               </Col>
-              <Col span={view!=='MobileView'?6:0}  md={view!=='MobileView'?null:12} sm={view!=='MobileView'?null:12} xs={view!=='MobileView'?null:24}>
-                <RangePicker
-                  format={siteConfig.dateFormat}
-                  onChange={changeTimePicker}
-                  defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'}}
-                />
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem}>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={1} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} size="small">
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <Select
+                        placeholder="Tarih aralığı seçiniz"
+                        disabled={selectedRadioItem === 1 ? false : true}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        onChange={privateDateHandleChange}
+                        optionFilterProp="children"
+                        value={privateDate}
+                      >
+                        <Option value="Tumu">Tümü</Option>
+                        <Option value="GelecekBirHafta">Gelecek 1 hafta</Option>
+                        <Option value="GelecekOnbesGun">Gelecek 15 gün</Option>
+                        <Option value="GelecekBirAy">Gelecek 1 ay</Option>
+                        <Option value="GelecekUcAy">Gelecek 3 ay</Option>
+                        <Option value="GelecekAltiAy">Gelecek 6 ay</Option>
+                      </Select>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col span={2} >
+                      <Radio value={2} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+
+                      </Radio>
+                    </Col>
+                    <Col style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '90%' }} size="small">
+                      <RangePicker
+                        disabled={selectedRadioItem === 2 ? false : true}
+                        format={siteConfig.dateFormat}
+                        onChange={changeTimePicker}
+                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                      />
+                    </Col>
+                  </Row>
+                </Radio.Group>
               </Col>
-              <Col span={view!=='MobileView'?6:0}  md={view!=='MobileView'?null:12} sm={view!=='MobileView'?null:12} xs={view!=='MobileView'?null:24}>
-                <Input size="small" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'  }} placeholder="Anahtar kelime" value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Input size="small" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} placeholder="Anahtar kelime" value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={view!=='MobileView'?6:0}  md={view!=='MobileView'?null:12} sm={view!=='MobileView'?null:12} xs={view!=='MobileView'?null:24}>
-                <Button style={{ marginBottom: '8px',  width: view !== 'MobileView' ? '125px' : '100%' }} type="primary"  onClick={searchButton}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
               </Col>
@@ -479,7 +549,7 @@ export default function () {
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data ,false ,aggregatesOverall,true)
+            return renderFooter(columns, data, false, aggregatesOverall, true)
           }}
         />
         <ReportPagination
