@@ -416,14 +416,14 @@ export default function () {
       key: "unit"
     },
     {
-      title: "Ağırlık Birimi",
+      title: "Birim Ağırlık",
       dataIndex: "unitWeight",
       key: "unitWeight",
       footerKey: 'Genel Toplam',
       render: (unitWeight) => numberFormat(unitWeight),
     },
     {
-      title: "Palet Ağırlığı",
+      title: "Planlanan Ağırlık",
       dataIndex: "palletWeight",
       key: "palletWeight",
       footerKey: 'palletWeight',

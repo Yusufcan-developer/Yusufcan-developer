@@ -1021,10 +1021,10 @@ const SearchComponent = () => {
                 </Radio>
                   {(category === 'KARO') ? (<React.Fragment>
                     <Radio style={radioStyle} value={enumerations.StockStatus.TileUpTo10000}>
-                      1-10.000
+                      1-10.000 M2
                 </Radio>
                     <Radio style={radioStyle} value={enumerations.StockStatus.Tile10000AndMore}>
-                      10.000+
+                      10.000+  M2
                 </Radio></React.Fragment>) : (null)}
                 </RadioGroup>
               </Panel>
