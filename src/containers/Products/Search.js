@@ -84,6 +84,7 @@ const SearchComponent = () => {
   const [dimension, setDimension] = useState([]);
   const [color, setColor] = useState([]);
   const [surface, setSurface] = useState([]);
+  const [stockStatus, setStockStatus] = useState(enumerations.StockStatus.None);
   const [campaign, setCampaignCode] = useState(false);
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
 
@@ -210,6 +211,11 @@ const SearchComponent = () => {
         setCampaignCode(true); else { setCampaignCode(false) }
     }
 
+     //Stok Durumu get url data
+     if (parsed.stockStatus !== undefined) {
+        setStockStatus(parsed.stockStatus);
+    }
+
     //Product Quality get url data
     if (parsed.pq !== undefined) {
       if (Array.isArray(parsed.pq)) {
@@ -246,7 +252,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"balanceLevel":stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -408,6 +414,22 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   };
+
+  //Stock Status Filter Event
+  function onChangeStockStatus(event) {
+    setStockStatus(event.target.value)
+    const params = new URLSearchParams(location.search);
+    params.delete('stockStatus');
+    params.append('stockStatus', event.target.value);
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setPageIndex(1);
+    params.toString();
+
+    history.push(`${location.pathname}?${params.toString()}`);
+
+    return setOnChange(true);
+  }
   // //Quality Filter Event
   // function onChangeQuality(checkedProductQualityValue) {
   //   setQuality(checkedProductQualityValue);
@@ -608,6 +630,7 @@ const SearchComponent = () => {
     setSurface([]);
     setKeyword();
     setCampaignCode(false);
+    setStockStatus(enumerations.StockStatus.None);
 
     if (getProductGroupName !== undefined) {
       let productGroupName = getProductGroupName;
@@ -972,7 +995,7 @@ const SearchComponent = () => {
               </Panel>
             </Collapse>
             <Collapse {...collapseProps}>
-              <Panel header={<IntlMessages id="filter.campaing" />} key="1">
+              <Panel header={<IntlMessages id="filter.campaing" />} key="2">
                 <RadioGroup onChange={onChangeCampaing} value={campaign} defaultValue={campaign}>
                   <Radio style={radioStyle} value={false}>
                     Hepsi
@@ -983,6 +1006,30 @@ const SearchComponent = () => {
                 </RadioGroup>
               </Panel>
             </Collapse>
+            {/* Yeni Filtre Alanı Stok Durumu*/}
+            <Collapse {...collapseProps}>
+              <Panel header={<IntlMessages id="filter.status" />} key="3">
+                <RadioGroup onChange={onChangeStockStatus} value={stockStatus} defaultValue={stockStatus}>
+                  <Radio style={radioStyle} value={enumerations.StockStatus.None}>
+                    Hepsi
+                </Radio>
+                  {(category === 'KARO') ? (null) : (<Radio style={radioStyle} value={enumerations.StockStatus.GeneralInStock}>
+                    Stok Var
+                  </Radio>)}
+                  <Radio style={radioStyle} value={(category === 'KARO') ? enumerations.StockStatus.TileNotInStock : enumerations.StockStatus.GeneralNotInStock}>
+                    Stok Yok
+                </Radio>
+                  {(category === 'KARO') ? (<React.Fragment>
+                    <Radio style={radioStyle} value={enumerations.StockStatus.TileUpTo10000}>
+                      1-10.000
+                </Radio>
+                    <Radio style={radioStyle} value={enumerations.StockStatus.Tile10000AndMore}>
+                      10.000+
+                </Radio></React.Fragment>) : (null)}
+                </RadioGroup>
+              </Panel>
+            </Collapse>
+
             {/* <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Kalite" />} key="2">
                 <CheckboxGroup
@@ -995,7 +1042,7 @@ const SearchComponent = () => {
             </Collapse> */}
             {(productTypeData.length !== 0 && productTypeData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="filter.productType" />} key="2">
+                <Panel header={<IntlMessages id="filter.productType" />} key="4">
                   <CheckboxGroup
                     options={productTypeData}
                     value={type}
@@ -1008,7 +1055,7 @@ const SearchComponent = () => {
 
             {(dimensionData.length !== 0 && dimensionData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="filter.dimension" />} key="3">
+                <Panel header={<IntlMessages id="filter.dimension" />} key="5">
                   <CheckboxGroup
                     options={
                       dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -1021,7 +1068,7 @@ const SearchComponent = () => {
             ) : (null)}
             {(serieData.length !== 0 && serieData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="filter.series" />} key="4">
+                <Panel header={<IntlMessages id="filter.series" />} key="6">
                   <CheckboxGroup
                     value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -1034,7 +1081,7 @@ const SearchComponent = () => {
             ) : (null)}
             {(colorData.length !== 0 && colorData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="filter.color" />} key="5">
+                <Panel header={<IntlMessages id="filter.color" />} key="7">
                   <CheckboxGroup
                     value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -1047,7 +1094,7 @@ const SearchComponent = () => {
 
             {(surfaceData.length !== 0 && surfaceData !== null) ? (
               <Collapse {...collapseProps}>
-                <Panel header={<IntlMessages id="filter.surface" />} key="6">
+                <Panel header={<IntlMessages id="filter.surface" />} key="8">
                   <CheckboxGroup
                     value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -1126,11 +1173,11 @@ const SearchComponent = () => {
                         <span className="isoCardDate" style={{ minHeight: '70px' }}>
                           {item.description}
                           <br />
-                          <Col  align="center" >
-                          {item.descriptionExtra}
-                          </Col>                   
-                        </span> 
-                        
+                          <Col className="isoCardTitle" align="center" >
+                            {item.descriptionExtra}
+                          </Col>
+                        </span>
+
                         {/* <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span> */}
@@ -1203,18 +1250,18 @@ const SearchComponent = () => {
                                       </Button>
                                     </Col>
                                     <Col span={4} style={{ width: '100%' }}>
-                                    <Space size={1}>
-                                      <Col span={4}>
-                                        <Tag color="blue">
-                                          1 Palet: {item.m2Pallet} {item.unit}
-                                        </Tag>
-                                      </Col>
-                                      {palletAmount > 0 ? (<Col span={4}>
-                                        <Tag color="blue">
-                                          Stok: {salableBalanceFriendlyText}
-                                        </Tag>
-                                      </Col>) : null}
-                                    </Space>
+                                      <Space size={1}>
+                                        <Col span={4}>
+                                          <Tag color="blue">
+                                            1 Palet: {item.m2Pallet} {item.unit}
+                                          </Tag>
+                                        </Col>
+                                        {palletAmount > 0 ? (<Col span={4}>
+                                          <Tag color="blue">
+                                            Stok: {salableBalanceFriendlyText}
+                                          </Tag>
+                                        </Col>) : null}
+                                      </Space>
                                     </Col>
                                   </Row>
                                 </Form.Item>
@@ -1246,19 +1293,19 @@ const SearchComponent = () => {
                                     </Button>
                                   </Col>
                                   <Col span={4} style={{ width: '100%' }}>
-                                  <Space size={5}>
-                                    <Col span={4}>
-                                      {item.unit !== 'TOR' ? <Tag color="blue">
-                                        1 Kutu: {item.m2Box} {item.unit}
-                                      </Tag> : null}
+                                    <Space size={5}>
+                                      <Col span={4}>
+                                        {item.unit !== 'TOR' ? <Tag color="blue">
+                                          1 Kutu: {item.m2Box} {item.unit}
+                                        </Tag> : null}
 
-                                    </Col>
-                                    {partialAmount > 0 ? (<Col span={4}>
-                                      <Tag color="blue">
-                                        Stok: {numberFormat(partialAmount)} {item.unit}
-                                      </Tag>
-                                    </Col>) : null}
-                                  </Space>
+                                      </Col>
+                                      {partialAmount > 0 ? (<Col span={4}>
+                                        <Tag color="blue">
+                                          Stok: {numberFormat(partialAmount)} {item.unit}
+                                        </Tag>
+                                      </Col>) : null}
+                                    </Space>
                                   </Col>
                                 </Row>
                               </Form.Item>

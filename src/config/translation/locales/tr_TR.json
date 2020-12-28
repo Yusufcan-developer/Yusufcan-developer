@@ -520,6 +520,7 @@
   "filter.category.asterisk": "Kategori *",
   "filter.salesStatus": "Satış Tipi",
   "filter.campaing": "Kampanya",
+  "filter.status": "Stok Durumu",
   "filter.productType": "Ürün Tipi",
   "filter.dimension": "Ebatlar",
   "filter.series": "Seriler",
