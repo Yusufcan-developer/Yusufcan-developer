@@ -5,6 +5,15 @@ export default {
         OnlyPartials: 'OnlyPartials',
         OnlyWholes: 'OnlyWholes',
     },
+    StockStatus:
+    {
+        None: 'None',
+        GeneralInStock: 'GeneralInStock',
+        GeneralNotInStock: 'GeneralNotInStock',
+        TileUpTo10000:'TileUpTo10000',
+        Tile10000AndMore:'Tile10000AndMore',
+        TileNotInStock:'TileNotInStock'
+    },
     LogTypes:
     {
         Export: 'Export',
