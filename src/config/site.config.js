@@ -57,8 +57,10 @@ export default {
     report: {
       postOrders: apiUrl + 'core/report/orders',
       getOrderLineItems: apiUrl + 'core/report/order-line-items',
+      getDeliveryLineItems: apiUrl + 'core/report/delivery-line-items',
       postDistributions: apiUrl + 'core/report/distributions',
       postDeliveries: apiUrl + 'core/report/deliveries',
+      postDeliveriesv2: apiUrl + 'core/report/deliveries-v2',
       postCheques: apiUrl + 'core/report/cheques',
       postLetters: apiUrl + 'core/report/letters',
       postTransactions: apiUrl + 'core/report/transactions',

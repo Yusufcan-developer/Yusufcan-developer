@@ -16,7 +16,7 @@ import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
-import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
+import { usePostDeliveryReport } from "@iso/lib/hooks/fetchData/usePostDeliveryReport";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
@@ -85,8 +85,8 @@ const DeliveriesReport = () => {
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, deliveryDetailData] =
-    useFetch(`${siteConfig.api.report.postDeliveries}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, deliveryDetailData, aggregatesOverall] =
+  usePostDeliveryReport(`${siteConfig.api.report.postDeliveriesv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
@@ -342,7 +342,7 @@ const DeliveriesReport = () => {
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
-      key: "dealerName"
+      key: "dealerName",
     },
     {
       title: "İrsaliye No",
@@ -354,9 +354,9 @@ const DeliveriesReport = () => {
 
     },
     {
-      title: "Teslimat Tarihi",
-      dataIndex: "deliveryDate",
-      key: "deliveryDate",
+      title: "İrsaliye Tarihi",
+      dataIndex: "waybillDate",
+      key: "waybillDate",
       type: "date",
       sorter: (a, b) => '',
       sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
@@ -364,82 +364,52 @@ const DeliveriesReport = () => {
       render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
     },
     {
+      title: "İrsaliye Saati",
+      dataIndex: "waybillTime",
+      key: "waybillTime",
+      align: "center",
+      footerKey: 'Genel Toplam',
+    },
+    {
+      title: "KDV'li toplam",
+      dataIndex: "totalCost",
+      key: "totalCost",
+      align: "right",
+      footerKey: "totalCost",
+      render: (totalCost) => numberFormat(totalCost),
+    },
+    {
       title: "Teslimat Adresi",
       dataIndex: "deliveryAddress",
       key: "deliveryAddress"
     },
-    {
-      title: "Sipariş No",
-      dataIndex: "orderNo",
-      key: "orderNo",
+     {
+      title: "Belge No",
+      dataIndex: "documentId",
+      key: "documentId",
       sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+      sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
+    },    
+    {
+      title: "Açıklama 1",
+      dataIndex: "description1",
+      key: "description1"
     },
     {
-      title: "Ürün Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
+      title: "Açıklama 2",
+      dataIndex: "description2",
+      key: "description2"
     },
     {
-      title: "Ürün Açıklaması ",
-      dataIndex: "itemDescription",
-      key: "itemDescription"
+      title: "Açıklama 3",
+      dataIndex: "description3",
+      key: "description3"
     },
     {
-      title: "Miktar",
-      dataIndex: "amount",
-      key: "amount",
-      align: "right",
-      render: (amount) => numberFormat(amount),
-    },
-    {
-      title: "Birim",
-      dataIndex: "unit",
-      key: "unit",
-      align: "center"
-    },
-    {
-      title: "Plaka",
-      dataIndex: "plateNo",
-      key: "plateNo",
-      align: "center"
-    },
-    {
-      title: "Şoför Adı",
-      dataIndex: "driverName",
-      key: "driverName",
-      align: "center"
-    },
-    {
-      title: "Şoför Telefonu",
-      dataIndex: "driverPhone",
-      key: "driverPhone",
-      align: "center"
-    },
-    {
-      title: "Çıkış Tarihi",
-      dataIndex: "departureDate",
-      key: "departureDate",
-      align: "center",
-      type: "date",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'departureDate' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-      render: (departureDate) => moment(departureDate).format(siteConfig.dateFormat),
-    },
-    {
-      title: "Çıkış Saati",
-      dataIndex: "departureTime",
-      key: "departureTime",
-      align: "center"
-    },
-    {
-      title: "Tonaj",
-      dataIndex: "tonnage",
-      key: "tonnage",
-      align: "right",
-      render: (tonnage) => numberFormat(tonnage),
+      title: "Açıklama 4",
+      dataIndex: "description4",
+      key: "description4"
     },
     {
       title: "Bayi Alt Kodu",
@@ -470,7 +440,150 @@ const DeliveriesReport = () => {
     },
   ];
 
-  let deliveryDetailDataColumn=[];
+  let deliveryDetailDataColumn=[{
+    title: "Bayi Kodu",
+    dataIndex: "dealerCode",
+    key: "dealerCode"
+  },
+  {
+    title: "Bayi Adı",
+    dataIndex: "dealerName",
+    key: "dealerName"
+  },
+  {
+    title: "İrsaliye No",
+    dataIndex: "waybillId",
+    key: "waybillId",
+    sorter: (a, b) => '',
+    sortOrder: tableOptions.sortedInfo.columnKey === 'waybillId' && tableOptions.sortedInfo.order,
+    sortDirections: ['descend', 'ascend'],
+
+  },
+  {
+    title: "Teslimat Tarihi",
+    dataIndex: "deliveryDate",
+    key: "deliveryDate",
+    type: "date",
+    sorter: (a, b) => '',
+    sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
+    sortDirections: ['descend', 'ascend'],
+    render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
+  },
+  {
+    title: "Teslimat Adresi",
+    dataIndex: "deliveryAddress",
+    key: "deliveryAddress"
+  },
+  {
+    title: "Sipariş No",
+    dataIndex: "orderNo",
+    key: "orderNo",
+    sorter: (a, b) => '',
+    sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+    sortDirections: ['descend', 'ascend'],
+  },
+  {
+    title: "Ürün Kodu",
+    dataIndex: "itemCode",
+    key: "itemCode",
+  },
+  {
+    title: "Ürün Açıklaması ",
+    dataIndex: "itemDescription",
+    key: "itemDescription"
+  },
+  {
+    title: "Miktar",
+    dataIndex: "amount",
+    key: "amount",
+    align: "right",
+    footerKey: "amount",
+    render: (amount) => numberFormat(amount),
+  },
+  {
+    title: "KDV'li toplam",
+    dataIndex: "totalCost",
+    key: "totalCost",
+    align: "right",
+    footerKey: "totalCost",
+    render: (totalCost) => numberFormat(totalCost),
+  },
+  {
+    title: "Birim",
+    dataIndex: "unit",
+    key: "unit",
+    align: "center"
+  },  
+  {
+    title: "Plaka",
+    dataIndex: "plateNo",
+    key: "plateNo",
+    align: "center"
+  },
+  {
+    title: "Şoför Adı",
+    dataIndex: "driverName",
+    key: "driverName",
+    align: "center"
+  },
+  {
+    title: "Şoför Telefonu",
+    dataIndex: "driverPhone",
+    key: "driverPhone",
+    align: "center"
+  },
+  {
+    title: "Çıkış Tarihi",
+    dataIndex: "departureDate",
+    key: "departureDate",
+    align: "center",
+    type: "date",
+    sorter: (a, b) => '',
+    sortOrder: tableOptions.sortedInfo.columnKey === 'departureDate' && tableOptions.sortedInfo.order,
+    sortDirections: ['descend', 'ascend'],
+    render: (departureDate) => moment(departureDate).format(siteConfig.dateFormat),
+  },
+  {
+    title: "Çıkış Saati",
+    dataIndex: "departureTime",
+    key: "departureTime",
+    align: "center"
+  },
+  {
+    title: "Tonaj",
+    dataIndex: "tonnage",
+    key: "tonnage",
+    align: "right",
+    footerKey: "tonnage",
+    render: (tonnage) => numberFormat(tonnage),
+  },
+  {
+    title: "Bayi Alt Kodu",
+    dataIndex: "dealerSubCode",
+    key: "dealerSubCode"
+  },
+  {
+    title: "Bölge Kodu",
+    dataIndex: "regionCode",
+    key: "regionCode"
+  },
+
+  {
+    title: "Bölge Yöneticisi",
+    dataIndex: "regionManager",
+    key: "regionManager"
+  },
+  {
+    title: "Saha Kodu",
+    dataIndex: "fieldCode",
+    key: "fieldCode"
+  },
+
+  {
+    title: "Saha Yöneticisi",
+    dataIndex: "fieldManager",
+    key: "fieldManager"
+  }];
 
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
@@ -632,7 +745,7 @@ const DeliveriesReport = () => {
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data)
+            return renderFooter(columns, data, true, aggregatesOverall, true)
           }}
         />
         <ReportPagination
