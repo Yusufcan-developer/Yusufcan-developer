@@ -1,6 +1,6 @@
 import React from "react";
 import { Pagination } from "antd";
-
+import ResultNumberFormat from "@iso/config/resultNumberFormat";
 export default (props) => {
     const { onShowSizeChange, onChange, pageSize, total, position, current } = props;
     let style = null;
@@ -26,7 +26,7 @@ export default (props) => {
             total={total}
             current={current}
             pageSizeOptions={['10', '20', '30', '50', '100', '500']}
-            showTotal={total => `Toplam ${total} kayıt`}
+            showTotal={total => `Toplam ${ResultNumberFormat(total)} kayıt`}
             hideOnSinglePage
             style={style}
         /> : <React.Fragment>{position==='bottom'?<span>{`Toplam ${total} kayıt`} </span> :null } <Pagination

@@ -480,12 +480,7 @@ export default {
         ],
       },
     ],
-    Dealerlimited: [
-      {
-        key: "products/categories",
-        label: "sidebar.productsList",
-        leftIcon: "ion-bag"
-      },
+    Dealerlimited: [    
       {
         key: "reportTable",
         label: "sidebar.reportTable",
@@ -503,22 +498,42 @@ export default {
             leftIcon: "ion-android-mail"
           },
           {
+            key: "reports/accounts/transactions/",
+            label: "sidebar.customerRecords",
+            leftIcon: "ion-android-mail"
+          },
+          {
+            key: "reports/cheques/",
+            label: "sidebar.checkingReports",
+            leftIcon: "ion-android-mail"
+          },
+          {
+            key: "reports/letters/",
+            label: "sidebar.lettersOfGuarantee",
+            leftIcon: "ion-android-mail"
+          },
+          {
+            key: 'reports/accounts/',
+            label: 'sidebar.customerList',
+            leftIcon: 'ion-android-mail',
+          },
+          {
             key: 'reports/distributions',
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'systemAdministrator',
-            label: 'sidebar.administrator',
-            leftIcon: 'ion-document-text',
-            children: [
-              {
-                key: 'admin/notification',
-                label: 'sidebar.notifications',
-              },
-            ],
-          },
         ]
+      },
+      {
+        key: 'systemAdministrator',
+        label: 'sidebar.administrator',
+        leftIcon: 'ion-document-text',
+        children: [
+          {
+            key: 'admin/notification',
+            label: 'sidebar.notifications',
+          },
+        ],
       },
     ],
   }

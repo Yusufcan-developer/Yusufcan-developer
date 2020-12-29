@@ -7,9 +7,9 @@ import Form from "@iso/components/uielements/form";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
-import Input, { InputSearch, } from '@iso/components/uielements/input';
+import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message, BackTop } from "antd";
+import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message, Input } from "antd";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,11 +25,12 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
 import numberFormat from "@iso/config/numberFormat";
+import ResultNumberFormat from "@iso/config/resultNumberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
 
 //Other Library
-import _ from 'underscore';
+import _, { find } from 'underscore';
 import logMessage from '@iso/config/logMessage';
 
 //Desing style
@@ -42,6 +43,7 @@ import {
   SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined, UpOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
+import { func } from "prop-types";
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 
@@ -79,6 +81,7 @@ const SearchComponent = () => {
   //Filter menu states
   const [category, setCategory] = useState();
   const [type, setType] = useState([]);
+  const [cloneType, setCloneType] = useState();
   const [quality, setQuality] = useState([]);
   const [series, setSeries] = useState([]);
   const [dimension, setDimension] = useState([]);
@@ -96,6 +99,11 @@ const SearchComponent = () => {
   const [listPriceHighestButtonType, setListPriceHighestButtonType] = useState('dashed');
   const [partialQuantity, setPartialQuantity] = useState(false);
   const [selectedItemCode, setSelectedItemCode] = useState();
+
+  //Search Filter List
+  const [productTypeFilterSearch, setProductTypeFilterSearch] = useState();
+
+  const { Search } = Input;
 
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
@@ -211,9 +219,9 @@ const SearchComponent = () => {
         setCampaignCode(true); else { setCampaignCode(false) }
     }
 
-     //Stok Durumu get url data
-     if (parsed.stockStatus !== undefined) {
-        setStockStatus(parsed.stockStatus);
+    //Stok Durumu get url data
+    if (parsed.stockStatus !== undefined) {
+      setStockStatus(parsed.stockStatus);
     }
 
     //Product Quality get url data
@@ -252,7 +260,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"balanceLevel":stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -348,6 +356,41 @@ const SearchComponent = () => {
     keywordAddUrl();
   }
 
+  function filterTextSearch(value) {
+    let searchString = value.toLocaleLowerCase('tr').split(' ')
+    let filterList = (productTypeData.filter(value => {
+      let containsAtLeastOneWord = false;
+      searchString.forEach(word => {
+        if (value.toLowerCase().includes(word))
+          containsAtLeastOneWord = true;
+      })
+      if (containsAtLeastOneWord)
+        return value
+    }))
+    if (filterList.length > 0) {
+      _.each(type, (cloneItem) => {
+        var selectedProduct = filterList.find(item => item == cloneItem);
+        if (selectedProduct === undefined) {
+          filterList.push(cloneItem);
+        }
+      });
+
+      setProductTypeFilterSearch(filterList);
+      if (value.length === 0) { ; setProductTypeFilterSearch(''); } else {
+      }
+    }
+    else { setProductTypeFilterSearch(''); }
+  }
+  //Text Fields Search
+  const productTypeOnSearch = value => {
+    filterTextSearch(value);
+  }
+
+  //Keyword 'Enter' search
+  const searchTextFilterkeyPress = e => {
+    filterTextSearch(e.target.value);
+  }
+
   //InputSearch Filter Event
   const onchangeInputSearch = e => {
     setKeyword(e.target.value);
@@ -392,7 +435,8 @@ const SearchComponent = () => {
   }
 
   //Type Filter Event
-  function onChangeType(checkedProductTypeValue) {
+  function onChangeType(checkedProductTypeValue) {   
+
     setType(checkedProductTypeValue);
 
     const params = new URLSearchParams(location.search);
@@ -1043,9 +1087,18 @@ const SearchComponent = () => {
             {(productTypeData.length !== 0 && productTypeData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.productType" />} key="4">
+                  {/* <Search
+                    placeholder="Ürün tipi araması"
+                    allowClear
+                    onSearch={productTypeOnSearch}
+                    onKeyDown={searchTextFilterkeyPress}
+                  // style={{ width: 200, margin: '0 10px' }}
+                  /> */}
                   <CheckboxGroup
                     options={productTypeData}
                     value={type}
+                    // options={productTypeFilterSearch && productTypeFilterSearch.length > 0 ? productTypeFilterSearch : productTypeData}
+                    // value={cloneType && cloneType.length > 0 ? cloneType : type}
                     onChange={onChangeType}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -1357,7 +1410,7 @@ const SearchComponent = () => {
                   <Pagination onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
                     pageSize={pageSize}
-                    total={totalDataCount}
+                    total={ResultNumberFormat(totalDataCount)}
                     current={pageIndex}
                     hideOnSinglePage
                     position="top" />
