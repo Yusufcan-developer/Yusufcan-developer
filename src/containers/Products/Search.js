@@ -1410,7 +1410,7 @@ const SearchComponent = () => {
                   <Pagination onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
                     pageSize={pageSize}
-                    total={ResultNumberFormat(totalDataCount)}
+                    total={totalDataCount}
                     current={pageIndex}
                     hideOnSinglePage
                     position="top" />

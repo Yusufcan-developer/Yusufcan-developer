@@ -243,18 +243,18 @@ export default function CartTable({ style }) {
                 {productItem.unit}
               </td>
               <td className="isoItemPalet">
-                <Row justify="center" align="bottom">
-                  <Col span={8} >
+                <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
+                  <Col span={6} style={{ width: '100%' }} align="right" >
                     <Button type="primary" onClick={event => onRemoveBox(product)} style={{ color: 'white' }}>
-                      -
+                    {<IntlMessages id="product.minus" />}
               </Button>
                   </Col>
-                  <Col span={8}>
+                  <Col span={12} align="middle">
                     <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{product.isPartial ? 'Kutu/Adet' : 'Palet'}</span>
                     <Input
                       min={1}
                       id={inputId}
-                      style={{ textAlign: "right", maxHeight: "100px" }}
+                      style={{ textAlign: "right", maxHeight: '32px' }}
                       max={1000}
                       defaultValue={1}
                       value={inputNumberPartialQuantityValueNew(product, product.isPartial)}
@@ -264,9 +264,9 @@ export default function CartTable({ style }) {
                       onBlur={event => onChangeQuantity(event, product, product.isPartial, productItem)}
                     />
                   </Col>
-                  <Col span={8} style={{ width: '100%' }}>
-                    <Button type="primary" onClick={event => onAddBox(product, productItem)} style={{ color: 'white' }}>
-                      +
+                  <Col span={6} style={{ width: '100%' }}>
+                    <Button type="primary" onClick={event => onAddBox(product, productItem)}>
+                    {<IntlMessages id="product.plus" />}
               </Button>
                   </Col>
                 </Row>
