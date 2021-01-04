@@ -81,7 +81,6 @@ const SearchComponent = () => {
   //Filter menu states
   const [category, setCategory] = useState();
   const [type, setType] = useState([]);
-  const [cloneType, setCloneType] = useState();
   const [quality, setQuality] = useState([]);
   const [series, setSeries] = useState([]);
   const [dimension, setDimension] = useState([]);
@@ -102,6 +101,10 @@ const SearchComponent = () => {
 
   //Search Filter List
   const [productTypeFilterSearch, setProductTypeFilterSearch] = useState();
+  const [dimensionFilterSearch, setDimensionFilterSearch] = useState();
+  const [serieFilterSearch, setSerieFilterSearch] = useState();
+  const [colorFilterSearch, setColorFilterSearch] = useState();
+  const [surfaceFilterSearch, setSurfaceFilterSearch] = useState();
 
   const { Search } = Input;
 
@@ -356,12 +359,15 @@ const SearchComponent = () => {
     keywordAddUrl();
   }
 
-  function filterTextSearch(value) {
+  //#region filter text Search values
+
+  //Type
+  function filterTextSearchType(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
     let filterList = (productTypeData.filter(value => {
       let containsAtLeastOneWord = false;
       searchString.forEach(word => {
-        if (value.toLowerCase().includes(word))
+        if (value.toLowerCase('tr').includes(word))
           containsAtLeastOneWord = true;
       })
       if (containsAtLeastOneWord)
@@ -376,20 +382,165 @@ const SearchComponent = () => {
       });
 
       setProductTypeFilterSearch(filterList);
-      if (value.length === 0) { ; setProductTypeFilterSearch(''); } else {
-      }
+      if (value.length === 0) { ; setProductTypeFilterSearch(''); }
     }
     else { setProductTypeFilterSearch(''); }
   }
   //Text Fields Search
   const productTypeOnSearch = value => {
-    filterTextSearch(value);
+    filterTextSearchType(value);
   }
-
   //Keyword 'Enter' search
   const searchTextFilterkeyPress = e => {
-    filterTextSearch(e.target.value);
+    filterTextSearchType(e.target.value);
   }
+
+  //Dimension
+  function filterTextSearchDimension(value) {
+    let searchString = value.toLocaleLowerCase('tr').split(' ')
+    let filterList = (dimensionData.filter(value => {
+      let containsAtLeastOneWord = false;
+      searchString.forEach(word => {
+        if (value.toLowerCase('tr').includes(word))
+          containsAtLeastOneWord = true;
+      })
+      if (containsAtLeastOneWord)
+        return value
+    }))
+    if (filterList.length > 0) {
+      _.each(dimension, (cloneItem) => {
+        var selectedDimension = filterList.find(item => item == cloneItem);
+        if (selectedDimension === undefined) {
+          filterList.push(cloneItem);
+        }
+      });
+
+      setDimensionFilterSearch(filterList);
+      if (value.length === 0) { ; setDimensionFilterSearch(''); }
+    }
+    else { setDimensionFilterSearch(''); }
+  }
+  //Text Fields Search
+  const dimensionOnSearch = value => {
+    filterTextSearchDimension(value);
+  }
+  //Keyword 'Enter' search
+  const dimensionSearchTextFilterkeyPress = e => {
+    filterTextSearchDimension(e.target.value);
+  }
+
+  //Serie
+  function filterTextSearchSerie(value) {
+    let searchString = value.toLocaleLowerCase('tr').split(' ')
+    const searchSeria = serieData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e);
+
+    let filterList = (searchSeria.filter(value => {
+      let containsAtLeastOneWord = false;
+      searchString.forEach(word => {
+        if (value.toLowerCase('tr').includes(word))
+          containsAtLeastOneWord = true;
+      })
+      if (containsAtLeastOneWord)
+        return value
+    }))
+    if (filterList.length > 0) {
+      _.each(_.without(series, null)
+        , (cloneItem) => {
+          var selectedSerie = filterList.find(item => item == cloneItem);
+          if (selectedSerie === undefined) {
+            filterList.push(cloneItem);
+          } else if (cloneItem === '') { }
+        });
+
+      setSerieFilterSearch(filterList);
+      if (value.length === 0) { setSerieFilterSearch(''); }
+    }
+    else { setSerieFilterSearch(''); }
+  }
+  //Text Fields Search
+  const serieOnSearch = value => {
+    filterTextSearchSerie(value);
+  }
+  //Keyword 'Enter' search
+  const serieSearchTextFilterkeyPress = e => {
+    filterTextSearchSerie(e.target.value);
+  }
+
+  //Color
+  function filterTextSearchColor(value) {
+    let searchString = value.toLocaleLowerCase('tr').split(' ')
+    const searchColor = colorData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e);
+
+    let filterList = (searchColor.filter(value => {
+      let containsAtLeastOneWord = false;
+      searchString.forEach(word => {
+        if (value.toLowerCase('tr').includes(word))
+          containsAtLeastOneWord = true;
+      })
+      if (containsAtLeastOneWord)
+        return value
+    }))
+    if (filterList.length > 0) {
+      _.each(_.without(color, null)
+        , (cloneItem) => {
+          var selectedSerie = filterList.find(item => item == cloneItem);
+          if (selectedSerie === undefined) {
+            filterList.push(cloneItem);
+          } else if (cloneItem === '') { }
+        });
+
+      setColorFilterSearch(filterList);
+      if (value.length === 0) { setColorFilterSearch(''); }
+    }
+    else { setColorFilterSearch(''); }
+  }
+  //Text Fields Search
+  const colorOnSearch = value => {
+    filterTextSearchColor(value);
+  }
+  //Keyword 'Enter' search
+  const colorSearchTextFilterkeyPress = e => {
+    filterTextSearchColor(e.target.value);
+  }
+
+  //Surface
+  function filterTextSearchSurface(value) {
+    let searchString = value.toLocaleLowerCase('tr').split(' ')
+    const searchSurface = surfaceData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e);
+
+    let filterList = (searchSurface.filter(value => {
+      let containsAtLeastOneWord = false;
+      searchString.forEach(word => {
+        if (value.toLowerCase('tr').includes(word))
+          containsAtLeastOneWord = true;
+      })
+      if (containsAtLeastOneWord)
+        return value
+    }))
+    if (filterList.length > 0) {
+      _.each(_.without(surface, null)
+        , (cloneItem) => {
+          var selectedSerie = filterList.find(item => item == cloneItem);
+          if (selectedSerie === undefined) {
+            filterList.push(cloneItem);
+          } else if (cloneItem === '') { }
+        });
+
+      setSurfaceFilterSearch(filterList);
+      if (value.length === 0) { setSurfaceFilterSearch(''); }
+    }
+    else { setSurfaceFilterSearch(''); }
+  }
+  //Text Fields Search
+  const surfaceOnSearch = value => {
+    filterTextSearchSurface(value);
+  }
+  //Keyword 'Enter' search
+  const surfaceSearchTextFilterkeyPress = e => {
+    filterTextSearchSurface(e.target.value);
+  }
+  //#endregion
+
 
   //InputSearch Filter Event
   const onchangeInputSearch = e => {
@@ -417,7 +568,6 @@ const SearchComponent = () => {
     return setOnChange(true);
   }
 
-
   //campaign Filter Event
   function onChangeCampaing(event) {
     setCampaignCode(event.target.value)
@@ -435,7 +585,7 @@ const SearchComponent = () => {
   }
 
   //Type Filter Event
-  function onChangeType(checkedProductTypeValue) {   
+  function onChangeType(checkedProductTypeValue) {
 
     setType(checkedProductTypeValue);
 
@@ -501,7 +651,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if ((nullOrBlankData) && (dimensionNewArray.length > 0)) { dimensionNewArray.push(''); }
+    if ((nullOrBlankData.length > 0) && (dimensionNewArray.length > 0)) { dimensionNewArray.push(''); }
     setDimension(dimensionNewArray)
     const params = new URLSearchParams(location.search);
     params.delete('dm');
@@ -525,6 +675,7 @@ const SearchComponent = () => {
 
   //Series Filter Event
   function onChangeSerie(checkedSerieValue) {
+
     const serieNewArray = _.map(checkedSerieValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
 
     const nullOrBlankData = _.filter(serieNewArray, function (Item) {
@@ -532,7 +683,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if ((nullOrBlankData) && (serieNewArray.length > 0)) { serieNewArray.push(''); }
+    if ((nullOrBlankData.length > 0) && (serieNewArray.length > 0)) { serieNewArray.push(''); }
     setSeries(serieNewArray)
 
     const params = new URLSearchParams(location.search);
@@ -564,7 +715,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if ((nullOrBlankData) && (colorNewArray.length > 0)) { colorNewArray.push(''); }
+    if ((nullOrBlankData > 0) && (colorNewArray.length > 0)) { colorNewArray.push(''); }
 
     setColor(colorNewArray);
     const params = new URLSearchParams(location.search);
@@ -593,7 +744,7 @@ const SearchComponent = () => {
         return true;
       }
     });
-    if ((nullOrBlankData) && (surfaceNewArray.length > 0)) { surfaceNewArray.push(''); }
+    if ((nullOrBlankData > 0) && (surfaceNewArray.length > 0)) { surfaceNewArray.push(''); }
 
     setSurface(surfaceNewArray)
 
@@ -607,7 +758,10 @@ const SearchComponent = () => {
       else { params.append('sfc', item); params.toString(); }
     });
     history.push(`${location.pathname}?${params.toString()}`);
-    setOnChangeSurfaceFilter(true);
+    setOnChangeFilter(true);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
     return setOnChange(true);
   }
 
@@ -1087,18 +1241,17 @@ const SearchComponent = () => {
             {(productTypeData.length !== 0 && productTypeData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.productType" />} key="4">
-                  {/* <Search
+                  <Search
+                    id='typeInputSearch'
                     placeholder="Ürün tipi araması"
                     allowClear
                     onSearch={productTypeOnSearch}
                     onKeyDown={searchTextFilterkeyPress}
                   // style={{ width: 200, margin: '0 10px' }}
-                  /> */}
+                  />
                   <CheckboxGroup
-                    options={productTypeData}
+                    options={productTypeFilterSearch && productTypeFilterSearch.length > 0 ? productTypeFilterSearch : productTypeData}
                     value={type}
-                    // options={productTypeFilterSearch && productTypeFilterSearch.length > 0 ? productTypeFilterSearch : productTypeData}
-                    // value={cloneType && cloneType.length > 0 ? cloneType : type}
                     onChange={onChangeType}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -1109,9 +1262,17 @@ const SearchComponent = () => {
             {(dimensionData.length !== 0 && dimensionData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.dimension" />} key="5">
+                  <Search
+                    placeholder="Ebat araması"
+                    allowClear
+                    onSearch={dimensionOnSearch}
+                    onKeyDown={dimensionSearchTextFilterkeyPress}
+                  // style={{ width: 200, margin: '0 10px' }}
+                  />
                   <CheckboxGroup
                     options={
-                      dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
+                      dimensionFilterSearch && dimensionFilterSearch.length > 0 ? dimensionFilterSearch : dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)
+                    }
                     onChange={onChangeDimension}
                     value={dimension.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     style={{ display: 'flex', flexDirection: 'column' }}
@@ -1122,10 +1283,18 @@ const SearchComponent = () => {
             {(serieData.length !== 0 && serieData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.series" />} key="6">
+                  <Search
+                    placeholder="Seri araması"
+                    allowClear
+                    onSearch={serieOnSearch}
+                    onKeyDown={serieSearchTextFilterkeyPress}
+                  // style={{ width: 200, margin: '0 10px' }}
+                  />
                   <CheckboxGroup
                     value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      serieData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
+                      serieFilterSearch && serieFilterSearch.length > 0 ? serieFilterSearch : serieData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)
+                    }
                     onChange={onChangeSerie}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -1135,10 +1304,17 @@ const SearchComponent = () => {
             {(colorData.length !== 0 && colorData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.color" />} key="7">
+                  <Search
+                    placeholder="Renk araması"
+                    allowClear
+                    onSearch={colorOnSearch}
+                    onKeyDown={colorSearchTextFilterkeyPress}
+                  // style={{ width: 200, margin: '0 10px' }}
+                  />
                   <CheckboxGroup
                     value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      colorData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
+                      colorFilterSearch && colorFilterSearch.length > 0 ? colorFilterSearch : colorData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeColor}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -1148,10 +1324,17 @@ const SearchComponent = () => {
             {(surfaceData.length !== 0 && surfaceData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.surface" />} key="8">
+                <Search
+                    placeholder="Yüzey araması"
+                    allowClear
+                    onSearch={surfaceOnSearch}
+                    onKeyDown={surfaceSearchTextFilterkeyPress}
+                  // style={{ width: 200, margin: '0 10px' }}
+                  />
                   <CheckboxGroup
                     value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
-                      surfaceData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
+                      surfaceFilterSearch && surfaceFilterSearch.length > 0 ? surfaceFilterSearch : surfaceData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     onChange={onChangeSurface}
                     style={{ display: 'flex', flexDirection: 'column' }}
                   />
@@ -1425,3 +1608,4 @@ const SearchComponent = () => {
 };
 
 export default SearchComponent;
+
