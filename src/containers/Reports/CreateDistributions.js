@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from 'react-router-dom';
+import { NavLink, useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -9,23 +9,21 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
+import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
-import { usePostDeliveryReport } from "@iso/lib/hooks/fetchData/usePostDeliveryReport";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
-import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
-
-//Style
-import { DownloadOutlined } from '@ant-design/icons';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Configs
+import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
@@ -34,13 +32,12 @@ import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
 
 //Other Library
+import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
+import logMessage from "../../config/logMessage";
 import moment from 'moment';
-import 'moment/locale/tr';
-import logMessage from '@iso/config/logMessage';
-import enumerations from "../../config/enumerations";
-import { func } from "prop-types";
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -49,42 +46,48 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
-const DeliveriesReport = () => {
+
+export default function () {
+  document.title = "Dağıtım Listesi - Seramiksan B2B";
 
   const children = [];
-  document.title = "Dağıtım - Seramiksan B2B";
-
+  const Option = SelectOption;
+  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
+  const [privateDate, setPrivateDate] = useState('Bugun');
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
-
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
-  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
-  const [newUrlParams, setNewUrlParams] = useState('');
-  const [privateDate, setPrivateDate] = useState('Bugun');
+  const [newUrlParams, setNewUrlParams] = useState('')
+  const location = useLocation();
+  const [selectedStatusType, setSelectedStatusType] = useState();
   const [address, setAddress] = useState();
   const [lookupAddressChildren, setLookupAddressChildren] = useState();
-  const [selectedStatusType, setSelectedStatusType] = useState();
-  const location = useLocation();
+  const [form] = Form.useForm();
+  const [editingKey, setEditingKey] = useState('');
+  const [orderNo, setOrderNo] = useState();
+  const [quantity, setQuantity] = useState();
+  const [modalVisible, setModalVisible] = useState(true);
+  const isEditing = record => record.itemCode === editingKey & record.orderNo === orderNo;
+
   const queryString = require('query-string');
   const history = useHistory();
-  const Option = SelectOption;
 
-  //Burada ki useEffect'ler page index page size
+  //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, logMessage.Reports.Deliveries.browse);
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, logMessage.Reports.Distributions.browse);
+    getVariablesFromUrl()
     setCurrentPage(pageIndex);
-    getVariablesFromUrl();
     const token = jwtDecode(localStorage.getItem("id_token"));
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
       getAdress(token.dcode);
@@ -92,29 +95,51 @@ const DeliveriesReport = () => {
   }, [pageIndex]);
 
   let searchUrl = queryString.parse(location.search);
+  //Rapor
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
+    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
-
-  //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, deliveryDetailData, aggregatesOverall] =
-    usePostDeliveryReport(`${siteConfig.api.report.postDeliveriesv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Durum Tipleri
   const [statusTypeData] = useFilterData(`${siteConfig.api.lookup.getDistributionStatusTypes}`, searchUrl);
   for (let i = 0; i < statusTypeData.length; i++) {
     children.push(<Option key={statusTypeData[i]}>{statusTypeData[i]}</Option>);
   }
-
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
+
     const parsed = queryString.parse(location.search);
+
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));setSelectedRadioItem(2);setPrivateDate(null);  }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+
+    let statusGetType = [];
+    if (parsed.status !== undefined) {
+      if (Array.isArray(parsed.status)) {
+        _.each(parsed.status, (item) => {
+          statusGetType.push(item);
+        });
+      } else { statusGetType.push(parsed.status); }
+    }
+    setSelectedStatusType(statusGetType);
+
+    let getAddress = [];
+    if (parsed.address !== undefined) {
+      if (Array.isArray(parsed.address)) {
+        _.each(parsed.address, (item) => {
+          getAddress.push(item);
+        });
+      } else { getAddress.push(parsed.address); }
+    }
+    setAddress(getAddress);
+
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -172,20 +197,29 @@ const DeliveriesReport = () => {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('status');
     params.delete('pgsize');
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('address');
 
-    if (fromDate !== '' & toDate !== '') {
-      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    }
+    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
     if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+
+    _.filter(selectedStatusType, function (item) {
+      params.append('status', item); params.toString();
+    });
+
+    _.forEach(address, (item) => {
+      params.append('address', item); params.toString();
+    });
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -197,7 +231,6 @@ const DeliveriesReport = () => {
   const searchButton = () => {
     dataSearch();
   };
-
   //Keyword 'Enter' search
   const keyPress = e => {
     if (e.keyCode === 13) {
@@ -216,8 +249,9 @@ const DeliveriesReport = () => {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
-    params.delete('pgindex');
     params.delete('pgsize');
+    params.delete('pgindex');
+    params.delete('address');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -242,16 +276,6 @@ const DeliveriesReport = () => {
     setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
   }
 
-  //Search DailerName Tree Select Component
-  function filterTreeNodeDealerCode(value, treeNode) {
-    if (value && treeNode && treeNode.title) {
-      const filterValue = value.toLocaleLowerCase('tr')
-      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) !== -1;
-    }
-    return false;
-  }
-
   const handleChange = (pagination, filters, sorter) => {
     setState({
       ...tableOptions,
@@ -268,6 +292,21 @@ const DeliveriesReport = () => {
     }
   };
 
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) !== -1;
+    }
+    return false;
+  }
+
+  //Change Status Type
+  function statusTypeHandleChange(value) {
+    setSelectedStatusType(value);
+  }
+
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
@@ -277,41 +316,15 @@ const DeliveriesReport = () => {
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current, pageSize) {
-    setPageIndex(current);
     setPageSize(pageSize);
+    setPageIndex(current);
     dataSearch(current, pageSize);
   }
-  function onChangeRadioButton(e) {
-    setSelectedRadioItem(e.target.value);
-    setPrivateDate(null);
+
+  //Select Component Rol değiştirme 
+  function addressHandleChange(value) {
+    setAddress(value);
   }
-
-  //Sevkiyat Kalemleri Expand İşlemi
-  function expandedRowRender(row, index) {
-    let deliveryDetailIndex;
-    let partialUnitData;
-    _.each(deliveryDetailData, (item, i) => {
-      if (item.Key === row.waybillId) { return deliveryDetailIndex = i }
-    });
-    if (deliveryDetailIndex !== undefined) {
-      partialUnitData = _.groupBy(deliveryDetailData[deliveryDetailIndex].Value, function (item) { return item.unit; });
-    }
-    else { partialUnitData = null }
-    const r = _.map(partialUnitData, (item) => {
-      return (
-        <Table
-          columns={deliveryDetailDataColumn}
-          dataSource={item}
-          pagination={false}
-          bordered={false}
-          summary={() => {
-            return renderFooter(deliveryDetailDataColumn, item, false)
-          }}
-        />);
-    });
-
-    return (<React.Fragment>{r} </React.Fragment>);
-  };
   //Get adress
   async function getAdress(dealerCodes) {
     //Get User Info  
@@ -337,22 +350,390 @@ const DeliveriesReport = () => {
       .catch();
     return data;
   }
-  //Select Component Rol değiştirme 
-  function addressHandleChange(value) {
-    setAddress(value);
+  const edit = (record, deleteAmount = false) => {
+    if (deleteAmount) { setQuantity(0); } else {
+      setQuantity(record.remainingAmount); setModalVisible(true);
+      setEditingKey(record.itemCode);
+      setOrderNo(record.orderNo);
+    }   
+  };
+  async function productItemOrder(allAmountItem, errorMessageType) {
+    // let distributionsQuantity = localStorage.getItem('distributionsQuantity');
+    // distributionsQuantity = JSON.parse(distributionsQuantity);
+    // let sendDatabaseProductList
+
+    // if (allAmountItem.amount != undefined) {//Sepet miktarının tamamını alır
+    //   sendDatabaseProductList = _.each(productQuantity, (item) => {
+    //     item['amount'] = item['quantity'];
+    //     delete item['quantity'];
+    //     if (item.itemCode === allAmountItem.itemCode && item.isPartial === allAmountItem.isPartial) {
+    //       item.orderAmount = allAmountItem.amount
+    //       const productIsPartialTitle = allAmountItem.isPartial === true ? ' Parçalı' : ' Paletli';
+    //       postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, allAmountItem.itemCode + productIsPartialTitle + ' ürün sipariş oluşturmaya hazırlandı.' + 'Miktar ' + allAmountItem.amount);
+    //     }
+    //   });
+    // }
+    // else {//Girilmiş olan sipariş miktarını alır
+    //   sendDatabaseProductList = _.each(productQuantity, (item) => {
+    //     item['amount'] = item['quantity'];
+    //     delete item['quantity'];
+    //     if (item.itemCode === productItem.itemCode && item.isPartial === productItem.isPartial) {
+    //       item.orderAmount = quantity
+    //       if (quantity > 0) {
+    //         const productIsPartialTitle = allAmountItem.isPartial === true ? ' Parçalı' : ' Paletli';
+    //         postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productItem.itemCode + productIsPartialTitle + ' ürün sipariş oluşturmaya hazırlandı.' + 'Miktar ' + quantity);
+    //       }
+    //     }
+    //   });
+    // }
+    // const token = jwtDecode(localStorage.getItem("id_token"));
+    // const activeUser = localStorage.getItem("activeUser")
+    // let account = token.uname;
+    // if (activeUser != undefined) { account = activeUser }
+    // const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    // const requestOptions = {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+    //   },
+    //   body: JSON.stringify(reqBody)
+    // };
+    // fetch(siteConfig.api.carts.postCart, requestOptions)
+    //   .then(response => {
+    //     const status = apiStatusManagement(response);
+    //     return status;
+    //   })
+    //   .then(data => {
+    //     if (data) {
+    //       if (data !== 'Unauthorized') {
+    //         productQuantity = [];
+    //         // Verileri Redux'a gönderme işlemi  
+    //         let sendReduxProductList = _.each(data.items, (item) => {
+    //           item['quantity'] = item['amount'];
+    //         });
+    //         if (sendReduxProductList) {
+    //           sendReduxProductList.forEach(product => {
+    //             productQuantity.push({
+    //               itemCode: product.itemCode,
+    //               quantity: product.quantity,
+    //               orderAmount: product.orderAmount,
+    //               isPartial: product.isPartial
+    //             });
+    //           });
+    //         }
+    //         localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
+    //         setOrderData(data.items);
+    //         setCartData(data.items);
+    //         setModalVisible(false);
+    //         setEditingKey('');
+    //       }
+    //     }
+    //     else {
+    //       if (errorMessageType) {
+    //         message.error('Sipariş silme işlemi başarısızdır.');
+    //       }
+    //       else {
+    //         message.error('Sipariş ekleme işlemi başarısızdır.');
+    //       }
+    //     }
+    //   })
+    //   .catch();
   }
-  //Change Status Type
-  function statusTypeHandleChange(value) {
-    setSelectedStatusType(value);
+  function InputNumberOnchange(value) {
+    setQuantity(value);
   }
-  //Excel Oluşturma
+  function handleVisibleChange() {
+    setModalVisible(false);
+    setEditingKey('');
+  }
+  async function allAmountOrder(record) {
+    await productItemOrder(record);
+  }
+    // rowSelection object indicates the need for row selection
+    const rowSelection = {
+      onSelect: (record, selected, selectedRows) => {
+        // let selectedIds = []
+        // if (selectedRows.length > 0) {
+        //   _.each(selectedRows, (item) => {
+        //     if (item !== undefined) {
+        //       selectedIds.push(item.id);
+        //     }
+        //   });
+        //   setSelectedItemsId(selectedIds);
+        //   selectedTotalCount = selectedIds.length;
+        //   setHasSelected(true);
+        // }
+        // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+      },
+      onSelectAll: (record, selected, selectedRows) => {
+        // let selectedIds = []
+        // if (record) {
+        //   _.each(selectedRows, (item) => {
+        //     selectedIds.push(item.id);
+        //   });
+        //   if (selectedRows.length > 0) {
+        //     setSelectedItemsId(selectedIds);
+        //     selectedTotalCount = selectedIds.length;
+        //     setHasSelected(true);
+        //   }
+        // }
+        // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+      }
+    };
+  let columns = [
+    // {
+    //   title: "Bayi Kodu",
+    //   dataIndex: "dealerCode",
+    //   key: "dealerCode"
+    // },
+    // {
+    //   title: "Bayi Adı",
+    //   dataIndex: "dealerName",
+    //   key: "dealerName"
+    // },
+    {
+      title: "Durum",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Dağıtım Kodu",
+      dataIndex: "distributionId",
+      key: "distributionId",
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionId' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: "Dağıtım Sipariş Tarihi",
+      dataIndex: "distributionOrderDate",
+      key: "distributionOrderDate",
+      key: "toDate",
+      render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    // {
+    //   title: "Adres Kodu",
+    //   dataIndex: "addressCode",
+    //   key: "addressCode"
+    // },
+    {
+      title: "Adres Açıklama",
+      dataIndex: "addressDescription",
+      key: "addressDescription",
+    },
+    {
+      title: "Sipariş No",
+      dataIndex: "orderNo",
+      key: "orderNo",
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+      sorter: (a, b) => a.itemCode.length - b.itemCode.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "itemCode" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Ürün Açıklaması",
+      dataIndex: "itemDescription",
+      key: "itemDescription"
+    },
+    {
+      title: "Birim",
+      dataIndex: "unit",
+      key: "unit",
+      width:50,
+    },
+    {
+      title: "Birim Ağırlık",
+      dataIndex: "unitWeight",
+      key: "unitWeight",
+      align: "right",
+      footerKey: 'Genel Toplam',
+      render: (unitWeight) => numberFormat(unitWeight),
+    },
+    {
+      title: "Planlanan Ağırlık",
+      dataIndex: "palletWeight",
+      key: "palletWeight",
+      align: "right",
+      footerKey: 'palletWeight',
+      render: (palletWeight) => numberFormat(palletWeight),
+    },
+    {
+      title: "Planlanan Miktar",
+      dataIndex: "plannedAmount",
+      key: "plannedAmount",
+      render: (plannedAmount) => numberFormat(plannedAmount),
+      sorter: (a, b) => a.plannedAmount - b.plannedAmount,
+      align: "right",
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "plannedAmount" &&
+        tableOptions.sortedInfo.order,
+      footerKey: "plannedAmount"
+    },
+    {
+      title: "Dağıtılan  Miktar",
+      dataIndex: "distributedAmount",
+      key: "distributedAmount",
+      align: "right",
+      render: (distributedAmount) => numberFormat(distributedAmount),
+      footerKey: "distributedAmount"
+    },
+    {
+      title: "Kalan  Miktar",
+      dataIndex: "remainingAmount",
+      key: "remainingAmount",
+      align: "right",
+      fixed: "right",
+      render: (remainingAmount) => numberFormat(remainingAmount),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+      footerKey: "remainingAmount"
+    },
+    {
+      title: 'Giriş Yapılan Miktar',
+      dataIndex: 'mik',
+      editable: true,
+      fixed: "right",
+      align:'right',
+      key: 'mik',
+      render:(remainingAmount,record) => testGetMik(record.orderNo,record.itemCode),
+    },
+    // {
+    //   title: "Bayi Alt Kodu",
+    //   dataIndex: "dealerSubCode",
+    //   key: "dealerSubCode"
+    // },
+    // {
+    //   title: "Bölge Kodu",
+    //   dataIndex: "regionCode",
+    //   key: "regionCode"
+    // },
+
+    // {
+    //   title: "Bölge Yöneticisi",
+    //   dataIndex: "regionManager",
+    //   key: "regionManager"
+    // },
+    // {
+    //   title: "Saha Kodu",
+    //   dataIndex: "fieldCode",
+    //   key: "fieldCode"
+    // },
+    // {
+    //   title: "Saha Yöneticisi",
+    //   dataIndex: "fieldManager",
+    //   key: "fieldManager"
+    // },
+    {
+      title: 'İşlemler',
+      dataIndex: 'operation',
+      fixed: "right",
+      render: (_, record) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <span>
+            <Popover
+              content={
+                <div>
+                  <Space size={10}>
+                    {<InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />}
+                    <Button type="primary" onClick={productItemOrder}>Onayla</Button>
+                  </Space>
+                </div>
+              }
+              placement="left"
+              title="Dağıtım Miktarı"
+              visible={modalVisible}
+              trigger="click"
+              onVisibleChange={handleVisibleChange}
+            >
+            </Popover>
+          </span>
+        ) : (
+            <Space >
+
+              <a disabled={editingKey !== ''} onClick={() => edit(record)}>
+                <i className="ion-android-create" />
+              </a>
+              <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
+                <i className="ion-ios-fastforward" />
+              </a>
+
+            </Space>
+          );
+      },
+    },
+  ];
+
+  function testGetMik(orderNo,itemCode) {
+    debugger
+    if((orderNo==='010191011')&&(itemCode==='65550110'))
+    {
+      let productQuantity = localStorage.setItem('dağıtımMiktarı',8);
+      return 8;
+    }
+  }
+  //Hide order table column
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  if (token.urole === 'admin') { }
+  else if (token.urole === 'fieldmanager') {
+    const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Field;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if (token.urole === 'regionmanager') {
+    const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Region;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Dealer;
+    if (getHideColumns.length > 0) {
+      for (let index = 0; index < getHideColumns.length; index++) {
+        columns = _.without(columns, _.findWhere(columns, {
+          dataIndex: getHideColumns[index].dataIndex
+        }
+        ))
+      }
+    }
+  }
+
+  //Excel Oluştur
   const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
-    ExcelExport(columns, data, 'Dağıtımlar');
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Export, logMessage.Reports.Distributions.exportExcel);
+    ExcelExport(columns, data, 'Dağıtım Listesi');
   }
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+  }
+
   //Change Cheques Type
   function privateDateHandleChange(value) {
-
     setPrivateDate(value);
 
     if (value === 'SonBirHafta') {
@@ -383,294 +764,7 @@ const DeliveriesReport = () => {
       setToDate(moment(new Date()));
     }
   }
-  let columns = [
-    {
-      title: "Bayi Kodu",
-      dataIndex: "dealerCode",
-      key: "dealerCode"
-    },
-    {
-      title: "Bayi Adı",
-      dataIndex: "dealerName",
-      key: "dealerName",
-    },
-    {
-      title: "İrsaliye No",
-      dataIndex: "waybillId",
-      key: "waybillId",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'waybillId' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
 
-    },
-    {
-      title: "İrsaliye Tarihi",
-      dataIndex: "waybillDate",
-      key: "waybillDate",
-      type: "date",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-      render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
-    },
-    {
-      title: "İrsaliye Saati",
-      dataIndex: "waybillTime",
-      key: "waybillTime",
-      align: "center",
-      footerKey: 'Genel Toplam',
-    },
-    {
-      title: "KDV'li toplam",
-      dataIndex: "totalCost",
-      key: "totalCost",
-      align: "right",
-      footerKey: "totalCost",
-      render: (totalCost) => numberFormat(totalCost),
-    },
-    {
-      title: "Teslimat Adresi",
-      dataIndex: "deliveryAddress",
-      key: "deliveryAddress"
-    },
-    {
-      title: "Belge No",
-      dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-    },
-    {
-      title: "Açıklama 1",
-      dataIndex: "description1",
-      key: "description1"
-    },
-    {
-      title: "Açıklama 2",
-      dataIndex: "description2",
-      key: "description2"
-    },
-    {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3"
-    },
-    {
-      title: "Açıklama 4",
-      dataIndex: "description4",
-      key: "description4"
-    },
-    {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
-    },
-    {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode"
-    },
-
-    {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager"
-    },
-    {
-      title: "Saha Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode"
-    },
-
-    {
-      title: "Saha Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager"
-    },
-  ];
-
-  let deliveryDetailDataColumn = [{
-    title: "Bayi Kodu",
-    dataIndex: "dealerCode",
-    key: "dealerCode"
-  },
-  {
-    title: "Bayi Adı",
-    dataIndex: "dealerName",
-    key: "dealerName"
-  },
-  {
-    title: "İrsaliye No",
-    dataIndex: "waybillId",
-    key: "waybillId",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'waybillId' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-
-  },
-  {
-    title: "Teslimat Tarihi",
-    dataIndex: "deliveryDate",
-    key: "deliveryDate",
-    type: "date",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
-  },
-  {
-    title: "Teslimat Adresi",
-    dataIndex: "deliveryAddress",
-    key: "deliveryAddress"
-  },
-  {
-    title: "Sipariş No",
-    dataIndex: "orderNo",
-    key: "orderNo",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-  },
-  {
-    title: "Ürün Kodu",
-    dataIndex: "itemCode",
-    key: "itemCode",
-  },
-  {
-    title: "Ürün Açıklaması ",
-    dataIndex: "itemDescription",
-    key: "itemDescription"
-  },
-  {
-    title: "Miktar",
-    dataIndex: "amount",
-    key: "amount",
-    align: "right",
-    footerKey: "amount",
-    render: (amount) => numberFormat(amount),
-  },
-  {
-    title: "KDV'li toplam",
-    dataIndex: "totalCost",
-    key: "totalCost",
-    align: "right",
-    footerKey: "totalCost",
-    render: (totalCost) => numberFormat(totalCost),
-  },
-  {
-    title: "Birim",
-    dataIndex: "unit",
-    key: "unit",
-    align: "center"
-  },
-  {
-    title: "Plaka",
-    dataIndex: "plateNo",
-    key: "plateNo",
-    align: "center"
-  },
-  {
-    title: "Şoför Adı",
-    dataIndex: "driverName",
-    key: "driverName",
-    align: "center"
-  },
-  {
-    title: "Şoför Telefonu",
-    dataIndex: "driverPhone",
-    key: "driverPhone",
-    align: "center"
-  },
-  {
-    title: "Çıkış Tarihi",
-    dataIndex: "departureDate",
-    key: "departureDate",
-    align: "center",
-    type: "date",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'departureDate' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    render: (departureDate) => moment(departureDate).format(siteConfig.dateFormat),
-  },
-  {
-    title: "Çıkış Saati",
-    dataIndex: "departureTime",
-    key: "departureTime",
-    align: "center"
-  },
-  {
-    title: "Tonaj",
-    dataIndex: "tonnage",
-    key: "tonnage",
-    align: "right",
-    footerKey: "tonnage",
-    render: (tonnage) => numberFormat(tonnage),
-  },
-  {
-    title: "Bayi Alt Kodu",
-    dataIndex: "dealerSubCode",
-    key: "dealerSubCode"
-  },
-  {
-    title: "Bölge Kodu",
-    dataIndex: "regionCode",
-    key: "regionCode"
-  },
-
-  {
-    title: "Bölge Yöneticisi",
-    dataIndex: "regionManager",
-    key: "regionManager"
-  },
-  {
-    title: "Saha Kodu",
-    dataIndex: "fieldCode",
-    key: "fieldCode"
-  },
-
-  {
-    title: "Saha Yöneticisi",
-    dataIndex: "fieldManager",
-    key: "fieldManager"
-  }];
-
-  //Hide order table column
-  const token = jwtDecode(localStorage.getItem("id_token"));
-  if (token.urole === 'admin') { }
-  else if (token.urole === 'fieldmanager') {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Field;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
-    }
-  }
-  else if (token.urole === 'regionmanager') {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Region;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
-    }
-  }
-  else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer;
-    if (getHideColumns.length > 0) {
-      for (let index = 0; index < getHideColumns.length; index++) {
-        columns = _.without(columns, _.findWhere(columns, {
-          dataIndex: getHideColumns[index].dataIndex
-        }
-        ))
-      }
-    }
-  }
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -805,7 +899,7 @@ const DeliveriesReport = () => {
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box>
+      <Box >
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
@@ -824,14 +918,17 @@ const DeliveriesReport = () => {
           columns={columns}
           dataSource={data}
           onChange={handleChange}
-          expandable={{ 'expandedRowRender': expandedRowRender }}
           loading={loading}
           pagination={false}
+          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
+          rowSelection={{
+            ...rowSelection
+          }}
           summary={() => {
-            return renderFooter(columns, data, true, aggregatesOverall, true)
+            return renderFooter(columns, data, false, aggregatesOverall, true)
           }}
         />
         <ReportPagination
@@ -846,5 +943,3 @@ const DeliveriesReport = () => {
     </LayoutWrapper>
   );
 }
-
-export default DeliveriesReport;
