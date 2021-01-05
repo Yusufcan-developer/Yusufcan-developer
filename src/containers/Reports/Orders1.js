@@ -3,24 +3,23 @@ import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
+import PageHeader from "@iso/components/utility/pageHeader";
+import Collapse from "@iso/components/uielements/collapse";
+import Input from '@iso/components/uielements/input';
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import PageHeader from "@iso/components/utility/pageHeader";
-import Collapse from "@iso/components/uielements/collapse";
-import Input from '@iso/components/uielements/input';
 import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
-import { usePostDeliveryReport } from "@iso/lib/hooks/fetchData/usePostDeliveryReport";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
-import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
-import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Style
 import { DownloadOutlined } from '@ant-design/icons';
@@ -34,13 +33,12 @@ import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
 
 //Other Library
+import ExcelExport from "../Reports/ExcelExport";
 import _ from 'underscore';
-import ExcelExport from "./ExcelExport";
 import moment from 'moment';
-import 'moment/locale/tr';
 import logMessage from '@iso/config/logMessage';
 import enumerations from "../../config/enumerations";
-import { func } from "prop-types";
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -49,74 +47,80 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
-const DeliveriesReport = () => {
+export default function () {
+  document.title = "Sipariş Kalemleri - Seramiksan B2B";
 
   const children = [];
-  document.title = "Dağıtım - Seramiksan B2B";
-
+  const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
-
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
-  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
   const [newUrlParams, setNewUrlParams] = useState('');
+  const [selectedTransactionType, setSelectedTransactionType] = useState();
+  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
   const [privateDate, setPrivateDate] = useState('Bugun');
-  const [address, setAddress] = useState();
-  const [lookupAddressChildren, setLookupAddressChildren] = useState();
-  const [selectedStatusType, setSelectedStatusType] = useState();
+
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
-  const Option = SelectOption;
 
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, logMessage.Reports.Deliveries.browse);
+    // postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Browse, logMessage.Reports.TransactionAccount.browse);
+    getVariablesFromUrl()
     setCurrentPage(pageIndex);
-    getVariablesFromUrl();
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-      getAdress(token.dcode);
-    }
   }, [pageIndex]);
 
   let searchUrl = queryString.parse(location.search);
+  //Rapor
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
+    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
-  //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, deliveryDetailData, aggregatesOverall] =
-    usePostDeliveryReport(`${siteConfig.api.report.postDeliveriesv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
-
-  //Durum Tipleri
-  const [statusTypeData] = useFilterData(`${siteConfig.api.lookup.getDistributionStatusTypes}`, searchUrl);
-  for (let i = 0; i < statusTypeData.length; i++) {
-    children.push(<Option key={statusTypeData[i]}>{statusTypeData[i]}</Option>);
+  //İşlem Tipleri
+  const [transactionTypeData] = useFilterData(`${siteConfig.api.lookup.getTransactionTypes}`, searchUrl);
+  for (let i = 0; i < transactionTypeData.length; i++) {
+    children.push(<Option key={transactionTypeData[i]}>{transactionTypeData[i]}</Option>);
   }
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
+
     const parsed = queryString.parse(location.search);
+
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
-    let newDealarCode = []
 
+    let transactionType = [];
+    if (parsed.type !== undefined) {
+      if (Array.isArray(parsed.type)) {
+        _.each(parsed.type, (item) => {
+          transactionType.push(item);
+        });
+      } else { transactionType.push(parsed.type); }
+    }
+    setSelectedTransactionType(transactionType);
+
+    let newDealarCode = []
     if (parsed.fic !== undefined) {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
@@ -174,6 +178,7 @@ const DeliveriesReport = () => {
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('type');
     params.delete('sortingField');
     params.delete('sortingOrder');
 
@@ -186,6 +191,10 @@ const DeliveriesReport = () => {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+
+    _.filter(selectedTransactionType, function (item) {
+      params.append('type', item); params.toString();
+    });
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -198,14 +207,8 @@ const DeliveriesReport = () => {
     dataSearch();
   };
 
-  //Keyword 'Enter' search
-  const keyPress = e => {
-    if (e.keyCode === 13) {
-      dataSearch();
-    }
-  }
   //Change DealerCode
-  async function onChangeDealerCode(value) {
+  function onChangeDealerCode(value) {
     let fieldArrObj = [];
     let regionArrObj = [];
     let dealerArrObj = [];
@@ -215,9 +218,10 @@ const DeliveriesReport = () => {
     params.delete('fic');
     params.delete('from')
     params.delete('to');
+    params.delete('type');
     params.delete('keyword');
-    params.delete('pgindex');
     params.delete('pgsize');
+    params.delete('pgindex');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -232,7 +236,6 @@ const DeliveriesReport = () => {
         setSelectedDealerCode(value)
         setNewUrlParams(params.toString());
       });
-      if (dealerArrObj.length === 1) { await getAdress(dealerArrObj[0]); }
     }
   };
 
@@ -281,78 +284,13 @@ const DeliveriesReport = () => {
     setPageSize(pageSize);
     dataSearch(current, pageSize);
   }
-  function onChangeRadioButton(e) {
-    setSelectedRadioItem(e.target.value);
-    setPrivateDate(null);
-  }
 
-  //Sevkiyat Kalemleri Expand İşlemi
-  function expandedRowRender(row, index) {
-    let deliveryDetailIndex;
-    let partialUnitData;
-    _.each(deliveryDetailData, (item, i) => {
-      if (item.Key === row.waybillId) { return deliveryDetailIndex = i }
-    });
-    if (deliveryDetailIndex !== undefined) {
-      partialUnitData = _.groupBy(deliveryDetailData[deliveryDetailIndex].Value, function (item) { return item.unit; });
-    }
-    else { partialUnitData = null }
-    const r = _.map(partialUnitData, (item) => {
-      return (
-        <Table
-          columns={deliveryDetailDataColumn}
-          dataSource={item}
-          pagination={false}
-          bordered={false}
-          summary={() => {
-            return renderFooter(deliveryDetailDataColumn, item, false)
-          }}
-        />);
-    });
-
-    return (<React.Fragment>{r} </React.Fragment>);
-  };
-  //Get adress
-  async function getAdress(dealerCodes) {
-    //Get User Info  
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      }
-    };
-    await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
-      .then(response => {
-        const status = apiStatusManagement(response);
-        return status;
-      })
-      .then(data => {
-        const addressChildren = [];
-        _.each(data, (item, i) => {
-          addressChildren.push(<Option key={item.addressCode}>{item.addressCode + '-' + item.addressTitle + '-' + item.address2 + '-' + item.phone}</Option>);
-        });
-        setLookupAddressChildren(addressChildren)
-      })
-      .catch();
-    return data;
-  }
-  //Select Component Rol değiştirme 
-  function addressHandleChange(value) {
-    setAddress(value);
-  }
-  //Change Status Type
-  function statusTypeHandleChange(value) {
-    setSelectedStatusType(value);
-  }
-  //Excel Oluşturma
-  const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
-    ExcelExport(columns, data, 'Dağıtımlar');
+  //Change Transaction Type
+  function transactionTypeHandleChange(value) {
+    setSelectedTransactionType(value);
   }
   //Change Cheques Type
   function privateDateHandleChange(value) {
-
     setPrivateDate(value);
 
     if (value === 'SonBirHafta') {
@@ -383,6 +321,11 @@ const DeliveriesReport = () => {
       setToDate(moment(new Date()));
     }
   }
+
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+  }
   let columns = [
     {
       title: "Bayi Kodu",
@@ -392,254 +335,85 @@ const DeliveriesReport = () => {
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
-      key: "dealerName",
+      key: "dealerName"
     },
     {
-      title: "İrsaliye No",
-      dataIndex: "waybillId",
-      key: "waybillId",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'waybillId' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-
-    },
-    {
-      title: "İrsaliye Tarihi",
-      dataIndex: "waybillDate",
-      key: "waybillDate",
+      title: "Tarih",
+      dataIndex: "date",
+      key: "date",
       type: "date",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
+      render: (date) => moment(date).format(siteConfig.dateFormat),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'date' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-      render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
-    },
-    {
-      title: "İrsaliye Saati",
-      dataIndex: "waybillTime",
-      key: "waybillTime",
-      align: "center",
-      footerKey: 'Genel Toplam',
-    },
-    {
-      title: "KDV'li toplam",
-      dataIndex: "totalCost",
-      key: "totalCost",
-      align: "right",
-      footerKey: "totalCost",
-      render: (totalCost) => numberFormat(totalCost),
-    },
-    {
-      title: "Teslimat Adresi",
-      dataIndex: "deliveryAddress",
-      key: "deliveryAddress"
     },
     {
       title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
-      sorter: (a, b) => '',
+      sorter: (a, b) => (''),
       sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
     },
     {
-      title: "Açıklama 1",
-      dataIndex: "description1",
-      key: "description1"
+      title: "İşlem Tipi",
+      dataIndex: "transactionType",
+      key: "transactionType",
+      footerKey: 'Genel Toplam',
     },
     {
-      title: "Açıklama 2",
-      dataIndex: "description2",
-      key: "description2"
+      title: "Borç",
+      dataIndex: "debt",
+      key: "debt",
+      align: "right",
+      footerKey: "debt",
+      render: (debt) => numberFormat(debt),
     },
     {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3"
+      title: "Alacak",
+      dataIndex: "credit",
+      key: "credit",
+      align: "right",
+      footerKey: "credit",
+      render: (credit) => numberFormat(credit),
     },
     {
-      title: "Açıklama 4",
-      dataIndex: "description4",
-      key: "description4"
+      title: "Açıklama",
+      dataIndex: "description",
+      key: "description"
     },
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
+      key: "dealerSubCode",
     },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
-      key: "regionCode"
+      key: "regionCode",
     },
-
     {
       title: "Bölge Yöneticisi",
       dataIndex: "regionManager",
-      key: "regionManager"
+      key: "regionManager",
     },
     {
       title: "Saha Kodu",
       dataIndex: "fieldCode",
-      key: "fieldCode"
+      key: "fieldCode",
     },
-
     {
       title: "Saha Yöneticisi",
       dataIndex: "fieldManager",
-      key: "fieldManager"
+      key: "fieldManager",
     },
   ];
-
-  let deliveryDetailDataColumn = [{
-    title: "Bayi Kodu",
-    dataIndex: "dealerCode",
-    key: "dealerCode"
-  },
-  {
-    title: "Bayi Adı",
-    dataIndex: "dealerName",
-    key: "dealerName"
-  },
-  {
-    title: "İrsaliye No",
-    dataIndex: "waybillId",
-    key: "waybillId",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'waybillId' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-
-  },
-  {
-    title: "Teslimat Tarihi",
-    dataIndex: "deliveryDate",
-    key: "deliveryDate",
-    type: "date",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
-  },
-  {
-    title: "Teslimat Adresi",
-    dataIndex: "deliveryAddress",
-    key: "deliveryAddress"
-  },
-  {
-    title: "Sipariş No",
-    dataIndex: "orderNo",
-    key: "orderNo",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-  },
-  {
-    title: "Ürün Kodu",
-    dataIndex: "itemCode",
-    key: "itemCode",
-  },
-  {
-    title: "Ürün Açıklaması ",
-    dataIndex: "itemDescription",
-    key: "itemDescription"
-  },
-  {
-    title: "Miktar",
-    dataIndex: "amount",
-    key: "amount",
-    align: "right",
-    footerKey: "amount",
-    render: (amount) => numberFormat(amount),
-  },
-  {
-    title: "KDV'li toplam",
-    dataIndex: "totalCost",
-    key: "totalCost",
-    align: "right",
-    footerKey: "totalCost",
-    render: (totalCost) => numberFormat(totalCost),
-  },
-  {
-    title: "Birim",
-    dataIndex: "unit",
-    key: "unit",
-    align: "center"
-  },
-  {
-    title: "Plaka",
-    dataIndex: "plateNo",
-    key: "plateNo",
-    align: "center"
-  },
-  {
-    title: "Şoför Adı",
-    dataIndex: "driverName",
-    key: "driverName",
-    align: "center"
-  },
-  {
-    title: "Şoför Telefonu",
-    dataIndex: "driverPhone",
-    key: "driverPhone",
-    align: "center"
-  },
-  {
-    title: "Çıkış Tarihi",
-    dataIndex: "departureDate",
-    key: "departureDate",
-    align: "center",
-    type: "date",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'departureDate' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    render: (departureDate) => moment(departureDate).format(siteConfig.dateFormat),
-  },
-  {
-    title: "Çıkış Saati",
-    dataIndex: "departureTime",
-    key: "departureTime",
-    align: "center"
-  },
-  {
-    title: "Tonaj",
-    dataIndex: "tonnage",
-    key: "tonnage",
-    align: "right",
-    footerKey: "tonnage",
-    render: (tonnage) => numberFormat(tonnage),
-  },
-  {
-    title: "Bayi Alt Kodu",
-    dataIndex: "dealerSubCode",
-    key: "dealerSubCode"
-  },
-  {
-    title: "Bölge Kodu",
-    dataIndex: "regionCode",
-    key: "regionCode"
-  },
-
-  {
-    title: "Bölge Yöneticisi",
-    dataIndex: "regionManager",
-    key: "regionManager"
-  },
-  {
-    title: "Saha Kodu",
-    dataIndex: "fieldCode",
-    key: "fieldCode"
-  },
-
-  {
-    title: "Saha Yöneticisi",
-    dataIndex: "fieldManager",
-    key: "fieldManager"
-  }];
 
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
   else if (token.urole === 'fieldmanager') {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Field;
+    const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Field;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -650,7 +424,7 @@ const DeliveriesReport = () => {
     }
   }
   else if (token.urole === 'regionmanager') {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Region;
+    const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Region;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -661,7 +435,7 @@ const DeliveriesReport = () => {
     }
   }
   else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer;
+    const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -671,26 +445,29 @@ const DeliveriesReport = () => {
       }
     }
   }
+  //Excel Oluşturma
+  const exportExcelButton = () => {
+    postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
+    ExcelExport(columns, data, 'Cari Hareketler');
+  }
+
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.distributionTitle.header" />}
+        {<IntlMessages id="page.customerRecordTitle.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {view !== 'MobileView' ?
               <Row>
-                <Col span={view !== 'MobileView' ? 6 : 0} >
+                <Col span={6}>
                   <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
                 </Col>
-                <Col span={view !== 'MobileView' ? 6 : 0} >
+                <Col span={6} >
                   <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-                </Col>
-                <Col span={view !== 'MobileView' ? 6 : 0} >
-                  <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
                 </Col>
               </Row>
               : null}
@@ -710,49 +487,32 @@ const DeliveriesReport = () => {
                 />
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" value={searchKey} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
-              </Col>
-              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Select
-                  mode={"multiple"}
-                  style={{ width: '100%' }}
-                  placeholder="Sevk Adresi Seçiniz"
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                  value={address}
-                  dropdownMatchSelectWidth={750}
-                  onChange={addressHandleChange}
-                  filterOption={(input, option) =>
-                    option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-                  }
-                >
-                  {lookupAddressChildren}
-                </Select>
+
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
             </Row>
             {view !== 'MobileView' ?
               <Row>
-                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                  <FormItem label={<IntlMessages id="page.statusType" />}></FormItem>
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                  <FormItem label={<IntlMessages id="page.transactionTypes" />}></FormItem>
                 </Col>
-                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                   <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
                 </Col>
-              </Row>
-              : null}
+              </Row> : null}
             <Row>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
                   style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                  placeholder="Durumu Tipi Seçiniz"
-                  onChange={statusTypeHandleChange}
-                  value={selectedStatusType}
+                  placeholder="İşlem Tipi Seçiniz"
+                  onChange={transactionTypeHandleChange}
+                  value={selectedTransactionType}
                 >
                   {children}
                 </Select>
               </Col>
-
-              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                 <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem} style={view === 'MobileView' ? null : { marginLeft: '-30px' }}>
                   <Row>
                     <Col span={2} >
@@ -792,9 +552,11 @@ const DeliveriesReport = () => {
                         style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                         value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                       />
+
                     </Col>
                   </Row>
-                </Radio.Group>            </Col>
+                </Radio.Group>
+              </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
@@ -824,14 +586,14 @@ const DeliveriesReport = () => {
           columns={columns}
           dataSource={data}
           onChange={handleChange}
-          expandable={{ 'expandedRowRender': expandedRowRender }}
           loading={loading}
           pagination={false}
+          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data, true, aggregatesOverall, true)
+            return renderFooter(columns, data, false, aggregatesOverall, true)
           }}
         />
         <ReportPagination
@@ -846,5 +608,3 @@ const DeliveriesReport = () => {
     </LayoutWrapper>
   );
 }
-
-export default DeliveriesReport;

@@ -1246,7 +1246,7 @@ const SearchComponent = () => {
                     placeholder="Ürün tipi araması"
                     allowClear
                     onSearch={productTypeOnSearch}
-                    onKeyDown={searchTextFilterkeyPress}
+                    onKeyUp={searchTextFilterkeyPress}
                   // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
@@ -1266,7 +1266,7 @@ const SearchComponent = () => {
                     placeholder="Ebat araması"
                     allowClear
                     onSearch={dimensionOnSearch}
-                    onKeyDown={dimensionSearchTextFilterkeyPress}
+                    onKeyUp={dimensionSearchTextFilterkeyPress}
                   // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
@@ -1287,7 +1287,7 @@ const SearchComponent = () => {
                     placeholder="Seri araması"
                     allowClear
                     onSearch={serieOnSearch}
-                    onKeyDown={serieSearchTextFilterkeyPress}
+                    onKeyUp={serieSearchTextFilterkeyPress}
                   // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
@@ -1308,7 +1308,7 @@ const SearchComponent = () => {
                     placeholder="Renk araması"
                     allowClear
                     onSearch={colorOnSearch}
-                    onKeyDown={colorSearchTextFilterkeyPress}
+                    onKeyUp={colorSearchTextFilterkeyPress}
                   // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
@@ -1328,7 +1328,7 @@ const SearchComponent = () => {
                     placeholder="Yüzey araması"
                     allowClear
                     onSearch={surfaceOnSearch}
-                    onKeyDown={surfaceSearchTextFilterkeyPress}
+                    onKeyUp={surfaceSearchTextFilterkeyPress}
                   // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
