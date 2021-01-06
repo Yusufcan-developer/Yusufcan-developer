@@ -383,6 +383,11 @@ const DeliveriesReport = () => {
       dataIndex: "deliveryAddress",
       key: "deliveryAddress"
     },
+    {
+      title: "Plaka",
+      dataIndex: "description3",
+      key: "description3"
+    },
      {
       title: "Belge No",
       dataIndex: "documentId",
@@ -400,11 +405,6 @@ const DeliveriesReport = () => {
       title: "Açıklama 2",
       dataIndex: "description2",
       key: "description2"
-    },
-    {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3"
     },
     {
       title: "Açıklama 4",
