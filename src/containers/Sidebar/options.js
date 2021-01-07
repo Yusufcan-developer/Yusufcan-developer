@@ -432,10 +432,10 @@ export default {
               key: 'admin/notification',
               label: 'sidebar.notifications',
             },
-            // {
-            //   key: 'user/DealerUserList',
-            //   label: 'sidebar.userList',
-            // },
+            {
+              key: 'dealer/users',
+              label: 'sidebar.userList',
+            },
           ],
         },
       ],
