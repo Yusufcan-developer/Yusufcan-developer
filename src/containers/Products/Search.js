@@ -1211,16 +1211,13 @@ const SearchComponent = () => {
                   <Radio style={radioStyle} value={enumerations.StockStatus.None}>
                     Hepsi
                 </Radio>
-                  {(category === 'KARO') ? (null) : (<Radio style={radioStyle} value={enumerations.StockStatus.GeneralInStock}>
+                  <Radio style={radioStyle} value={enumerations.StockStatus.GeneralInStock}>
                     Stok Var
-                  </Radio>)}
+                  </Radio>
                   <Radio style={radioStyle} value={(category === 'KARO') ? enumerations.StockStatus.TileNotInStock : enumerations.StockStatus.GeneralNotInStock}>
                     Stok Yok
                 </Radio>
-                  {(category === 'KARO') ? (<React.Fragment>
-                    <Radio style={radioStyle} value={enumerations.StockStatus.TileUpTo10000}>
-                      1-10.000 M2
-                </Radio>
+                  {(category === 'KARO') ? (<React.Fragment>                    
                     <Radio style={radioStyle} value={enumerations.StockStatus.Tile10000AndMore}>
                       10.000+  M2
                 </Radio></React.Fragment>) : (null)}
