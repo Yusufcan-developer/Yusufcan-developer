@@ -498,7 +498,8 @@ export default function () {
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
                   mode="multiple"
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '320px' : '100%' }}
+                  dropdownMatchSelectWidth={380}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   placeholder="Bildirim Tipi Seçiniz"
                   onChange={notificationTypeHandleChange}
                   value={selectedNotificationType}
