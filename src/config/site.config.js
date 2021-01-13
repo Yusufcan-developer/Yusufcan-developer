@@ -95,6 +95,7 @@ export default {
       getRestrictedRole:apiUrl+'security/restricted-users/roles',
       getGenerateUsername:apiUrl+'security/restricted-users/generate-username',
       getGeneratePassword:apiUrl+'security/generate-password',
+      putCacheRefresh:apiUrl+'security/reset-cache',
       
     },
     image: {

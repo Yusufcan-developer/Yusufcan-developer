@@ -15,6 +15,7 @@ import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
 import { func } from "prop-types";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import logMessage from '@iso/config/logMessage';
 var jwtDecode = require('jwt-decode');
 const { logout } = authAction;
@@ -28,6 +29,7 @@ export default function TopbarUser(props) {
   const [form] = Form.useForm();
   const { displayName } = props;
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+  const [cacheRefreshVisible, setCacheRefreshVisible] = useState(false);
   const dispatch = useDispatch();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   function handleVisibleChange() {
@@ -43,6 +45,8 @@ export default function TopbarUser(props) {
   } else if (window.innerWidth > 767) {
     newView = 'TabView';
   }
+
+  const token = jwtDecode(localStorage.getItem("id_token"));
   const content = (
     <TopbarDropdownWrapper className="isoUserDropdown">
       {/* <Link className="isoDropdownLink" to={'/my-profile'}>
@@ -51,6 +55,10 @@ export default function TopbarUser(props) {
       <a className="isoDropdownLink" onClick={() => showPasswordModal()}>
         <IntlMessages id="themeSwitcher.settings" />
       </a>
+      {token.urole !== 'admin' ? null :
+        <div className="isoDropdownLink" style={{ color: 'red' }}  onClick={() => confirm()}>
+          <IntlMessages id="topbar.cacheRefresh" />
+        </div>}
       <div className="isoDropdownLink" onClick={() => userLogOut()}>
         <IntlMessages id="topbar.logout" />
       </div>
@@ -61,9 +69,14 @@ export default function TopbarUser(props) {
     setUsername(token.uname);
     setForgotPasswordVisible(true);
   }
+
+  function showCacheRefreshModal() {
+    setCacheRefreshVisible(true);
+  }
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
   function handleCancel() {
     setForgotPasswordVisible(false);
+    setCacheRefreshVisible(false);
   };
 
   //Parola düzenleme fetch işlemi
@@ -90,6 +103,28 @@ export default function TopbarUser(props) {
       }).catch(error => console.log('hata', error));
     return userData;
   }
+  //Parola düzenleme fetch işlemi
+  async function refreshCache() {
+    let cacheRefreshStatus;
+    const reqBody = {}
+    const requestOptions = {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(siteConfig.api.security.putCacheRefresh, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        cacheRefreshStatus = data;
+      }).catch(error => console.log('hata', error));
+    return cacheRefreshStatus;
+  }
 
   //Kullanıcı parola değiştirme
   async function handlePasswordOk() {
@@ -102,6 +137,29 @@ export default function TopbarUser(props) {
     else { message.error('Parola değiştirme işlemi başarısızdır.'); postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Update, username + ' kullanıcı parolası değiştirlemedi.'); }
 
   };
+
+  //Cache yenileme
+  async function handleCacheRefresh() {
+    const status = await refreshCache();
+    if (status.isSuccessful === true) {
+      message.success(status.message);
+      postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Update, status.message);
+      setCacheRefreshVisible(false);
+    }
+    else { message.error(status.message); }
+
+  };
+  function confirm() {
+    Modal.confirm({
+      title: "Cache Yenileme",
+      icon: <ExclamationCircleOutlined />,
+      content: "Cache yenileme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz",
+      okText: "tamam",
+      onCancel: handleCancel,
+      onOk:handleCacheRefresh,
+      cancelText: "iptal"
+    });
+  }
   return (
     <React.Fragment>
       <Popover
@@ -117,7 +175,7 @@ export default function TopbarUser(props) {
           style={{ color: customizedTheme.textColor }}
         />
         {newView !== 'MobileView' ? <h5 style={{ display: 'inline', marginLeft: '10px' }}>{displayName}</h5> : null}
-      </Popover>
+      </Popover>     
       <Modal
         visible={forgotPasswordVisible}
         title="Parola Değiştirme"

@@ -637,6 +637,7 @@
   "topbar.myprofile": "Profilim",
   "topbar.help": "Help",
   "topbar.logout": "Çıkış",
+  "topbar.cacheRefresh": "Cache Yenile",
   "topbar.viewAll": "Hepsini Görüntüle",
   "topbar.viewCart": "Sepete Git",
   "topbar.totalPrice": "Toplam",
