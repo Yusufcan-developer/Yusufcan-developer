@@ -361,13 +361,15 @@ export default function () {
         const distributionsArr = [];
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
-        distributionsArr.push({
+
+        //Daha önceden kayıt varmı kontrolü
+        distributions.push({
             itemCode: item.itemCode,
             quantity: quantity,
             orderNo: item.orderNo,
         })
 
-        localStorage.setItem('distributions', JSON.stringify(distributionsArr));
+        localStorage.setItem('distributions', JSON.stringify(distributions));
         setModalVisible(false);
         setQuantity();
     }

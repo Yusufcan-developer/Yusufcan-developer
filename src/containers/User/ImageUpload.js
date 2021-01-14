@@ -16,6 +16,9 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import PageHeader from "@iso/components/utility/pageHeader";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import siteConfig from "@iso/config/site.config";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import enumerations from "../../config/enumerations";
+
 import './Image.css';
 
 const { TextArea } = Input;
@@ -198,6 +201,8 @@ class ImageUpload extends React.Component {
                     })
                     .then((data) => setTimeout(() => {
                         message.success({ content: 'Dosya başarıyla kaydedildi', key, duration: 2 })
+                        postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Add, filesToSend.ProductCode +' fotoğraf eklendi');
+
                     }, 250)
 
                     ).catch((err) => setTimeout(() => {
@@ -252,6 +257,8 @@ class ImageUpload extends React.Component {
         })
             .then(data => setTimeout(() => {
                 message.success({ content: 'Fotoğraf başarıyla silindi', key, duration: 2 })
+                postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, value +' fotoğraf silindi');
+
             }, 250))
             .catch((err) => setTimeout(() => {
                 message.error({ content: 'Fotoğraf silinemedi', key, duration: 2 })
