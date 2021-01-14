@@ -298,7 +298,7 @@ const DeliveriesReport = () => {
   //Excel Oluşturma
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
-    ExcelExport(columns, data, 'Sevkiyatlar');
+    ExcelExport(columns, data, 'Sevkiyatlar',deliveryDetailData, deliveryDetailDataColumn,'delivery');
   }
   //Change Cheques Type
   function privateDateHandleChange(value) {

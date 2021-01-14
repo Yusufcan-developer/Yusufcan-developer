@@ -78,7 +78,7 @@ export default function () {
     const [orderNo, setOrderNo] = useState();
     const [quantity, setQuantity] = useState();
     const [modalVisible, setModalVisible] = useState(true);
-    const isEditing = record => record.itemCode === editingKey & record.orderNo === orderNo;
+    const isEditing = record => record.itemCode === editingKey && record.orderNo === orderNo;
 
     const queryString = require('query-string');
     const history = useHistory();
@@ -95,6 +95,7 @@ export default function () {
     }, [pageIndex]);
 
     let searchUrl = queryString.parse(location.search);
+    
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
         useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
@@ -325,6 +326,7 @@ export default function () {
     function addressHandleChange(value) {
         setAddress(value);
     }
+
     //Get adress
     async function getAdress(dealerCodes) {
         //Get User Info  
@@ -358,20 +360,25 @@ export default function () {
         }
     };
     function addDistributionItem(item) {
-        const distributionsArr = [];
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
-
+        if (!distributions) { distributions = [] }
         //Daha önceden kayıt varmı kontrolü
-        distributions.push({
-            itemCode: item.itemCode,
-            quantity: quantity,
-            orderNo: item.orderNo,
-        })
-
+        const index = _.findIndex(distributions, function (i) { return i.itemCode === item.itemCode; });
+        if (index > 0) {
+            distributions[index].quantity = quantity;
+        } else {
+            distributions.push({
+                itemCode: item.itemCode,
+                quantity: quantity,
+                orderNo: item.orderNo,
+            })
+        }
+        
         localStorage.setItem('distributions', JSON.stringify(distributions));
         setModalVisible(false);
         setQuantity();
+        setEditingKey('');
     }
     function InputNumberOnchange(value) {
         setQuantity(value);
@@ -414,17 +421,7 @@ export default function () {
             // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
         }
     };
-    let columns = [
-        // {
-        //   title: "Bayi Kodu",
-        //   dataIndex: "dealerCode",
-        //   key: "dealerCode"
-        // },
-        // {
-        //   title: "Bayi Adı",
-        //   dataIndex: "dealerName",
-        //   key: "dealerName"
-        // },
+    let columns = [       
         {
             title: "Durum",
             dataIndex: "status",
@@ -543,33 +540,7 @@ export default function () {
             key: 'mik',
             render: (remainingAmount, record) => testGetMik(record.orderNo, record.itemCode),
         },
-        // {
-        //   title: "Bayi Alt Kodu",
-        //   dataIndex: "dealerSubCode",
-        //   key: "dealerSubCode"
-        // },
-        // {
-        //   title: "Bölge Kodu",
-        //   dataIndex: "regionCode",
-        //   key: "regionCode"
-        // },
-
-        // {
-        //   title: "Bölge Yöneticisi",
-        //   dataIndex: "regionManager",
-        //   key: "regionManager"
-        // },
-        // {
-        //   title: "Saha Kodu",
-        //   dataIndex: "fieldCode",
-        //   key: "fieldCode"
-        // },
-        // {
-        //   title: "Saha Yöneticisi",
-        //   dataIndex: "fieldManager",
-        //   key: "fieldManager"
-        // },
-        {
+               {
             title: 'İşlemler',
             dataIndex: 'operation',
             fixed: "right",
@@ -611,10 +582,16 @@ export default function () {
     ];
 
     function testGetMik(orderNo, itemCode) {
-        if ((orderNo === '010191011') && (itemCode === '65550110')) {
-            let productQuantity = localStorage.setItem('dağıtımMiktarı', 8);
-            return 8;
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+
+        //Daha önceden kayıt varmı kontrolü
+        const item = _.find(distributions, function (i) { return i.itemCode === itemCode && i.orderNo === orderNo; });
+
+        if (item) {
+            return item.quantity;
         }
+        return 0;
     }
     //Hide order table column
     const token = jwtDecode(localStorage.getItem("id_token"));

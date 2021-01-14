@@ -4,7 +4,7 @@ import ExportJsonExcel from "js-export-excel";
 import _ from 'underscore';
 import moment from 'moment';
 
-export default (columns, data, fileName, dataDetail, detailColumns) => {
+export default (columns, data, fileName, dataDetail, detailColumns,groupType) => {
   var option = {};
   let dataTable = [];
   let columnName = [];
@@ -23,8 +23,11 @@ export default (columns, data, fileName, dataDetail, detailColumns) => {
     _.each(data, (item) => {
       //Preview column data 
       item = _.pick(item, viewerColumns);
+      let groupKey=''
+      if (groupType === 'order') { groupKey = item.orderNo }
+      else if ( groupType === 'delivery' ) { groupKey = item.waybillId }
       const itemDetail = _.findWhere(dataDetail, {
-        Key: item.orderNo
+        Key: groupKey
       })
       if (dateTypeColumns.length > 0) {
         _.each(dateTypeColumns, (itemDateColumn) => {
@@ -32,6 +35,8 @@ export default (columns, data, fileName, dataDetail, detailColumns) => {
         });
       }
       dataTable.push(item);
+
+      debugger
       if (detailColumns !== undefined) {
         if (dataDetail.length > 0) {
           //Detail Column Name Array  
@@ -40,14 +45,20 @@ export default (columns, data, fileName, dataDetail, detailColumns) => {
             viewerDetailColumns.push(columnItem.dataIndex);
             if (columnItem.type === 'date') { dateTypeColumns.push(columnItem.dataIndex); }
           });
-          dataTable.push(detailColumnsName);
+          if (itemDetail === undefined) { dataTable.push([])} else {
+            dataTable.push(detailColumnsName);
+          }
+          
           //Detail Data
+          if(itemDetail===undefined){}
+          else{
           _.each(itemDetail.Value, (detail) => {
             detail = _.pick(detail, viewerDetailColumns);
             dataTable.push(detail);
           })
           dataTable.push([])
         }
+      }
       }
     })
   }
