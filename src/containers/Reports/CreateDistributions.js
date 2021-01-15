@@ -392,19 +392,18 @@ export default function () {
     }
     // rowSelection object indicates the need for row selection
     const rowSelection = {
-        onSelect: (record, selected, selectedRows) => {
-            // let selectedIds = []
-            // if (selectedRows.length > 0) {
-            //   _.each(selectedRows, (item) => {
-            //     if (item !== undefined) {
-            //       selectedIds.push(item.id);
-            //     }
-            //   });
-            //   setSelectedItemsId(selectedIds);
-            //   selectedTotalCount = selectedIds.length;
-            //   setHasSelected(true);
+        onSelect: (record) => {
+        
+            // let distributions = localStorage.getItem('distributions');
+            // distributions = JSON.parse(distributions);
+    
+            // //Daha önceden kayıt varmı kontrolü
+            // const item = _.find(distributions, function (i) { return i.itemCode === record.itemCode && i.orderNo === record.orderNo; });
+    
+            // if (item) {
+            //     return true
             // }
-            // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+            // return false;
         },
         onSelectAll: (record, selected, selectedRows) => {
             // let selectedIds = []
