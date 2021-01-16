@@ -359,22 +359,27 @@ export default function () {
             setOrderNo(record.orderNo);
         }
     };
-    function addDistributionItem(item) {
+    function addDistributionItem(item,selectedItem) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         if (!distributions) { distributions = [] }
         //Daha önceden kayıt varmı kontrolü
         const index = _.findIndex(distributions, function (i) { return i.itemCode === item.itemCode; });
         if (index > 0) {
-            distributions[index].quantity = quantity;
+            if (selectedItem) { distributions[index].quantity = item.remainingAmount; } else if (selectedItem===false) {
+                distributions[index].quantity = 0;
+            }
+            else {
+                distributions[index].quantity = quantity;
+            }
         } else {
             distributions.push({
                 itemCode: item.itemCode,
-                quantity: quantity,
+                quantity: selectedItem === true ? item.remainingAmount : quantity,
                 orderNo: item.orderNo,
             })
         }
-        
+
         localStorage.setItem('distributions', JSON.stringify(distributions));
         setModalVisible(false);
         setQuantity();
@@ -392,19 +397,10 @@ export default function () {
     }
     // rowSelection object indicates the need for row selection
     const rowSelection = {
+
+        
         onSelect: (record, selected, selectedRows) => {
-            // let selectedIds = []
-            // if (selectedRows.length > 0) {
-            //   _.each(selectedRows, (item) => {
-            //     if (item !== undefined) {
-            //       selectedIds.push(item.id);
-            //     }
-            //   });
-            //   setSelectedItemsId(selectedIds);
-            //   selectedTotalCount = selectedIds.length;
-            //   setHasSelected(true);
-            // }
-            // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+            addDistributionItem(record,selected);
         },
         onSelectAll: (record, selected, selectedRows) => {
             // let selectedIds = []
@@ -533,12 +529,12 @@ export default function () {
         },
         {
             title: 'Giriş Yapılan Miktar',
-            dataIndex: 'mik',
+            dataIndex: 'enteredQuantity',
             editable: true,
             fixed: "right",
             align: 'right',
-            key: 'mik',
-            render: (remainingAmount, record) => testGetMik(record.orderNo, record.itemCode),
+            key: 'enteredQuantity',
+            render: (enteredQuantity, record) => numberFormat(getEnteredQuantity(record.orderNo, record.itemCode))
         },
                {
             title: 'İşlemler',
@@ -571,9 +567,9 @@ export default function () {
                             <a disabled={editingKey !== ''} onClick={() => edit(record)}>
                                 <i className="ion-android-create" />
                             </a>
-                            <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
+                            {/* <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
                                 <i className="ion-ios-fastforward" />
-                            </a>
+                            </a> */}
 
                         </Space>
                     );
@@ -581,7 +577,7 @@ export default function () {
         },
     ];
 
-    function testGetMik(orderNo, itemCode) {
+    function getEnteredQuantity(orderNo, itemCode,selectItem) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
 
@@ -672,7 +668,40 @@ export default function () {
             setToDate(moment(new Date()));
         }
     }
-
+const EditableCell = ({
+  editing,
+  dataIndex,
+  title,
+  inputType,
+  record,
+  index,
+  children,
+  ...restProps
+}) => {
+  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
+  return (
+    <td {...restProps}>
+      {editing ? (
+        <Form.Item
+          name={dataIndex}
+          style={{
+            margin: 0,
+          }}
+          rules={[
+            {
+              required: true,
+              message: `Please Input ${title}!`,
+            },
+          ]}
+        >
+          {inputNode}
+        </Form.Item>
+      ) : (
+        children
+      )}
+    </td>
+  );
+};
     const view = viewType('Reports');
     const filterView = viewType('Filter');
     return (
@@ -828,12 +857,18 @@ export default function () {
                     onChange={handleChange}
                     loading={loading}
                     pagination={false}
-                    // scroll={{ x: 'calc(700px + 50%)' }}
+                    components={{
+                        body: {
+                            cell: EditableCell,
+                        },
+                    }}
                     scroll={{ x: 'max-content' }}
                     size="medium"
                     bordered={false}
+                    rowClassName="editable-row"
+                    // rowClassName={(record, index) => (getEnteredQuantity(record.orderNo, record.itemCode) > 0 ? "black" : "initial")}
                     rowSelection={{
-                        ...rowSelection
+                        ...rowSelection,
                     }}
                     summary={() => {
                         return renderFooter(columns, data, false, aggregatesOverall, true)

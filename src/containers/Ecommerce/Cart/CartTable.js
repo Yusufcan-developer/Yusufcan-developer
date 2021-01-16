@@ -68,7 +68,9 @@ export default function CartTable({ style }) {
     });
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
-    let account = token.uname;
+    let account = '';
+    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
+
     if (activeUser != undefined) { account = activeUser }
     const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
     const requestOptions = {
@@ -126,11 +128,12 @@ export default function CartTable({ style }) {
     };
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
-    let uname = token.uname;
-    if (activeUser != undefined) { uname = activeUser }
+    let apiUrl = '';
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`; }
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
     if (!token.uname) { return 'Unauthorized' }
 
-    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
+    await fetch(apiUrl, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response, true);
         return status;

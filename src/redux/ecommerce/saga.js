@@ -39,7 +39,9 @@ export function* updateData({ productQuantity }) {
   const token = jwtDecode(localStorage.getItem("id_token"));
   if(token===undefined){return  history.replace('/');}
   const activeUser = localStorage.getItem("activeUser")
-  let account = token.uname;
+  let account = '';
+  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
+
   if (activeUser != undefined) { account = activeUser }
   const reqBody = { "items": sendDatabaseProductList,"accountNo": account };
   const requestOptions = {

@@ -20,16 +20,17 @@ function useGetCartCheckOut(url) {
       };
       const token = jwtDecode(localStorage.getItem("id_token"));
       const activeUser = localStorage.getItem("activeUser")
-      let uname = token.uname;
-      if (activeUser != undefined) { uname = activeUser }
+      let apiUrl='';
+      if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includePallet=true&checkBalance=true`;}
+      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includePallet=true&checkBalance=true` }
       if (!token.uname) { return 'Unauthorized' }
     
-    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}?includePallet=true&checkBalance=true`, requestOptions)
+    await fetch(apiUrl, requestOptions)
     .then(response => {
       const status = apiStatusManagement(response);
       return status;
     })
-      .then(data => {        
+      .then(data => {   
         setData(data);
         setOnChangeFilter(false);
       })
