@@ -69,13 +69,14 @@ const OrderPartial = () => {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
+    let apiUrl='';
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
-    let uname = token.uname;
-    if (activeUser != undefined) { uname = activeUser }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`;}
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
     if (!token.uname) { return 'Unauthorized' }
 
-    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
+    await fetch(apiUrl, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
@@ -159,6 +160,8 @@ const OrderPartial = () => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let account = token.uname;
+    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
+
     if (activeUser != undefined) { account = activeUser }
     const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
     const requestOptions = {

@@ -266,8 +266,8 @@ const ProductDetail = () => {
       }
     };
     const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    let uname = token.uname;
+    const activeUser = localStorage.getItem("activeUser");
+    let uname = '';
     if (activeUser != undefined) { uname = activeUser }
     if (!token.uname) { return 'Unauthorized' }
 

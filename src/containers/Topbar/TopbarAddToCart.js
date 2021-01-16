@@ -64,13 +64,14 @@ export default function TopbarAddtoCart() {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
+    let apiUrl='';
     const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    let uname = token.uname;
-    if (activeUser !== null) { uname = activeUser }
+    const activeUser = localStorage.getItem("activeUser"); 
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`;}
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
     if (!token.uname) { return 'Unauthorized' }
 
-    await fetch(`${siteConfig.api.carts.getGetByAccountNo}${uname}`, requestOptions)
+    await fetch(apiUrl, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response, true);
         return status;

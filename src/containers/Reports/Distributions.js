@@ -62,7 +62,7 @@ export default function () {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
