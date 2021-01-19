@@ -362,10 +362,10 @@ export default function () {
     },
     {
       title: "Dağıtım Kodu",
-      dataIndex: "distributionId",
-      key: "distributionId",
+      dataIndex: "distributionNo",
+      key: "distributionNo",
       sorter: (a, b) => (''),
-      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionId' && tableOptions.sortedInfo.order,
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
     },
     {

@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { NavLink, useHistory, useLocation } from 'react-router-dom';
+import {  useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -30,6 +30,7 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
+import { } from "../Ecommerce/Cart/color.css";
 
 //Other Library
 import enumerations from "../../config/enumerations";
@@ -62,7 +63,7 @@ export default function () {
     const [pageIndex, setPageIndex] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [startingPageIndex, setStartingPageIndex] = useState(1);
-    const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
+    const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
     const [toDate, setToDate] = useState(moment(new Date()));
     const [dealerCodes, setDealerCodes] = useState();
     const [regionCodes, setRegionCodes] = useState();
@@ -77,11 +78,13 @@ export default function () {
     const [editingKey, setEditingKey] = useState('');
     const [orderNo, setOrderNo] = useState();
     const [quantity, setQuantity] = useState();
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [modalVisible, setModalVisible] = useState(true);
     const isEditing = record => record.itemCode === editingKey && record.orderNo === orderNo;
 
     const queryString = require('query-string');
     const history = useHistory();
+    let getSelectedKey = []
 
     //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
     useEffect(() => {
@@ -95,7 +98,6 @@ export default function () {
     }, [pageIndex]);
 
     let searchUrl = queryString.parse(location.search);
-    
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
         useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
@@ -352,33 +354,98 @@ export default function () {
             .catch();
         return data;
     }
-    const edit = (record, deleteAmount = false) => {
-        if (deleteAmount) { setQuantity(0); } else {
-            setQuantity(record.remainingAmount); setModalVisible(true);
-            setEditingKey(record.itemCode);
-            setOrderNo(record.orderNo);
-        }
+    const edit = (record, rowIndex) => {
+        setQuantity(record.remainingAmount); setModalVisible(true);
+        setEditingKey(record.itemCode);
+        setOrderNo(record.orderNo);
     };
-    function addDistributionItem(item) {
+    function addDistributionItemAll(items, selectedItem) {
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+        if (!distributions) { distributions = [] }
+
+        _.each(items, (item) => {
+            const index = _.findIndex(distributions, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo });
+            if (index > -1) {
+                if (selectedItem === true) { distributions[index].quantity = item.remainingAmount; } else if (selectedItem === false) {
+                    distributions[index].quantity = 0;
+                }
+                else {
+                    distributions[index].quantity = quantity;
+                }
+            } else {
+                distributions.push({
+                    itemCode: item.itemCode,
+                    quantity: selectedItem === true ? item.remainingAmount : quantity,
+                    orderNo: item.orderNo,
+                })
+            }
+
+            localStorage.setItem('distributions', JSON.stringify(distributions));
+            setModalVisible(false);
+            setQuantity();
+            setEditingKey('');
+
+            //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
+            let newKeyArr = [];
+            let getSelectedKey = selectedRowKeys;
+            _.each(items, (index) => {
+                if ((selectedItem === true) || (selectedItem === undefined)) {
+                    newKeyArr.push(index.key);
+                }
+                else {
+                    getSelectedKey = _.without(getSelectedKey, index.key);
+                }
+            });
+            if (selectedItem === false) { setSelectedRowKeys(getSelectedKey); }
+            else {
+                setSelectedRowKeys(newKeyArr);
+            }
+        });
+
+    }
+    function addDistributionItem(item, selectedItem, rowIndex, selectAll) {
+
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         if (!distributions) { distributions = [] }
         //Daha önceden kayıt varmı kontrolü
-        const index = _.findIndex(distributions, function (i) { return i.itemCode === item.itemCode; });
-        if (index > 0) {
-            distributions[index].quantity = quantity;
+        const index = _.findIndex(distributions, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo });
+        if (index > -1) {
+            if (selectedItem === true) { distributions[index].quantity = item.remainingAmount; } else if (selectedItem === false) {
+                distributions[index].quantity = 0;
+            }
+            else {
+                distributions[index].quantity = quantity;
+            }
         } else {
             distributions.push({
                 itemCode: item.itemCode,
-                quantity: quantity,
+                quantity: selectedItem === true ? item.remainingAmount : quantity,
                 orderNo: item.orderNo,
             })
         }
-        
         localStorage.setItem('distributions', JSON.stringify(distributions));
         setModalVisible(false);
         setQuantity();
         setEditingKey('');
+
+        //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
+        let newKeyArr = [];
+        _.each(selectedRowKeys, (index) => {
+            if (index === rowIndex && selectedItem === false) { }
+            else {
+                newKeyArr.push(index);
+            }
+        });
+        _.each(getSelectedKey, (i) => {
+            newKeyArr.push(i);
+        });
+        getSelectedKey = [];
+        if ((selectedItem === true) || (selectedItem === undefined)) {
+            newKeyArr.push(rowIndex);
+        }
+        setSelectedRowKeys(newKeyArr);
     }
     function InputNumberOnchange(value) {
         setQuantity(value);
@@ -387,40 +454,37 @@ export default function () {
         setModalVisible(false);
         setEditingKey('');
     }
-    async function allAmountOrder(record) {
-        await addDistributionItem(record);
+
+    function getSelected() {
+      
+        if (selectedRowKeys.length > 0) {
+            return selectedRowKeys
+        }
+        else {
+            let distributions = localStorage.getItem('distributions');
+            distributions = JSON.parse(distributions);
+    
+            _.each(distributions, (item) => {
+                const index = _.findIndex(data, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo });
+                if (index > -1) {
+                    getSelectedKey.push(index);
+                }
+            });
+        }
+        return getSelectedKey;
     }
     // rowSelection object indicates the need for row selection
     const rowSelection = {
-        onSelect: (record) => {
-        
-            // let distributions = localStorage.getItem('distributions');
-            // distributions = JSON.parse(distributions);
-    
-            // //Daha önceden kayıt varmı kontrolü
-            // const item = _.find(distributions, function (i) { return i.itemCode === record.itemCode && i.orderNo === record.orderNo; });
-    
-            // if (item) {
-            //     return true
-            // }
-            // return false;
+        selectedRowKeys: getSelected(),
+        onSelect: (record, selected, selectedRows) => {
+            addDistributionItem(record, selected, record.key);
         },
         onSelectAll: (record, selected, selectedRows) => {
-            // let selectedIds = []
-            // if (record) {
-            //   _.each(selectedRows, (item) => {
-            //     selectedIds.push(item.id);
-            //   });
-            //   if (selectedRows.length > 0) {
-            //     setSelectedItemsId(selectedIds);
-            //     selectedTotalCount = selectedIds.length;
-            //     setHasSelected(true);
-            //   }
-            // }
-            // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
-        }
+            addDistributionItemAll(selectedRows, record);
+        },
+
     };
-    let columns = [       
+    let columns = [
         {
             title: "Durum",
             dataIndex: "status",
@@ -428,10 +492,10 @@ export default function () {
         },
         {
             title: "Dağıtım Kodu",
-            dataIndex: "distributionId",
-            key: "distributionId",
+            dataIndex: "distributionNo",
+            key: "distributionNo",
             sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'distributionId' && tableOptions.sortedInfo.order,
+            sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
         },
         {
@@ -532,18 +596,18 @@ export default function () {
         },
         {
             title: 'Giriş Yapılan Miktar',
-            dataIndex: 'mik',
+            dataIndex: 'enteredQuantity',
             editable: true,
             fixed: "right",
             align: 'right',
-            key: 'mik',
-            render: (remainingAmount, record) => testGetMik(record.orderNo, record.itemCode),
+            key: 'enteredQuantity',
+            render: (enteredQuantity, record) => numberFormat(getEnteredQuantity(record.orderNo, record.itemCode))
         },
-               {
+        {
             title: 'İşlemler',
             dataIndex: 'operation',
             fixed: "right",
-            render: (_, record) => {
+            render: (_, record, rowIndex) => {
                 const editable = isEditing(record);
                 return editable ? (
                     <span>
@@ -552,7 +616,7 @@ export default function () {
                                 <div>
                                     <Space size={10}>
                                         {<InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />}
-                                        <Button type="primary" onClick={() => addDistributionItem(record)}>Onayla</Button>
+                                        <Button type="primary" onClick={() => addDistributionItem(record, undefined, rowIndex)}>Onayla</Button>
                                     </Space>
                                 </div>
                             }
@@ -567,26 +631,24 @@ export default function () {
                 ) : (
                         <Space >
 
-                            <a disabled={editingKey !== ''} onClick={() => edit(record)}>
+                            <a disabled={editingKey !== ''} onClick={() => edit(record, rowIndex)}>
                                 <i className="ion-android-create" />
                             </a>
-                            <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
+                            {/* <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
                                 <i className="ion-ios-fastforward" />
-                            </a>
+                            </a> */}
 
                         </Space>
                     );
             },
         },
     ];
-
-    function testGetMik(orderNo, itemCode) {
+    function getEnteredQuantity(orderNo, itemCode, selectItem) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
 
         //Daha önceden kayıt varmı kontrolü
         const item = _.find(distributions, function (i) { return i.itemCode === itemCode && i.orderNo === orderNo; });
-
         if (item) {
             return item.quantity;
         }
@@ -827,16 +889,16 @@ export default function () {
                     onChange={handleChange}
                     loading={loading}
                     pagination={false}
-                    // scroll={{ x: 'calc(700px + 50%)' }}
                     scroll={{ x: 'max-content' }}
                     size="medium"
                     bordered={false}
                     rowSelection={{
-                        ...rowSelection
+                        ...rowSelection,
                     }}
                     summary={() => {
                         return renderFooter(columns, data, false, aggregatesOverall, true)
                     }}
+                    rowClassName={(record, index) => (getEnteredQuantity(record.orderNo, record.itemCode) <= 0 ? "black" : "red")}
                 />
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}

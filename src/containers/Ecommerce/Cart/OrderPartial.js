@@ -408,7 +408,7 @@ const OrderPartial = () => {
             size="medium"
             bordered={false}
             // rowClassName={'table-item'}
-            rowClassName={(record, index) => (record.amount === record.orderAmount ? 'initial' : "black")}
+            rowClassName={(record) => (record.amount === record.orderAmount ? 'initial' : "black")}
           />
           <Table
             title={() => "Siparişim"}
@@ -419,7 +419,7 @@ const OrderPartial = () => {
             scroll={{ x: 'max-content' }}
             size="medium"
             bordered={false}
-            rowClassName={(record, index) => (record.orderAmount > 0 ? "black" : "initial")}
+            rowClassName={(record) => (record.orderAmount > 0 ? "black" : "initial")}
           />
         </Space>
       </Box>
