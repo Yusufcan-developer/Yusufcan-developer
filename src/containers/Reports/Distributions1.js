@@ -16,7 +16,7 @@ import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
-import { usePostDeliveryReport } from "@iso/lib/hooks/fetchData/usePostDeliveryReport";
+import { usePostDistributionReport } from "@iso/lib/hooks/fetchData/usePostDistributionReport";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
@@ -97,7 +97,7 @@ const DeliveriesReport = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, deliveryDetailData, aggregatesOverall] =
-    usePostDeliveryReport(`${siteConfig.api.report.postDeliveriesv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+  usePostDistributionReport(`${siteConfig.api.report.postDistributionv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Durum Tipleri
   const [statusTypeData] = useFilterData(`${siteConfig.api.lookup.getDistributionStatusTypes}`, searchUrl);
@@ -176,6 +176,10 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+
+    _.filter(selectedStatusType, function (item) {
+      params.append('status', item); params.toString();
+    });
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -291,7 +295,7 @@ const DeliveriesReport = () => {
     let deliveryDetailIndex;
     let partialUnitData;
     _.each(deliveryDetailData, (item, i) => {
-      if (item.Key === row.waybillId) { return deliveryDetailIndex = i }
+      if (item.Key === row.distributionNo) { return deliveryDetailIndex = i }
     });
     if (deliveryDetailIndex !== undefined) {
       partialUnitData = _.groupBy(deliveryDetailData[deliveryDetailIndex].Value, function (item) { return item.unit; });
@@ -300,12 +304,12 @@ const DeliveriesReport = () => {
     const r = _.map(partialUnitData, (item) => {
       return (
         <Table
-          columns={deliveryDetailDataColumn}
+          columns={distributionDetailDataColumn}
           dataSource={item}
           pagination={false}
           bordered={false}
           summary={() => {
-            return renderFooter(deliveryDetailDataColumn, item, false)
+            return renderFooter(distributionDetailDataColumn, item, false)
           }}
         />);
     });
@@ -395,72 +399,29 @@ const DeliveriesReport = () => {
       key: "dealerName",
     },
     {
-      title: "İrsaliye No",
-      dataIndex: "waybillId",
-      key: "waybillId",
+      title: "Durumu",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Dağıtım Kodu",
+      dataIndex: "distributionId",
+      key: "distributionId",
       sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'waybillId' && tableOptions.sortedInfo.order,
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionId' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
 
     },
     {
-      title: "İrsaliye Tarihi",
-      dataIndex: "waybillDate",
-      key: "waybillDate",
-      type: "date",
+      title: "Dağıtım No",
+      dataIndex: "distributionNo",
+      key: "distributionNo",
       sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-      render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
-    },
-    {
-      title: "İrsaliye Saati",
-      dataIndex: "waybillTime",
-      key: "waybillTime",
-      align: "center",
-      footerKey: 'Genel Toplam',
-    },
-    {
-      title: "KDV'li toplam",
-      dataIndex: "totalCost",
-      key: "totalCost",
-      align: "right",
-      footerKey: "totalCost",
-      render: (totalCost) => numberFormat(totalCost),
-    },
-    {
-      title: "Teslimat Adresi",
-      dataIndex: "deliveryAddress",
-      key: "deliveryAddress"
-    },
-    {
-      title: "Belge No",
-      dataIndex: "documentId",
-      key: "documentId",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-    },
-    {
-      title: "Açıklama 1",
-      dataIndex: "description1",
-      key: "description1"
-    },
-    {
-      title: "Açıklama 2",
-      dataIndex: "description2",
-      key: "description2"
-    },
-    {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3"
-    },
-    {
-      title: "Açıklama 4",
-      dataIndex: "description4",
-      key: "description4"
-    },
+
+    },  
+    
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
@@ -490,150 +451,171 @@ const DeliveriesReport = () => {
     },
   ];
 
-  let deliveryDetailDataColumn = [{
+  let distributionDetailDataColumn = [{
     title: "Bayi Kodu",
     dataIndex: "dealerCode",
-    key: "dealerCode"
+    key: "dealerCode",
+    width: 100
   },
   {
     title: "Bayi Adı",
     dataIndex: "dealerName",
-    key: "dealerName"
+    key: "dealerName",
+    width: 200,
+    ellipsis:true
   },
   {
-    title: "İrsaliye No",
-    dataIndex: "waybillId",
-    key: "waybillId",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'waybillId' && tableOptions.sortedInfo.order,
+    title: "Durum",
+    dataIndex: "status",
+    key: "status",
+    width: 120,
+  },
+  {
+    title: "Dağıtım Kodu",
+    dataIndex: "distributionNo",
+    key: "distributionNo",
+    sorter: (a, b) => (''),
+    sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
     sortDirections: ['descend', 'ascend'],
-
+    width: 180,
   },
   {
-    title: "Teslimat Tarihi",
-    dataIndex: "deliveryDate",
-    key: "deliveryDate",
-    type: "date",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'deliveryDate' && tableOptions.sortedInfo.order,
+    title: "Dağıtım Sipariş Tarihi",
+    dataIndex: "distributionOrderDate",
+    key: "distributionOrderDate",
+    key: "toDate",
+    render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
+    sorter: (a, b) => (''),
+    sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
     sortDirections: ['descend', 'ascend'],
-    render: (deliveryDate) => moment(deliveryDate).format(siteConfig.dateFormat),
+    width: 120,
   },
   {
-    title: "Teslimat Adresi",
-    dataIndex: "deliveryAddress",
-    key: "deliveryAddress"
+    title: "Adres Kodu",
+    dataIndex: "addressCode",
+    key: "addressCode",
+    width: 120,
+  },
+  {
+    title: "Adres Açıklama",
+    dataIndex: "addressDescription",
+    key: "addressDescription",
+    width: 200,
+    ellipsis:true
   },
   {
     title: "Sipariş No",
     dataIndex: "orderNo",
     key: "orderNo",
-    sorter: (a, b) => '',
+    sorter: (a, b) => (''),
     sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
     sortDirections: ['descend', 'ascend'],
+    width: 120,
   },
   {
     title: "Ürün Kodu",
     dataIndex: "itemCode",
     key: "itemCode",
+    width: 120,
+    sorter: (a, b) => a.itemCode.length - b.itemCode.length,
+    sortOrder:
+      tableOptions.sortedInfo.columnKey === "itemCode" &&
+      tableOptions.sortedInfo.order
   },
   {
-    title: "Ürün Açıklaması ",
+    title: "Ürün Açıklaması",
     dataIndex: "itemDescription",
-    key: "itemDescription"
-  },
-  {
-    title: "Miktar",
-    dataIndex: "amount",
-    key: "amount",
-    align: "right",
-    footerKey: "amount",
-    render: (amount) => numberFormat(amount),
-  },
-  {
-    title: "KDV'li toplam",
-    dataIndex: "totalCost",
-    key: "totalCost",
-    align: "right",
-    footerKey: "totalCost",
-    render: (totalCost) => numberFormat(totalCost),
+    key: "itemDescription",
+    width: 250,
   },
   {
     title: "Birim",
     dataIndex: "unit",
     key: "unit",
-    align: "center"
+    width: 80,
   },
   {
-    title: "Plaka",
-    dataIndex: "plateNo",
-    key: "plateNo",
-    align: "center"
+    title: "Birim Ağırlık",
+    dataIndex: "unitWeight",
+    key: "unitWeight",
+    footerKey: 'Genel Toplam',
+    width: 80,
+    render: (unitWeight) => numberFormat(unitWeight),
   },
   {
-    title: "Şoför Adı",
-    dataIndex: "driverName",
-    key: "driverName",
-    align: "center"
+    title: "Planlanan Ağırlık",
+    dataIndex: "palletWeight",
+    key: "palletWeight",
+    footerKey: 'palletWeight',
+    width: 120,
+    render: (palletWeight) => numberFormat(palletWeight),
   },
   {
-    title: "Şoför Telefonu",
-    dataIndex: "driverPhone",
-    key: "driverPhone",
-    align: "center"
-  },
-  {
-    title: "Çıkış Tarihi",
-    dataIndex: "departureDate",
-    key: "departureDate",
-    align: "center",
-    type: "date",
-    sorter: (a, b) => '',
-    sortOrder: tableOptions.sortedInfo.columnKey === 'departureDate' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    render: (departureDate) => moment(departureDate).format(siteConfig.dateFormat),
-  },
-  {
-    title: "Çıkış Saati",
-    dataIndex: "departureTime",
-    key: "departureTime",
-    align: "center"
-  },
-  {
-    title: "Tonaj",
-    dataIndex: "tonnage",
-    key: "tonnage",
+    title: "Planlanan Miktar",
+    dataIndex: "plannedAmount",
+    key: "plannedAmount",
+    width: 120,
+    render: (plannedAmount) => numberFormat(plannedAmount),
+    sorter: (a, b) => a.plannedAmount - b.plannedAmount,
     align: "right",
-    footerKey: "tonnage",
-    render: (tonnage) => numberFormat(tonnage),
+    sortOrder:
+      tableOptions.sortedInfo.columnKey === "plannedAmount" &&
+      tableOptions.sortedInfo.order,
+    footerKey: "plannedAmount"
+  },
+  {
+    title: "Dağıtılan  Miktar",
+    dataIndex: "distributedAmount",
+    key: "distributedAmount",
+    align: "right",
+    width: 120,
+    render: (distributedAmount) => numberFormat(distributedAmount),
+    footerKey: "distributedAmount"
+  },
+  {
+    title: "Kalan  Miktar",
+    dataIndex: "remainingAmount",
+    key: "remainingAmount",
+    align: "right",
+    width: 120,
+    render: (remainingAmount) => numberFormat(remainingAmount),
+    sorter: (a, b) => (''),
+    sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
+    sortDirections: ['descend', 'ascend'],
+    footerKey: "remainingAmount"
   },
   {
     title: "Bayi Alt Kodu",
     dataIndex: "dealerSubCode",
-    key: "dealerSubCode"
+    key: "dealerSubCode",
+    width: 120,
   },
   {
     title: "Bölge Kodu",
     dataIndex: "regionCode",
-    key: "regionCode"
+    key: "regionCode",
+    width: 120,
   },
 
   {
     title: "Bölge Yöneticisi",
     dataIndex: "regionManager",
-    key: "regionManager"
+    key: "regionManager",
+    width: 120,
   },
   {
     title: "Saha Kodu",
     dataIndex: "fieldCode",
-    key: "fieldCode"
+    key: "fieldCode",
+    width: 120,
   },
-
   {
     title: "Saha Yöneticisi",
     dataIndex: "fieldManager",
-    key: "fieldManager"
-  }];
+    key: "fieldManager",
+    width: 120,
+  },
+  ];
 
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));

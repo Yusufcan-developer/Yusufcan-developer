@@ -226,7 +226,7 @@ export default function () {
         let createUrl = null;
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
         history.push(`${location.pathname}?${createUrl}`);
-
+        setSelectedRowKeys([]);
         return setOnChange(true);
     }
 
@@ -389,6 +389,7 @@ export default function () {
             //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
             let newKeyArr = [];
             let getSelectedKey = selectedRowKeys;
+            debugger
             _.each(items, (index) => {
                 if ((selectedItem === true) || (selectedItem === undefined)) {
                     newKeyArr.push(index.key);
@@ -397,6 +398,10 @@ export default function () {
                     getSelectedKey = _.without(getSelectedKey, index.key);
                 }
             });
+            _.each(getSelectedKey, (index) => {
+                newKeyArr.push(index);
+            });
+
             if (selectedItem === false) { setSelectedRowKeys(getSelectedKey); }
             else {
                 setSelectedRowKeys(newKeyArr);
@@ -433,7 +438,7 @@ export default function () {
         //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
         let newKeyArr = [];
         _.each(selectedRowKeys, (index) => {
-            if (index === rowIndex && selectedItem === false) { }
+            if (index === rowIndex && selectedItem === false) {  }
             else {
                 newKeyArr.push(index);
             }
@@ -465,7 +470,7 @@ export default function () {
             distributions = JSON.parse(distributions);
     
             _.each(distributions, (item) => {
-                const index = _.findIndex(data, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo });
+                const index = _.findIndex(data, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo&&item.quantity>0 });
                 if (index > -1) {
                     getSelectedKey.push(index);
                 }
