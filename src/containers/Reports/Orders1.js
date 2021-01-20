@@ -433,6 +433,13 @@ const keyPress = e => {
     
 },
 {
+  title: "Teslimat Adresi",
+  dataIndex: "deliveryAddress",
+  key: "deliveryAddress",
+  footerKey: 'Genel Toplam',
+  width: 200
+},
+{
     title: "Sipariş No",
     dataIndex: "orderNo",
     key: "orderNo",
