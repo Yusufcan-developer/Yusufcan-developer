@@ -63,7 +63,6 @@ export default {
       postDeliveriesv2: apiUrl + 'core/report/deliveries',
       postDistributionv2:apiUrl+'core/report/distributions',
       getDistributionLineItems: apiUrl + 'core/report/distribution-line-items',
-
       postCheques: apiUrl + 'core/report/cheques',
       postLetters: apiUrl + 'core/report/letters',
       postTransactions: apiUrl + 'core/report/transactions',
@@ -71,6 +70,7 @@ export default {
       postAccountBalances: apiUrl + 'core/report/account-balances',
       postAggregate: apiUrl + 'core/report/transactions/aggregate',
       postRegionalGoals: apiUrl + 'core/report/regional-goals',
+      postOrderLineItems:apiUrl +'core/report/order-line-items',
     },
     users: {
       postUsers: apiUrl + 'security/users/search',

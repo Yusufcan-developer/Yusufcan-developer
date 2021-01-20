@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, Checkbox } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
@@ -23,7 +23,7 @@ import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Configs
-import { DownloadOutlined } from '@ant-design/icons';
+import { RightOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
@@ -60,6 +60,7 @@ export default function () {
         sortedInfo: "",
         filteredInfo: ""
     });
+    const [visible, setVisible] = useState();
     const [pageIndex, setPageIndex] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [startingPageIndex, setStartingPageIndex] = useState(1);
@@ -76,11 +77,13 @@ export default function () {
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
     const [form] = Form.useForm();
     const [editingKey, setEditingKey] = useState('');
-    const [orderNo, setOrderNo] = useState();
+    const [distributionId, setDistributionId] = useState();
+    const [selectedRemainingAmountInBox,setSelectedRemainingAmountInBox]=useState();
     const [quantity, setQuantity] = useState();
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [modalVisible, setModalVisible] = useState(true);
-    const isEditing = record => record.itemCode === editingKey && record.orderNo === orderNo;
+    const [selectedDistributionData,setSelectedDistributionData]=useState();
+    const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId;
 
     const queryString = require('query-string');
     const history = useHistory();
@@ -100,7 +103,7 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-        useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+        useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address ,"excludeZeroRemainingLines":true}, searchUrl);
 
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -354,10 +357,18 @@ export default function () {
             .catch();
         return data;
     }
-    const edit = (record, rowIndex) => {
-        setQuantity(record.remainingAmount); setModalVisible(true);
+    const edit = (record) => {
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+        const item = _.find(distributions, function (i) { return i.distributionLineId === record.distributionLineId });
+        if ((item) && (item.quantity > 0)) {
+            setQuantity(item.quantity); setModalVisible(true);
+        } else {
+            setQuantity(record.remainingAmountInBox); setModalVisible(true);
+        }
         setEditingKey(record.itemCode);
-        setOrderNo(record.orderNo);
+        setDistributionId(record.distributionId);
+        setSelectedRemainingAmountInBox(record.remainingAmountInBox);
     };
     function addDistributionItemAll(items, selectedItem) {
         let distributions = localStorage.getItem('distributions');
@@ -365,9 +376,9 @@ export default function () {
         if (!distributions) { distributions = [] }
 
         _.each(items, (item) => {
-            const index = _.findIndex(distributions, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo });
+            const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
             if (index > -1) {
-                if (selectedItem === true) { distributions[index].quantity = item.remainingAmount; } else if (selectedItem === false) {
+                if (selectedItem === true) { distributions[index].quantity = item.remainingAmountInBox; } else if (selectedItem === false) {
                     distributions[index].quantity = 0;
                 }
                 else {
@@ -376,8 +387,15 @@ export default function () {
             } else {
                 distributions.push({
                     itemCode: item.itemCode,
-                    quantity: selectedItem === true ? item.remainingAmount : quantity,
+                    quantity: selectedItem === true ? item.remainingAmountInBox : quantity,
                     orderNo: item.orderNo,
+                    distributionLineId:item.distributionLineId,
+                    status:item.status,
+                    distributionNo:item.distributionNo,
+                    addressDescription:item.addressDescription,
+                    itemDescription:item.itemDescription,
+                    unit:item.unit,
+                    remainingAmountInBox:item.remainingAmountInBox
                 })
             }
 
@@ -415,9 +433,9 @@ export default function () {
         distributions = JSON.parse(distributions);
         if (!distributions) { distributions = [] }
         //Daha önceden kayıt varmı kontrolü
-        const index = _.findIndex(distributions, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo });
+        const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId});
         if (index > -1) {
-            if (selectedItem === true) { distributions[index].quantity = item.remainingAmount; } else if (selectedItem === false) {
+            if (selectedItem === true) { distributions[index].quantity = item.remainingAmountInBox; } else if (selectedItem === false) {
                 distributions[index].quantity = 0;
             }
             else {
@@ -426,8 +444,15 @@ export default function () {
         } else {
             distributions.push({
                 itemCode: item.itemCode,
-                quantity: selectedItem === true ? item.remainingAmount : quantity,
+                quantity: selectedItem === true ? item.remainingAmountInBox : quantity,
                 orderNo: item.orderNo,
+                distributionLineId:item.distributionLineId,
+                status:item.status,
+                distributionNo:item.distributionNo,
+                addressDescription:item.addressDescription,
+                itemDescription:item.itemDescription,
+                unit:item.unit,
+                remainingAmountInBox:item.remainingAmountInBox
             })
         }
         localStorage.setItem('distributions', JSON.stringify(distributions));
@@ -453,7 +478,12 @@ export default function () {
         setSelectedRowKeys(newKeyArr);
     }
     function InputNumberOnchange(value) {
-        setQuantity(value);
+        if (selectedRemainingAmountInBox > value) {
+            setQuantity(value);
+        }
+        else {
+            setQuantity(selectedRemainingAmountInBox);
+        }
     }
     function handleVisibleChange() {
         setModalVisible(false);
@@ -470,7 +500,7 @@ export default function () {
             distributions = JSON.parse(distributions);
     
             _.each(distributions, (item) => {
-                const index = _.findIndex(data, function (i) { return i.itemCode === item.itemCode && i.orderNo === item.orderNo&&item.quantity>0 });
+                const index = _.findIndex(data, function (i) { return i.distributionLineId === item.distributionLineId&&item.quantity>0 });
                 if (index > -1) {
                     getSelectedKey.push(index);
                 }
@@ -588,16 +618,38 @@ export default function () {
             footerKey: "distributedAmount"
         },
         {
-            title: "Kalan  Miktar",
+            title: "Kalan  Miktar (M2)",
             dataIndex: "remainingAmount",
             key: "remainingAmount",
             align: "right",
-            fixed: "right",
             render: (remainingAmount) => numberFormat(remainingAmount),
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
             footerKey: "remainingAmount"
+        },
+        {
+            title: "amountInBox",
+            dataIndex: "amountInBox",
+            key: "amountInBox",
+            align: "right",
+            render: (amountInBox) => numberFormat(amountInBox),
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'amountInBox' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            footerKey: "amountInBox"
+        },
+        {
+            title: "Kalan Miktar",
+            dataIndex: "remainingAmountInBox",
+            key: "remainingAmountInBox",
+            align: "right",
+            fixed: "right",
+            render: (remainingAmountInBox) => numberFormat(remainingAmountInBox),
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmountInBox' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            footerKey: "remainingAmountInBox"
         },
         {
             title: 'Giriş Yapılan Miktar',
@@ -606,7 +658,7 @@ export default function () {
             fixed: "right",
             align: 'right',
             key: 'enteredQuantity',
-            render: (enteredQuantity, record) => numberFormat(getEnteredQuantity(record.orderNo, record.itemCode))
+            render: (enteredQuantity, record) => numberFormat(getEnteredQuantity(record.distributionLineId))
         },
         {
             title: 'İşlemler',
@@ -648,12 +700,71 @@ export default function () {
             },
         },
     ];
-    function getEnteredQuantity(orderNo, itemCode, selectItem) {
+    let summaryColumns= [
+        {
+            title: "Durum",
+            dataIndex: "status",
+            key: "status",
+        },
+        {
+            title: "Dağıtım Kodu",
+            dataIndex: "distributionNo",
+            key: "distributionNo",
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+        },        
+        {
+            title: "Adres Açıklama",
+            dataIndex: "addressDescription",
+            key: "addressDescription",
+        },        
+        {
+            title: "Ürün Kodu",
+            dataIndex: "itemCode",
+            key: "itemCode",
+            sorter: (a, b) => a.itemCode.length - b.itemCode.length,
+            sortOrder:
+                tableOptions.sortedInfo.columnKey === "itemCode" &&
+                tableOptions.sortedInfo.order
+        },
+        {
+            title: "Ürün Açıklaması",
+            dataIndex: "itemDescription",
+            key: "itemDescription"
+        },
+        {
+            title: "Birim",
+            dataIndex: "unit",
+            key: "unit",
+            width: 50,
+        },
+        {
+            title: "Kalan Miktar",
+            dataIndex: "remainingAmountInBox",
+            key: "remainingAmountInBox",
+            align: "right",
+            render: (remainingAmountInBox) => numberFormat(remainingAmountInBox),
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmountInBox' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            footerKey: "remainingAmountInBox"
+        },
+        {
+            title: 'Giriş Yapılan Miktar',
+            dataIndex: 'quantity',
+            editable: true,
+            align: 'right',
+            key: 'quantity',
+            render: (quantity) => numberFormat(quantity),
+        },        
+    ];
+    function getEnteredQuantity(distributionLineId, selectItem) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
 
         //Daha önceden kayıt varmı kontrolü
-        const item = _.find(distributions, function (i) { return i.itemCode === itemCode && i.orderNo === orderNo; });
+        const item = _.find(distributions, function (i) { return i.distributionLineId === distributionLineId });
         if (item) {
             return item.quantity;
         }
@@ -698,14 +809,20 @@ export default function () {
 
     //Excel Oluştur
     const exportExcelButton = () => {
-        postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Export, logMessage.Reports.Distributions.exportExcel);
-        ExcelExport(columns, data, 'Dağıtım Listesi');
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+        distributions = _.filter(distributions, function (i) { return i.quantity > 0 });
+        setSelectedDistributionData(distributions);
+        setVisible(true);
     }
     function onChangeRadioButton(e) {
         setSelectedRadioItem(e.target.value);
         setPrivateDate(null);
     }
-
+    //Seçilenler Modal iptal işlemi
+    function handleCancel() {
+        setVisible(false);
+    };
     //Change Cheques Type
     function privateDateHandleChange(value) {
         setPrivateDate(value);
@@ -876,9 +993,12 @@ export default function () {
             <Box >
                 <Col span={8} offset={16} align="right" >
                     <Button type="primary" size="small" style={{ marginBottom: '5px' }}
-                        icon={<DownloadOutlined />} onClick={exportExcelButton}>
-                        {<IntlMessages id="forms.button.exportExcel" />}
+                        icon={<RightOutlined />} onClick={exportExcelButton}>
+                       {<IntlMessages id="forms.button.next" />}
                     </Button>
+                </Col>
+                <Col span={8} offset={16} align="right" >
+                <Checkbox >Seçilen dağıtımları listele</Checkbox>
                 </Col>
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}
@@ -903,7 +1023,7 @@ export default function () {
                     summary={() => {
                         return renderFooter(columns, data, false, aggregatesOverall, true)
                     }}
-                    rowClassName={(record, index) => (getEnteredQuantity(record.orderNo, record.itemCode) <= 0 ? "black" : "red")}
+                    rowClassName={(record, index) => (getEnteredQuantity(record.distributionLineId) <= 0 ? "black" : "red")}
                 />
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}
@@ -913,6 +1033,35 @@ export default function () {
                     current={pageIndex}
                     position="bottom"
                 />
+
+                {/* Secilenlerin modal üzerinde gösterilmesi ve onaylanması */}
+                <Modal
+                  width={1500}
+                  visible={visible}
+                  title={"Seçilen dağıtımlar"}
+                  cancelText="İptal"
+                  okText='Onayla'
+                  maskClosable={false}
+                  onCancel={handleCancel}
+                >
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    name="form_in_modal"
+                    initialValues={{
+                      modifier: 'public',
+                    }}
+                  >                
+                    <Table
+                      columns={summaryColumns}
+                      dataSource={selectedDistributionData}                      
+                      pagination={false}
+                      scroll={{ x: 'max-content' }}
+                      size="medium"
+                      bordered={false}
+                    />
+                  </Form>
+                </Modal>
             </Box>
         </LayoutWrapper>
     );
