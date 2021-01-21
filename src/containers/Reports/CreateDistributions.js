@@ -419,7 +419,7 @@ export default function () {
             //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
             let newKeyArr = [];
             let getSelectedKey = selectedRowKeys;
-            debugger
+            
             _.each(items, (index) => {
                 if ((selectedItem === true) || (selectedItem === undefined)) {
                     newKeyArr.push(index.key);
