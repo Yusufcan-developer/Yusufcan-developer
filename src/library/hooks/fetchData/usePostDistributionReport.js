@@ -62,7 +62,7 @@ function usePostDistributionReport(url, reqBody, searchUrl) {
                     });
 
                     let distributionDetailUrl = siteConfig.api.report.getDistributionLineItems;
-                    debugger
+                    
                     return fetch(`${distributionDetailUrl}/?${distributionIdgetUrlItems}`, requestDistributionDetailOptions) //Delivery Detail Fetch
                         .then(response => {
                             const status = apiStatusManagement(response);

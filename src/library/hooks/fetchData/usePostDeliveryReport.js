@@ -62,7 +62,7 @@ function usePostDeliveryReport(url, reqBody, searchUrl) {
                     });
 
                     let deliveryDetailUrl = siteConfig.api.report.getDeliveryLineItems;
-                    debugger
+                    
                     return fetch(`${deliveryDetailUrl}/?${deliveryIdgetUrlItems}`, requestDeliveryDetailOptions) //Delivery Detail Fetch
                         .then(response => {
                             const status = apiStatusManagement(response);

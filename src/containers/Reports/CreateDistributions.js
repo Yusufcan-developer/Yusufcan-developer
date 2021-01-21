@@ -35,7 +35,6 @@ import { } from "../Ecommerce/Cart/color.css";
 //Other Library
 import enumerations from "../../config/enumerations";
 import _ from 'underscore';
-import ExcelExport from "./ExcelExport";
 import logMessage from "../../config/logMessage";
 import moment from 'moment';
 import 'moment/locale/tr'
@@ -192,7 +191,7 @@ export default function () {
 
         return setOnChange(true);
     }
-
+    
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
         const params = new URLSearchParams(location.search);
@@ -243,38 +242,6 @@ export default function () {
             dataSearch();
         }
     }
-    //Change DealerCode
-    async function onChangeDealerCode(value) {
-        let fieldArrObj = [];
-        let regionArrObj = [];
-        let dealerArrObj = [];
-        const params = new URLSearchParams(location.search);
-        params.delete('dec');
-        params.delete('rec');
-        params.delete('fic');
-        params.delete('from')
-        params.delete('to');
-        params.delete('keyword');
-        params.delete('pgsize');
-        params.delete('pgindex');
-        params.delete('address');
-
-        if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
-        else {
-            _.filter(value, function (item) {
-                if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
-                else if (item.split("|").length === 2) {
-                    regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
-                }
-                else {
-                    dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
-                }
-                setSelectedDealerCode(value)
-                setNewUrlParams(params.toString());
-            });
-            if (dealerArrObj.length === 1) { await getAdress(dealerArrObj[0]); }
-        }
-    };
 
     //Change from and To date
     function changeTimePicker(value, dateString) {
@@ -357,6 +324,50 @@ export default function () {
             .catch();
         return data;
     }
+
+    //Change DealerCode
+    async function onChangeDealerCode(value) {
+        let fieldArrObj = [];
+        let regionArrObj = [];
+        let dealerArrObj = [];
+        const params = new URLSearchParams(location.search);
+        params.delete('dec');
+        params.delete('rec');
+        params.delete('fic');
+        params.delete('from')
+        params.delete('to');
+        params.delete('keyword');
+        params.delete('pgsize');
+        params.delete('pgindex');
+        params.delete('address');
+
+        if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+        else {
+            _.filter(value, function (item) {
+                if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
+                else if (item.split("|").length === 2) {
+                    regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
+                }
+                else {
+                    dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
+                }
+                setSelectedDealerCode(value)
+                setNewUrlParams(params.toString());
+            });
+            if (dealerArrObj.length === 1) { await getAdress(dealerArrObj[0]); }
+        }
+    };
+
+    //Send selected distribution items
+    async function sendDistributionItems(items){
+    }
+
+    //Seçilenleri onaylama işlemi
+    async function handleOk() {        
+        await sendDistributionItems(selectedDistributionData);
+        setVisible(false);
+    };
+
     const edit = (record) => {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
@@ -370,6 +381,7 @@ export default function () {
         setDistributionId(record.distributionId);
         setSelectedRemainingAmountInBox(record.remainingAmountInBox);
     };
+
     function addDistributionItemAll(items, selectedItem) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
@@ -489,7 +501,6 @@ export default function () {
         setModalVisible(false);
         setEditingKey('');
     }
-
     function getSelected() {
       
         if (selectedRowKeys.length > 0) {
@@ -508,6 +519,18 @@ export default function () {
         }
         return getSelectedKey;
     }
+    function getEnteredQuantity(distributionLineId, selectItem) {
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+
+        //Daha önceden kayıt varmı kontrolü
+        const item = _.find(distributions, function (i) { return i.distributionLineId === distributionLineId });
+        if (item) {
+            return item.quantity;
+        }
+        return 0;
+    }
+
     // rowSelection object indicates the need for row selection
     const rowSelection = {
         selectedRowKeys: getSelected(),
@@ -759,53 +782,6 @@ export default function () {
             render: (quantity) => numberFormat(quantity),
         },        
     ];
-    function getEnteredQuantity(distributionLineId, selectItem) {
-        let distributions = localStorage.getItem('distributions');
-        distributions = JSON.parse(distributions);
-
-        //Daha önceden kayıt varmı kontrolü
-        const item = _.find(distributions, function (i) { return i.distributionLineId === distributionLineId });
-        if (item) {
-            return item.quantity;
-        }
-        return 0;
-    }
-    //Hide order table column
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    if (token.urole === 'admin') { }
-    else if (token.urole === 'fieldmanager') {
-        const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Field;
-        if (getHideColumns.length > 0) {
-            for (let index = 0; index < getHideColumns.length; index++) {
-                columns = _.without(columns, _.findWhere(columns, {
-                    dataIndex: getHideColumns[index].dataIndex
-                }
-                ))
-            }
-        }
-    }
-    else if (token.urole === 'regionmanager') {
-        const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Region;
-        if (getHideColumns.length > 0) {
-            for (let index = 0; index < getHideColumns.length; index++) {
-                columns = _.without(columns, _.findWhere(columns, {
-                    dataIndex: getHideColumns[index].dataIndex
-                }
-                ))
-            }
-        }
-    }
-    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-        const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Dealer;
-        if (getHideColumns.length > 0) {
-            for (let index = 0; index < getHideColumns.length; index++) {
-                columns = _.without(columns, _.findWhere(columns, {
-                    dataIndex: getHideColumns[index].dataIndex
-                }
-                ))
-            }
-        }
-    }
 
     //Excel Oluştur
     const exportExcelButton = () => {
@@ -853,6 +829,43 @@ export default function () {
         else if (value === 'SonBirYil') {
             setFromDate(moment(moment().subtract(366, 'days').toDate()));
             setToDate(moment(new Date()));
+        }
+    }
+
+    //Hide order table column
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    if (token.urole === 'admin') { }
+    else if (token.urole === 'fieldmanager') {
+        const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Field;
+        if (getHideColumns.length > 0) {
+            for (let index = 0; index < getHideColumns.length; index++) {
+                columns = _.without(columns, _.findWhere(columns, {
+                    dataIndex: getHideColumns[index].dataIndex
+                }
+                ))
+            }
+        }
+    }
+    else if (token.urole === 'regionmanager') {
+        const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Region;
+        if (getHideColumns.length > 0) {
+            for (let index = 0; index < getHideColumns.length; index++) {
+                columns = _.without(columns, _.findWhere(columns, {
+                    dataIndex: getHideColumns[index].dataIndex
+                }
+                ))
+            }
+        }
+    }
+    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+        const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Dealer;
+        if (getHideColumns.length > 0) {
+            for (let index = 0; index < getHideColumns.length; index++) {
+                columns = _.without(columns, _.findWhere(columns, {
+                    dataIndex: getHideColumns[index].dataIndex
+                }
+                ))
+            }
         }
     }
 
@@ -1043,6 +1056,7 @@ export default function () {
                   okText='Onayla'
                   maskClosable={false}
                   onCancel={handleCancel}
+                  onOk={handleOk}
                 >
                   <Form
                     form={form}

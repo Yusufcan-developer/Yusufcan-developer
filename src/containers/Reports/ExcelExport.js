@@ -36,7 +36,6 @@ export default (columns, data, fileName, dataDetail, detailColumns,groupType) =>
       }
       dataTable.push(item);
 
-      debugger
       if (detailColumns !== undefined) {
         if (dataDetail.length > 0) {
           //Detail Column Name Array  

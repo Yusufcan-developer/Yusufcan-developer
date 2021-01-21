@@ -131,22 +131,30 @@ export default function TopbarAddtoCart() {
         let productItem;
         productItem = _.find(cartItem, function (item) { return item.itemCode === product.itemCode && item.isPartial === product.isPartial });
         if (productItem !== undefined) {
+          let itemCode=productItem.itemCode;
           productItem = productItem.item;
           return (
             <TopbarCartWrapper className="isoCartItems">
+             {productItem!==null ?
               <div className="isoItemImage">
                 <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} />
-              </div>
+              </div>:null}
               <div className="isoCartDetails">
-                <h3>
-                  <a href="#!">{productItem.itemCode} - {productItem.description}</a>
-                </h3>
+                {productItem !== null ?
+                  <h3>
+                    <a href="#!">{productItem.itemCode} - {productItem.description}</a>
+                  </h3> : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
                 <p className="isoItemPriceQuantity">
-                  <span>{numberFormat(productItem.listPrice)} TL</span>
-                  <span className="itemMultiplier">/</span>
-                  <span className="isoItemQuantity">{productItem.unit}</span>
+                  {productItem !== null ?
+                    <span>{numberFormat(productItem.listPrice)} TL</span> : null}
+                    {productItem !== null ?
+                  <span className="itemMultiplier">/</span>:null}
+                  {productItem !== null ?
+                    <span className="isoItemQuantity">{productItem.unit}</span> : null}
                   <span className="itemMultiplier"> </span>
-                  <span className="isoItemQuantity">{'('}{product.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
+                  {productItem !== null ?
+                    <span className="isoItemQuantity"> {'('}{product.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
+                    : null}
                 </p>
               </div>
               <a

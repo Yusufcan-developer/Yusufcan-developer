@@ -35,7 +35,7 @@ var jwtDecode = require('jwt-decode');
 const { changeProductQuantity } = ecommerceActions;
 let cartItem = null;
 export default function CartTable({ style }) {
-  const [cartChangeItem,setCartChangeItem]=useState(false);
+  const [cartChangeItem, setCartChangeItem] = useState(false);
   const view = viewType('CartTable');
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function CartTable({ style }) {
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
   const [selectedProductItem, setSelectedProductItem] = useState();
-  const [selectedIsPartial, setSelectedIsPartial] = useState();  
+  const [selectedIsPartial, setSelectedIsPartial] = useState();
   const [deleteCartVisible, setDeleteCartVisible] = useState(false);
   const [title, setTitle] = useState();
   const dispatch = useDispatch();
@@ -89,29 +89,31 @@ export default function CartTable({ style }) {
       .then(data => {
         if (data) {
           if (data !== 'Unauthorized') {
-            productQuantity = [];
-            // Verileri Redux'a gönderme işlemi  
-            let sendReduxProductList = _.each(data.items, (item) => {
-              item.quantity = item.amount;
-            });
-            if (sendReduxProductList) {
-              sendReduxProductList.forEach(product => {
-                productQuantity.push({
-                  itemCode: product.itemCode,
-                  quantity: product.quantity,
-                  orderAmount: product.orderAmount,
-                  isPartial: product.isPartial
-                });
+            if (data.isSuccessful === false) {
+              return message.error(data.message);
+            } else {
+              productQuantity = [];
+              // Verileri Redux'a gönderme işlemi  
+              let sendReduxProductList = _.each(data.items, (item) => {
+                item.quantity = item.amount;
               });
+              if (sendReduxProductList) {
+                sendReduxProductList.forEach(product => {
+                  productQuantity.push({
+                    itemCode: product.itemCode,
+                    quantity: product.quantity,
+                    orderAmount: product.orderAmount,
+                    isPartial: product.isPartial
+                  });
+                });
+              }
+              localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
             }
-            localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-
           }
+          history.push('/checkout');
+          window.location.reload(false);
+
         }
-        else {
-        }
-        history.push('/checkout');
-        window.location.reload(false);
       })
       .catch();
   }
@@ -142,8 +144,8 @@ export default function CartTable({ style }) {
         cartItem = data.items;
         setTotalCost(data.totalOverallCost);
         setTotal(data.totalCost);
-        setTotalVat(data.totalVat);        
-        setCartChangeItem(false);     
+        setTotalVat(data.totalVat);
+        setCartChangeItem(false);
         getInitData();
       })
       .catch();
@@ -217,9 +219,12 @@ export default function CartTable({ style }) {
         productItem = _.find(cartItem, function (item) { return item.itemCode == product.itemCode; });
         if (productItem !== undefined) {
           let totalVat = productItem.totalVat;
+          let itemCode = productItem.itemCode;
           productItem = productItem.item;
-          const itemTotalCost = ((!product.isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * product.quantity).toFixed(2);
-
+          let itemTotalCost = 0;
+          if (productItem !== null) {
+            itemTotalCost = ((!product.isPartial ? productItem.listPrice * productItem.m2Pallet : productItem.partialPrice * productItem.m2Box) * product.quantity).toFixed(2);
+          }
           return (
             <tr>
               <td
@@ -232,52 +237,59 @@ export default function CartTable({ style }) {
                   <i className="ion-android-close" />
                 </a>
               </td>
-              <td className="isoItemImage">
-                <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
-              </td>
-              <td className="isoItemName">
-                <p style={{ marginBottom: '5px' }}>{product.type}</p>
-                <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
-              </td>
-              <td className="isoItemPrice">
-                {numberFormat(product.isPartial ? productItem.partialPrice : productItem.listPrice)} {"TL"}
-              </td>
-              <td className="isoItemUnit">
-                {productItem.unit}
-              </td>
-              <td className="isoItemPalet">
-                <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
-                  <Col span={6} style={{ width: '100%' }} align="right" >
-                    <Button type="primary" onClick={event => onRemoveBox(product)} style={{ color: 'white' }}>
-                    {<IntlMessages id="product.minus" />}
-              </Button>
-                  </Col>
-                  <Col span={12} align="middle">
-                    <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{product.isPartial ? 'Kutu/Adet' : 'Palet'}</span>
-                    <Input
-                      min={1}
-                      id={inputId}
-                      style={{ textAlign: "right", maxHeight: '32px' }}
-                      max={1000}
-                      defaultValue={1}
-                      value={inputNumberPartialQuantityValueNew(product, product.isPartial)}
-                      step={1}
-                      onClick={event => onSelectAll(inputId)}
-                      onChange={event => onChange(event, product, product.isPartial)}
-                      onBlur={event => onChangeQuantity(event, product, product.isPartial, productItem)}
-                    />
-                  </Col>
-                  <Col span={6} style={{ width: '100%' }}>
-                    <Button type="primary" onClick={event => onAddBox(product, productItem)}>
-                    {<IntlMessages id="product.plus" />}
-              </Button>
-                  </Col>
-                </Row>
-              </td>
-              <td className="isoItemQuantity">
-                {numberFormat(product.quantity * (!product.isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
-              </td>
-              <td className="isoItemPriceTotal">{numberFormat(itemTotalCost)} TL</td>
+              {productItem !== null ?
+                <td className="isoItemImage">
+                  <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} style={{ maxHeight: '50px' }} />
+                </td> : null}
+              {productItem !== null ?
+                <td className="isoItemName">
+                  <p style={{ marginBottom: '5px' }}>{product.type}</p>
+                  <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
+                </td> : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
+              {productItem !== null ?
+                <td className="isoItemPrice">
+                  {numberFormat(product.isPartial ? productItem.partialPrice : productItem.listPrice)} {"TL"}
+                </td> : null}
+              {productItem !== null ?
+                <td className="isoItemUnit">
+                  {productItem.unit}
+                </td> : null}
+              {productItem !== null ?
+                <td className="isoItemPalet">
+                  <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
+                    <Col span={6} style={{ width: '100%' }} align="right" >
+                      <Button type="primary" onClick={event => onRemoveBox(product)} style={{ color: 'white' }}>
+                        {<IntlMessages id="product.minus" />}
+                      </Button>
+                    </Col>
+                    <Col span={12} align="middle">
+                      <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{product.isPartial ? 'Kutu/Adet' : 'Palet'}</span>
+                      <Input
+                        min={1}
+                        id={inputId}
+                        style={{ textAlign: "right", maxHeight: '32px' }}
+                        max={1000}
+                        defaultValue={1}
+                        value={inputNumberPartialQuantityValueNew(product, product.isPartial)}
+                        step={1}
+                        onClick={event => onSelectAll(inputId)}
+                        onChange={event => onChange(event, product, product.isPartial)}
+                        onBlur={event => onChangeQuantity(event, product, product.isPartial, productItem)}
+                      />
+                    </Col>
+                    <Col span={6} style={{ width: '100%' }}>
+                      <Button type="primary" onClick={event => onAddBox(product, productItem)}>
+                        {<IntlMessages id="product.plus" />}
+                      </Button>
+                    </Col>
+                  </Row>
+                </td> : null}
+              {productItem !== null ?
+                <td className="isoItemQuantity">
+                  {numberFormat(product.quantity * (!product.isPartial ? productItem.m2Pallet : productItem.m2Box))} {'(' + productItem.unit + ')'}
+                </td> : null}
+              {productItem !== null ?
+                <td className="isoItemPriceTotal">{numberFormat(itemTotalCost)} TL</td> : null}
             </tr>
 
           );
@@ -458,7 +470,7 @@ export default function CartTable({ style }) {
               <td className="isoItemPalet" />
               <OrderTable className="isoOrderInfo">
                 <div className="isoOrderTable">
-                  <div  className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"} >
+                  <div className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"} >
                     <span>Toplam</span>
                     <span>{totalCost != undefined ? (numberFormat(total)) : (0)} TL</span>
                   </div>
