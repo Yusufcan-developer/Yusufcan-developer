@@ -13,12 +13,10 @@ import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-import * as SecureLS from 'secure-ls';
 import moment from 'moment';
 import 'moment/locale/tr';
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
-var ls = new SecureLS({encodingType: 'aes',isCompression: false});
 
 export default function TopbarNotification() {
   const [visible, setVisiblity] = React.useState(false);
