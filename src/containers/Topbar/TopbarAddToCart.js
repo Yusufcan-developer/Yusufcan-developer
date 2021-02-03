@@ -15,6 +15,8 @@ import { stripTrailingSlash } from '@iso/lib/helpers/utility';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
 import TopbarCartWrapper from './TopbarCart.style';
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { Tooltip, Button } from "antd";
+
 //Configs
 import numberFormat from "@iso/config/numberFormat";
 import _ from 'underscore';
@@ -22,6 +24,9 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
 import getInitData from '../../redux/ecommerce/config';
 import enumerations from "@iso/config/enumerations";
+import {WarningTwoTone, InfoCircleTwoTone
+} from '@ant-design/icons';
+
 var jwtDecode = require('jwt-decode');
 const {
   initData,
@@ -67,8 +72,8 @@ export default function TopbarAddtoCart() {
     let apiUrl='';
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser"); 
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`;}
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true`;}
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -102,7 +107,34 @@ export default function TopbarAddtoCart() {
     setTopbarItemCartLastTotal(updateTopbarCartItemTotal)
     return productInfo;
   }
-
+  function renderUpdateNotes(productItem){
+    let message=null;
+    if(productItem.updaterType==='Self'){
+      message=  null;
+    }
+    else if(productItem.updaterType==='NonDealerUser')
+    {
+      message=  <Tooltip trigger={["click", "hover"]} title={
+        <div>
+         {productItem.updateNotes}                        
+        </div>} style={{margin:'-12px'}} color={"#108ee9"}>
+        <Button type='link' size="small"
+          icon={<WarningTwoTone twoToneColor="#FF0000"/>} >
+        </Button>
+      </Tooltip>
+    }
+    else if(productItem.updaterType==='DealerUser'){
+      message=   <Tooltip trigger={["click", "hover"]} title={
+        <div>
+          {productItem.updateNotes}                            
+        </div>} style={{margin:'-12px'}} color={"#108ee9"}>
+        <Button type='link' size="small"
+          icon={<InfoCircleTwoTone twoToneColor="#FF0000"/>} >
+        </Button>
+      </Tooltip>
+    }
+    return message;
+  }
   //Ürünler Listesinin render edilmesi SingleCart View js dosyasına yönlendiriliyor.
   function renderProducts() {
 
@@ -129,9 +161,11 @@ export default function TopbarAddtoCart() {
     if (cartItem !== null) {
       return cartItem.map(product => {
         let productItem;
+        let products;
         productItem = _.find(cartItem, function (item) { return item.itemCode === product.itemCode && item.isPartial === product.isPartial });
         if (productItem !== undefined) {
           let itemCode=productItem.itemCode;
+          products=productItem;
           productItem = productItem.item;
           return (
             <TopbarCartWrapper className="isoCartItems">
@@ -143,7 +177,10 @@ export default function TopbarAddtoCart() {
                 {productItem !== null ?
                   <h3>
                     <a href="#!">{productItem.itemCode} - {productItem.description}</a>
-                  </h3> : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
+                    <React.Fragment>
+                    {renderUpdateNotes(products)}
+                   </React.Fragment>
+                  </h3>: <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
                 <p className="isoItemPriceQuantity">
                   {productItem !== null ?
                     <span>{numberFormat(productItem.listPrice)} TL</span> : null}
@@ -154,7 +191,7 @@ export default function TopbarAddtoCart() {
                   <span className="itemMultiplier"> </span>
                   {productItem !== null ?
                     <span className="isoItemQuantity"> {'('}{product.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
-                    : null}
+                    : null}                   
                 </p>
               </div>
               <a

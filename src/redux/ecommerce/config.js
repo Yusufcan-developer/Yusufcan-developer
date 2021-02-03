@@ -63,7 +63,7 @@ export default function getInitData() {
           });
         }
         localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-      } else { }
+      }
     }
     return { productQuantity };
   }
