@@ -7,14 +7,18 @@ import { useSelector } from 'react-redux';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import Scrollbar from '@iso/components/utility/customScrollBar';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
+
 //Configs
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+import * as SecureLS from 'secure-ls';
 import moment from 'moment';
-import 'moment/locale/tr'
+import 'moment/locale/tr';
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
+var ls = new SecureLS({encodingType: 'aes',isCompression: false});
 
 export default function TopbarNotification() {
   const [visible, setVisiblity] = React.useState(false);
@@ -29,7 +33,13 @@ export default function TopbarNotification() {
   function handleVisibleChange() {
     setVisiblity(visible => !visible);
   };
-
+  function confirm() {
+    Modal.info({
+      title: "Cache Yenileme",
+      icon: <ExclamationCircleOutlined />,
+      content: "Cache yenileme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz",
+    });
+  }
   //Get Notification
   async function getNotificationList() {
     const requestOptions = {
@@ -96,6 +106,24 @@ export default function TopbarNotification() {
     });
   }
 
+  async function getCutBalance() {
+    const message='Test ediliyor';
+    const getBalance = localStorage.setItem('cutBalanceDate',moment(moment().format('YYYY MM DD, hh:mm:ss a')));
+    return confirm()
+    
+  }  
+
+  const day = moment().day();
+  if (day === 39 || day === 40) {
+    const getBalance = localStorage.getItem('cutBalanceDate');
+    if (!getBalance) { getCutBalance(); } else {
+      const now = moment(moment().format('YYYY MM DD, hh:mm:ss a'));
+      const hours = now.diff(getBalance, 'hours');
+      if (hours >= 2) {
+        getCutBalance();
+      }
+    }
+  };
   const content = (
     <TopbarDropdownWrapper className="topbarNotification">
       <div className="isoDropdownHeader">

@@ -21,8 +21,8 @@ function useGetCartCheckOut(url) {
       const token = jwtDecode(localStorage.getItem("id_token"));
       const activeUser = localStorage.getItem("activeUser")
       let apiUrl='';
-      if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includePallet=true&checkBalance=true`;}
-      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includePallet=true&checkBalance=true` }
+      if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includePallet=true&checkBalance=true&includeUpdateDetails=true`;}
+      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includePallet=true&checkBalance=true&includeUpdateDetails=true` }
       if (!token.uname) { return 'Unauthorized' }
     
     await fetch(apiUrl, requestOptions)

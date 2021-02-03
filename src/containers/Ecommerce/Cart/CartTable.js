@@ -30,6 +30,8 @@ import viewType from '@iso/config/viewType';
 import { OrderTable } from '../Checkout/Checkout.styles';
 import _ from 'underscore';
 import getInitData from "../../../redux/ecommerce/config";
+import {WarningTwoTone,InfoCircleTwoTone
+} from '@ant-design/icons';
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
@@ -131,8 +133,8 @@ export default function CartTable({ style }) {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl = '';
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`; }
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true`; }
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -190,6 +192,20 @@ export default function CartTable({ style }) {
     }
     setCartChangeItem(true);
   }
+  function renderUpdateNotes(productItem){
+    let message=null;
+    if(productItem.updaterType==='Self'){
+      message=  null;
+    }
+    else if(productItem.updaterType==='NonDealerUser')
+    {
+      message=  <span  style={{ color: 'red',fontSize:'smaller' }}>{<WarningTwoTone twoToneColor="#FF0000"/>} {productItem.updateNotes} </span>
+    }
+    else if(productItem.updaterType==='DealerUser'){
+      message=  <span  style={{ color: 'red',fontSize:'smaller' }}>{<InfoCircleTwoTone twoToneColor="#FF0000"/>} {productItem.updateNotes} </span>
+    }
+    return message;
+  }
   //Ürünlerin Getirilmesi
   function renderItems() {
     if (!productQuantity || productQuantity.length === 0) {
@@ -216,10 +232,12 @@ export default function CartTable({ style }) {
         const key = product.itemCode + (product.isPartial ? '-partial' : null);
         const inputId = product.isPartial ? 'Kutu' + product.itemCode : 'Palet' + product.itemCode;
         let productItem;
+        let products;
         productItem = _.find(cartItem, function (item) { return item.itemCode == product.itemCode; });
         if (productItem !== undefined) {
           let totalVat = productItem.totalVat;
           let itemCode = productItem.itemCode;
+          products=productItem;
           productItem = productItem.item;
           let itemTotalCost = 0;
           if (productItem !== null) {
@@ -245,7 +263,12 @@ export default function CartTable({ style }) {
                 <td className="isoItemName">
                   <p style={{ marginBottom: '5px' }}>{product.type}</p>
                   <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
-                </td> : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
+                  <React.Fragment>
+                    {renderUpdateNotes(products)}
+                  </React.Fragment>
+                </td> 
+                
+                : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
               {productItem !== null ?
                 <td className="isoItemPrice">
                   {numberFormat(product.isPartial ? productItem.partialPrice : productItem.listPrice)} {"TL"}
