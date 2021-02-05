@@ -7,11 +7,15 @@ import { useSelector } from 'react-redux';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import Scrollbar from '@iso/components/utility/customScrollBar';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
+import { usePostAccountBalancesReport } from "../../library/hooks/fetchData/usePostAccountBalances";
+import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import enumerations from "@iso/config/enumerations";
 
 //Configs
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
+import numberFormat from "@iso/config/numberFormat";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import moment from 'moment';
 import 'moment/locale/tr';
@@ -31,11 +35,16 @@ export default function TopbarNotification() {
   function handleVisibleChange() {
     setVisiblity(visible => !visible);
   };
-  function confirm() {
-    Modal.info({
-      title: "Cache Yenileme",
+  function confirm(quantity) {
+    Modal.warning({
+      title: "Kalan Hesap Kesim Bakiyesi",
       icon: <ExclamationCircleOutlined />,
-      content: "Cache yenileme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz",
+      width:580,
+      content:
+        <React.Fragment>
+          {"Kıymetli bayimiz, geçtiğimiz ay hesap kesim döneminden kalan bakiyeniz "}<strong>{numberFormat(quantity)}</strong> {" TL olup ayın 10'undan itibaren bu bakiyenin kapatılmaması halinde sevkiyatınızı "} <strong> durdurmak </strong>  {" zorunda kalacağımızı üzülerek bildiririz."}
+        </React.Fragment>,
+      okText: 'Kapat'
     });
   }
   //Get Notification
@@ -85,6 +94,33 @@ export default function TopbarNotification() {
       })
       .catch();
   }
+
+  async function getBalanceData(url, reqBody) {
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(url, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        if (data) {
+          const itemData = data.data[0];
+          if (itemData.monthlyAccountCutOffBalance >= 3000) {
+            postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Hesap kesim bakiyesi bilgisi gösterildi');
+            return confirm(itemData.monthlyAccountCutOffBalance);
+          }
+        }
+      })
+      .catch();
+  }
+
   function selectedNotification(item) {
     postNotificationIsred(item.id);
     setVisiblity(visible => !visible);
@@ -105,18 +141,18 @@ export default function TopbarNotification() {
   }
 
   async function getCutBalance() {
-    const message='Test ediliyor';
-    const getBalance = localStorage.setItem('cutBalanceDate',moment(moment().format('YYYY MM DD, hh:mm:ss a')));
-    return confirm()
-    
+    const message = 'Kıymetli bayimiz, geçtiğimiz ay hesap kesim döneminden kalan bakiyeniz … TL olup ayın 10'+'undan itibaren bu bakiyenin kapatılmaması halinde sevkiyatınızı durdurmak zorunda kalacağımızı üzülerek bildiririz';
+    const getBalance = localStorage.setItem('lastBalanceCheckDate', moment(moment().format('YYYY MM DD, hh:mm:ss a')));
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    getBalanceData(`${siteConfig.api.report.postAccountBalances}`, { "dealerCodes": [token.dcode] });
   }  
 
   const day = moment().day();
-  if (day === 39 || day === 40) {
-    const getBalance = localStorage.getItem('cutBalanceDate');
-    if (!getBalance) { getCutBalance(); } else {
+  if (day === 9 || day === 10) {
+    const lastBalanceCheckDate = localStorage.getItem('lastBalanceCheckDate');
+    if (!lastBalanceCheckDate) { getCutBalance(); } else {
       const now = moment(moment().format('YYYY MM DD, hh:mm:ss a'));
-      const hours = now.diff(getBalance, 'hours');
+      const hours = now.diff(lastBalanceCheckDate, 'hours');
       if (hours >= 2) {
         getCutBalance();
       }
