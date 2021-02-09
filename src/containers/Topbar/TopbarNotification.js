@@ -112,7 +112,6 @@ export default function TopbarNotification() {
       .then(data => {
         if (data) {
           const itemData = data.data[0];
-          debugger
           if (itemData.monthlyAccountCutOffBalance >= 3000) {
             postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Hesap kesim bakiyesi bilgisi gösterildi');
             return confirm(itemData.monthlyAccountCutOffBalance);
@@ -150,6 +149,8 @@ export default function TopbarNotification() {
 
   const day = moment().day();
   var date = moment(new Date(), "MM-DD-YYYY");
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
   if (date.date() === 9 || date.date() === 10) {
     const lastBalanceCheckDate = localStorage.getItem('lastBalanceCheckDate');
     if (!lastBalanceCheckDate) { getCutBalance(); } else {
@@ -158,7 +159,8 @@ export default function TopbarNotification() {
       if (hours >= 2) {
         getCutBalance();
       }
-    }
+    }}
+    
   };
   const content = (
     <TopbarDropdownWrapper className="topbarNotification">
