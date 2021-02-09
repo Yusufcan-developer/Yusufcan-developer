@@ -112,7 +112,8 @@ export default function TopbarNotification() {
       .then(data => {
         if (data) {
           const itemData = data.data[0];
-          if (itemData.monthlyAccountCutOffBalance >= 3000) {
+          debugger
+          if (867140.24 >= 3000) {
             postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Hesap kesim bakiyesi bilgisi gösterildi');
             return confirm(itemData.monthlyAccountCutOffBalance);
           }
@@ -148,7 +149,8 @@ export default function TopbarNotification() {
   }  
 
   const day = moment().day();
-  if (day === 9 || day === 10) {
+  var date = moment(new Date(), "MM-DD-YYYY");
+  if (date.date() === 9 || date.date() === 10) {
     const lastBalanceCheckDate = localStorage.getItem('lastBalanceCheckDate');
     if (!lastBalanceCheckDate) { getCutBalance(); } else {
       const now = moment(moment().format('YYYY MM DD, hh:mm:ss a'));
