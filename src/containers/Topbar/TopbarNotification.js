@@ -113,7 +113,7 @@ export default function TopbarNotification() {
         if (data) {
           const itemData = data.data[0];
           debugger
-          if (867140.24 >= 3000) {
+          if (itemData.monthlyAccountCutOffBalance >= 3000) {
             postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, 'Hesap kesim bakiyesi bilgisi gösterildi');
             return confirm(itemData.monthlyAccountCutOffBalance);
           }
