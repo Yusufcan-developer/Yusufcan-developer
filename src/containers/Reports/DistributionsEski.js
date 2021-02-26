@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useLocation } from 'react-router-dom';
+import { NavLink, useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -9,23 +9,21 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
+import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
-import { usePostDistributionReport } from "@iso/lib/hooks/fetchData/usePostDistributionReport";
+import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
-import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
-
-//Style
-import { DownloadOutlined } from '@ant-design/icons';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Configs
+import { DownloadOutlined } from '@ant-design/icons';
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
@@ -34,13 +32,12 @@ import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
 
 //Other Library
+import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import ExcelExport from "./ExcelExport";
+import logMessage from "../../config/logMessage";
 import moment from 'moment';
-import 'moment/locale/tr';
-import logMessage from '@iso/config/logMessage';
-import enumerations from "../../config/enumerations";
-import { func } from "prop-types";
+import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -49,17 +46,19 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
-const DeliveriesReport = () => {
+
+export default function () {
+  document.title = "Dağıtım Listesi - Seramiksan B2B";
 
   const children = [];
-  document.title = "Dağıtım - Seramiksan B2B";
-
+  const Option = SelectOption;
+  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
+  const [privateDate, setPrivateDate] = useState('Bugun');
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
     sortedInfo: "",
     filteredInfo: ""
   });
-
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
@@ -69,22 +68,20 @@ const DeliveriesReport = () => {
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
-  const [selectedRadioItem, setSelectedRadioItem] = useState(1);
-  const [newUrlParams, setNewUrlParams] = useState('');
-  const [privateDate, setPrivateDate] = useState('Bugun');
+  const [newUrlParams, setNewUrlParams] = useState('')
+  const location = useLocation();
+  const [selectedStatusType, setSelectedStatusType] = useState();
   const [address, setAddress] = useState();
   const [lookupAddressChildren, setLookupAddressChildren] = useState();
-  const [selectedStatusType, setSelectedStatusType] = useState();
-  const location = useLocation();
+
   const queryString = require('query-string');
   const history = useHistory();
-  const Option = SelectOption;
 
-  //Burada ki useEffect'ler page index page size
+  //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, logMessage.Reports.Deliveries.browse);
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Browse, logMessage.Reports.Distributions.browse);
+    getVariablesFromUrl()
     setCurrentPage(pageIndex);
-    getVariablesFromUrl();
     const token = jwtDecode(localStorage.getItem("id_token"));
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
       getAdress(token.dcode);
@@ -92,29 +89,51 @@ const DeliveriesReport = () => {
   }, [pageIndex]);
 
   let searchUrl = queryString.parse(location.search);
+  //Rapor
+  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
+    useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
-
-  //Rapor
-  const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, deliveryDetailData, aggregatesOverall] =
-  usePostDistributionReport(`${siteConfig.api.report.postDistributionv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Durum Tipleri
   const [statusTypeData] = useFilterData(`${siteConfig.api.lookup.getDistributionStatusTypes}`, searchUrl);
   for (let i = 0; i < statusTypeData.length; i++) {
     children.push(<Option key={statusTypeData[i]}>{statusTypeData[i]}</Option>);
   }
-
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
+
     const parsed = queryString.parse(location.search);
+
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null));setSelectedRadioItem(2);setPrivateDate(null);  }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
     if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+
+    let statusGetType = [];
+    if (parsed.status !== undefined) {
+      if (Array.isArray(parsed.status)) {
+        _.each(parsed.status, (item) => {
+          statusGetType.push(item);
+        });
+      } else { statusGetType.push(parsed.status); }
+    }
+    setSelectedStatusType(statusGetType);
+
+    let getAddress = [];
+    if (parsed.address !== undefined) {
+      if (Array.isArray(parsed.address)) {
+        _.each(parsed.address, (item) => {
+          getAddress.push(item);
+        });
+      } else { getAddress.push(parsed.address); }
+    }
+    setAddress(getAddress);
+
     let newDealarCode = []
 
     if (parsed.fic !== undefined) {
@@ -172,24 +191,29 @@ const DeliveriesReport = () => {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
+    params.delete('status');
     params.delete('pgsize');
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('address');
 
-    _.filter(selectedStatusType, function (item) {
-      params.append('status', item); params.toString();
-    });
-
-    if (fromDate !== '' & toDate !== '') {
-      params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-      params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-    }
+    params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+    params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
     if (sortingField !== undefined) { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+
+    _.filter(selectedStatusType, function (item) {
+      params.append('status', item); params.toString();
+    });
+
+    _.forEach(address, (item) => {
+      params.append('address', item); params.toString();
+    });
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -201,7 +225,6 @@ const DeliveriesReport = () => {
   const searchButton = () => {
     dataSearch();
   };
-
   //Keyword 'Enter' search
   const keyPress = e => {
     if (e.keyCode === 13) {
@@ -220,8 +243,9 @@ const DeliveriesReport = () => {
     params.delete('from')
     params.delete('to');
     params.delete('keyword');
-    params.delete('pgindex');
     params.delete('pgsize');
+    params.delete('pgindex');
+    params.delete('address');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -246,16 +270,6 @@ const DeliveriesReport = () => {
     setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
   }
 
-  //Search DailerName Tree Select Component
-  function filterTreeNodeDealerCode(value, treeNode) {
-    if (value && treeNode && treeNode.title) {
-      const filterValue = value.toLocaleLowerCase('tr')
-      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) !== -1;
-    }
-    return false;
-  }
-
   const handleChange = (pagination, filters, sorter) => {
     setState({
       ...tableOptions,
@@ -272,6 +286,21 @@ const DeliveriesReport = () => {
     }
   };
 
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) !== -1;
+    }
+    return false;
+  }
+
+  //Change Status Type
+  function statusTypeHandleChange(value) {
+    setSelectedStatusType(value);
+  }
+
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
@@ -281,41 +310,15 @@ const DeliveriesReport = () => {
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current, pageSize) {
-    setPageIndex(current);
     setPageSize(pageSize);
+    setPageIndex(current);
     dataSearch(current, pageSize);
   }
-  function onChangeRadioButton(e) {
-    setSelectedRadioItem(e.target.value);
-    setPrivateDate(null);
+
+  //Select Component Rol değiştirme 
+  function addressHandleChange(value) {
+    setAddress(value);
   }
-
-  //Sevkiyat Kalemleri Expand İşlemi
-  function expandedRowRender(row, index) {
-    let deliveryDetailIndex;
-    let partialUnitData;
-    _.each(deliveryDetailData, (item, i) => {
-      if (item.Key === row.distributionNo) { return deliveryDetailIndex = i }
-    });
-    if (deliveryDetailIndex !== undefined) {
-      partialUnitData = _.groupBy(deliveryDetailData[deliveryDetailIndex].Value, function (item) { return item.unit; });
-    }
-    else { partialUnitData = null }
-    const r = _.map(partialUnitData, (item) => {
-      return (
-        <Table
-          columns={distributionDetailDataColumn}
-          dataSource={item}
-          pagination={false}
-          bordered={false}
-          summary={() => {
-            return renderFooter(distributionDetailDataColumn, item, false)
-          }}
-        />);
-    });
-
-    return (<React.Fragment>{r} </React.Fragment>);
-  };
   //Get adress
   async function getAdress(dealerCodes) {
     //Get User Info  
@@ -341,52 +344,6 @@ const DeliveriesReport = () => {
       .catch();
     return data;
   }
-  //Select Component Rol değiştirme 
-  function addressHandleChange(value) {
-    setAddress(value);
-  }
-  //Change Status Type
-  function statusTypeHandleChange(value) {
-    setSelectedStatusType(value);
-  }
-  //Excel Oluşturma
-  const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
-    ExcelExport(columns, data, 'Dağıtımlar');
-  }
-  //Change Cheques Type
-  function privateDateHandleChange(value) {
-
-    setPrivateDate(value);
-
-    if (value === 'SonBirHafta') {
-      setFromDate(moment(moment().subtract(7, 'days').toDate()));
-      setToDate(moment(new Date()));
-    }
-    else if (value === 'Bugun') {
-      setFromDate(moment(moment().subtract(0, 'days').toDate()));
-      setToDate(moment(new Date()));
-    }
-    else if (value === 'SonUcGun') {
-      setFromDate(moment(moment().subtract(3, 'days').toDate()));
-      setToDate(moment(new Date()));
-    } else if (value === 'SonBirAy') {
-      setFromDate(moment(moment().subtract(30, 'days').toDate()));
-      setToDate(moment(new Date()));
-    }
-    else if (value === 'SonUcAy') {
-      setFromDate(moment(moment().subtract(90, 'days').toDate()));
-      setToDate(moment(new Date()));
-    }
-    else if (value === 'SonAltiAy') {
-      setFromDate(moment(moment().subtract(180, 'days').toDate()));
-      setToDate(moment(new Date()));
-    }
-    else if (value === 'SonBirYil') {
-      setFromDate(moment(moment().subtract(366, 'days').toDate()));
-      setToDate(moment(new Date()));
-    }
-  }
   let columns = [
     {
       title: "Bayi Kodu",
@@ -396,32 +353,113 @@ const DeliveriesReport = () => {
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
-      key: "dealerName",
+      key: "dealerName"
     },
     {
-      title: "Durumu",
+      title: "Durum",
       dataIndex: "status",
       key: "status",
     },
     {
       title: "Dağıtım Kodu",
-      dataIndex: "distributionId",
-      key: "distributionId",
-      sorter: (a, b) => '',
-      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionId' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-
-    },
-    {
-      title: "Dağıtım No",
       dataIndex: "distributionNo",
       key: "distributionNo",
-      sorter: (a, b) => '',
+      sorter: (a, b) => (''),
       sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-
-    },  
-    
+    },
+    {
+      title: "Dağıtım Sipariş Tarihi",
+      dataIndex: "distributionOrderDate",
+      key: "distributionOrderDate",
+      key: "toDate",
+      render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: "Adres Kodu",
+      dataIndex: "addressCode",
+      key: "addressCode"
+    },
+    {
+      title: "Adres Açıklama",
+      dataIndex: "addressDescription",
+      key: "addressDescription"
+    },
+    {
+      title: "Sipariş No",
+      dataIndex: "orderNo",
+      key: "orderNo",
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
+      sorter: (a, b) => a.itemCode.length - b.itemCode.length,
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "itemCode" &&
+        tableOptions.sortedInfo.order
+    },
+    {
+      title: "Ürün Açıklaması",
+      dataIndex: "itemDescription",
+      key: "itemDescription"
+    },
+    {
+      title: "Birim",
+      dataIndex: "unit",
+      key: "unit"
+    },
+    {
+      title: "Birim Ağırlık",
+      dataIndex: "unitWeight",
+      key: "unitWeight",
+      footerKey: 'Genel Toplam',
+      render: (unitWeight) => numberFormat(unitWeight),
+    },
+    {
+      title: "Planlanan Ağırlık",
+      dataIndex: "palletWeight",
+      key: "palletWeight",
+      footerKey: 'palletWeight',
+      render: (palletWeight) => numberFormat(palletWeight),
+    },
+    {
+      title: "Planlanan Miktar",
+      dataIndex: "plannedAmount",
+      key: "plannedAmount",
+      render: (plannedAmount) => numberFormat(plannedAmount),
+      sorter: (a, b) => a.plannedAmount - b.plannedAmount,
+      align: "right",
+      sortOrder:
+        tableOptions.sortedInfo.columnKey === "plannedAmount" &&
+        tableOptions.sortedInfo.order,
+      footerKey: "plannedAmount"
+    },
+    {
+      title: "Dağıtılan  Miktar",
+      dataIndex: "distributedAmount",
+      key: "distributedAmount",
+      align: "right",
+      render: (distributedAmount) => numberFormat(distributedAmount),
+      footerKey: "distributedAmount"
+    },
+    {
+      title: "Kalan  Miktar",
+      dataIndex: "remainingAmount",
+      key: "remainingAmount",
+      align: "right",
+      render: (remainingAmount) => numberFormat(remainingAmount),
+      sorter: (a, b) => (''),
+      sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+      footerKey: "remainingAmount"
+    },
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
@@ -443,7 +481,6 @@ const DeliveriesReport = () => {
       dataIndex: "fieldCode",
       key: "fieldCode"
     },
-
     {
       title: "Saha Yöneticisi",
       dataIndex: "fieldManager",
@@ -451,177 +488,11 @@ const DeliveriesReport = () => {
     },
   ];
 
-  let distributionDetailDataColumn = [{
-    title: "Bayi Kodu",
-    dataIndex: "dealerCode",
-    key: "dealerCode",
-    width: 100
-  },
-  {
-    title: "Bayi Adı",
-    dataIndex: "dealerName",
-    key: "dealerName",
-    width: 200,
-    ellipsis:true
-  },
-  {
-    title: "Durum",
-    dataIndex: "status",
-    key: "status",
-    width: 120,
-  },
-  {
-    title: "Dağıtım Kodu",
-    dataIndex: "distributionNo",
-    key: "distributionNo",
-    sorter: (a, b) => (''),
-    sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    width: 180,
-  },
-  {
-    title: "Dağıtım Sipariş Tarihi",
-    dataIndex: "distributionOrderDate",
-    key: "distributionOrderDate",
-    key: "toDate",
-    render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
-    sorter: (a, b) => (''),
-    sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    width: 120,
-  },
-  {
-    title: "Adres Kodu",
-    dataIndex: "addressCode",
-    key: "addressCode",
-    width: 120,
-  },
-  {
-    title: "Adres Açıklama",
-    dataIndex: "addressDescription",
-    key: "addressDescription",
-    width: 200,
-    ellipsis:true
-  },
-  {
-    title: "Sipariş No",
-    dataIndex: "orderNo",
-    key: "orderNo",
-    sorter: (a, b) => (''),
-    sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    width: 120,
-  },
-  {
-    title: "Ürün Kodu",
-    dataIndex: "itemCode",
-    key: "itemCode",
-    width: 120,
-    sorter: (a, b) => a.itemCode.length - b.itemCode.length,
-    sortOrder:
-      tableOptions.sortedInfo.columnKey === "itemCode" &&
-      tableOptions.sortedInfo.order
-  },
-  {
-    title: "Ürün Açıklaması",
-    dataIndex: "itemDescription",
-    key: "itemDescription",
-    width: 250,
-  },
-  {
-    title: "Birim",
-    dataIndex: "unit",
-    key: "unit",
-    width: 80,
-  },
-  {
-    title: "Birim Ağırlık",
-    dataIndex: "unitWeight",
-    key: "unitWeight",
-    footerKey: 'Genel Toplam',
-    width: 80,
-    render: (unitWeight) => numberFormat(unitWeight),
-  },
-  {
-    title: "Planlanan Ağırlık",
-    dataIndex: "palletWeight",
-    key: "palletWeight",
-    footerKey: 'palletWeight',
-    width: 120,
-    render: (palletWeight) => numberFormat(palletWeight),
-  },
-  {
-    title: "Planlanan Miktar",
-    dataIndex: "plannedAmount",
-    key: "plannedAmount",
-    width: 120,
-    render: (plannedAmount) => numberFormat(plannedAmount),
-    sorter: (a, b) => a.plannedAmount - b.plannedAmount,
-    align: "right",
-    sortOrder:
-      tableOptions.sortedInfo.columnKey === "plannedAmount" &&
-      tableOptions.sortedInfo.order,
-    footerKey: "plannedAmount"
-  },
-  {
-    title: "Dağıtılan  Miktar",
-    dataIndex: "distributedAmount",
-    key: "distributedAmount",
-    align: "right",
-    width: 120,
-    render: (distributedAmount) => numberFormat(distributedAmount),
-    footerKey: "distributedAmount"
-  },
-  {
-    title: "Kalan  Miktar",
-    dataIndex: "remainingAmount",
-    key: "remainingAmount",
-    align: "right",
-    width: 120,
-    render: (remainingAmount) => numberFormat(remainingAmount),
-    sorter: (a, b) => (''),
-    sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
-    sortDirections: ['descend', 'ascend'],
-    footerKey: "remainingAmount"
-  },
-  {
-    title: "Bayi Alt Kodu",
-    dataIndex: "dealerSubCode",
-    key: "dealerSubCode",
-    width: 120,
-  },
-  {
-    title: "Bölge Kodu",
-    dataIndex: "regionCode",
-    key: "regionCode",
-    width: 120,
-  },
-
-  {
-    title: "Bölge Yöneticisi",
-    dataIndex: "regionManager",
-    key: "regionManager",
-    width: 120,
-  },
-  {
-    title: "Saha Kodu",
-    dataIndex: "fieldCode",
-    key: "fieldCode",
-    width: 120,
-  },
-  {
-    title: "Saha Yöneticisi",
-    dataIndex: "fieldManager",
-    key: "fieldManager",
-    width: 120,
-  },
-  ];
-
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
   else if (token.urole === 'fieldmanager') {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Field;
+    const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Field;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -632,7 +503,7 @@ const DeliveriesReport = () => {
     }
   }
   else if (token.urole === 'regionmanager') {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Region;
+    const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Region;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -643,7 +514,7 @@ const DeliveriesReport = () => {
     }
   }
   else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    const getHideColumns = ColumnOptionsConfig.ShippingTableHideColumns.Dealer;
+    const getHideColumns = ColumnOptionsConfig.DistributionTableHideColumns.Dealer;
     if (getHideColumns.length > 0) {
       for (let index = 0; index < getHideColumns.length; index++) {
         columns = _.without(columns, _.findWhere(columns, {
@@ -653,6 +524,50 @@ const DeliveriesReport = () => {
       }
     }
   }
+
+  //Excel Oluştur
+  const exportExcelButton = () => {
+    postSaveLog(enumerations.LogSource.ReportDistributions, enumerations.LogTypes.Export, logMessage.Reports.Distributions.exportExcel);
+    ExcelExport(columns, data, 'Dağıtım Listesi');
+  }
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+}
+
+//Change Cheques Type
+function privateDateHandleChange(value) {
+    setPrivateDate(value);
+    
+    if (value === 'SonBirHafta') {
+        setFromDate(moment(moment().subtract(7, 'days').toDate()));
+        setToDate(moment(new Date()));
+    }
+    else if (value === 'Bugun') {
+        setFromDate(moment(moment().subtract(0, 'days').toDate()));
+        setToDate(moment(new Date()));
+    }
+    else if (value === 'SonUcGun') {
+        setFromDate(moment(moment().subtract(3, 'days').toDate()));
+        setToDate(moment(new Date()));
+    } else if (value === 'SonBirAy') {
+        setFromDate(moment(moment().subtract(30, 'days').toDate()));
+        setToDate(moment(new Date()));
+    }
+    else if(value==='SonUcAy'){
+        setFromDate(moment(moment().subtract(90, 'days').toDate()));
+        setToDate(moment(new Date()));
+    }
+    else if(value==='SonAltiAy'){
+        setFromDate(moment(moment().subtract(180, 'days').toDate()));
+        setToDate(moment(new Date()));
+    }
+    else if(value==='SonBirYil'){
+        setFromDate(moment(moment().subtract(366, 'days').toDate()));
+        setToDate(moment(new Date()));
+    }
+}
+
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -787,7 +702,7 @@ const DeliveriesReport = () => {
         </Collapse>
       </Box>
       {/* Data list volume */}
-      <Box>
+      <Box >
         <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
@@ -806,14 +721,14 @@ const DeliveriesReport = () => {
           columns={columns}
           dataSource={data}
           onChange={handleChange}
-          expandable={{ 'expandedRowRender': expandedRowRender }}
           loading={loading}
           pagination={false}
+          // scroll={{ x: 'calc(700px + 50%)' }}
           scroll={{ x: 'max-content' }}
           size="medium"
           bordered={false}
           summary={() => {
-            return renderFooter(columns, data, true, aggregatesOverall, true)
+            return renderFooter(columns, data, false, aggregatesOverall, true)
           }}
         />
         <ReportPagination
@@ -828,5 +743,3 @@ const DeliveriesReport = () => {
     </LayoutWrapper>
   );
 }
-
-export default DeliveriesReport;

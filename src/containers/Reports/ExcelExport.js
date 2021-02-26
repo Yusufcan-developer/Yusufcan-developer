@@ -26,6 +26,7 @@ export default (columns, data, fileName, dataDetail, detailColumns,groupType) =>
       let groupKey=''
       if (groupType === 'order') { groupKey = item.orderNo }
       else if ( groupType === 'delivery' ) { groupKey = item.waybillId }
+      else if(groupType==='distribution'){groupKey = item.distributionNo}
       const itemDetail = _.findWhere(dataDetail, {
         Key: groupKey
       })
