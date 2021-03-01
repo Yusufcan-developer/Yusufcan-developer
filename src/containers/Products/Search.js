@@ -27,7 +27,7 @@ import enumerations from "@iso/config/enumerations";
 import numberFormat from "@iso/config/numberFormat";
 import ResultNumberFormat from "@iso/config/resultNumberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
-import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
+import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
 
 //Other Library
 import _, { find } from 'underscore';
@@ -72,6 +72,7 @@ const SearchComponent = () => {
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [selectedItem, setSelectedItem] = useState();
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
+  const [plusButtonDisable, setPlusButtonDisable]=useState(false);
 
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
@@ -953,13 +954,16 @@ const SearchComponent = () => {
   function onSelectAll(id) {
     document.getElementById(id).select();
   }
+
   function onChange(e, item, isPartial) {
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
       setSelectedItem(item.itemCode);
-      setSelectedAmount(parseInt(e.target.value));
+      if(!isNaN(e.target.value)){
+      setSelectedAmount(parseInt(e.target.value));}
     }
   }
+
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
@@ -1012,11 +1016,12 @@ const SearchComponent = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
+    setPlusButtonDisable(false);
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
 
-      inputNumberShowOrHide(product)
+      inputNumberShowOrHide(product);
       var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
       if (selectedProduct === undefined) { return; }
       if (selectedProduct.quantity !== 0) {
@@ -1101,6 +1106,16 @@ const SearchComponent = () => {
     setPartialQuantity(false);
   };
 
+  function calculateQuantity(item,minusText,quantity) {
+    let amountControl;
+    //Girilen text miktarının kontrolü    
+    if (!minusText) {
+      //Sepete ekle butonunun kontrolü
+      amountControl = productAmountControlDisabled(item, item.canBeSoldPartially, parseInt(quantity));
+    }
+
+    return amountControl;
+  }
   //Get Warehouse Amount Data
   async function getWarehouseList(itemCode) {
     let productInfo;
@@ -1478,7 +1493,7 @@ const SearchComponent = () => {
                                       />
                                     </Col>
                                     <Col span={4}>
-                                      <Button type="primary" onClick={event => onAddProductCart(item, true, false)}>
+                                      <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
                                         {<IntlMessages id="product.plus" />}
                                       </Button>
                                     </Col>
@@ -1521,7 +1536,7 @@ const SearchComponent = () => {
                                     />
                                   </Col>
                                   <Col span={4} style={{ width: '100%' }}>
-                                    <Button type="primary" onClick={event => onAddProductCart(item, true, true)}>
+                                    <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
                                       {<IntlMessages id="product.plus" />}
                                     </Button>
                                   </Col>
@@ -1550,6 +1565,7 @@ const SearchComponent = () => {
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
                               <Button
+                                disabled={calculateQuantity(item,false,1)}
                                 type="primary" style={{ width: '100%' }}
                                 onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'}
                               </Button>
@@ -1577,7 +1593,7 @@ const SearchComponent = () => {
                                 />
                               </Col>
                               <Col span={4} style={{ width: '100%' }}>
-                                <Button type="primary" onClick={event => onAddProductCart(item)}>
+                                <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary"  onClick={event => onAddProductCart(item)}>
                                   {<IntlMessages id="product.plus" />}
                                 </Button>
                               </Col>

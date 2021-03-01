@@ -12,7 +12,7 @@ import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
 import { Row, Col, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge, message } from 'antd';
 import _, { select } from 'underscore';
-import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
+import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
 
 //Fetch
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
@@ -49,6 +49,7 @@ const ProductDetail = () => {
   const [partialAmount, setPartialAmount] = useState(0);
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
+  const [plusButtonDisable, setPlusButtonDisable]=useState(false);
   const history = useHistory();
 
   //Style States
@@ -79,6 +80,7 @@ const ProductDetail = () => {
 
   //removing items from the cart
   function onRemoveProductCart(product, orderPartialAddTobox = false, isPartial = false) {
+    setPlusButtonDisable(false);
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     let productDeleteItemLog = false;
     if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
@@ -127,6 +129,8 @@ const ProductDetail = () => {
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
         if (selectedQuantity === undefined) { selectedQuantity = 1 }
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
+        const buttonMinuxControl= productAmountControlDisabled(product, isPartial, parseInt(selectedQuantity));
+        setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) {
           dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
           notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
@@ -136,6 +140,8 @@ const ProductDetail = () => {
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
+        const buttonMinuxControl= productAmountControlDisabled(product, isPartial, parseInt(selectedProduct.quantity + 1));
+        setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) {
           const newProductQuantity = [];
           let setQunatity;
@@ -178,11 +184,16 @@ const ProductDetail = () => {
       const selectedQuantity = event.target.value;
       if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) {
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
+        const buttonMinuxControl= productAmountControlDisabled(productData, isPartial, parseInt(selectedQuantity));
+        setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) {
           onAddProductCart(productData, true, isPartial, selectedQuantity);
           setSelectedAmount(0);
           setSelectedPartialAmount(0);
           postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity); return;
+        }
+        else{
+          setSelectedAmount(amountControl);
         }
       }
       else {
@@ -192,6 +203,8 @@ const ProductDetail = () => {
         const newProductQuantity = [];
         let newQuantity;
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
+        const buttonMinuxControl= productAmountControlDisabled(productData, isPartial, parseInt(selectedQuantity));
+        setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) { newQuantity = event.target.value }
         else { newQuantity = amountControl }
         productQuantity.forEach(productItem => {
@@ -468,7 +481,7 @@ const ProductDetail = () => {
                       />
                     </Col>
                     <Col span={4}>
-                      <Button type="primary" onClick={event => onAddProductCart(data, true, false)}>
+                      <Button disabled={plusButtonDisable} type="primary" onClick={event => onAddProductCart(data, true, false)}>
                         {<IntlMessages id="+" />}
                       </Button>
                     </Col>
@@ -505,7 +518,7 @@ const ProductDetail = () => {
                       />
                     </Col>
                     <Col span={4} style={{ width: '100%' }}>
-                      <Button type="primary" onClick={event => onAddProductCart(data, true, true)}>
+                      <Button disabled={plusButtonDisable} type="primary" onClick={event => onAddProductCart(data, true, true)}>
                         {<IntlMessages id="+" />}
                       </Button>
                     </Col>

@@ -11,3 +11,13 @@ export const productAmountControl = (product, isPartial, selectedQuantity) => {
             { return -1; }
         }    
 };
+export const productAmountControlDisabled = (product, isPartial, selectedQuantity) => {
+    if (isPartial) {
+        if (product.maxAvailableBox <= selectedQuantity) { return true; }
+        { return false; }
+    }
+    else {
+        if (product.maxAvailablePallet <= selectedQuantity) { return true; }
+        { return false; }
+    }    
+};

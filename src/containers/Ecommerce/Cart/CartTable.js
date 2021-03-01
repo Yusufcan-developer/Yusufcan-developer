@@ -14,7 +14,7 @@ import { direction } from '@iso/lib/helpers/rtl';
 import { Col, Row, Button, Modal, message } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
-import { productAmountControl } from '@iso/lib/helpers/productAmountControl';
+import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
 import IntlMessages from "@iso/components/utility/intlMessages";
 
 //Configs
@@ -30,7 +30,8 @@ import viewType from '@iso/config/viewType';
 import { OrderTable } from '../Checkout/Checkout.styles';
 import _ from 'underscore';
 import getInitData from "../../../redux/ecommerce/config";
-import {WarningTwoTone,InfoCircleTwoTone
+import {
+  WarningTwoTone, InfoCircleTwoTone
 } from '@ant-design/icons';
 var jwtDecode = require('jwt-decode');
 
@@ -154,9 +155,11 @@ export default function CartTable({ style }) {
     return productInfo;
   }
   function onChange(e, item, isPartial) {
-    if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)); setSelectedIsPartial(isPartial); setSelectedProductItem(item.itemCode); }
-    else {
-      setSelectedAmount(parseInt(e.target.value)); setSelectedIsPartial(isPartial); setSelectedProductItem(item.itemCode);
+    if (!isNaN(e.target.value)) {
+      if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)); setSelectedIsPartial(isPartial); setSelectedProductItem(item.itemCode); }
+      else {
+        setSelectedAmount(parseInt(e.target.value)); setSelectedIsPartial(isPartial); setSelectedProductItem(item.itemCode);
+      }
     }
   }
   //Input Number return partial quantity value
@@ -192,17 +195,16 @@ export default function CartTable({ style }) {
     }
     setCartChangeItem(true);
   }
-  function renderUpdateNotes(productItem){
-    let message=null;
-    if(productItem.updaterType==='Self'){
-      message=  null;
+  function renderUpdateNotes(productItem) {
+    let message = null;
+    if (productItem.updaterType === 'Self') {
+      message = null;
     }
-    else if(productItem.updaterType==='NonDealerUser')
-    {
-      message=  <span  style={{ color: 'red',fontSize:'smaller' }}>{<WarningTwoTone twoToneColor="#FF0000"/>} {productItem.updateNotes} </span>
+    else if (productItem.updaterType === 'NonDealerUser') {
+      message = <span style={{ color: 'red', fontSize: 'smaller' }}>{<WarningTwoTone twoToneColor="#FF0000" />} {productItem.updateNotes} </span>
     }
-    else if(productItem.updaterType==='DealerUser'){
-      message=  <span  style={{ color: 'red',fontSize:'smaller' }}>{<InfoCircleTwoTone twoToneColor="#FF0000"/>} {productItem.updateNotes} </span>
+    else if (productItem.updaterType === 'DealerUser') {
+      message = <span style={{ color: 'red', fontSize: 'smaller' }}>{<InfoCircleTwoTone twoToneColor="#FF0000" />} {productItem.updateNotes} </span>
     }
     return message;
   }
@@ -237,7 +239,7 @@ export default function CartTable({ style }) {
         if (productItem !== undefined) {
           let totalVat = productItem.totalVat;
           let itemCode = productItem.itemCode;
-          products=productItem;
+          products = productItem;
           productItem = productItem.item;
           let itemTotalCost = 0;
           if (productItem !== null) {
@@ -266,8 +268,7 @@ export default function CartTable({ style }) {
                   <React.Fragment>
                     {renderUpdateNotes(products)}
                   </React.Fragment>
-                </td> 
-                
+                </td>
                 : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
               {productItem !== null ?
                 <td className="isoItemPrice">
@@ -301,7 +302,7 @@ export default function CartTable({ style }) {
                       />
                     </Col>
                     <Col span={6} style={{ width: '100%' }}>
-                      <Button type="primary" onClick={event => onAddBox(product, productItem)}>
+                      <Button name={inputId} disabled={productAmountControlDisabled(productItem, product.isPartial, inputNumberPartialQuantityValueNew(product, product.isPartial))} type="primary" onClick={event => onAddBox(product, productItem)}>
                         {<IntlMessages id="product.plus" />}
                       </Button>
                     </Col>
