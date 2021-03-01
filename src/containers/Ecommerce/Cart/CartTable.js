@@ -247,12 +247,7 @@ export default function CartTable({ style }) {
           }
           return (
             <tr>
-              <td
-                className="isoItemRemove"
-                onClick={() => {
-                  cancelQuantity(product);
-                }}
-              >
+              <td className="isoItemRemove" onClick={() => { removeItem(product); }}>
                 <a href="# ">
                   <i className="ion-android-close" />
                 </a>
@@ -399,9 +394,9 @@ export default function CartTable({ style }) {
 
 
   //Sepetten ürünün çıkarılması
-  function cancelQuantity(productItem) {
+  function removeItem(productItem) {
     const productIsPartialTitle = productItem.isPartial === true ? ' Parçalı' : ' Paletli';
-    setCartChangeItem(true)
+    setCartChangeItem(true);
     const newProductQuantity = [];
     _.each(productQuantity, (product) => {
       if ((product.itemCode !== productItem.itemCode || product.isPartial !== productItem.isPartial)) {
@@ -450,8 +445,7 @@ export default function CartTable({ style }) {
     let uname = token.uname;
     if (activeUser != undefined) {
       uname = activeUser + ' hesabına ait sepetteki tüm ürünler silinecektir. Devam etmek istiyor musunuz?'
-    }
-    else {
+    } else {
       uname = 'Sepetinizdeki tüm ürünler silinecektir. Devam etmek istiyor musunuz?'
     }
     setTitle(uname);
