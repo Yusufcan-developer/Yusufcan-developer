@@ -1565,7 +1565,7 @@ const SearchComponent = () => {
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
                               <Button
-                                disabled={calculateQuantity(item,false,1)}
+                                disabled={calculateQuantity(item,false,0)}
                                 type="primary" style={{ width: '100%' }}
                                 onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'}
                               </Button>
