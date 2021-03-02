@@ -74,6 +74,7 @@ export default function () {
   const [status, setSelectedStatus] = useState();
   const [address, setAddress] = useState();
   const [lookupAddressChildren, setLookupAddressChildren] = useState();
+  const [orderLineItemStatus, setOrderLineItemStatus] = useState(enumerations.OrderLineItemStatus.None);
 
   const location = useLocation();
   const queryString = require('query-string');
@@ -93,7 +94,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": status, "orderLineItemStatus":orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -112,6 +113,7 @@ export default function () {
     if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
+    if (parsed.orderLineStatus !== undefined) {setOrderLineItemStatus(parsed.orderLineStatus);}
     if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
     if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
     if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
@@ -226,6 +228,7 @@ export default function () {
     params.delete('sortingField');
     params.delete('sortingOrder');
     params.delete('status');
+    params.delete('orderLineStatus');
 
     if (fromDate !== '' & toDate !== '') {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -242,6 +245,7 @@ export default function () {
 
     if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
     if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (orderLineItemStatus !== undefined) { params.append('orderLineStatus', orderLineItemStatus);}
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -345,7 +349,6 @@ export default function () {
   function transactionTypeHandleChange(value) {
     setSelectedTransactionType(value);
   }
-  //Change Cheques Type
   function privateDateHandleChange(value) {
     setPrivateDate(value);
 
@@ -378,6 +381,9 @@ export default function () {
     }
   }
 
+  function orderLineStatusHandleChange(value) {
+    setOrderLineItemStatus(value);
+  }
   function onChangeRadioButton(e) {
     setSelectedRadioItem(e.target.value);
     setPrivateDate(null);
@@ -396,8 +402,24 @@ export default function () {
       dataSearch();
     }
   }
+
+   //Stock Status Filter Event
+   function onChangeOrderLineStatus(event) {
+    setOrderLineItemStatus(event.target.value)
+    const params = new URLSearchParams(location.search);
+    params.delete('orderLineStatus');
+    params.append('orderLineStatus', event.target.value);
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setPageIndex(1);
+    params.toString();
+
+    history.push(`${location.pathname}?${params.toString()}`);
+
+    return setOnChange(true);
+  }
   //Order Detail Columns
-  const columns = [
+  let columns = [
     {
       title: "Durumu",
       dataIndex: "status",
@@ -644,7 +666,7 @@ export default function () {
                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} >
-                <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+                <FormItem label={<IntlMessages id="page.deliveryStatus" />}></FormItem>
               </Col>
             </Row>
             <Row>
@@ -710,13 +732,16 @@ export default function () {
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Select
-                  mode="multiple"
+                  placeholder="Sevk durumu seçiniz"
                   style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                  placeholder="Durumu Tipi Seçiniz"
-                // onChange={statusTypeHandleChange}
-                // value={selectedStatusType}
+                  onChange={orderLineStatusHandleChange}
+                  optionFilterProp="children"
+                  value={orderLineItemStatus}
                 >
-                  {children}
+                  <Option value="None">Hepsi</Option>
+                  <Option value="Pending">Bekleyenler</Option>
+                  <Option value="ReadyToDelivery">Sevke Hazırlar</Option>
+                  <Option value="InDistribution">Dağıtım Bekleyenler</Option>
                 </Select>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>

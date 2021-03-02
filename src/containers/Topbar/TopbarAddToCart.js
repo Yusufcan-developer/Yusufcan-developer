@@ -109,24 +109,24 @@ export default function TopbarAddtoCart() {
   }
   function renderUpdateNotes(productItem){
     let message=null;
-    if(productItem.updaterType==='Self'){
+    if(productItem.Key==='Self'){
       message=  null;
     }
-    else if(productItem.updaterType==='NonDealerUser')
+    else if(productItem.Key==='UpdaterNonDealerUser')
     {
       message=  <Tooltip trigger={["click", "hover"]} title={
         <div>
-         {productItem.updateNotes}                        
+         {productItem.Value}                        
         </div>} style={{margin:'-12px'}} color={"#108ee9"}>
         <Button type='link' size="small"
           icon={<WarningTwoTone twoToneColor="#FF0000"/>} >
         </Button>
       </Tooltip>
     }
-    else if(productItem.updaterType==='DealerUser'){
+    else if(productItem.Key==='UpdaterDealerUser'){
       message=   <Tooltip trigger={["click", "hover"]} title={
         <div>
-          {productItem.updateNotes}                            
+          {productItem.Value}                            
         </div>} style={{margin:'-12px'}} color={"#108ee9"}>
         <Button type='link' size="small"
           icon={<InfoCircleTwoTone twoToneColor="#FF0000"/>} >
@@ -135,11 +135,11 @@ export default function TopbarAddtoCart() {
     }
     return message;
   }
+
   //Ürünler Listesinin render edilmesi SingleCart View js dosyasına yönlendiriliyor.
   function renderProducts() {
 
     //Topbar kontrolünün birden fazla çalışmasını engelleme miktar kontrolleri.
-
     let productQuantity = localStorage.getItem('cartProductQuantity');
     productQuantity = JSON.parse(productQuantity);
 
@@ -177,9 +177,10 @@ export default function TopbarAddtoCart() {
                 {productItem !== null ?
                   <h3>
                     <a href="#!">{productItem.itemCode} - {productItem.description}</a>
+                    {products.validationMessages.map((item) => (
                     <React.Fragment>
-                    {renderUpdateNotes(products)}
-                   </React.Fragment>
+                      {renderUpdateNotes(item)}
+                    </React.Fragment>))}
                   </h3>: <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
                 <p className="isoItemPriceQuantity">
                   {productItem !== null ?

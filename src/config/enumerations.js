@@ -14,6 +14,13 @@ export default {
         Tile10000AndMore:'Tile10000AndMore',
         TileNotInStock:'TileNotInStock'
     },
+    OrderLineItemStatus:
+    {
+        None: 'None',
+        Pending: 'Pending',
+        ReadyToDelivery: 'ReadyToDelivery',
+        InDistribution: 'InDistribution'
+    },
     LogTypes:
     {
         Export: 'Export',

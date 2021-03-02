@@ -43,7 +43,6 @@ export default function CartTable({ style }) {
 
   useEffect(() => {
     getCartList();
-    // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Carts.productList);
   }, [cartChangeItem]);
   document.title = "Sepet - Seramiksan B2B";
   let history = useHistory();
@@ -122,7 +121,6 @@ export default function CartTable({ style }) {
   }
   //Get Cart
   async function getCartList() {
-    let updateTopbarCartItemTotal = 0;
     let productInfo;
     const requestOptions = {
       method: "GET",
@@ -195,19 +193,7 @@ export default function CartTable({ style }) {
     }
     setCartChangeItem(true);
   }
-  function renderUpdateNotes(productItem) {
-    let message = null;
-    if (productItem.updaterType === 'Self') {
-      message = null;
-    }
-    else if (productItem.updaterType === 'NonDealerUser') {
-      message = <span style={{ color: 'red', fontSize: 'smaller' }}>{<WarningTwoTone twoToneColor="#FF0000" />} {productItem.updateNotes} </span>
-    }
-    else if (productItem.updaterType === 'DealerUser') {
-      message = <span style={{ color: 'red', fontSize: 'smaller' }}>{<InfoCircleTwoTone twoToneColor="#FF0000" />} {productItem.updateNotes} </span>
-    }
-    return message;
-  }
+
   //Ürünlerin Getirilmesi
   function renderItems() {
     if (!productQuantity || productQuantity.length === 0) {
@@ -260,9 +246,10 @@ export default function CartTable({ style }) {
                 <td className="isoItemName">
                   <p style={{ marginBottom: '5px' }}>{product.type}</p>
                   <h3>{productItem.itemCode} {'-'} {productItem.description}</h3>
-                  <React.Fragment>
-                    {renderUpdateNotes(products)}
-                  </React.Fragment>
+                  <ul style={{ listStyleType: 'disc', listStylePosition: 'inside' }}>
+                    {products.validationMessages.map((item) => (
+                      <li style={{ color: 'red', fontSize: 'smaller' }}> {item.Value}</li>))}
+                  </ul>
                 </td>
                 : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
               {productItem !== null ?
@@ -417,6 +404,7 @@ export default function CartTable({ style }) {
   function orderPartial() {
     history.push('/orderPartial');
   }
+
   //Cart silme fetch işlemi
   async function deleteCart() {
     const newProductQuantity = [];
