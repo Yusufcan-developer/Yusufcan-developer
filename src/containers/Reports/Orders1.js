@@ -741,7 +741,7 @@ export default function () {
                   <Option value="None">Hepsi</Option>
                   <Option value="Pending">Bekleyenler</Option>
                   <Option value="ReadyToDelivery">Sevke Hazırlar</Option>
-                  <Option value="InDistribution">Dağıtım Bekleyenler</Option>
+                  <Option value="InDistribution">Dağıtımda bekleyen</Option>
                 </Select>
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
