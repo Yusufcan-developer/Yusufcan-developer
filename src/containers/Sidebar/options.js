@@ -23,6 +23,11 @@ export default {
             leftIcon: "ion-android-mail"
           },
           {
+            key: "reports/productOrders/",
+            label: "sidebar.orderProduct",
+            leftIcon: "ion-android-mail"
+          },
+          {
             key: "reports/deliveries/",
             label: "sidebar.shipping",
             leftIcon: "ion-android-mail"
@@ -109,6 +114,11 @@ export default {
             leftIcon: "ion-android-mail"
           },
           {
+            key: "reports/productOrders/",
+            label: "sidebar.orderProduct",
+            leftIcon: "ion-android-mail"
+          },
+          {
             key: "reports/deliveries/",
             label: "sidebar.shipping",
             leftIcon: "ion-android-mail"
@@ -180,6 +190,11 @@ export default {
             leftIcon: "ion-android-mail"
           },
           {
+            key: "reports/productOrders/",
+            label: "sidebar.orderProduct",
+            leftIcon: "ion-android-mail"
+          },
+          {
             key: "reports/deliveries/",
             label: "sidebar.shipping",
             leftIcon: "ion-android-mail"
@@ -247,6 +262,11 @@ export default {
           {
             key: "reports/orders/",
             label: "sidebar.orderFollowUp",
+            leftIcon: "ion-android-mail"
+          },
+          {
+            key: "reports/productOrders/",
+            label: "sidebar.orderProduct",
             leftIcon: "ion-android-mail"
           },
           {
@@ -321,6 +341,11 @@ export default {
               leftIcon: "ion-android-mail"
             },
             {
+              key: "reports/productOrders/",
+              label: "sidebar.orderProduct",
+              leftIcon: "ion-android-mail"
+            },
+            {
               key: "reports/deliveries/",
               label: "sidebar.shipping",
               leftIcon: "ion-android-mail"
@@ -389,6 +414,11 @@ export default {
             {
               key: "reports/orders/",
               label: "sidebar.orderFollowUp",
+              leftIcon: "ion-android-mail"
+            },
+            {
+              key: "reports/productOrders/",
+              label: "sidebar.orderProduct",
               leftIcon: "ion-android-mail"
             },
             {
@@ -490,6 +520,11 @@ export default {
           {
             key: "reports/orders/",
             label: "sidebar.orderFollowUp",
+            leftIcon: "ion-android-mail"
+          },
+          {
+            key: "reports/productOrders/",
+            label: "sidebar.orderProduct",
             leftIcon: "ion-android-mail"
           },
           {

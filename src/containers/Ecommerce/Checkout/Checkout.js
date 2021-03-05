@@ -687,9 +687,9 @@ export default function () {
                     <Button disabled={!hasOrderSavePermission} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
                       Sipariş Oluştur
         </Button>
-                    <Button disabled={!hasOrderSavePermission} type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
+                    {/* <Button disabled={!hasOrderSavePermission} type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
                       Sipariş Temizle
-        </Button>
+        </Button> */}
                   </Space>
                 </div>
               </OrderTable>

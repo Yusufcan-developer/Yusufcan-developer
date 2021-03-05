@@ -84,7 +84,7 @@ export default function () {
   let uid = parseInt(token.uid);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    usePostNotificationFetch(`${siteConfig.api.security.postNotification}`, { "notificationTypes": selectedNotificationType, "isRead": selectedIsRead, "userIds": [uid], "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    usePostNotificationFetch(`${siteConfig.api.security.postNotification}`, { "notificationTypes": selectedNotificationType, "isRead": selectedIsRead, "userIds": [uid], "from":fromDate !== null ?  fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ?  toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   if (data.length > 0) {
     dataAddKeyValue = _.each(data, (item) => {
@@ -143,7 +143,8 @@ export default function () {
     params.delete('sortingField');
     params.delete('sortingOrder');
     if (selectedIsRead !== undefined) { params.append('isRead', selectedIsRead); }
-    if (fromDate !== '' & toDate !== '') {
+
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -175,8 +176,14 @@ export default function () {
   }
   //Change from and To date
   function changeTimePicker(value, dateString) {
-    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+     if (value !== null) {
+            setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+            setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+        }
+        else {
+            setToDate(null);
+            setFromDate(null);
+        }
   }
 
   const handleChange = (pagination, filters, sorter) => {
@@ -544,9 +551,8 @@ export default function () {
                         disabled={selectedRadioItem === 2 ? false : true}
                         format={siteConfig.dateFormat}
                         onChange={changeTimePicker}
-                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                         style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
                       />
                     </Col>
                   </Row>

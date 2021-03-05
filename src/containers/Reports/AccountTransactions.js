@@ -60,7 +60,7 @@ export default function () {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()));
+  const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
   const [toDate, setToDate] = useState(moment(new Date()));
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
@@ -69,7 +69,7 @@ export default function () {
   const [newUrlParams, setNewUrlParams] = useState('');
   const [selectedTransactionType, setSelectedTransactionType] = useState();
   const [selectedRadioItem, setSelectedRadioItem] = useState(1);
-  const [privateDate, setPrivateDate] = useState('Bugun');
+  const [privateDate, setPrivateDate] = useState('Bugün');
 
   const location = useLocation();
   const queryString = require('query-string');
@@ -85,7 +85,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.report.postTransactions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null? fromDate.format('YYYY-MM-DD'):null, "to":toDate !== null ? toDate.format('YYYY-MM-DD'):null, "transactionTypes": selectedTransactionType, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -182,7 +182,7 @@ export default function () {
     params.delete('sortingField');
     params.delete('sortingOrder');
 
-    if (fromDate !== '' & toDate !== '') {
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -241,8 +241,14 @@ export default function () {
 
   //Change from and To date
   function changeTimePicker(value, dateString) {
-    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    if (value !== null) {
+      setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+      setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
+  else {
+      setToDate(null);
+      setFromDate(null);
+  }
   }
 
   //Search DailerName Tree Select Component
@@ -548,9 +554,8 @@ export default function () {
                         disabled={selectedRadioItem === 2 ? false : true}
                         format={siteConfig.dateFormat}
                         onChange={changeTimePicker}
-                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                         style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
                       />
 
                     </Col>

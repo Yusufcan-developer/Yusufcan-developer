@@ -77,8 +77,8 @@ const routes = [
     component: lazy(() => import('@iso/containers/Reports/Orders')),
   },
   {
-    path: 'reports/orders1/',
-    component: lazy(() => import('@iso/containers/Reports/Orders1')),
+    path: 'reports/productOrders/',
+    component: lazy(() => import('@iso/containers/Reports/ProductOrders')),
   },
   {
     path: 'reports/accounts/',

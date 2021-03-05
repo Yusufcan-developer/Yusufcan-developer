@@ -34,7 +34,7 @@ import viewType from '@iso/config/viewType';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Other Library
-import ExcelExport from "../Reports/ExcelExport";
+import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import logMessage from '@iso/config/logMessage';
@@ -94,7 +94,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": status, "orderLineItemStatus":orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "orderLineItemStatus":orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -230,7 +230,7 @@ export default function () {
     params.delete('status');
     params.delete('orderLineStatus');
 
-    if (fromDate !== '' & toDate !== '') {
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -301,8 +301,14 @@ export default function () {
 
   //Change from and To date
   function changeTimePicker(value, dateString) {
-    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    if (value !== null) {
+      setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+      setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
+  else {
+      setToDate(null);
+      setFromDate(null);
+  }
   }
 
   //Search DailerName Tree Select Component
@@ -609,7 +615,7 @@ export default function () {
   return (
     <LayoutWrapper>
       <PageHeader>
-        {<IntlMessages id="page.orderFollowUp.header" />}
+        {<IntlMessages id="page.orderProduct.header" />}
       </PageHeader>
       <Box>
         <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
@@ -722,9 +728,8 @@ export default function () {
                         disabled={selectedRadioItem === 2 ? false : true}
                         format={siteConfig.dateFormat}
                         onChange={changeTimePicker}
-                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                         style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
                       />
                     </Col>
                   </Row>

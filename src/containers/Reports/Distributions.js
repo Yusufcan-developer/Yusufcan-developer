@@ -97,7 +97,7 @@ const DeliveriesReport = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, distributionDetailData, aggregatesOverall] =
-  usePostDistributionReport(`${siteConfig.api.report.postDistributionv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+  usePostDistributionReport(`${siteConfig.api.report.postDistributionv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') :null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') :null, "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   //Durum Tipleri
   const [statusTypeData] = useFilterData(`${siteConfig.api.lookup.getDistributionStatusTypes}`, searchUrl);
@@ -181,7 +181,7 @@ const DeliveriesReport = () => {
       params.append('status', item); params.toString();
     });
 
-    if (fromDate !== '' & toDate !== '') {
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -242,8 +242,14 @@ const DeliveriesReport = () => {
 
   //Change from and To date
   function changeTimePicker(value, dateString) {
-    setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-    setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    if (value !== null) {
+      setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+      setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+  }
+  else {
+      setToDate(null);
+      setFromDate(null);
+  }
   }
 
   //Search DailerName Tree Select Component
@@ -770,9 +776,8 @@ const DeliveriesReport = () => {
                         disabled={selectedRadioItem === 2 ? false : true}
                         format={siteConfig.dateFormat}
                         onChange={changeTimePicker}
-                        defaultValue={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
                         style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                        value={[moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]}
+                        value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
                       />
                     </Col>
                   </Row>
