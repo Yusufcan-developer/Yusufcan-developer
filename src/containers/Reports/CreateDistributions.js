@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
@@ -41,7 +41,7 @@ import { strikeout } from "../Ecommerce/Cart/color.css";
 import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import logMessage from "../../config/logMessage";
-import moment from 'moment';
+import moment, { now } from 'moment';
 import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -65,6 +65,11 @@ export default function () {
         sortedInfo: "",
         filteredInfo: ""
     });
+    const [driverName, setDriverName] = useState();
+    const [carPlate, setCarPlate] = useState();
+    const [phone, setPhone]=useState();
+    const [date, setDate]=useState(moment(new Date()));
+    const [time, setTime]=useState(moment());
     const [visible, setVisible] = useState();
     const [pageIndex, setPageIndex] = useState(1);
     const [pageSize, setPageSize] = useState(50);
@@ -350,13 +355,62 @@ export default function () {
     };
 
     //Send selected distribution items
-    async function sendDistributionItems(items) {
-    }
+    //Save Order
+  async function sendDistributionItems(items) {
+    const token = jwtDecode(localStorage.getItem("id_token")); 
+    const reqBody = {'items':items, "driverName": driverName, "phone": phone, "plateNo": carPlate, "date": '2021-03-10T13:55:30.719Z' }
+
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    debugger
+    let newSaveOrderUrl = siteConfig.api.report.postSaveLineItems.replace('{accountNo}', dealerCodes[0]);
+    await fetch(`${newSaveOrderUrl}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+          debugger
+        // if (data !== undefined) {
+        //   if (data.isSuccessful) {
+        //     setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
+        //     createOrderNo = data.orderNo; setSuccessOrderSave(true);
+        //     postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo + logMessage.Order.saveOrderSuccess);
+        //   } else {
+        //     message.warning(data.message, 10);
+        //     postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, logMessage.Order.saveOrderError + data.message);
+        //   }
+        // }
+      })
+      .catch();
+      setVisible(false);
+  }
 
     //Seçilenleri onaylama işlemi
     async function handleOk() {
-        await sendDistributionItems(selectedDistributionData);
-        setVisible(false);
+        debugger
+        if ((!driverName) | (!carPlate) | (!phone) | (!date)) {
+            message.warning('Lütfen bilgileri eksiksiz giriniz', 3);
+        }
+        else {
+            let items=[];
+            _.each(selectedDistributionData, (item) => {
+                items.push({
+                    distributionLineId: item.distributionLineId,
+                    amount: item.quantity,
+                });
+            });
+                await sendDistributionItems(items);
+                setVisible(false);
+        
+
+    }
     };
 
     const edit = (record) => {
@@ -396,6 +450,7 @@ export default function () {
                     distributions[index].quantity = 0;
                 }
                 else {
+                    distributions[index].unitWeight = item.unitWeight*quantity;
                     distributions[index].quantity = quantity;
                 }
             } else {
@@ -409,6 +464,7 @@ export default function () {
                     addressDescription: item.addressDescription,
                     itemDescription: item.itemDescription,
                     unit: item.unit,
+                    unitWeight:item.unitWeight*(selectedItem === true ? item.plannedAmount : quantity),
                     plannedAmount: item.plannedAmount
                 })
             }
@@ -442,7 +498,6 @@ export default function () {
 
     }
     function addDistributionItem(item, selectedItem, rowIndex, selectAll) {
-        debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         if (!distributions) { distributions = [] }
@@ -454,9 +509,12 @@ export default function () {
             }
             else {
                 if (item.minimumDistributableAmount === 1) {
+                    distributions[index].unitWeight = quantity*item.unitWeight;
                     distributions[index].quantity = quantity;
                 }
                 else {
+                    distributions[index].unitWeight = quantity * item.minimumDistributableAmount*item.unitWeight;
+
                     distributions[index].quantity = quantity * item.minimumDistributableAmount;
                 }
 
@@ -472,6 +530,7 @@ export default function () {
                 addressDescription: item.addressDescription,
                 itemDescription: item.itemDescription,
                 unit: item.unit,
+                unitWeight:item.unitWeight*(selectedItem === true ? item.plannedAmount : quantity),
                 plannedAmount: item.plannedAmount
             })
         }
@@ -497,6 +556,7 @@ export default function () {
         }
         setSelectedRowKeys(newKeyArr);
     }
+
     function InputNumberOnchange(value) {
         if (parseFloat(maximumAmountControl) > value) {
             setQuantity(value);
@@ -505,10 +565,12 @@ export default function () {
             setQuantity(parseFloat(maximumAmountControl));
         }
     }
+
     function handleVisibleChange() {
         setModalVisible(false);
         setEditingKey('');
     }
+
     function getSelected() {
 
         if (selectedRowKeys.length > 0) {
@@ -527,6 +589,7 @@ export default function () {
         }
         return getSelectedKey;
     }
+
     function getEnteredQuantity(distributionLineId) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
@@ -550,6 +613,7 @@ export default function () {
         },
 
     };
+
     let columns = [
         {
             title: "Dağıtım Kodu",
@@ -634,7 +698,7 @@ export default function () {
             align: "right",
             footerKey: 'palletWeight',
             ellipsis: true,
-            width:150,
+            width: 150,
             render: (palletWeight) => numberFormat(palletWeight),
         },
         {
@@ -690,7 +754,7 @@ export default function () {
             align: 'right',
             key: 'enteredQuantity',
             ellipsis: true,
-            width:150,
+            width: 150,
             render: (enteredQuantity, record) => numberFormat(getEnteredQuantity(record.distributionLineId))
         },
         {
@@ -719,17 +783,17 @@ export default function () {
                         </Popover>
                     </span>
                 ) : (
-                        <Space >
+                    <Space >
 
-                            <a disabled={editingKey !== ''} onClick={() => edit(record, rowIndex)}>
-                                <i className="ion-android-create" />
-                            </a>
-                            {/* <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
+                        <a disabled={editingKey !== ''} onClick={() => edit(record, rowIndex)}>
+                            <i className="ion-android-create" />
+                        </a>
+                        {/* <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
                                 <i className="ion-ios-fastforward" />
                             </a> */}
 
-                        </Space>
-                    );
+                    </Space>
+                );
             },
         },
     ];
@@ -768,6 +832,17 @@ export default function () {
             width: 50,
         },
         {
+            title: "Toplam Ağırlık",
+            dataIndex: "unitWeight",
+            key: "unitWeight",
+            align: "right",
+            render: (unitWeight) => numberFormat(unitWeight),
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'unitWeight' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            footerKey: "unitWeight"
+        },
+        {
             title: "Önerilen Miktar",
             dataIndex: "plannedAmount",
             key: "plannedAmount",
@@ -796,6 +871,7 @@ export default function () {
         setSelectedDistributionData(distributions);
         setVisible(true);
     }
+
     function onChangeRadioButton(e) {
         setSelectedRadioItem(e.target.value);
         setPrivateDate(null);
@@ -804,7 +880,7 @@ export default function () {
     function handleCancel() {
         setVisible(false);
     };
-    //Change Cheques Type
+
     function privateDateHandleChange(value) {
         setPrivateDate(value);
 
@@ -835,6 +911,27 @@ export default function () {
             setFromDate(moment(moment().subtract(366, 'days').toDate()));
             setToDate(moment(new Date()));
         }
+    }
+
+    const handleChangeDriverNAme = e => {
+        setDriverName(e.target.value);
+    }
+
+    const handleChangeCarPLate = e => {
+        setCarPlate(e.target.value);
+    }
+
+    const handleChangePhone = e => {
+        setPhone(e.target.value);
+    }
+
+    function handleChangeDistributionDate(value, dateString) {
+        
+        setDate(moment(dateString[0] + time, 'DD-MM-YYYY' + 'HH:mm', null));
+    }
+
+    function handleChangeTime(value, dateString) {
+        setTime(moment(dateString, format));
     }
 
     //Hide order table column
@@ -1065,8 +1162,8 @@ export default function () {
                                     <Input
                                             label="Şoför Adı"
                                             placeholder="Şoför adı giriniz"
-                                        // value={addressTitle}
-                                        // onChange={onChangeAddressTitle}
+                                            value={driverName}
+                                            onChange={handleChangeDriverNAme}
                                         /></label>}
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -1077,8 +1174,8 @@ export default function () {
                                     <Input
                                             label="Plaka"
                                             placeholder="Plaka Giriniz"
-                                        // value={address1}
-                                        // onChange={onChangeAddress1}
+                                            value={carPlate}
+                                            onChange={handleChangeCarPLate}
                                         /></label>}
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -1089,8 +1186,8 @@ export default function () {
                                     <Input
                                             label="Telefon"
                                             placeholder="Telefon Giriniz"
-                                        // value={phone}
-                                        // onChange={onChangePhone}
+                                        value={phone}
+                                        onChange={handleChangePhone}
                                         /></label>}
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -1101,7 +1198,7 @@ export default function () {
                                         Tarih
   <DatePicker
                                             format={siteConfig.dateFormat}
-                                            onChange={changeTimePicker}
+                                            onChange={handleChangeDistributionDate}
                                             style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                         // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
                                         /></label>}
@@ -1112,7 +1209,7 @@ export default function () {
                                     }}>
                                         Saat
                                 {
-                                            <TimePicker defaultValue={moment('12:08', format)} format={format} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                            <TimePicker defaultValue={moment(time, format)} format={format} value={time} onChange={handleChangeTime} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                             />}
                                     </label>}
                                 </Col>

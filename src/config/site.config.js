@@ -71,6 +71,8 @@ export default {
       postAggregate: apiUrl + 'core/report/transactions/aggregate',
       postRegionalGoals: apiUrl + 'core/report/regional-goals',
       postOrderLineItems:apiUrl +'core/report/order-line-items',
+      postSaveLineItems:apiUrl+'core/report/distributions/plan/{accountNo}',
+
     },
     users: {
       postUsers: apiUrl + 'security/users/search',
