@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import {  useHistory, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -9,11 +9,15 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, Checkbox } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import Select, { SelectOption } from '@iso/components/uielements/select';
+import {
+    Fieldset,
+} from '../FirestoreCRUD/Article/Article.styles';
+import InputBox from '../Ecommerce/Checkout/InputBox';
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
@@ -30,7 +34,8 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
-import { } from "../Ecommerce/Cart/color.css";
+import { strikeout } from "../Ecommerce/Cart/color.css";
+
 
 //Other Library
 import enumerations from "../../config/enumerations";
@@ -46,6 +51,7 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
+const format = 'HH:mm';
 
 export default function () {
     document.title = "Dağıtım Listesi - Seramiksan B2B";
@@ -61,7 +67,7 @@ export default function () {
     });
     const [visible, setVisible] = useState();
     const [pageIndex, setPageIndex] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const [pageSize, setPageSize] = useState(50);
     const [startingPageIndex, setStartingPageIndex] = useState(1);
     const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
     const [toDate, setToDate] = useState(moment(new Date()));
@@ -71,17 +77,17 @@ export default function () {
     const [selectedDealerCode, setSelectedDealerCode] = useState();
     const [newUrlParams, setNewUrlParams] = useState('')
     const location = useLocation();
-    const [selectedStatusType, setSelectedStatusType] = useState();
+    const [selectedStatusType, setSelectedStatusType] = useState(['Öneri']);
     const [address, setAddress] = useState();
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
     const [form] = Form.useForm();
     const [editingKey, setEditingKey] = useState('');
     const [distributionId, setDistributionId] = useState();
-    const [selectedRemainingAmountInBox,setSelectedRemainingAmountInBox]=useState();
+    const [maximumAmountControl, setMaximumAmountControl] = useState();
     const [quantity, setQuantity] = useState();
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [modalVisible, setModalVisible] = useState(true);
-    const [selectedDistributionData,setSelectedDistributionData]=useState();
+    const [selectedDistributionData, setSelectedDistributionData] = useState();
     const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId;
 
     const queryString = require('query-string');
@@ -102,7 +108,7 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-        useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address ,"excludeZeroRemainingLines":true}, searchUrl);
+        useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "excludeZeroRemainingLines": true }, searchUrl);
 
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -124,16 +130,6 @@ export default function () {
         if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
         if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
         if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
-
-        let statusGetType = [];
-        if (parsed.status !== undefined) {
-            if (Array.isArray(parsed.status)) {
-                _.each(parsed.status, (item) => {
-                    statusGetType.push(item);
-                });
-            } else { statusGetType.push(parsed.status); }
-        }
-        setSelectedStatusType(statusGetType);
 
         let getAddress = [];
         if (parsed.address !== undefined) {
@@ -191,7 +187,7 @@ export default function () {
 
         return setOnChange(true);
     }
-    
+
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
         const params = new URLSearchParams(location.search);
@@ -275,11 +271,6 @@ export default function () {
         return false;
     }
 
-    //Change Status Type
-    function statusTypeHandleChange(value) {
-        setSelectedStatusType(value);
-    }
-
     /**Pagination : Tablo  pageSize'ı değiştirir*/
     function onShowSizeChange(current, pageSize) {
         setPageSize(pageSize);
@@ -359,11 +350,11 @@ export default function () {
     };
 
     //Send selected distribution items
-    async function sendDistributionItems(items){
+    async function sendDistributionItems(items) {
     }
 
     //Seçilenleri onaylama işlemi
-    async function handleOk() {        
+    async function handleOk() {
         await sendDistributionItems(selectedDistributionData);
         setVisible(false);
     };
@@ -373,16 +364,27 @@ export default function () {
         distributions = JSON.parse(distributions);
         const item = _.find(distributions, function (i) { return i.distributionLineId === record.distributionLineId });
         if ((item) && (item.quantity > 0)) {
-            setQuantity(item.quantity); setModalVisible(true);
+            if (record.minimumDistributableAmount === 1) {
+                setQuantity(numberFormat(item.quantity));
+                setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                setModalVisible(true);
+            }
+            else {
+                setQuantity(numberFormat(item.quantity / record.minimumDistributableAmount));
+                setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                setModalVisible(true);
+            }
         } else {
-            setQuantity(record.remainingAmountInBox); setModalVisible(true);
+            setQuantity(numberFormat(record.remainingDistributableAmount));
+            setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+            setModalVisible(true);
         }
         setEditingKey(record.itemCode);
         setDistributionId(record.distributionId);
-        setSelectedRemainingAmountInBox(record.remainingAmountInBox);
     };
 
     function addDistributionItemAll(items, selectedItem) {
+        debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         if (!distributions) { distributions = [] }
@@ -390,7 +392,7 @@ export default function () {
         _.each(items, (item) => {
             const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
             if (index > -1) {
-                if (selectedItem === true) { distributions[index].quantity = item.remainingAmountInBox; } else if (selectedItem === false) {
+                if (selectedItem === true) { distributions[index].quantity = item.plannedAmount; } else if (selectedItem === false) {
                     distributions[index].quantity = 0;
                 }
                 else {
@@ -399,15 +401,15 @@ export default function () {
             } else {
                 distributions.push({
                     itemCode: item.itemCode,
-                    quantity: selectedItem === true ? item.remainingAmountInBox : quantity,
+                    quantity: selectedItem === true ? item.plannedAmount : quantity,
                     orderNo: item.orderNo,
-                    distributionLineId:item.distributionLineId,
-                    status:item.status,
-                    distributionNo:item.distributionNo,
-                    addressDescription:item.addressDescription,
-                    itemDescription:item.itemDescription,
-                    unit:item.unit,
-                    remainingAmountInBox:item.remainingAmountInBox
+                    distributionLineId: item.distributionLineId,
+                    status: item.status,
+                    distributionNo: item.distributionNo,
+                    addressDescription: item.addressDescription,
+                    itemDescription: item.itemDescription,
+                    unit: item.unit,
+                    plannedAmount: item.plannedAmount
                 })
             }
 
@@ -419,7 +421,7 @@ export default function () {
             //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
             let newKeyArr = [];
             let getSelectedKey = selectedRowKeys;
-            
+
             _.each(items, (index) => {
                 if ((selectedItem === true) || (selectedItem === undefined)) {
                     newKeyArr.push(index.key);
@@ -440,31 +442,37 @@ export default function () {
 
     }
     function addDistributionItem(item, selectedItem, rowIndex, selectAll) {
-
+        debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         if (!distributions) { distributions = [] }
         //Daha önceden kayıt varmı kontrolü
-        const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId});
+        const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
         if (index > -1) {
-            if (selectedItem === true) { distributions[index].quantity = item.remainingAmountInBox; } else if (selectedItem === false) {
+            if (selectedItem === true) { distributions[index].quantity = item.plannedAmount; } else if (selectedItem === false) {
                 distributions[index].quantity = 0;
             }
             else {
-                distributions[index].quantity = quantity;
+                if (item.minimumDistributableAmount === 1) {
+                    distributions[index].quantity = quantity;
+                }
+                else {
+                    distributions[index].quantity = quantity * item.minimumDistributableAmount;
+                }
+
             }
         } else {
             distributions.push({
                 itemCode: item.itemCode,
-                quantity: selectedItem === true ? item.remainingAmountInBox : quantity,
+                quantity: selectedItem === true ? item.plannedAmount : quantity,
                 orderNo: item.orderNo,
-                distributionLineId:item.distributionLineId,
-                status:item.status,
-                distributionNo:item.distributionNo,
-                addressDescription:item.addressDescription,
-                itemDescription:item.itemDescription,
-                unit:item.unit,
-                remainingAmountInBox:item.remainingAmountInBox
+                distributionLineId: item.distributionLineId,
+                status: item.status,
+                distributionNo: item.distributionNo,
+                addressDescription: item.addressDescription,
+                itemDescription: item.itemDescription,
+                unit: item.unit,
+                plannedAmount: item.plannedAmount
             })
         }
         localStorage.setItem('distributions', JSON.stringify(distributions));
@@ -475,7 +483,7 @@ export default function () {
         //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
         let newKeyArr = [];
         _.each(selectedRowKeys, (index) => {
-            if (index === rowIndex && selectedItem === false) {  }
+            if (index === rowIndex && selectedItem === false) { }
             else {
                 newKeyArr.push(index);
             }
@@ -490,11 +498,11 @@ export default function () {
         setSelectedRowKeys(newKeyArr);
     }
     function InputNumberOnchange(value) {
-        if (selectedRemainingAmountInBox > value) {
+        if (parseFloat(maximumAmountControl) > value) {
             setQuantity(value);
         }
         else {
-            setQuantity(selectedRemainingAmountInBox);
+            setQuantity(parseFloat(maximumAmountControl));
         }
     }
     function handleVisibleChange() {
@@ -502,16 +510,16 @@ export default function () {
         setEditingKey('');
     }
     function getSelected() {
-      
+
         if (selectedRowKeys.length > 0) {
             return selectedRowKeys
         }
         else {
             let distributions = localStorage.getItem('distributions');
             distributions = JSON.parse(distributions);
-    
+
             _.each(distributions, (item) => {
-                const index = _.findIndex(data, function (i) { return i.distributionLineId === item.distributionLineId&&item.quantity>0 });
+                const index = _.findIndex(data, function (i) { return i.distributionLineId === item.distributionLineId && item.quantity > 0 });
                 if (index > -1) {
                     getSelectedKey.push(index);
                 }
@@ -519,7 +527,7 @@ export default function () {
         }
         return getSelectedKey;
     }
-    function getEnteredQuantity(distributionLineId, selectItem) {
+    function getEnteredQuantity(distributionLineId) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
 
@@ -544,20 +552,17 @@ export default function () {
     };
     let columns = [
         {
-            title: "Durum",
-            dataIndex: "status",
-            key: "status",
-        },
-        {
             title: "Dağıtım Kodu",
             dataIndex: "distributionNo",
             key: "distributionNo",
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
+            ellipsis: true,
+            width: 140,
         },
         {
-            title: "Dağıtım Sipariş Tarihi",
+            title: "Sipariş T.",
             dataIndex: "distributionOrderDate",
             key: "distributionOrderDate",
             key: "toDate",
@@ -565,16 +570,21 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
+            width: 120,
         },
-        // {
-        //   title: "Adres Kodu",
-        //   dataIndex: "addressCode",
-        //   key: "addressCode"
-        // },
         {
             title: "Adres Açıklama",
             dataIndex: "addressDescription",
             key: "addressDescription",
+            width: 150,
+            ellipsis: {
+                showTitle: false,
+            }, render: addressDescription => (
+                <Tooltip placement="topLeft" title={addressDescription}>
+                    {addressDescription}
+                </Tooltip>
+            ),
+
         },
         {
             title: "Sipariş No",
@@ -583,11 +593,15 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
+            // width: 120,
+            ellipsis: true
         },
         {
             title: "Ürün Kodu",
             dataIndex: "itemCode",
             key: "itemCode",
+            // width: 120,
+            ellipsis: true,
             sorter: (a, b) => a.itemCode.length - b.itemCode.length,
             sortOrder:
                 tableOptions.sortedInfo.columnKey === "itemCode" &&
@@ -596,21 +610,22 @@ export default function () {
         {
             title: "Ürün Açıklaması",
             dataIndex: "itemDescription",
-            key: "itemDescription"
+            key: "itemDescription",
+            footerKey: 'Genel Toplam',
+            width: 180,
+            ellipsis: {
+                showTitle: false,
+            }, render: addressDescription => (
+                <Tooltip placement="topLeft" title={addressDescription}>
+                    {addressDescription}
+                </Tooltip>
+            ),
         },
         {
             title: "Birim",
             dataIndex: "unit",
             key: "unit",
-            width: 50,
-        },
-        {
-            title: "Birim Ağırlık",
-            dataIndex: "unitWeight",
-            key: "unitWeight",
-            align: "right",
-            footerKey: 'Genel Toplam',
-            render: (unitWeight) => numberFormat(unitWeight),
+            width: 75,
         },
         {
             title: "Planlanan Ağırlık",
@@ -618,75 +633,70 @@ export default function () {
             key: "palletWeight",
             align: "right",
             footerKey: 'palletWeight',
+            ellipsis: true,
+            width:150,
             render: (palletWeight) => numberFormat(palletWeight),
         },
         {
-            title: "Planlanan Miktar",
+            title: "Önerilen Miktar",
             dataIndex: "plannedAmount",
             key: "plannedAmount",
             render: (plannedAmount) => numberFormat(plannedAmount),
             sorter: (a, b) => a.plannedAmount - b.plannedAmount,
             align: "right",
+            fixed: "right",
+            ellipsis: true,
             sortOrder:
                 tableOptions.sortedInfo.columnKey === "plannedAmount" &&
                 tableOptions.sortedInfo.order,
             footerKey: "plannedAmount"
         },
+        // {
+        //     title: "Dağıtılan  Miktar",
+        //     dataIndex: "distributedAmount",
+        //     key: "distributedAmount",
+        //     align: "right",
+        //     render: (distributedAmount) => numberFormat(distributedAmount),
+        //     footerKey: "distributedAmount"
+        // },
+        // {
+        //     title: "Kalan  Miktar",
+        //     dataIndex: "remainingDistributableAmount",
+        //     key: "remainingDistributableAmount",
+        //     align: "right",
+        //     render: (remainingDistributableAmount) => numberFormat(remainingDistributableAmount),
+        //     sorter: (a, b) => (''),
+        //     sortOrder: tableOptions.sortedInfo.columnKey === 'remainingDistributableAmount' && tableOptions.sortedInfo.order,
+        //     sortDirections: ['descend', 'ascend'],
+        //     footerKey: "remainingDistributableAmount"
+        // },       
+        // {
+        //     title: "Kalan Miktar",
+        //     dataIndex: "minimumDistributableAmount",
+        //     key: "minimumDistributableAmount",
+        //     align: "right",
+        //     fixed: "right",
+        //     render: (minimumDistributableAmount) => numberFormat(minimumDistributableAmount),
+        //     sorter: (a, b) => (''),
+        //     sortOrder: tableOptions.sortedInfo.columnKey === 'minimumDistributableAmount' && tableOptions.sortedInfo.order,
+        //     sortDirections: ['descend', 'ascend'],
+        //     footerKey: "minimumDistributableAmount"
+        // },
         {
-            title: "Dağıtılan  Miktar",
-            dataIndex: "distributedAmount",
-            key: "distributedAmount",
-            align: "right",
-            render: (distributedAmount) => numberFormat(distributedAmount),
-            footerKey: "distributedAmount"
-        },
-        {
-            title: "Kalan  Miktar (M2)",
-            dataIndex: "remainingAmount",
-            key: "remainingAmount",
-            align: "right",
-            render: (remainingAmount) => numberFormat(remainingAmount),
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            footerKey: "remainingAmount"
-        },
-        {
-            title: "amountInBox",
-            dataIndex: "amountInBox",
-            key: "amountInBox",
-            align: "right",
-            render: (amountInBox) => numberFormat(amountInBox),
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'amountInBox' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            footerKey: "amountInBox"
-        },
-        {
-            title: "Kalan Miktar",
-            dataIndex: "remainingAmountInBox",
-            key: "remainingAmountInBox",
-            align: "right",
-            fixed: "right",
-            render: (remainingAmountInBox) => numberFormat(remainingAmountInBox),
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmountInBox' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            footerKey: "remainingAmountInBox"
-        },
-        {
-            title: 'Giriş Yapılan Miktar',
+            title: 'Planlanan Miktar',
             dataIndex: 'enteredQuantity',
             editable: true,
             fixed: "right",
             align: 'right',
             key: 'enteredQuantity',
+            ellipsis: true,
+            width:150,
             render: (enteredQuantity, record) => numberFormat(getEnteredQuantity(record.distributionLineId))
         },
         {
-            title: 'İşlemler',
             dataIndex: 'operation',
             fixed: "right",
+            ellipsis: true,
             render: (_, record, rowIndex) => {
                 const editable = isEditing(record);
                 return editable ? (
@@ -723,12 +733,7 @@ export default function () {
             },
         },
     ];
-    let summaryColumns= [
-        {
-            title: "Durum",
-            dataIndex: "status",
-            key: "status",
-        },
+    let summaryColumns = [
         {
             title: "Dağıtım Kodu",
             dataIndex: "distributionNo",
@@ -736,12 +741,12 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-        },        
+        },
         {
             title: "Adres Açıklama",
             dataIndex: "addressDescription",
             key: "addressDescription",
-        },        
+        },
         {
             title: "Ürün Kodu",
             dataIndex: "itemCode",
@@ -763,24 +768,24 @@ export default function () {
             width: 50,
         },
         {
-            title: "Kalan Miktar",
-            dataIndex: "remainingAmountInBox",
-            key: "remainingAmountInBox",
+            title: "Önerilen Miktar",
+            dataIndex: "plannedAmount",
+            key: "plannedAmount",
             align: "right",
-            render: (remainingAmountInBox) => numberFormat(remainingAmountInBox),
+            render: (plannedAmount) => numberFormat(plannedAmount),
             sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmountInBox' && tableOptions.sortedInfo.order,
+            sortOrder: tableOptions.sortedInfo.columnKey === 'plannedAmount' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            footerKey: "remainingAmountInBox"
+            footerKey: "plannedAmount"
         },
         {
-            title: 'Giriş Yapılan Miktar',
+            title: 'Planlanan Miktar',
             dataIndex: 'quantity',
             editable: true,
             align: 'right',
             key: 'quantity',
             render: (quantity) => numberFormat(quantity),
-        },        
+        },
     ];
 
     //Excel Oluştur
@@ -887,9 +892,6 @@ export default function () {
                                 <Col span={view !== 'MobileView' ? 6 : 0} >
                                     <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                                 </Col>
-                                <Col span={view !== 'MobileView' ? 6 : 0} >
-                                    <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
-                                </Col>
                             </Row>
                             : null}
                         <Row>
@@ -910,6 +912,19 @@ export default function () {
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Input size="small" placeholder="Anahtar kelime" value={searchKey} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
                             </Col>
+                        </Row>
+                        {view !== 'MobileView' ?
+                            <Row>
+
+                                <Col span={view !== 'MobileView' ? 6 : 0} >
+                                    <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+                                </Col>
+                                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                                    <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                                </Col>
+                            </Row>
+                            : null}
+                        <Row>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     mode={"multiple"}
@@ -924,29 +939,6 @@ export default function () {
                                     }
                                 >
                                     {lookupAddressChildren}
-                                </Select>
-                            </Col>
-                        </Row>
-                        {view !== 'MobileView' ?
-                            <Row>
-                                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                                    <FormItem label={<IntlMessages id="page.statusType" />}></FormItem>
-                                </Col>
-                                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                                    <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-                                </Col>
-                            </Row>
-                            : null}
-                        <Row>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Select
-                                    mode="multiple"
-                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    placeholder="Durumu Tipi Seçiniz"
-                                    onChange={statusTypeHandleChange}
-                                    value={selectedStatusType}
-                                >
-                                    {children}
                                 </Select>
                             </Col>
 
@@ -1007,11 +999,8 @@ export default function () {
                 <Col span={8} offset={16} align="right" >
                     <Button type="primary" size="small" style={{ marginBottom: '5px' }}
                         icon={<RightOutlined />} onClick={exportExcelButton}>
-                       {<IntlMessages id="forms.button.next" />}
+                        {<IntlMessages id="forms.button.next" />}
                     </Button>
-                </Col>
-                <Col span={8} offset={16} align="right" >
-                <Checkbox >Seçilen dağıtımları listele</Checkbox>
                 </Col>
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}
@@ -1027,8 +1016,8 @@ export default function () {
                     onChange={handleChange}
                     loading={loading}
                     pagination={false}
-                    scroll={{ x: 'max-content' }}
-                    size="medium"
+                    // scroll={{ x: 'max-content' }}
+                    // size="medium"
                     bordered={false}
                     rowSelection={{
                         ...rowSelection,
@@ -1036,7 +1025,7 @@ export default function () {
                     summary={() => {
                         return renderFooter(columns, data, false, aggregatesOverall, true)
                     }}
-                    rowClassName={(record, index) => (getEnteredQuantity(record.distributionLineId) <= 0 ? "black" : "red")}
+                    rowClassName={(record, index) => (getEnteredQuantity(record.distributionLineId) <= 0 ? 'table-background-color-notification-isUnRead' : "table-background-color-notification-isRead")}
                 />
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}
@@ -1049,32 +1038,95 @@ export default function () {
 
                 {/* Secilenlerin modal üzerinde gösterilmesi ve onaylanması */}
                 <Modal
-                  width={1500}
-                  visible={visible}
-                  title={"Seçilen dağıtımlar"}
-                  cancelText="İptal"
-                  okText='Onayla'
-                  maskClosable={false}
-                  onCancel={handleCancel}
-                  onOk={handleOk}
+                    width={1500}
+                    visible={visible}
+                    title={"Seçilen dağıtımlar"}
+                    cancelText="İptal"
+                    okText='Onayla'
+                    maskClosable={false}
+                    onCancel={handleCancel}
+                    onOk={handleOk}
                 >
-                  <Form
-                    form={form}
-                    layout="vertical"
-                    name="form_in_modal"
-                    initialValues={{
-                      modifier: 'public',
-                    }}
-                  >                
-                    <Table
-                      columns={summaryColumns}
-                      dataSource={selectedDistributionData}                      
-                      pagination={false}
-                      scroll={{ x: 'max-content' }}
-                      size="medium"
-                      bordered={false}
-                    />
-                  </Form>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        name="form_in_modal"
+                        initialValues={{
+                            modifier: 'public',
+                        }}
+                    >
+                        <Box >
+                            <Row>
+                                <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    {<label style={{
+                                        fontSize: '14px', fontWeight: '500'
+                                    }}>
+                                        Şoför Adı
+                                    <Input
+                                            label="Şoför Adı"
+                                            placeholder="Şoför adı giriniz"
+                                        // value={addressTitle}
+                                        // onChange={onChangeAddressTitle}
+                                        /></label>}
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    {<label style={{
+                                        fontSize: '14px', fontWeight: '500'
+                                    }}>
+                                        Plaka
+                                    <Input
+                                            label="Plaka"
+                                            placeholder="Plaka Giriniz"
+                                        // value={address1}
+                                        // onChange={onChangeAddress1}
+                                        /></label>}
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    {<label style={{
+                                        fontSize: '14px', fontWeight: '500'
+                                    }}>
+                                        Telefon
+                                    <Input
+                                            label="Telefon"
+                                            placeholder="Telefon Giriniz"
+                                        // value={phone}
+                                        // onChange={onChangePhone}
+                                        /></label>}
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+
+                                    {<label style={{
+                                        fontSize: '14px', fontWeight: '500'
+                                    }}>
+                                        Tarih
+  <DatePicker
+                                            format={siteConfig.dateFormat}
+                                            onChange={changeTimePicker}
+                                            style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                        // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
+                                        /></label>}
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    {<label style={{
+                                        fontSize: '14px', fontWeight: '500'
+                                    }}>
+                                        Saat
+                                {
+                                            <TimePicker defaultValue={moment('12:08', format)} format={format} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                            />}
+                                    </label>}
+                                </Col>
+                            </Row>
+                        </Box>
+                        <Table
+                            columns={summaryColumns}
+                            dataSource={selectedDistributionData}
+                            pagination={false}
+                            scroll={{ x: 'max-content' }}
+                            size="medium"
+                            bordered={false}
+                        />
+                    </Form>
                 </Modal>
             </Box>
         </LayoutWrapper>
