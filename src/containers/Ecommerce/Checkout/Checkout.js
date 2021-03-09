@@ -333,7 +333,7 @@ export default function () {
     const dealerCodes = token.dcode;
     if ((addressTitle === undefined) || (address1 === undefined) || (city === undefined) || (town === undefined) || (address2 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
-    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "address1": address2, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
+    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
       method: "POST",
       headers: {
