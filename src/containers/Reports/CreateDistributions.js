@@ -9,15 +9,11 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message, Alert, Checkbox } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
 import Select, { SelectOption } from '@iso/components/uielements/select';
-import {
-    Fieldset,
-} from '../FirestoreCRUD/Article/Article.styles';
-import InputBox from '../Ecommerce/Checkout/InputBox';
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
@@ -65,12 +61,14 @@ export default function () {
         sortedInfo: "",
         filteredInfo: ""
     });
+    let tarih;
     const [driverName, setDriverName] = useState();
     const [carPlate, setCarPlate] = useState();
-    const [phone, setPhone]=useState();
-    const [date, setDate]=useState(moment(new Date()));
-    const [time, setTime]=useState(moment());
+    const [phone, setPhone] = useState();
+    const [dates, setDate] = useState(moment(new Date()));
+    const [time, setTime] = useState();
     const [visible, setVisible] = useState();
+    const [submitButtonVisible, setSubmitButtonVisible]=useState(true);
     const [pageIndex, setPageIndex] = useState(1);
     const [pageSize, setPageSize] = useState(50);
     const [startingPageIndex, setStartingPageIndex] = useState(1);
@@ -88,12 +86,13 @@ export default function () {
     const [form] = Form.useForm();
     const [editingKey, setEditingKey] = useState('');
     const [distributionId, setDistributionId] = useState();
+    const [orderNo, setOrderNo] = useState();
     const [maximumAmountControl, setMaximumAmountControl] = useState();
     const [quantity, setQuantity] = useState();
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [modalVisible, setModalVisible] = useState(true);
     const [selectedDistributionData, setSelectedDistributionData] = useState();
-    const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId;
+    const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId && record.orderNo === orderNo;
 
     const queryString = require('query-string');
     const history = useHistory();
@@ -195,6 +194,7 @@ export default function () {
 
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
+
         const params = new URLSearchParams(location.search);
 
         params.delete('dec');
@@ -237,6 +237,7 @@ export default function () {
     const searchButton = () => {
         dataSearch();
     };
+
     //Keyword 'Enter' search
     const keyPress = e => {
         if (e.keyCode === 13) {
@@ -356,107 +357,217 @@ export default function () {
 
     //Send selected distribution items
     //Save Order
-  async function sendDistributionItems(items) {
-    const token = jwtDecode(localStorage.getItem("id_token")); 
-    const reqBody = {'items':items, "driverName": driverName, "phone": phone, "plateNo": carPlate, "date": '2021-03-10T13:55:30.719Z' }
+    async function sendDistributionItems(items) {
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        let accountNo;
+        if(dealerCodes!==undefined){
+            accountNo=dealerCodes[0]
+        }else{
+            accountNo = token.dcode;
+        }
+        let selectedDate = dates.format('YYYY-MM-DD');
+        let selectedTime = time.format('HH:mm:ssZ');
+        let sendDate = moment((selectedDate + " " + selectedTime));
 
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      },
-      body: JSON.stringify(reqBody)
-    };
-    debugger
-    let newSaveOrderUrl = siteConfig.api.report.postSaveLineItems.replace('{accountNo}', dealerCodes[0]);
-    await fetch(`${newSaveOrderUrl}`, requestOptions)
-      .then(response => {
-        const status = apiStatusManagement(response);
-        return status;
-      })
-      .then(data => {
-          debugger
-        // if (data !== undefined) {
-        //   if (data.isSuccessful) {
-        //     setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
-        //     createOrderNo = data.orderNo; setSuccessOrderSave(true);
-        //     postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, data.orderNo + logMessage.Order.saveOrderSuccess);
-        //   } else {
-        //     message.warning(data.message, 10);
-        //     postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Add, logMessage.Order.saveOrderError + data.message);
-        //   }
-        // }
-      })
-      .catch();
-      setVisible(false);
-  }
+        const reqBody = { 'items': items, "driverName": driverName, "phone": phone, "plateNo": carPlate, "date": sendDate.format('YYYY-MM-DDTHH:mm:ss.sssZ') }
+
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            },
+            body: JSON.stringify(reqBody)
+        };
+        let newSaveOrderUrl = siteConfig.api.report.postSaveLineItems.replace('{accountNo}', accountNo);
+        await fetch(`${newSaveOrderUrl}`, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
+            .then(data => {
+                if (data.isSuccess === true) {
+                    localStorage.removeItem('distributions');
+                    setDriverName();
+                    setCarPlate();
+                    setPhone();           
+                    message.info(data.message, 8);
+                    setSelectedRowKeys([]);
+                    setVisible(false);
+                  } else {
+                    message.warning(data.message, 8);                    
+                  }
+            })
+            .catch();
+    }
 
     //Seçilenleri onaylama işlemi
     async function handleOk() {
         debugger
-        if ((!driverName) | (!carPlate) | (!phone) | (!date)) {
+        if ((!driverName) | (!carPlate) | (!phone) | (!dates)) {
             message.warning('Lütfen bilgileri eksiksiz giriniz', 3);
         }
         else {
-            let items=[];
+            let items = [];
             _.each(selectedDistributionData, (item) => {
                 items.push({
                     distributionLineId: item.distributionLineId,
                     amount: item.quantity,
                 });
             });
-                await sendDistributionItems(items);
-                setVisible(false);
-        
-
-    }
+            await sendDistributionItems(items);
+             
+        }
     };
 
     const edit = (record) => {
-        let distributions = localStorage.getItem('distributions');
-        distributions = JSON.parse(distributions);
-        const item = _.find(distributions, function (i) { return i.distributionLineId === record.distributionLineId });
-        if ((item) && (item.quantity > 0)) {
-            if (record.minimumDistributableAmount === 1) {
-                setQuantity(numberFormat(item.quantity));
-                setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
-                setModalVisible(true);
-            }
-            else {
-                setQuantity(numberFormat(item.quantity / record.minimumDistributableAmount));
-                setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
-                setModalVisible(true);
-            }
-        } else {
-            setQuantity(numberFormat(record.remainingDistributableAmount));
-            setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
-            setModalVisible(true);
-        }
-        setEditingKey(record.itemCode);
-        setDistributionId(record.distributionId);
-    };
-
-    function addDistributionItemAll(items, selectedItem) {
         debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
-        if (!distributions) { distributions = [] }
+        const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== record.dealerCode && i.quantity>0});
+        if (dealerCodeControl) {
+            message.warning('Birden fazla bayi ile dağıtım yapamazsınız', 5);
+        } else {
+            const item = _.find(distributions, function (i) { return i.distributionLineId === record.distributionLineId });
+            if ((item) && (item.quantity > 0)) {
+                if (record.minimumDistributableAmount === 1) {
+                    setQuantity(numberFormat(item.quantity));
+                    setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                    setModalVisible(true);
+                }
+                else {
+                    setQuantity(numberFormat(item.quantity / record.minimumDistributableAmount));
+                    setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                    setModalVisible(true);
+                }
+            } else {
+                setQuantity(numberFormat(record.remainingDistributableAmount));
+                setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                setModalVisible(true);
+            }
+            setEditingKey(record.itemCode);
+            setOrderNo(record.orderNo);
+            setDistributionId(record.distributionId);
+        }
+    };
 
+    function dealerCodesControl(items) {
+        const dealerCode = items[0];
+        let control = false;
         _.each(items, (item) => {
+            if (item.dealerCode !== dealerCode.dealerCode) {
+                return control = true;
+            }
+        });
+        return control;
+    }
+
+    function addDistributionItemAll(items, selectedItem) {
+        const control = dealerCodesControl(items);
+        if (control) {
+        }
+        else {
+            let distributions = localStorage.getItem('distributions');
+            distributions = JSON.parse(distributions);
+            if (!distributions) { distributions = [] }
+
+            _.each(items, (item) => {
+                const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
+                if (index > -1) {
+                    if (selectedItem === true) { distributions[index].quantity = item.plannedAmount; } else if (selectedItem === false) {
+                        distributions[index].quantity = 0;
+                    }
+                    else {
+                        distributions[index].unitWeight = item.unitWeight * quantity;
+                        distributions[index].quantity = quantity;
+                    }
+                } else {
+                    distributions.push({
+                        itemCode: item.itemCode,
+                        quantity: selectedItem === true ? item.plannedAmount : quantity,
+                        orderNo: item.orderNo,
+                        distributionLineId: item.distributionLineId,
+                        status: item.status,
+                        distributionNo: item.distributionNo,
+                        addressDescription: item.addressDescription,
+                        itemDescription: item.itemDescription,
+                        unit: item.unit,
+                        dealerCode: item.dealerCode,
+                        unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : quantity),
+                        plannedAmount: item.plannedAmount
+                    })
+                }
+
+                localStorage.setItem('distributions', JSON.stringify(distributions));
+                setModalVisible(false);
+                setQuantity();
+                setEditingKey('');
+
+                //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
+                let newKeyArr = [];
+                let getSelectedKey = selectedRowKeys;
+
+                _.each(items, (index) => {
+                    if ((selectedItem === true) || (selectedItem === undefined)) {
+                        newKeyArr.push(index.key);
+                    }
+                    else {
+                        getSelectedKey = _.without(getSelectedKey, index.key);
+                    }
+                });
+                _.each(getSelectedKey, (index) => {
+                    newKeyArr.push(index);
+                });
+
+                if (selectedItem === false) { setSelectedRowKeys(getSelectedKey); }
+                else {
+                    setSelectedRowKeys(newKeyArr);
+                }
+            });
+
+        }
+
+    }
+
+    function addDistributionItem(item, selectedItem, rowIndex, selectAll) {
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+        const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== item.dealerCode && i.quantity>0});
+        if (dealerCodeControl) {
+            message.warning('Birden fazla bayi ile dağıtım yapamazsınız', 5);
+        } else {
+            if (!distributions) { distributions = [] }
+            //Daha önceden kayıt varmı kontrolü
             const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
             if (index > -1) {
                 if (selectedItem === true) { distributions[index].quantity = item.plannedAmount; } else if (selectedItem === false) {
                     distributions[index].quantity = 0;
                 }
                 else {
-                    distributions[index].unitWeight = item.unitWeight*quantity;
-                    distributions[index].quantity = quantity;
+                    if (item.minimumDistributableAmount === 1) {
+                        distributions[index].unitWeight =parseFloat(quantity) * item.unitWeight;
+                        distributions[index].quantity = parseFloat(quantity);
+                    }
+                    else {
+                        distributions[index].unitWeight = parseFloat(quantity) * item.minimumDistributableAmount * item.unitWeight;
+
+                        distributions[index].quantity = parseFloat(quantity) * item.minimumDistributableAmount;
+                    }
+
                 }
             } else {
+                let selectedQuantity;
+                let seletedUnitWeight;
+                if (item.minimumDistributableAmount === 1) {
+                    selectedQuantity = parseFloat(quantity);
+                }
+                else {
+                    const amount = parseFloat(quantity);
+                    selectedQuantity = amount * item.minimumDistributableAmount;
+                }
                 distributions.push({
                     itemCode: item.itemCode,
-                    quantity: selectedItem === true ? item.plannedAmount : quantity,
+                    quantity: selectedItem === true ? item.plannedAmount : selectedQuantity,
                     orderNo: item.orderNo,
                     distributionLineId: item.distributionLineId,
                     status: item.status,
@@ -464,11 +575,11 @@ export default function () {
                     addressDescription: item.addressDescription,
                     itemDescription: item.itemDescription,
                     unit: item.unit,
-                    unitWeight:item.unitWeight*(selectedItem === true ? item.plannedAmount : quantity),
+                    dealerCode: item.dealerCode,
+                    unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : selectedQuantity),
                     plannedAmount: item.plannedAmount
                 })
             }
-
             localStorage.setItem('distributions', JSON.stringify(distributions));
             setModalVisible(false);
             setQuantity();
@@ -476,85 +587,21 @@ export default function () {
 
             //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
             let newKeyArr = [];
-            let getSelectedKey = selectedRowKeys;
-
-            _.each(items, (index) => {
-                if ((selectedItem === true) || (selectedItem === undefined)) {
-                    newKeyArr.push(index.key);
-                }
+            _.each(selectedRowKeys, (index) => {
+                if (index === rowIndex && selectedItem === false) { }
                 else {
-                    getSelectedKey = _.without(getSelectedKey, index.key);
+                    newKeyArr.push(index);
                 }
             });
-            _.each(getSelectedKey, (index) => {
-                newKeyArr.push(index);
+            _.each(getSelectedKey, (i) => {
+                newKeyArr.push(i);
             });
-
-            if (selectedItem === false) { setSelectedRowKeys(getSelectedKey); }
-            else {
-                setSelectedRowKeys(newKeyArr);
+            getSelectedKey = [];
+            if ((selectedItem === true) || (selectedItem === undefined)) {
+                newKeyArr.push(rowIndex);
             }
-        });
-
-    }
-    function addDistributionItem(item, selectedItem, rowIndex, selectAll) {
-        let distributions = localStorage.getItem('distributions');
-        distributions = JSON.parse(distributions);
-        if (!distributions) { distributions = [] }
-        //Daha önceden kayıt varmı kontrolü
-        const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
-        if (index > -1) {
-            if (selectedItem === true) { distributions[index].quantity = item.plannedAmount; } else if (selectedItem === false) {
-                distributions[index].quantity = 0;
-            }
-            else {
-                if (item.minimumDistributableAmount === 1) {
-                    distributions[index].unitWeight = quantity*item.unitWeight;
-                    distributions[index].quantity = quantity;
-                }
-                else {
-                    distributions[index].unitWeight = quantity * item.minimumDistributableAmount*item.unitWeight;
-
-                    distributions[index].quantity = quantity * item.minimumDistributableAmount;
-                }
-
-            }
-        } else {
-            distributions.push({
-                itemCode: item.itemCode,
-                quantity: selectedItem === true ? item.plannedAmount : quantity,
-                orderNo: item.orderNo,
-                distributionLineId: item.distributionLineId,
-                status: item.status,
-                distributionNo: item.distributionNo,
-                addressDescription: item.addressDescription,
-                itemDescription: item.itemDescription,
-                unit: item.unit,
-                unitWeight:item.unitWeight*(selectedItem === true ? item.plannedAmount : quantity),
-                plannedAmount: item.plannedAmount
-            })
+            setSelectedRowKeys(newKeyArr);
         }
-        localStorage.setItem('distributions', JSON.stringify(distributions));
-        setModalVisible(false);
-        setQuantity();
-        setEditingKey('');
-
-        //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
-        let newKeyArr = [];
-        _.each(selectedRowKeys, (index) => {
-            if (index === rowIndex && selectedItem === false) { }
-            else {
-                newKeyArr.push(index);
-            }
-        });
-        _.each(getSelectedKey, (i) => {
-            newKeyArr.push(i);
-        });
-        getSelectedKey = [];
-        if ((selectedItem === true) || (selectedItem === undefined)) {
-            newKeyArr.push(rowIndex);
-        }
-        setSelectedRowKeys(newKeyArr);
     }
 
     function InputNumberOnchange(value) {
@@ -572,7 +619,6 @@ export default function () {
     }
 
     function getSelected() {
-
         if (selectedRowKeys.length > 0) {
             return selectedRowKeys
         }
@@ -611,7 +657,6 @@ export default function () {
         onSelectAll: (record, selected, selectedRows) => {
             addDistributionItemAll(selectedRows, record);
         },
-
     };
 
     let columns = [
@@ -657,7 +702,6 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            // width: 120,
             ellipsis: true
         },
         {
@@ -714,38 +758,7 @@ export default function () {
                 tableOptions.sortedInfo.columnKey === "plannedAmount" &&
                 tableOptions.sortedInfo.order,
             footerKey: "plannedAmount"
-        },
-        // {
-        //     title: "Dağıtılan  Miktar",
-        //     dataIndex: "distributedAmount",
-        //     key: "distributedAmount",
-        //     align: "right",
-        //     render: (distributedAmount) => numberFormat(distributedAmount),
-        //     footerKey: "distributedAmount"
-        // },
-        // {
-        //     title: "Kalan  Miktar",
-        //     dataIndex: "remainingDistributableAmount",
-        //     key: "remainingDistributableAmount",
-        //     align: "right",
-        //     render: (remainingDistributableAmount) => numberFormat(remainingDistributableAmount),
-        //     sorter: (a, b) => (''),
-        //     sortOrder: tableOptions.sortedInfo.columnKey === 'remainingDistributableAmount' && tableOptions.sortedInfo.order,
-        //     sortDirections: ['descend', 'ascend'],
-        //     footerKey: "remainingDistributableAmount"
-        // },       
-        // {
-        //     title: "Kalan Miktar",
-        //     dataIndex: "minimumDistributableAmount",
-        //     key: "minimumDistributableAmount",
-        //     align: "right",
-        //     fixed: "right",
-        //     render: (minimumDistributableAmount) => numberFormat(minimumDistributableAmount),
-        //     sorter: (a, b) => (''),
-        //     sortOrder: tableOptions.sortedInfo.columnKey === 'minimumDistributableAmount' && tableOptions.sortedInfo.order,
-        //     sortDirections: ['descend', 'ascend'],
-        //     footerKey: "minimumDistributableAmount"
-        // },
+        },        
         {
             title: 'Planlanan Miktar',
             dataIndex: 'enteredQuantity',
@@ -769,7 +782,8 @@ export default function () {
                             content={
                                 <div>
                                     <Space size={10}>
-                                        {<InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />}
+                                        <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{record.unit === 'M2' ? 'Palet' : ''}</span>
+                                        <InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />
                                         <Button type="primary" onClick={() => addDistributionItem(record, undefined, rowIndex)}>Onayla</Button>
                                     </Space>
                                 </div>
@@ -783,20 +797,21 @@ export default function () {
                         </Popover>
                     </span>
                 ) : (
-                    <Space >
+                        <Space >
 
-                        <a disabled={editingKey !== ''} onClick={() => edit(record, rowIndex)}>
-                            <i className="ion-android-create" />
-                        </a>
-                        {/* <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
+                            <a disabled={editingKey !== ''} onClick={() => edit(record, rowIndex)}>
+                                <i className="ion-android-create" />
+                            </a>
+                            {/* <a disabled={editingKey !== ''} onClick={() => allAmountOrder(record)}>
                                 <i className="ion-ios-fastforward" />
                             </a> */}
 
-                    </Space>
-                );
+                        </Space>
+                    );
             },
         },
     ];
+
     let summaryColumns = [
         {
             title: "Dağıtım Kodu",
@@ -863,8 +878,7 @@ export default function () {
         },
     ];
 
-    //Excel Oluştur
-    const exportExcelButton = () => {
+    const createPlainDistribution = () => {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         distributions = _.filter(distributions, function (i) { return i.quantity > 0 });
@@ -876,6 +890,7 @@ export default function () {
         setSelectedRadioItem(e.target.value);
         setPrivateDate(null);
     }
+
     //Seçilenler Modal iptal işlemi
     function handleCancel() {
         setVisible(false);
@@ -926,12 +941,30 @@ export default function () {
     }
 
     function handleChangeDistributionDate(value, dateString) {
-        
-        setDate(moment(dateString[0] + time, 'DD-MM-YYYY' + 'HH:mm', null));
+        setDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
     }
 
     function handleChangeTime(value, dateString) {
         setTime(moment(dateString, format));
+    }
+
+    function disabledMinutes() {
+        var minutes = [];
+        for (let i = 0; i < 60; i++) {
+            if ((i !== 0) && (i !== 30)) {
+                minutes.push(i);
+            }
+        }
+        return minutes;
+    }
+
+    function disabledDate(current) {
+        // Can not select days before today and today
+        return current < moment().endOf("day");
+    }
+
+    function handleSubmitCheck(value) {        
+        setSubmitButtonVisible(!value.target.checked);
     }
 
     //Hide order table column
@@ -976,7 +1009,7 @@ export default function () {
     return (
         <LayoutWrapper>
             <PageHeader>
-                {<IntlMessages id="page.distributionTitle.header" />}
+                {<IntlMessages id="page.distributionPlainTitle.header" />}
             </PageHeader>
             <Box>
                 <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
@@ -985,6 +1018,12 @@ export default function () {
                             <Row>
                                 <Col span={view !== 'MobileView' ? 6 : 0} >
                                     <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
+                                </Col>
+                                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                                    <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                                </Col>
+                                <Col span={view !== 'MobileView' ? 6 : 0} >
+                                    <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
                                 </Col>
                                 <Col span={view !== 'MobileView' ? 6 : 0} >
                                     <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
@@ -1006,39 +1045,6 @@ export default function () {
                                     dropdownMatchSelectWidth={500}
                                 />
                             </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Input size="small" placeholder="Anahtar kelime" value={searchKey} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
-                            </Col>
-                        </Row>
-                        {view !== 'MobileView' ?
-                            <Row>
-
-                                <Col span={view !== 'MobileView' ? 6 : 0} >
-                                    <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
-                                </Col>
-                                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                                    <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-                                </Col>
-                            </Row>
-                            : null}
-                        <Row>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Select
-                                    mode={"multiple"}
-                                    style={{ width: '100%' }}
-                                    placeholder="Sevk Adresi Seçiniz"
-                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    value={address}
-                                    dropdownMatchSelectWidth={750}
-                                    onChange={addressHandleChange}
-                                    filterOption={(input, option) =>
-                                        option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-                                    }
-                                >
-                                    {lookupAddressChildren}
-                                </Select>
-                            </Col>
-
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem} style={view === 'MobileView' ? null : { marginLeft: '-30px' }}>
                                     <Row>
@@ -1081,22 +1087,49 @@ export default function () {
                                             />
                                         </Col>
                                     </Row>
-                                </Radio.Group>            </Col>
+                                </Radio.Group> </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+
+                                <Select
+                                    mode={"multiple"}
+                                    style={{ width: '100%' }}
+                                    placeholder="Sevk Adresi Seçiniz"
+                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                    value={address}
+                                    dropdownMatchSelectWidth={750}
+                                    onChange={addressHandleChange}
+                                    filterOption={(input, option) =>
+                                        option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                                    }
+                                >
+                                    {lookupAddressChildren}
+                                </Select>
+
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                <Input size="small" placeholder="Anahtar kelime" value={searchKey} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
                                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                                     {<IntlMessages id="forms.button.label_Search" />}
                                 </Button>
                             </Col>
+
+
                         </Row>
                     </Panel>
                 </Collapse>
+
             </Box>
+            <Alert
+                description="Aşagıdaki listede yer alan ürünleri tıklayarak dağıtım planı oluşturabilirsinz. En sağdaki düzenle ikonuna tıklayarak kısmi miktar belirleyebilirsiniz. Listeyi oluştur butonuna tıklayarak araç ve araç bilgileri girebileceğiniz onaylama ekranı çıkacaktır."
+                type="info"
+                showIcon closable
+            />
             {/* Data list volume */}
             <Box >
                 <Col span={8} offset={16} align="right" >
                     <Button type="primary" size="small" style={{ marginBottom: '5px' }}
-                        icon={<RightOutlined />} onClick={exportExcelButton}>
-                        {<IntlMessages id="forms.button.next" />}
+                        icon={<RightOutlined />} onClick={createPlainDistribution}>
+                        {<IntlMessages id="forms.button.plainCreate" />}
                     </Button>
                 </Col>
                 <ReportPagination
@@ -1143,6 +1176,8 @@ export default function () {
                     maskClosable={false}
                     onCancel={handleCancel}
                     onOk={handleOk}
+                    okButtonProps={{ disabled:submitButtonVisible }}
+
                 >
                     <Form
                         form={form}
@@ -1161,7 +1196,7 @@ export default function () {
                                         Şoför Adı
                                     <Input
                                             label="Şoför Adı"
-                                            placeholder="Şoför adı giriniz"
+                                            placeholder="Zorunlu alan giriniz"
                                             value={driverName}
                                             onChange={handleChangeDriverNAme}
                                         /></label>}
@@ -1173,7 +1208,7 @@ export default function () {
                                         Plaka
                                     <Input
                                             label="Plaka"
-                                            placeholder="Plaka Giriniz"
+                                            placeholder="Zorunlu alan giriniz"
                                             value={carPlate}
                                             onChange={handleChangeCarPLate}
                                         /></label>}
@@ -1185,9 +1220,9 @@ export default function () {
                                         Telefon
                                     <Input
                                             label="Telefon"
-                                            placeholder="Telefon Giriniz"
-                                        value={phone}
-                                        onChange={handleChangePhone}
+                                            placeholder="Zorunlu alan giriniz"
+                                            value={phone}
+                                            onChange={handleChangePhone}
                                         /></label>}
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -1196,8 +1231,9 @@ export default function () {
                                         fontSize: '14px', fontWeight: '500'
                                     }}>
                                         Tarih
-  <DatePicker
+                                            <DatePicker
                                             format={siteConfig.dateFormat}
+                                            disabledDate={disabledDate}
                                             onChange={handleChangeDistributionDate}
                                             style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                         // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
@@ -1209,7 +1245,7 @@ export default function () {
                                     }}>
                                         Saat
                                 {
-                                            <TimePicker defaultValue={moment(time, format)} format={format} value={time} onChange={handleChangeTime} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                            <TimePicker showNow={false} disabledMinutes={disabledMinutes} format={format} value={time} onChange={handleChangeTime} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                             />}
                                     </label>}
                                 </Col>
@@ -1223,8 +1259,13 @@ export default function () {
                             size="medium"
                             bordered={false}
                         />
+                         
                     </Form>
+                    <Col span={8}  align="left" >
+                <Checkbox onChange={handleSubmitCheck}>Seçilen dağıtım planı ürünlerini onaylıyorum</Checkbox>
+                </Col>                 
                 </Modal>
+               
             </Box>
         </LayoutWrapper>
     );
