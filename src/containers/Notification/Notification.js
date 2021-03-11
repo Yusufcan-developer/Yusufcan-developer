@@ -603,7 +603,7 @@ export default function () {
           rowSelection={{
             ...rowSelection
           }}
-          rowClassName={(record, index) => (record.isRead === true ? 'table-background-color-notification-isUnRead' : "table-background-color-notification-isRead")}
+          rowClassName={(record, index) => (record.isRead === true ? 'table-background-color-notification-isUnRead' : "table-background-color-notification-isUnRead")}
           onRow={(record) => ({
             onClick: () => (selectedNotification(record))
           })}

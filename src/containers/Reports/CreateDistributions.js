@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import {  useHistory, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, Checkbox } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message, Alert, Checkbox, Tag } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
@@ -30,13 +30,14 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
-import { } from "../Ecommerce/Cart/color.css";
+import { strikeout } from "../Ecommerce/Cart/color.css";
+
 
 //Other Library
 import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import logMessage from "../../config/logMessage";
-import moment from 'moment';
+import moment, { now } from 'moment';
 import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
@@ -46,6 +47,7 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
+const format = 'HH:mm';
 
 export default function () {
     document.title = "Dağıtım Listesi - Seramiksan B2B";
@@ -59,9 +61,18 @@ export default function () {
         sortedInfo: "",
         filteredInfo: ""
     });
+    let tarih;
+    const [driverName, setDriverName] = useState();
+    const [carPlate, setCarPlate] = useState();
+    const [phone, setPhone] = useState();
+    const [dates, setDate] = useState();
+    const [time, setTime] = useState();
     const [visible, setVisible] = useState();
+    const [submitButtonVisible, setSubmitButtonVisible] = useState(true);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const [validation, setValidation] = useState(true);
     const [pageIndex, setPageIndex] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const [pageSize, setPageSize] = useState(50);
     const [startingPageIndex, setStartingPageIndex] = useState(1);
     const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
     const [toDate, setToDate] = useState(moment(new Date()));
@@ -71,18 +82,20 @@ export default function () {
     const [selectedDealerCode, setSelectedDealerCode] = useState();
     const [newUrlParams, setNewUrlParams] = useState('')
     const location = useLocation();
-    const [selectedStatusType, setSelectedStatusType] = useState();
+    const [selectedStatusType, setSelectedStatusType] = useState(['Öneri']);
     const [address, setAddress] = useState();
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
     const [form] = Form.useForm();
     const [editingKey, setEditingKey] = useState('');
     const [distributionId, setDistributionId] = useState();
-    const [selectedRemainingAmountInBox,setSelectedRemainingAmountInBox]=useState();
+    const [orderNo, setOrderNo] = useState();
+    const [maximumAmountControl, setMaximumAmountControl] = useState();
     const [quantity, setQuantity] = useState();
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [modalVisible, setModalVisible] = useState(true);
-    const [selectedDistributionData,setSelectedDistributionData]=useState();
-    const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId;
+    const [totalWight, setTotalWeight] = useState();
+    const [selectedDistributionData, setSelectedDistributionData] = useState();
+    const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId && record.orderNo === orderNo;
 
     const queryString = require('query-string');
     const history = useHistory();
@@ -102,7 +115,7 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-        useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address ,"excludeZeroRemainingLines":true}, searchUrl);
+        useFetch(`${siteConfig.api.report.postDistributions}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate.format('YYYY-MM-DD'), "to": toDate.format('YYYY-MM-DD'), "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "excludeZeroRemainingLines": true }, searchUrl);
 
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -124,16 +137,6 @@ export default function () {
         if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
         if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
         if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
-
-        let statusGetType = [];
-        if (parsed.status !== undefined) {
-            if (Array.isArray(parsed.status)) {
-                _.each(parsed.status, (item) => {
-                    statusGetType.push(item);
-                });
-            } else { statusGetType.push(parsed.status); }
-        }
-        setSelectedStatusType(statusGetType);
 
         let getAddress = [];
         if (parsed.address !== undefined) {
@@ -191,9 +194,10 @@ export default function () {
 
         return setOnChange(true);
     }
-    
+
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
+
         const params = new URLSearchParams(location.search);
 
         params.delete('dec');
@@ -202,7 +206,6 @@ export default function () {
         params.delete('from')
         params.delete('to');
         params.delete('keyword');
-        params.delete('status');
         params.delete('pgsize');
         params.delete('pgindex');
         params.delete('sortingField');
@@ -216,10 +219,6 @@ export default function () {
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-
-        _.filter(selectedStatusType, function (item) {
-            params.append('status', item); params.toString();
-        });
 
         _.forEach(address, (item) => {
             params.append('address', item); params.toString();
@@ -236,6 +235,7 @@ export default function () {
     const searchButton = () => {
         dataSearch();
     };
+
     //Keyword 'Enter' search
     const keyPress = e => {
         if (e.keyCode === 13) {
@@ -273,11 +273,6 @@ export default function () {
             return treeNodeTitle.indexOf(filterValue) !== -1;
         }
         return false;
-    }
-
-    //Change Status Type
-    function statusTypeHandleChange(value) {
-        setSelectedStatusType(value);
     }
 
     /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -359,58 +354,235 @@ export default function () {
     };
 
     //Send selected distribution items
-    async function sendDistributionItems(items){
+    //Save Order
+    async function sendDistributionItems(items, selectedDealerCode) {
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        let accountNo;
+        if (selectedDealerCode) {
+            accountNo = selectedDealerCode
+        } else {
+            accountNo = token.dcode;
+        }
+        
+        setConfirmLoading(true);
+        let selectedDate = dates.format('YYYY-MM-DD');
+        let selectedTime = time.format('HH:mm:ssZ');
+        let sendDate = moment((selectedDate + " " + selectedTime));
+
+        const reqBody = { 'items': items, "driverName": driverName, "phone": phone, "plateNo": carPlate, "date": sendDate.format('YYYY-MM-DDTHH:mm:ss.sssZ') }
+
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            },
+            body: JSON.stringify(reqBody)
+        };
+        let newSaveOrderUrl = siteConfig.api.report.postSaveLineItems.replace('{accountNo}', accountNo);
+        await fetch(`${newSaveOrderUrl}`, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
+            .then(data => {
+                if (data.isSuccess === true) {
+                    localStorage.removeItem('distributions');
+                    setDriverName();
+                    setCarPlate();
+                    setPhone();
+                    message.info(data.message, 8);
+                    setSelectedRowKeys([]);
+                    setSubmitButtonVisible(false);
+                    setConfirmLoading(false);
+                    setVisible(false);
+                } else {
+                    message.warning(data.message, 8);
+                }
+            })
+            .catch();
     }
 
     //Seçilenleri onaylama işlemi
-    async function handleOk() {        
-        await sendDistributionItems(selectedDistributionData);
-        setVisible(false);
+    async function handleOk() {
+        if ((!driverName) | (!carPlate) | (!phone) | (!dates) | (!time)) {
+            setValidation(false);
+            message.warning('Lütfen bilgileri eksiksiz giriniz', 3);
+        }
+        else {
+            let items = [];
+            let selectedDealerCode;
+            _.each(selectedDistributionData, (item) => {
+                selectedDealerCode = item.dealerCode;
+                items.push({
+                    distributionLineId: item.distributionLineId,
+                    amount: item.quantity,
+                });
+            });
+            await sendDistributionItems(items, selectedDealerCode);
+
+        }
     };
 
     const edit = (record) => {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
-        const item = _.find(distributions, function (i) { return i.distributionLineId === record.distributionLineId });
-        if ((item) && (item.quantity > 0)) {
-            setQuantity(item.quantity); setModalVisible(true);
+        const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== record.dealerCode && i.quantity > 0 });
+        if (dealerCodeControl) {
+            message.warning('Birden fazla bayi ile dağıtım planlaması yapamazsınız', 5);
         } else {
-            setQuantity(record.remainingAmountInBox); setModalVisible(true);
+            const item = _.find(distributions, function (i) { return i.distributionLineId === record.distributionLineId });
+            if ((item) && (item.quantity > 0)) {
+                if (record.minimumDistributableAmount === 1) {
+                    setQuantity(numberFormat(item.quantity));
+                    setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                    setModalVisible(true);
+                }
+                else {
+                    setQuantity(numberFormat(item.quantity / record.minimumDistributableAmount));
+                    setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                    setModalVisible(true);
+                }
+            } else {
+                setQuantity(numberFormat(record.remainingDistributableAmount));
+                setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                setModalVisible(true);
+            }
+            setEditingKey(record.itemCode);
+            setOrderNo(record.orderNo);
+            setDistributionId(record.distributionId);
         }
-        setEditingKey(record.itemCode);
-        setDistributionId(record.distributionId);
-        setSelectedRemainingAmountInBox(record.remainingAmountInBox);
     };
 
+    function dealerCodesControl(items) {
+        const dealerCode = items[0];
+        let control = false;
+        _.each(items, (item) => {
+            if (item.dealerCode !== dealerCode.dealerCode) {
+                return control = true;
+            }
+        });
+        return control;
+    }
+
     function addDistributionItemAll(items, selectedItem) {
+        const control = dealerCodesControl(items);
+        if (control) {
+        }
+        else {
+            let distributions = localStorage.getItem('distributions');
+            distributions = JSON.parse(distributions);
+            if (!distributions) { distributions = [] }
+
+            _.each(items, (item) => {
+                const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
+                if (index > -1) {
+                    if (selectedItem === true) { distributions[index].quantity = item.plannedAmount; } else if (selectedItem === false) {
+                        distributions[index].quantity = 0;
+                    }
+                    else {
+                        distributions[index].unitWeight = item.unitWeight * quantity;
+                        distributions[index].quantity = quantity;
+                    }
+                } else {
+                    distributions.push({
+                        itemCode: item.itemCode,
+                        quantity: selectedItem === true ? item.plannedAmount : quantity,
+                        orderNo: item.orderNo,
+                        distributionLineId: item.distributionLineId,
+                        status: item.status,
+                        distributionNo: item.distributionNo,
+                        addressDescription: item.addressDescription,
+                        itemDescription: item.itemDescription,
+                        unit: item.unit,
+                        dealerCode: item.dealerCode,
+                        unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : quantity),
+                        plannedAmount: item.plannedAmount
+                    })
+                }
+
+                localStorage.setItem('distributions', JSON.stringify(distributions));
+                setModalVisible(false);
+                setQuantity();
+                setEditingKey('');
+
+                //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
+                let newKeyArr = [];
+                let getSelectedKey = selectedRowKeys;
+
+                _.each(items, (index) => {
+                    if ((selectedItem === true) || (selectedItem === undefined)) {
+                        newKeyArr.push(index.key);
+                    }
+                    else {
+                        getSelectedKey = _.without(getSelectedKey, index.key);
+                    }
+                });
+                _.each(getSelectedKey, (index) => {
+                    newKeyArr.push(index);
+                });
+
+                if (selectedItem === false) { setSelectedRowKeys(getSelectedKey); }
+                else {
+                    setSelectedRowKeys(newKeyArr);
+                }
+            });
+
+        }
+
+    }
+
+    function addDistributionItem(item, selectedItem, rowIndex, selectAll) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
-        if (!distributions) { distributions = [] }
-
-        _.each(items, (item) => {
+        const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== item.dealerCode && i.quantity > 0 });
+        if (dealerCodeControl) {
+            message.warning('Birden fazla bayi ile dağıtım yapamazsınız', 5);
+        } else {
+            if (!distributions) { distributions = [] }
+            //Daha önceden kayıt varmı kontrolü
             const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId });
             if (index > -1) {
-                if (selectedItem === true) { distributions[index].quantity = item.remainingAmountInBox; } else if (selectedItem === false) {
+                if (selectedItem === true) { distributions[index].quantity = item.plannedAmount; } else if (selectedItem === false) {
                     distributions[index].quantity = 0;
                 }
                 else {
-                    distributions[index].quantity = quantity;
+                    if (item.minimumDistributableAmount === 1) {
+                        distributions[index].unitWeight = parseFloat(quantity) * item.unitWeight;
+                        distributions[index].quantity = parseFloat(quantity);
+                    }
+                    else {
+                        distributions[index].unitWeight = parseFloat(quantity) * item.minimumDistributableAmount * item.unitWeight;
+
+                        distributions[index].quantity = parseFloat(quantity) * item.minimumDistributableAmount;
+                    }
+
                 }
             } else {
+                let selectedQuantity;
+                let seletedUnitWeight;
+                if (item.minimumDistributableAmount === 1) {
+                    selectedQuantity = parseFloat(quantity);
+                }
+                else {
+                    const amount = parseFloat(quantity);
+                    selectedQuantity = amount * item.minimumDistributableAmount;
+                }
                 distributions.push({
                     itemCode: item.itemCode,
-                    quantity: selectedItem === true ? item.remainingAmountInBox : quantity,
+                    quantity: selectedItem === true ? item.plannedAmount : selectedQuantity,
                     orderNo: item.orderNo,
-                    distributionLineId:item.distributionLineId,
-                    status:item.status,
-                    distributionNo:item.distributionNo,
-                    addressDescription:item.addressDescription,
-                    itemDescription:item.itemDescription,
-                    unit:item.unit,
-                    remainingAmountInBox:item.remainingAmountInBox
+                    distributionLineId: item.distributionLineId,
+                    status: item.status,
+                    distributionNo: item.distributionNo,
+                    addressDescription: item.addressDescription,
+                    itemDescription: item.itemDescription,
+                    unit: item.unit,
+                    dealerCode: item.dealerCode,
+                    unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : selectedQuantity),
+                    plannedAmount: item.plannedAmount
                 })
             }
-
             localStorage.setItem('distributions', JSON.stringify(distributions));
             setModalVisible(false);
             setQuantity();
@@ -418,100 +590,50 @@ export default function () {
 
             //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
             let newKeyArr = [];
-            let getSelectedKey = selectedRowKeys;
-            
-            _.each(items, (index) => {
-                if ((selectedItem === true) || (selectedItem === undefined)) {
-                    newKeyArr.push(index.key);
-                }
+            _.each(selectedRowKeys, (index) => {
+                if (index === rowIndex && selectedItem === false) { }
                 else {
-                    getSelectedKey = _.without(getSelectedKey, index.key);
+                    newKeyArr.push(index);
                 }
             });
-            _.each(getSelectedKey, (index) => {
-                newKeyArr.push(index);
+            _.each(getSelectedKey, (i) => {
+                newKeyArr.push(i);
             });
-
-            if (selectedItem === false) { setSelectedRowKeys(getSelectedKey); }
-            else {
-                setSelectedRowKeys(newKeyArr);
+            getSelectedKey = [];
+            if ((selectedItem === true) || (selectedItem === undefined)) {
+                newKeyArr.push(rowIndex);
             }
-        });
-
-    }
-    function addDistributionItem(item, selectedItem, rowIndex, selectAll) {
-
-        let distributions = localStorage.getItem('distributions');
-        distributions = JSON.parse(distributions);
-        if (!distributions) { distributions = [] }
-        //Daha önceden kayıt varmı kontrolü
-        const index = _.findIndex(distributions, function (i) { return i.distributionLineId === item.distributionLineId});
-        if (index > -1) {
-            if (selectedItem === true) { distributions[index].quantity = item.remainingAmountInBox; } else if (selectedItem === false) {
-                distributions[index].quantity = 0;
+            else{
+                newKeyArr= _.without(newKeyArr, rowIndex);
             }
-            else {
-                distributions[index].quantity = quantity;
-            }
-        } else {
-            distributions.push({
-                itemCode: item.itemCode,
-                quantity: selectedItem === true ? item.remainingAmountInBox : quantity,
-                orderNo: item.orderNo,
-                distributionLineId:item.distributionLineId,
-                status:item.status,
-                distributionNo:item.distributionNo,
-                addressDescription:item.addressDescription,
-                itemDescription:item.itemDescription,
-                unit:item.unit,
-                remainingAmountInBox:item.remainingAmountInBox
-            })
+            setSelectedRowKeys(newKeyArr);
         }
-        localStorage.setItem('distributions', JSON.stringify(distributions));
-        setModalVisible(false);
-        setQuantity();
-        setEditingKey('');
-
-        //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
-        let newKeyArr = [];
-        _.each(selectedRowKeys, (index) => {
-            if (index === rowIndex && selectedItem === false) {  }
-            else {
-                newKeyArr.push(index);
-            }
-        });
-        _.each(getSelectedKey, (i) => {
-            newKeyArr.push(i);
-        });
-        getSelectedKey = [];
-        if ((selectedItem === true) || (selectedItem === undefined)) {
-            newKeyArr.push(rowIndex);
-        }
-        setSelectedRowKeys(newKeyArr);
     }
+
     function InputNumberOnchange(value) {
-        if (selectedRemainingAmountInBox > value) {
+        if (parseFloat(maximumAmountControl) > value) {
             setQuantity(value);
         }
         else {
-            setQuantity(selectedRemainingAmountInBox);
+            setQuantity(parseFloat(maximumAmountControl));
         }
     }
+
     function handleVisibleChange() {
         setModalVisible(false);
         setEditingKey('');
     }
+
     function getSelected() {
-      
         if (selectedRowKeys.length > 0) {
             return selectedRowKeys
         }
         else {
             let distributions = localStorage.getItem('distributions');
             distributions = JSON.parse(distributions);
-    
+
             _.each(distributions, (item) => {
-                const index = _.findIndex(data, function (i) { return i.distributionLineId === item.distributionLineId&&item.quantity>0 });
+                const index = _.findIndex(data, function (i) { return i.distributionLineId === item.distributionLineId && item.quantity > 0 });
                 if (index > -1) {
                     getSelectedKey.push(index);
                 }
@@ -519,7 +641,8 @@ export default function () {
         }
         return getSelectedKey;
     }
-    function getEnteredQuantity(distributionLineId, selectItem) {
+
+    function getEnteredQuantity(distributionLineId) {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
 
@@ -540,13 +663,26 @@ export default function () {
         onSelectAll: (record, selected, selectedRows) => {
             addDistributionItemAll(selectedRows, record);
         },
-
     };
+
     let columns = [
         {
-            title: "Durum",
-            dataIndex: "status",
-            key: "status",
+            title: "Bayi Adı",
+            dataIndex: "dealerName",
+            key: "dealerName",
+            width: 150,
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'dealerName' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            ellipsis: {
+                showTitle: false,
+            }, render: addressDescription => (
+                <Tooltip placement="topLeft" title={addressDescription}>
+                    {addressDescription}
+                </Tooltip>
+            ),
+
+
         },
         {
             title: "Dağıtım Kodu",
@@ -555,9 +691,10 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
+            ellipsis: true,
         },
         {
-            title: "Dağıtım Sipariş Tarihi",
+            title: "Sipariş T.",
             dataIndex: "distributionOrderDate",
             key: "distributionOrderDate",
             key: "toDate",
@@ -565,16 +702,24 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
+            width: 120,
         },
-        // {
-        //   title: "Adres Kodu",
-        //   dataIndex: "addressCode",
-        //   key: "addressCode"
-        // },
         {
             title: "Adres Açıklama",
             dataIndex: "addressDescription",
             key: "addressDescription",
+            width: 150,
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'addressDescription' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            ellipsis: {
+                showTitle: false,
+            }, render: addressDescription => (
+                <Tooltip placement="topLeft" title={addressDescription}>
+                    {addressDescription}
+                </Tooltip>
+            ),
+
         },
         {
             title: "Sipariş No",
@@ -583,11 +728,14 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
+            ellipsis: true
         },
         {
             title: "Ürün Kodu",
             dataIndex: "itemCode",
             key: "itemCode",
+            // width: 120,
+            ellipsis: true,
             sorter: (a, b) => a.itemCode.length - b.itemCode.length,
             sortOrder:
                 tableOptions.sortedInfo.columnKey === "itemCode" &&
@@ -596,97 +744,71 @@ export default function () {
         {
             title: "Ürün Açıklaması",
             dataIndex: "itemDescription",
-            key: "itemDescription"
+            key: "itemDescription",
+            width: 180,
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'itemDescription' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            ellipsis: {
+                showTitle: false,
+            }, render: addressDescription => (
+                <Tooltip placement="topLeft" title={addressDescription}>
+                    {addressDescription}
+                </Tooltip>
+            ),
         },
         {
             title: "Birim",
             dataIndex: "unit",
             key: "unit",
-            width: 50,
-        },
-        {
-            title: "Birim Ağırlık",
-            dataIndex: "unitWeight",
-            key: "unitWeight",
             align: "right",
-            footerKey: 'Genel Toplam',
-            render: (unitWeight) => numberFormat(unitWeight),
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'unit' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            width: 75,
         },
         {
             title: "Planlanan Ağırlık",
             dataIndex: "palletWeight",
             key: "palletWeight",
             align: "right",
-            footerKey: 'palletWeight',
+            ellipsis: true,
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'palletWeight' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            width: 150,
             render: (palletWeight) => numberFormat(palletWeight),
         },
         {
-            title: "Planlanan Miktar",
+            title: "Önerilen Miktar",
             dataIndex: "plannedAmount",
             key: "plannedAmount",
             render: (plannedAmount) => numberFormat(plannedAmount),
             sorter: (a, b) => a.plannedAmount - b.plannedAmount,
             align: "right",
-            sortOrder:
-                tableOptions.sortedInfo.columnKey === "plannedAmount" &&
-                tableOptions.sortedInfo.order,
-            footerKey: "plannedAmount"
-        },
-        {
-            title: "Dağıtılan  Miktar",
-            dataIndex: "distributedAmount",
-            key: "distributedAmount",
-            align: "right",
-            render: (distributedAmount) => numberFormat(distributedAmount),
-            footerKey: "distributedAmount"
-        },
-        {
-            title: "Kalan  Miktar (M2)",
-            dataIndex: "remainingAmount",
-            key: "remainingAmount",
-            align: "right",
-            render: (remainingAmount) => numberFormat(remainingAmount),
             sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
+            sortOrder: tableOptions.sortedInfo.columnKey === 'plannedAmount' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            footerKey: "remainingAmount"
+            footerKey: 'palletWeight',
+            ellipsis: true,
+            width: 150,           
         },
         {
-            title: "amountInBox",
-            dataIndex: "amountInBox",
-            key: "amountInBox",
-            align: "right",
-            render: (amountInBox) => numberFormat(amountInBox),
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'amountInBox' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            footerKey: "amountInBox"
-        },
-        {
-            title: "Kalan Miktar",
-            dataIndex: "remainingAmountInBox",
-            key: "remainingAmountInBox",
-            align: "right",
-            fixed: "right",
-            render: (remainingAmountInBox) => numberFormat(remainingAmountInBox),
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmountInBox' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            footerKey: "remainingAmountInBox"
-        },
-        {
-            title: 'Giriş Yapılan Miktar',
+            title: 'Planlanan Miktar',
             dataIndex: 'enteredQuantity',
             editable: true,
-            fixed: "right",
+            // fixed: "right",
             align: 'right',
             key: 'enteredQuantity',
+            footerKey: "plannedAmount",
+            ellipsis: true,
+            width: 150,
             render: (enteredQuantity, record) => numberFormat(getEnteredQuantity(record.distributionLineId))
         },
         {
-            title: 'İşlemler',
             dataIndex: 'operation',
-            fixed: "right",
+            // fixed: "right",
+            ellipsis: true,
             render: (_, record, rowIndex) => {
                 const editable = isEditing(record);
                 return editable ? (
@@ -695,7 +817,8 @@ export default function () {
                             content={
                                 <div>
                                     <Space size={10}>
-                                        {<InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />}
+                                        <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{record.unit === 'M2' ? 'Palet' : ''}</span>
+                                        <InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />
                                         <Button type="primary" onClick={() => addDistributionItem(record, undefined, rowIndex)}>Onayla</Button>
                                     </Space>
                                 </div>
@@ -723,83 +846,109 @@ export default function () {
             },
         },
     ];
-    let summaryColumns= [
-        {
-            title: "Durum",
-            dataIndex: "status",
-            key: "status",
-        },
+
+    let summaryColumns = [
         {
             title: "Dağıtım Kodu",
             dataIndex: "distributionNo",
             key: "distributionNo",
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-        },        
+            width: 120,
+
+        },
         {
             title: "Adres Açıklama",
             dataIndex: "addressDescription",
             key: "addressDescription",
-        },        
+            ellipsis: true,
+        },
         {
             title: "Ürün Kodu",
             dataIndex: "itemCode",
             key: "itemCode",
-            sorter: (a, b) => a.itemCode.length - b.itemCode.length,
-            sortOrder:
-                tableOptions.sortedInfo.columnKey === "itemCode" &&
-                tableOptions.sortedInfo.order
+            width: 120,
+
         },
         {
             title: "Ürün Açıklaması",
             dataIndex: "itemDescription",
-            key: "itemDescription"
+            key: "itemDescription",
+            ellipsis: {
+                showTitle: false,
+            }, render: addressDescription => (
+                <Tooltip placement="topLeft" title={addressDescription}>
+                    {addressDescription}
+                </Tooltip>
+            ),
         },
         {
             title: "Birim",
             dataIndex: "unit",
             key: "unit",
-            width: 50,
+            width: 80,
         },
         {
-            title: "Kalan Miktar",
-            dataIndex: "remainingAmountInBox",
-            key: "remainingAmountInBox",
+            title: "Toplam Ağırlık",
+            dataIndex: "unitWeight",
+            key: "unitWeight",
             align: "right",
-            render: (remainingAmountInBox) => numberFormat(remainingAmountInBox),
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmountInBox' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            footerKey: "remainingAmountInBox"
+            width: 150,
+
+            render: (unitWeight) => numberFormat(unitWeight),
+
+            footerKey: "unitWeight"
         },
         {
-            title: 'Giriş Yapılan Miktar',
+            title: "Önerilen Miktar",
+            dataIndex: "plannedAmount",
+            key: "plannedAmount",
+            align: "right",
+            width: 150,
+
+            render: (plannedAmount) => numberFormat(plannedAmount),
+
+            footerKey: "plannedAmount"
+        },
+        {
+            title: 'Planlanan Miktar',
             dataIndex: 'quantity',
             editable: true,
             align: 'right',
             key: 'quantity',
+            footerKey: "quantity",
+            width: 150,
+
             render: (quantity) => numberFormat(quantity),
-        },        
+        },
     ];
 
-    //Excel Oluştur
-    const exportExcelButton = () => {
+    const createPlainDistribution = () => {
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         distributions = _.filter(distributions, function (i) { return i.quantity > 0 });
         setSelectedDistributionData(distributions);
         setVisible(true);
     }
+
+    const calculateSelectedWeight = () => {
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+        distributions = _.filter(distributions, function (i) { return i.quantity > 0 });
+        let sum = distributions.reduce((x, item) => {
+            return x + item.unitWeight;
+        }, 0);
+        return sum;
+    }
+
     function onChangeRadioButton(e) {
         setSelectedRadioItem(e.target.value);
         setPrivateDate(null);
     }
+
     //Seçilenler Modal iptal işlemi
     function handleCancel() {
         setVisible(false);
     };
-    //Change Cheques Type
+
     function privateDateHandleChange(value) {
         setPrivateDate(value);
 
@@ -830,6 +979,45 @@ export default function () {
             setFromDate(moment(moment().subtract(366, 'days').toDate()));
             setToDate(moment(new Date()));
         }
+    }
+
+    const handleChangeDriverNAme = e => {
+        setDriverName(e.target.value);
+    }
+
+    const handleChangeCarPLate = e => {
+        setCarPlate(e.target.value);
+    }
+
+    const handleChangePhone = e => {
+        setPhone(e.target.value);
+    }
+
+    function handleChangeDistributionDate(value, dateString) {
+        setDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    }
+
+    function handleChangeTime(value, dateString) {
+        setTime(moment(dateString, format));
+    }
+
+    function disabledMinutes() {
+        var minutes = [];
+        for (let i = 0; i < 60; i++) {
+            if ((i !== 0) && (i !== 30)) {
+                minutes.push(i);
+            }
+        }
+        return minutes;
+    }
+
+    function disabledDate(current) {
+        // Can not select days before today and today
+        return current < moment().startOf("day");
+    }
+
+    function handleSubmitCheck(value) {
+        setSubmitButtonVisible(!value.target.checked);
     }
 
     //Hide order table column
@@ -874,26 +1062,29 @@ export default function () {
     return (
         <LayoutWrapper>
             <PageHeader>
-                {<IntlMessages id="page.distributionTitle.header" />}
+                {<IntlMessages id="page.distributionPlainTitle.header" />}
             </PageHeader>
-            <Box>
+            <Box style={{ marginBottom: '15px' }}>
                 <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                     <Panel header={<IntlMessages id="page.filtered" />} key="0">
                         {view !== 'MobileView' ?
                             <Row>
-                                <Col span={view !== 'MobileView' ? 6 : 0} >
+                                <Col span={view !== 'MobileView' ? 5 : 0} >
                                     <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
                                 </Col>
-                                <Col span={view !== 'MobileView' ? 6 : 0} >
-                                    <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                                <Col span={view !== 'MobileView' ? 5 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                                    <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
                                 </Col>
-                                <Col span={view !== 'MobileView' ? 6 : 0} >
+                                <Col span={view !== 'MobileView' ? 5 : 0} >
                                     <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+                                </Col>
+                                <Col span={view !== 'MobileView' ? 5 : 0} >
+                                    <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                                 </Col>
                             </Row>
                             : null}
                         <Row>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                            <Col span={view !== 'MobileView' ? 5 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <TreeSelect
                                     treeData={treeData}
                                     onChange={onChangeDealerCode}
@@ -907,50 +1098,7 @@ export default function () {
                                     dropdownMatchSelectWidth={500}
                                 />
                             </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Input size="small" placeholder="Anahtar kelime" value={searchKey} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
-                            </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Select
-                                    mode={"multiple"}
-                                    style={{ width: '100%' }}
-                                    placeholder="Sevk Adresi Seçiniz"
-                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    value={address}
-                                    dropdownMatchSelectWidth={750}
-                                    onChange={addressHandleChange}
-                                    filterOption={(input, option) =>
-                                        option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-                                    }
-                                >
-                                    {lookupAddressChildren}
-                                </Select>
-                            </Col>
-                        </Row>
-                        {view !== 'MobileView' ?
-                            <Row>
-                                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                                    <FormItem label={<IntlMessages id="page.statusType" />}></FormItem>
-                                </Col>
-                                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
-                                    <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-                                </Col>
-                            </Row>
-                            : null}
-                        <Row>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Select
-                                    mode="multiple"
-                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    placeholder="Durumu Tipi Seçiniz"
-                                    onChange={statusTypeHandleChange}
-                                    value={selectedStatusType}
-                                >
-                                    {children}
-                                </Select>
-                            </Col>
-
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                            <Col span={view !== 'MobileView' ? 5 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem} style={view === 'MobileView' ? null : { marginLeft: '-30px' }}>
                                     <Row>
                                         <Col span={2} >
@@ -992,8 +1140,30 @@ export default function () {
                                             />
                                         </Col>
                                     </Row>
-                                </Radio.Group>            </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                </Radio.Group> </Col>
+                            <Col span={view !== 'MobileView' ? 5 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+
+                                <Select
+                                    mode={"multiple"}
+                                    style={{ width: '100%' }}
+                                    placeholder="Sevk Adresi Seçiniz"
+                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                    value={address}
+                                    dropdownMatchSelectWidth={750}
+                                    onChange={addressHandleChange}
+                                    filterOption={(input, option) =>
+                                        option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                                    }
+                                >
+                                    {lookupAddressChildren}
+                                </Select>
+
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 5 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                <Input size="small" placeholder="Anahtar kelime" value={searchKey} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                                     {<IntlMessages id="forms.button.label_Search" />}
                                 </Button>
@@ -1001,18 +1171,29 @@ export default function () {
                         </Row>
                     </Panel>
                 </Collapse>
+
             </Box>
+            <Alert
+                description="Aşağıdaki listede yer alan ürünleri tıklayarak dağıtım planı oluşturabilirsiniz. Planlanan Miktarı düzenlemek için 'kalem' ikonuna tıklayarak yeni miktar giriniz. Seçiminizi bitirdiğinizde 'Listeyi Oluştur' butonuna tıklayarak araç ve araç bilgileri girebileceğiniz onaylama ekranı çıkacaktır."
+                type="info"
+                showIcon closable
+                style={{ marginBottom: '15px', width: '100%' }}
+            />
             {/* Data list volume */}
             <Box >
-                <Col span={8} offset={16} align="right" >
-                    <Button type="primary" size="small" style={{ marginBottom: '5px' }}
-                        icon={<RightOutlined />} onClick={exportExcelButton}>
-                       {<IntlMessages id="forms.button.next" />}
-                    </Button>
-                </Col>
-                <Col span={8} offset={16} align="right" >
-                <Checkbox >Seçilen dağıtımları listele</Checkbox>
-                </Col>
+                <Row >
+                    <Col span={8} style={{ width: '100%', fontWeight:'bold' }} align="left">
+                        {calculateSelectedWeight() > 0 && <span>Seçili toplam ağırlık:   <Tag color="blue">
+                            {numberFormat(calculateSelectedWeight()) + ' kg'}
+                        </Tag>  </span>}
+                    </Col>
+                    <Col span={8} offset={8} align="right" >
+                        <Button type="primary" size="small"
+                            icon={<RightOutlined />} onClick={createPlainDistribution}>
+                            {<IntlMessages id="forms.button.plainCreate" />}
+                        </Button>
+                    </Col>
+                </Row>
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
@@ -1027,16 +1208,16 @@ export default function () {
                     onChange={handleChange}
                     loading={loading}
                     pagination={false}
-                    scroll={{ x: 'max-content' }}
-                    size="medium"
+                    // scroll={{ x: 'max-content' }}
+                    // size="medium"
                     bordered={false}
                     rowSelection={{
                         ...rowSelection,
                     }}
                     summary={() => {
-                        return renderFooter(columns, data, false, aggregatesOverall, true)
+                        return renderFooter(columns, data, false, aggregatesOverall, false)
                     }}
-                    rowClassName={(record, index) => (getEnteredQuantity(record.distributionLineId) <= 0 ? "black" : "red")}
+                    rowClassName={(record, index) => (getEnteredQuantity(record.distributionLineId) <= 0 ? 'table-background-color-notification-isUnRead' : "tableTextSize")}
                 />
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}
@@ -1049,32 +1230,137 @@ export default function () {
 
                 {/* Secilenlerin modal üzerinde gösterilmesi ve onaylanması */}
                 <Modal
-                  width={1500}
-                  visible={visible}
-                  title={"Seçilen dağıtımlar"}
-                  cancelText="İptal"
-                  okText='Onayla'
-                  maskClosable={false}
-                  onCancel={handleCancel}
-                  onOk={handleOk}
+                    width={1500}
+                    visible={visible}
+                    title={"Dağıtım Planlama Listesi Onay"}
+                    cancelText="İptal"
+                    okText='Onayla'
+                    maskClosable={false}
+                    onCancel={handleCancel}
+                    onOk={handleOk}
+                    okButtonProps={{ disabled: submitButtonVisible }}
+                    footer={null}
+
                 >
-                  <Form
-                    form={form}
-                    layout="vertical"
-                    name="form_in_modal"
-                    initialValues={{
-                      modifier: 'public',
-                    }}
-                  >                
-                    <Table
-                      columns={summaryColumns}
-                      dataSource={selectedDistributionData}                      
-                      pagination={false}
-                      scroll={{ x: 'max-content' }}
-                      size="medium"
-                      bordered={false}
-                    />
-                  </Form>
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        name="normal_login"
+                        className="login-form"
+                        initialValues={{ remember: true }}
+                    >
+                        <Box >
+                            <Row>
+                                <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    <Form.Item name="driverName"
+                                        rules={[{ required: true, message: 'Şoför adı giriniz!' }]}
+                                    >
+                                        <label style={{
+                                            fontSize: '14px', fontWeight: '500'
+                                        }}>
+                                            Şoför Adı
+                                    <Input
+                                                label="Şoför Adı"
+                                                type="driverName"
+                                                placeholder="Zorunlu alan giriniz"
+                                                value={driverName}
+                                                onChange={handleChangeDriverNAme}
+                                            /></label>
+                                    </Form.Item>
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    <Form.Item name="plate"
+                                        rules={[{ required: true, message: 'Plaka giriniz!' }]}
+                                    >
+                                        <label style={{
+                                            fontSize: '14px', fontWeight: '500'
+                                        }}>
+                                            Plaka
+                                    <Input
+                                                label="Plaka"
+                                                type='plate'
+                                                placeholder="Zorunlu alan giriniz"
+                                                value={carPlate}
+                                                onChange={handleChangeCarPLate}
+                                            /></label></Form.Item>
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    <Form.Item name="phone"
+                                        rules={[{ required: true, message: 'Telefon giriniz!' }]}
+                                    >
+                                        <label style={{
+                                            fontSize: '14px', fontWeight: '500'
+                                        }}>
+                                            Telefon
+                                    <Input
+                                                label="Telefon"
+                                                type='phone'
+                                                placeholder="Zorunlu alan giriniz"
+                                                value={phone}
+                                                onChange={handleChangePhone}
+                                            /></label></Form.Item>
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    <Form.Item name="date-picker"
+                                    >
+                                        <label style={{
+                                            fontSize: '14px', fontWeight: '500'
+                                        }}>
+                                            Tarih
+                                            <DatePicker
+                                                name="date-picker"
+                                                format={siteConfig.dateFormat}
+                                                disabledDate={disabledDate}
+                                                onChange={handleChangeDistributionDate}
+                                                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                            // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
+                                            /></label></Form.Item>
+                                </Col>
+                                <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    {<label style={{
+                                        fontSize: '14px', fontWeight: '500'
+                                    }}>
+                                        Saat
+                                {
+                                            <TimePicker showNow={false} disabledMinutes={disabledMinutes} format={format} value={time} onChange={handleChangeTime} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                            />}
+                                    </label>}
+                                </Col>
+                            </Row>
+                        </Box>
+                        <Table
+                            columns={summaryColumns}
+                            dataSource={selectedDistributionData}
+                            pagination={false}
+                            // scroll={{ x: 'max-content' }}
+                            scroll={{ x: 1300 }}
+                            size="medium"
+                            bordered={false}
+                            scroll={{ y: 300 }}
+                            summary={() => {
+                                return renderFooter(summaryColumns, selectedDistributionData, false, aggregatesOverall, false)
+                            }}
+                        />
+
+                        <Row style={{ margin: '10px' }}>
+                            <Col align="left" span={view !== 'MobileView' ? 12 : 0} >
+                                <Checkbox onChange={handleSubmitCheck}>Seçmiş olduğum planlama listesini kabul edip onaylıyorum</Checkbox>
+                            </Col>
+                            <Col align={'right'} span={view !== 'MobileView' ? 10 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                                <Button key="back" type="primary" onClick={handleCancel}>
+                                    Kapat
+                              </Button>                              </Col>
+
+                            <Col htmlType="submit" align={'right'} span={view !== 'MobileView' ? 2 : 0}  >
+                                <Form.Item>
+                                    <Button loading={confirmLoading} htmlType="submit" disabled={submitButtonVisible} key="back" type="primary" onClick={handleOk}>
+                                        Kaydet
+                              </Button>
+                                </Form.Item>
+                            </Col>
+
+                        </Row>
+                    </Form>
                 </Modal>
             </Box>
         </LayoutWrapper>
