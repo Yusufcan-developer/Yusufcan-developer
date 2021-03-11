@@ -57,11 +57,11 @@ export default {
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'reports/salesTarget',
-            label: 'sidebar.salesTarget',
-            leftIcon: 'ion-android-mail',
-          },
+          // {
+          //   key: 'reports/salesTarget',
+          //   label: 'sidebar.salesTarget',
+          //   leftIcon: 'ion-android-mail',
+          // },
         ]
       },
       {
@@ -89,10 +89,10 @@ export default {
             key: 'admin/logs',
             label: 'sidebar.logs',
           },
-          {
-            key: 'admin/gauges',
-            label: 'sidebar.logs',
-          },
+          // {
+          //   key: 'admin/gauges',
+          //   label: 'sidebar.logs',
+          // },
           // {
           //   key: 'user/DealerUserList',
           //   label: 'sidebar.userList',
@@ -157,11 +157,11 @@ export default {
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'reports/salesTarget',
-            label: 'sidebar.salesTarget',
-            leftIcon: 'ion-android-mail',
-          },
+          // {
+          //   key: 'reports/salesTarget',
+          //   label: 'sidebar.salesTarget',
+          //   leftIcon: 'ion-android-mail',
+          // },
         ]
       },
       {
@@ -238,11 +238,11 @@ export default {
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'reports/salesTarget',
-            label: 'sidebar.salesTarget',
-            leftIcon: 'ion-android-mail',
-          },
+          // {
+          //   key: 'reports/salesTarget',
+          //   label: 'sidebar.salesTarget',
+          //   leftIcon: 'ion-android-mail',
+          // },
         ]
       },
       {
@@ -318,11 +318,11 @@ export default {
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'reports/salesTarget',
-            label: 'sidebar.salesTarget',
-            leftIcon: 'ion-android-mail',
-          },
+          // {
+          //   key: 'reports/salesTarget',
+          //   label: 'sidebar.salesTarget',
+          //   leftIcon: 'ion-android-mail',
+          // },
         ]
       },
       {
@@ -399,11 +399,11 @@ export default {
               label: 'sidebar.distributions',
               leftIcon: 'ion-android-mail',
             },
-            {
-              key: 'reports/salesTarget',
-              label: 'sidebar.salesTarget',
-              leftIcon: 'ion-android-mail',
-            },
+            // {
+            //   key: 'reports/salesTarget',
+            //   label: 'sidebar.salesTarget',
+            //   leftIcon: 'ion-android-mail',
+            // },
           ]
         },
         {

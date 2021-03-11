@@ -38,7 +38,7 @@ export default (columns, data, hasExpandColumn = false, aggregatesData, generalT
                 {
                     _.map(columns, col => (
                         <Table.Summary.Cell >
-                            <Text type="danger"> {col.footerKey ? calculateSummary(col.footerKey) : null}</Text>
+                            <Text textStyleBold style={{fontWeight:"bold"}} type="danger"> {col.footerKey ? calculateSummary(col.footerKey) : null}</Text>
                         </Table.Summary.Cell>
                     ))
                 }                
@@ -51,7 +51,7 @@ export default (columns, data, hasExpandColumn = false, aggregatesData, generalT
                 {
                     _.map(columns, col => (
                         <Table.Summary.Cell >
-                            <Text type="danger"> {col.footerKey ? calculateAggregatesSummary(col.footerKey) : null}</Text>
+                            <Text type="danger" style={{fontWeight:"bold"}}> {col.footerKey ? calculateAggregatesSummary(col.footerKey) : null}</Text>
                         </Table.Summary.Cell>
                     ))
                 }                
