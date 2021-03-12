@@ -1174,7 +1174,7 @@ export default function () {
 
             </Box>
             <Alert
-                description="Aşağıdaki listede yer alan ürünleri tıklayarak dağıtım planı oluşturabilirsiniz. Planlanan Miktarı düzenlemek için 'kalem' ikonuna tıklayarak yeni miktar giriniz. Seçiminizi bitirdiğinizde 'Listeyi Oluştur' butonuna tıklayarak araç ve araç bilgileri girebileceğiniz onaylama ekranı çıkacaktır."
+                description="Tarafınıza vermiş olduğumuz siparişlerden,listede bulunanları plakasını belirttiğimiz araca sarınız. Nakliye esnasında doğabilecek kaza,hırsızlık,cezalar,hasar vs. sorumluluk tarafımıza aittir."
                 type="info"
                 showIcon closable
                 style={{ marginBottom: '15px', width: '100%' }}
