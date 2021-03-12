@@ -1174,7 +1174,7 @@ export default function () {
 
             </Box>
             <Alert
-                description="Tarafınıza vermiş olduğumuz siparişlerden,listede bulunanları plakasını belirttiğimiz araca sarınız. Nakliye esnasında doğabilecek kaza,hırsızlık,cezalar,hasar vs. sorumluluk tarafımıza aittir."
+                description="Aşağıdaki listede yer alan ürünleri tıklayarak dağıtım planı oluşturabilirsiniz. Planlanan Miktarı düzenlemek için 'kalem' ikonuna tıklayarak yeni miktar giriniz. Seçiminizi bitirdiğinizde 'Listeyi Oluştur' butonuna tıklayarak araç ve araç bilgileri girebileceğiniz onaylama ekranı çıkacaktır."
                 type="info"
                 showIcon closable
                 style={{ marginBottom: '15px', width: '100%' }}
@@ -1344,7 +1344,7 @@ export default function () {
 
                         <Row style={{ margin: '10px' }}>
                             <Col align="left" span={view !== 'MobileView' ? 12 : 0} >
-                                <Checkbox onChange={handleSubmitCheck}>Seçmiş olduğum planlama listesini kabul edip onaylıyorum</Checkbox>
+                                <Checkbox onChange={handleSubmitCheck}>Tarafınıza vermiş olduğumuz siparişlerden,listede bulunanları plakasını belirttiğimiz araca sarınız. Nakliye esnasında doğabilecek kaza,hırsızlık,cezalar,hasar vs. sorumluluk tarafımıza aittir.</Checkbox>
                             </Col>
                             <Col align={'right'} span={view !== 'MobileView' ? 10 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                                 <Button key="back" type="primary" onClick={handleCancel}>
