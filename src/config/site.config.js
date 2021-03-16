@@ -69,9 +69,9 @@ export default {
       postDBSTotal: apiUrl + 'core/report/dbs-totals',
       postAccountBalances: apiUrl + 'core/report/account-balances',
       postAggregate: apiUrl + 'core/report/transactions/aggregate',
-      postRegionalGoals: apiUrl + 'core/report/regional-goals',
       postOrderLineItems:apiUrl +'core/report/order-line-items',
       postSaveLineItems:apiUrl+'core/report/distributions/plan/{accountNo}',
+      getSalesTarget:apiUrl+'core/report/sales-goals/{year}/{month}',
 
     },
     users: {
