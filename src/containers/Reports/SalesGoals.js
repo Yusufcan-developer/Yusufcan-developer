@@ -141,17 +141,17 @@ const SalesTarget = () => {
                                     treeData={treeData}
                                     onChange={onChangeDealerCode}
                                     value={selectedFieldOrRegionCode}
-                                    dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                                    dropdownStyle={{ maxHeight: 400,}}
                                     placeholder={"Saha veya Bölge Kodu Seçiniz"}
                                     showSearch={true}
                                     style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    dropdownMatchSelectWidth={500}
+                                    dropdownMatchSelectWidth={350}
                                 />
                             </Col>
                             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     placeholder='Yıl seçiniz'
-                                    style={{ width: 120 }}
+                                    style={{ width: view !== 'MobileView' ? '120px' : '100%'  }}
                                     onChange={handleChangeYear}
                                     value={year}
                                     defaultValue={year}
@@ -162,7 +162,7 @@ const SalesTarget = () => {
                             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     placeholder='Ay seçiniz'
-                                    style={{ width: 150 }}
+                                    style={{ width: view !== 'MobileView' ? '150px' : '100%'  }}
                                     onChange={handleChangeMonth}
                                     value={month}
                                     defaultValue={month}
