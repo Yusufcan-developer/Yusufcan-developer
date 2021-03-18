@@ -5,8 +5,13 @@ import horizontalLogo from '@iso/assets/images/seramiksan-logo-horizontal.png';
 import iconLogo from '@iso/assets/images/seramiksan-logo-icon.png';
 
 export default ({ collapsed }) => {
+  let className='isoLogoWrapper'
+  const isPointAddressDelivery = localStorage.getItem('isPointAddressDelivery');
+  if(isPointAddressDelivery==='true'){
+    className='isoAddressDeliveryLogoWrapper'
+  }
   return (
-    <div className="isoLogoWrapper">
+    <div className={className}>
       {collapsed ? (
         <div>
           <h3>

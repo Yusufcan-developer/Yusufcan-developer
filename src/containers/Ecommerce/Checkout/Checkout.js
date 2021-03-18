@@ -10,10 +10,11 @@ import Button from '@iso/components/uielements/button';
 import SingleOrderInfo from './SingleOrder';
 import { OrderTable } from './Checkout.styles';
 import InputBox from './InputBox';
+import CascaderBox from './CascaderBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
-import { Col, Modal, Table, Input, Space, message, Alert } from "antd";
+import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
 import Form from "@iso/components/uielements/form";
 
 //Fetch
@@ -40,6 +41,155 @@ var jwtDecode = require('jwt-decode');
 
 let createOrderNo = 'xxxx';
 export default function () {
+  const provinceData = ['İzmir', 'İstanbul'];
+  const cityData = {
+    İzmir: ['Konak', 'Balçova', 'Karşıyaka'],
+    İstanbul: ['Bakırköy', 'Kadıköy', 'Tuzla'],
+  };
+  const statusChildren = [];
+
+  const cityArray = [
+
+    "ADANA",
+    "ADIYAMAN",
+    "AFYONKARAHİSAR",
+    "AĞRI",
+    "AMASYA",
+    "ANKARA",
+    "ANTALYA",
+    "ARTVİN",
+    "AYDIN",
+    "BALIKESİR",
+    "BİLECİK",
+    "BİNGÖL",
+    "BİTLİS",
+    "BOLU",
+    "BURDUR",
+    "BURSA",
+    "ÇANAKKALE",
+    "ÇANKIRI",
+    "ÇORUM",
+    "DENİZLİ",
+    "DİYARBAKIR",
+    "EDİRNE",
+    "ELAZIĞ",
+    "ERZİNCAN",
+    "ERZURUM",
+    "ESKİŞEHİR",
+    "GAZİANTEP",
+    "GİRESUN",
+    "GÜMÜŞHANE",
+    "HAKKARİ",
+    "HATAY",
+    "ISPARTA",
+    "MERSİN",
+    "İSTANBUL",
+    "İZMİR",
+    "KARS",
+    "KASTAMONU",
+    "KAYSERİ",
+    "KIRKLARELİ",
+    "KIRŞEHİR",
+    "KOCAELİ",
+    "KONYA",
+    "KÜTAHYA",
+    "MALATYA",
+    "MANİSA",
+    "KAHRAMANMARAŞ",
+    "MARDİN",
+    "MUĞLA",
+    "MUŞ",
+    "NEVŞEHİR",
+    "NİĞDE",
+    "ORDU",
+    "RİZE",
+    "SAKARYA",
+    "SAMSUN",
+    "SİİRT",
+    "SİNOP",
+    "SİVAS",
+    "TEKİRDAĞ",
+    "TOKAT",
+    "TRABZON",
+    "TUNCELİ",
+    "ŞANLIURFA",
+    "UŞAK",
+    "VAN",
+    "YOZGAT",
+    "ZONGULDAK",
+    "AKSARAY",
+    "BAYBURT",
+    "KARAMAN",
+    "KIRIKKALE",
+    "BATMAN",
+    "ŞIRNAK",
+    "BARTIN",
+    "ARDAHAN",
+    "IĞDIR",
+    "YALOVA",
+    "KARABüK",
+    "KİLİS",
+    "OSMANİYE",
+    "DÜZCE"
+
+  ]
+//   for (let i = 0; i < cityArray.length; i++) {
+//     statusChildren.push(<Option value={cityArray[i]}>{cityArray[i]}</Option>);
+// }
+  let options = [
+    {
+      value: 'Adana',
+      label: 'Adana',
+      children: [
+        {
+          value: 'Konak',
+          label: 'Konak',
+          children: [
+            {
+              value: 'Eşrefpaşa',
+              label: 'Eşrefpaşa',
+              code: 752100,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: 'İzmir',
+      label: 'İzmir',
+      children: [
+        {
+          value: 'Konak',
+          label: 'Konak',
+          children: [
+            {
+              value: 'Eşrefpaşa',
+              label: 'Eşrefpaşa',
+              code: 752100,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      value: 'İstanbul',
+      label: 'İstanbul',
+      children: [
+        {
+          value: 'Bakırköy',
+          label: 'Bakırköy',
+          children: [
+            {
+              value: 'Ataköy',
+              label: 'Ataköy',
+              code: 453400,
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
   document.title = "Sipariş Onayı - Seramiksan B2B";
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
@@ -62,14 +212,21 @@ export default function () {
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
+  const [cities, setCities] = useState(cityData[provinceData[0]]);
+  const [secondCity, setSecondCity] = useState(
+    cityData[provinceData[0]][0]
+  );
   const history = useHistory();
 
   const [data, changeCart] = useGetCartCheckOut();
   const token = jwtDecode(localStorage.getItem("id_token"));
-  const activeUser = localStorage.getItem("activeUser")
+  const activeUser = localStorage.getItem("activeUser");
+  const { Option } = Select;
   let account = token.uname;
 
-  let  createAddressButtonVisible=true;
+
+
+  let createAddressButtonVisible = true;
   if (activeUser != undefined) { account = activeUser }
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -328,7 +485,6 @@ export default function () {
 
   //post address
   async function postSaveAddress() {
-
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
     if ((addressTitle === undefined) || (address1 === undefined) || (city === undefined) || (town === undefined) || (address2 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
@@ -430,9 +586,36 @@ export default function () {
       render: () => <a>Seç</a>,
     },
   ];
+
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    createAddressButtonVisible=false;
+    createAddressButtonVisible = false;
   }
+  const handleProvinceChange = (value) => {
+    setCities(cityData[value]);
+    setSecondCity(cityData[value][0]);
+  };
+
+  const onSecondCityChange = (value) => {
+    setSecondCity(value);
+  };
+
+  function handleAreaClick(e, label, option) {
+    e.stopPropagation();
+    console.log('clicked', label, option);
+  }
+
+  const displayRender = (labels, selectedOptions) =>
+    labels.map((label, i) => {
+      const option = selectedOptions[i];
+      if (i === labels.length - 1) {
+        return (
+          <span key={option.value}>
+            {label} (<a onClick={e => handleAreaClick(e, label, option)}>{option.code}</a>)
+          </span>
+        );
+      }
+      return <span key={option.value}>{label} / </span>;
+    });
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -543,21 +726,12 @@ export default function () {
                       />
                     </Fieldset>
                     <Fieldset>
-                      <InputBox
-                        label="Şehir"
-                        placeholder="Şehir Giriniz"
-                        value={city}
-                        onChange={onChangeAddressCity}
-                        important
-                      />
-                    </Fieldset>
-                    <Fieldset>
-                      <InputBox
-                        label="İlçe"
-                        placeholder="İlçe Giriniz"
-                        value={town}
-                        onChange={onChangeAddressTown}
-                        important
+                      <CascaderBox
+                        label={'İl / İlçe / Köy'}
+                        placeholder={'İl/İlçe/Köy seçiniz'}
+                        options={options}
+                        displayRender={displayRender}
+                        style={{ width: '100%' }}
                       />
                     </Fieldset>
                   </Form>

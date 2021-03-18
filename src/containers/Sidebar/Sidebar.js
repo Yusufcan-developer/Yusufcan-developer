@@ -10,6 +10,7 @@ import Logo from '@iso/components/utility/logo';
 import SidebarWrapper from './Sidebar.styles';
 import SidebarMenu from './SidebarMenu';
 import _ from 'underscore';
+
 var jwtDecode = require('jwt-decode');
 const { Sider } = Layout;
 
@@ -96,14 +97,19 @@ export default function Sidebar() {
     }
     return;
   };
-  const styling = {
-    backgroundColor: customizedTheme.backgroundColor,
+  const isPointAddressDelivery = localStorage.getItem('isPointAddressDelivery');
+  let backgroundColor=customizedTheme.backgroundColor;
+  if(isPointAddressDelivery==='true'){
+    backgroundColor='#4482FF'
+  }
+  const styling = {    
+    backgroundColor: backgroundColor,
   };
   const submenuStyle = {
     backgroundColor: 'rgba(0,0,0,0.3)',
     color: customizedTheme.textColor,
   };
-  const submenuColor = {
+  let submenuColor = {
     color: customizedTheme.textColor,
   };
 

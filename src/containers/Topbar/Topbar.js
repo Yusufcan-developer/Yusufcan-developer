@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Layout, Alert, Button } from 'antd';
+import { Layout, Switch } from 'antd';
 import appActions from '@iso/redux/app/actions';
+import TopbarAdressDelivery from './TopbarAdressDelivery';
 import TopbarNotification from './TopbarNotification';
 import TopbarSearch from './TopbarSearch';
 import TopbarUser from './TopbarUser';
@@ -30,9 +31,15 @@ export default function Topbar() {
   if (token === undefined) { return history.replace('/'); }
   const activeUser = localStorage.getItem("activeUser");
   const username = token.uname;
-
+ 
+  const isPointAddressDelivery = localStorage.getItem('isPointAddressDelivery');
+  let backgroundColor=customizedTheme.backgroundColor;
+  if(isPointAddressDelivery==='true'){
+    backgroundColor='#4482FF'
+  }
+ 
   const styling = {
-    background: customizedTheme.backgroundColor,
+    background: backgroundColor,
     position: 'fixed',
     width: '100%',
     height: 70,
@@ -64,8 +71,11 @@ export default function Topbar() {
             <TopbarSearch />
           </li>
           <li>
-          <img src={bulutLogo} style={{ width: '100px' }} onClick={() => window.open('https://seramiksan.buluttahsilat.com/')}
- />
+            <img src={bulutLogo} style={{ width: '100px' }} onClick={() => window.open('https://seramiksan.buluttahsilat.com/')}
+            />
+          </li>
+          <li>
+          <TopbarAdressDelivery />
           </li>
           <li
             onClick={() => setSelectedItem('notification')}
