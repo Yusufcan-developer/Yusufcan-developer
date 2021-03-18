@@ -30,6 +30,7 @@ export default {
       getAddresses: apiUrl + 'core/accounts/{dealerCodes}/addresses',
       getOrderStatus:apiUrl+'core/lookup/order-status',
       getChequeStatus:apiUrl+'core/lookup/cheque-status',
+      getYears:apiUrl+'core/lookup/sales-goal-years',
       postProductCategories: apiUrl + 'b2b/lookup/product-categories',
       postProductTypes: apiUrl + 'b2b/lookup/product-types',
       postSeries: apiUrl + 'b2b/lookup/product-series',

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import _ from 'underscore';
+import { message } from "antd";
 
 function useGetSalesGoalsReport(url, reqBody, searchUrl, year, month, regionCode, fieldCode) {
     
@@ -15,6 +16,7 @@ function useGetSalesGoalsReport(url, reqBody, searchUrl, year, month, regionCode
 
     let salesGoalsParams = '';
     async function fetchUrl() {
+        setLastReqBody(searchUrl);
         const requestOptions = {
             method: "GET",
             headers: {
@@ -39,25 +41,23 @@ function useGetSalesGoalsReport(url, reqBody, searchUrl, year, month, regionCode
             .then(data => {
                 setOnChange(false);
                 setData(data);
+                if (data !== undefined) {
+                    if (data.isSuccessful === false) {
+                        message.warning(data.message)
+                    }}
             })
             .catch(
-                setData(),
                 setOnChange(false)
             );
     }
     useEffect(() => {
-        // if ((reqBody.DealerCodes === undefined) & (reqBody.regionCodes === undefined) & (reqBody.fieldCodes === undefined)) {
-        //     setLoading(false);
-        //     setOnChange(false);
-        // }
-        // else {
-        //     if (!_.isEqual(lastReqBody, searchUrl)) {
-        //         setLoading(true);
-        //         fetchUrl();
-        //     } else { setOnChange(false); }
-        // }
-        fetchUrl();
-    }, [currentPage, changePageSize, onChange]);
+debugger
+        if (!_.isEqual(lastReqBody, searchUrl)) {
+            setLoading(true);
+            fetchUrl();
+        } else { setOnChange(false); }
+    
+}, [currentPage, changePageSize, onChange]);
     return [data, loading, setOnChange];
 }
 export { useGetSalesGoalsReport };

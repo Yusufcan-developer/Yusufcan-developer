@@ -14,7 +14,7 @@ export default (props) => {
     let actualTry;
     let goalTry;
     let calculatedRatio;
-    let calculatedRatioText=''
+    let calculatedRatioText = ''
 
     const { value, item } = props;
     const listClass = `isoSingleCard card grid`;
@@ -24,10 +24,10 @@ export default (props) => {
         name = 'KARO';
         actualTry = value.actualKaroTry;
         goalTry = value.goalKaroTry;
-        calculatedRatio=value.calculatedRatioKaro;
-        calculatedRatioText=calculatedRatio.toString();
+        calculatedRatio = value.calculatedRatioKaro * 100;
+        calculatedRatioText = numberFormat(calculatedRatio.toString());
         if (calculatedRatio < 0) { calculatedRatio = 0 }
-        else if (calculatedRatio >100) { calculatedRatio = 100 }
+        else if (calculatedRatio > 100) { calculatedRatio = 100 }
 
         if (value.thresholdRatio1Karo === value.thresholdRatio1Karo) {
             customSegment = [0, value.thresholdRatio1Karo, 100]
@@ -40,8 +40,8 @@ export default (props) => {
         name = 'YAPI KİMYASALI';
         actualTry = value.actualYapiKimyasalTry;
         goalTry = value.goalYapiKimyasalTry;
-        calculatedRatio=value.calculatedRatioYapiKimyasal;
-
+        calculatedRatio = value.calculatedRatioYapiKimyasal * 100;
+        calculatedRatioText = numberFormat(calculatedRatio.toString());
         if (value.thresholdRatio1YapiKimyasal === value.thresholdRatio2YapiKimyasal) {
             customSegment = [0, value.thresholdRatio1YapiKimyasal, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -54,8 +54,8 @@ export default (props) => {
         name = 'VİTFİFİYE';
         actualTry = value.actualVitrifiyeTry;
         goalTry = value.goalVitrifiyeTry;
-        calculatedRatio=value.calculatedRatioVitrifiye;
-
+        calculatedRatio = value.calculatedRatioVitrifiye * 100;
+        calculatedRatioText = numberFormat(calculatedRatio.toString());
         if (value.thresholdRatio1Vitrifiye === value.thresholdRatio2Vitrifiye) {
             customSegment = [0, value.thresholdRatio1Vitrifiye, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -68,8 +68,8 @@ export default (props) => {
         name = 'BANYO MOBİLYASI';
         actualTry = value.actualBanyoMobilyalariTry;
         goalTry = value.goalBanyoMobilyalariTry;
-        calculatedRatio=value.calculatedRatioBanyoMobilyalari;
-
+        calculatedRatio = value.calculatedRatioBanyoMobilyalari * 100;
+        calculatedRatioText = numberFormat(calculatedRatio.toString());
         if (value.thresholdRatio1BanyoMobilyalari === value.thresholdRatio2BanyoMobilyalari) {
             customSegment = [0, value.thresholdRatio1BanyoMobilyalari, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -82,8 +82,8 @@ export default (props) => {
         name = 'KAMPANYA';
         actualTry = value.actualKampanyaTry;
         goalTry = value.goalKampanyaTry;
-        calculatedRatio=value.calculatedRatioKampanya;
-        
+        calculatedRatio = value.calculatedRatioKampanya * 100;
+        calculatedRatioText = numberFormat(calculatedRatio.toString());
         if (value.thresholdRatio1Kampanya === value.thresholdRatio2Kampanya) {
             customSegment = [0, value.thresholdRatio1Kampanya, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -96,8 +96,8 @@ export default (props) => {
         name = 'KAMPANYA2';
         actualTry = value.actualKampanya2Try;
         goalTry = value.goalKampanya2Try;
-        calculatedRatio=value.calculatedRatioKampanya2;
-        
+        calculatedRatio = value.calculatedRatioKampanya2 * 100;
+        calculatedRatioText = numberFormat(calculatedRatio.toString());
         if (value.thresholdRatio1Kampanya2 === value.thresholdRatio2Kampanya2) {
             customSegment = [0, value.thresholdRatio1Kampanya2, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -110,8 +110,8 @@ export default (props) => {
         name = 'TOPLAM';
         actualTry = value.actualToplamTry;
         goalTry = value.goalToplamTry;
-        calculatedRatio=value.calculatedRatioToplam;
-
+        calculatedRatio = value.calculatedRatioToplam * 100;
+        calculatedRatioText = numberFormat(calculatedRatio.toString());
         if (value.thresholdRatio1Toplam === value.thresholdRatio2Toplam) {
             customSegment = [0, value.thresholdRatio1Toplam, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -120,40 +120,40 @@ export default (props) => {
         else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Toplam, value.thresholdRatio2Toplam, 100] }
     }
     const filterView = viewType('Filter');
-        return (
+    return (
         <React.Fragment>
             {name !== null ?
                 <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 6 }} >
-                    <span style={{ fontWeight: 'bold', fontSize: '120%', marginLeft:'2px'}}>
+                    <span style={{ fontWeight: 'bold', fontSize: '120%', marginLeft: '2px' }}>
                         <Tag color={'#5D79C2'} key={false}>
                             {name}
                         </Tag>
                     </span>
-                    <div style={{marginLeft:'20px' }}>
-                    <ReactSpeedometer
-                        width={filterView !== 'MobileView' ? 350 : 300}
-                        height={250}
-                        needleHeightRatio={0.8}
-                        value={calculatedRatio}
-                        customSegmentStops={customSegment}
-                        segmentColors={segmentColors}
+                    <div style={{ marginLeft: '20px' }}>
+                        <ReactSpeedometer
+                            width={filterView !== 'MobileView' ? 350 : 300}
+                            height={250}
+                            needleHeightRatio={0.8}
+                            value={calculatedRatio}
+                            customSegmentStops={customSegment}
+                            segmentColors={segmentColors}
 
-                        currentValueText={calculatedRatioText}
-                        maxValue={100}
-                        segments={segmentCount}
-                        valueTextFontWeight={'bold'}
-                        valueTextFontSize={'25px'}
+                            currentValueText={'% ' + calculatedRatioText}
+                            maxValue={100}
+                            segments={segmentCount}
+                            valueTextFontWeight={'bold'}
+                            valueTextFontSize={'25px'}
 
-                        ringWidth={47}
-                        needleTransitionDuration={3333}
-                        needleTransition="easeElastic"
-                        needleColor={'#90f2ff'}
-                    /></div>
+                            ringWidth={47}
+                            needleTransitionDuration={3333}
+                            needleTransition="easeElastic"
+                            needleColor={'#90f2ff'}
+                        /></div>
                     {value.isVisibleTryValues === false ?
                         <React.Fragment>
-                            <div style={{ textAlign: 'center', minHeight: '35px' }}><span style={{ fontWeight: 'bold'}}> Gerçekleşen: </span>{numberFormat(actualTry)} {"TL"}
+                            <div style={{ textAlign: 'center', minHeight: '35px' }}><span style={{ fontWeight: 'bold' }}> Gerçekleşen: </span>{numberFormat(actualTry)} {"TL"}
                             </div>
-                            <div style={{ textAlign: 'center', minHeight: '35px'}}><span style={{ fontWeight: 'bold'}}> Hedef: </span>{numberFormat(goalTry)} {"TL"}
+                            <div style={{ textAlign: 'center', minHeight: '35px' }}><span style={{ fontWeight: 'bold' }}> Hedef: </span>{numberFormat(goalTry)} {"TL"}
                             </div></React.Fragment> : null}
 
                 </SingleCardWrapper> : null}

@@ -57,11 +57,11 @@ export default {
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'reports/salesGoals',
-            label: 'sidebar.salesGoals',
-            leftIcon: 'ion-android-mail',
-          },
+          // {
+          //   key: 'reports/salesGoals',
+          //   label: 'sidebar.salesGoals',
+          //   leftIcon: 'ion-android-mail',
+          // },
         ]
       },
       {
@@ -157,11 +157,11 @@ export default {
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'reports/salesGoals',
-            label: 'sidebar.salesGoals',
-            leftIcon: 'ion-android-mail',
-          },
+          // {
+          //   key: 'reports/salesGoals',
+          //   label: 'sidebar.salesGoals',
+          //   leftIcon: 'ion-android-mail',
+          // },
         ]
       },
       {
@@ -238,11 +238,11 @@ export default {
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
           },
-          {
-            key: 'reports/salesGoals',
-            label: 'sidebar.salesGoals',
-            leftIcon: 'ion-android-mail',
-          },
+          // {
+          //   key: 'reports/salesGoals',
+          //   label: 'sidebar.salesGoals',
+          //   leftIcon: 'ion-android-mail',
+          // },
         ]
       },
       {
@@ -399,11 +399,11 @@ export default {
               label: 'sidebar.distributions',
               leftIcon: 'ion-android-mail',
             },
-            {
-              key: 'reports/salesGoals',
-              label: 'sidebar.salesGoals',
-              leftIcon: 'ion-android-mail',
-            },
+            // {
+            //   key: 'reports/salesGoals',
+            //   label: 'sidebar.salesGoals',
+            //   leftIcon: 'ion-android-mail',
+            // },
           ]
         },
         {
