@@ -46,96 +46,331 @@ export default function () {
     İzmir: ['Konak', 'Balçova', 'Karşıyaka'],
     İstanbul: ['Bakırköy', 'Kadıköy', 'Tuzla'],
   };
-  const statusChildren = [];
 
   const cityArray = [
 
-    "ADANA",
-    "ADIYAMAN",
-    "AFYONKARAHİSAR",
-    "AĞRI",
-    "AMASYA",
-    "ANKARA",
-    "ANTALYA",
-    "ARTVİN",
-    "AYDIN",
-    "BALIKESİR",
-    "BİLECİK",
-    "BİNGÖL",
-    "BİTLİS",
-    "BOLU",
-    "BURDUR",
-    "BURSA",
-    "ÇANAKKALE",
-    "ÇANKIRI",
-    "ÇORUM",
-    "DENİZLİ",
-    "DİYARBAKIR",
-    "EDİRNE",
-    "ELAZIĞ",
-    "ERZİNCAN",
-    "ERZURUM",
-    "ESKİŞEHİR",
-    "GAZİANTEP",
-    "GİRESUN",
-    "GÜMÜŞHANE",
-    "HAKKARİ",
-    "HATAY",
-    "ISPARTA",
-    "MERSİN",
-    "İSTANBUL",
-    "İZMİR",
-    "KARS",
-    "KASTAMONU",
-    "KAYSERİ",
-    "KIRKLARELİ",
-    "KIRŞEHİR",
-    "KOCAELİ",
-    "KONYA",
-    "KÜTAHYA",
-    "MALATYA",
-    "MANİSA",
-    "KAHRAMANMARAŞ",
-    "MARDİN",
-    "MUĞLA",
-    "MUŞ",
-    "NEVŞEHİR",
-    "NİĞDE",
-    "ORDU",
-    "RİZE",
-    "SAKARYA",
-    "SAMSUN",
-    "SİİRT",
-    "SİNOP",
-    "SİVAS",
-    "TEKİRDAĞ",
-    "TOKAT",
-    "TRABZON",
-    "TUNCELİ",
-    "ŞANLIURFA",
-    "UŞAK",
-    "VAN",
-    "YOZGAT",
-    "ZONGULDAK",
-    "AKSARAY",
-    "BAYBURT",
-    "KARAMAN",
-    "KIRIKKALE",
-    "BATMAN",
-    "ŞIRNAK",
-    "BARTIN",
-    "ARDAHAN",
-    "IĞDIR",
-    "YALOVA",
-    "KARABüK",
-    "KİLİS",
-    "OSMANİYE",
-    "DÜZCE"
+    {
+      label: 'ADANA',
+      value: "ADANA"
+    },
+    {
+      label: 'ADIYAMAN',
+      value:
+        "ADIYAMAN"
+    },
+    {
+      label: 'AFYONKARAHİSAR',
+      value:
+        "AFYONKARAHİSAR"
+    },
+    {
+      label: 'AĞRI',
+      value:
+        "AĞRI"
+    },
+    {
+      label: 'AMASYA',
+      value:
+        "AMASYA"
+    },
+    {
+      label: 'ANKARA',
+      value: "ANKARA"
+    },
+    {
+      label: 'ANTALYA',
+      value: "ANTALYA"
+    },
+    {
+      label: 'ARTVİN',
+      value: "ARTVİN"
+    },
+    {
+      label: 'AYDIN',
+      value: "AYDIN"
+    },
+    {
+      label: 'BALIKESİR',
+      value: "BALIKESİR"
+    },
+    {
+      label: 'BİLECİK',
+      value: "BİLECİK"
+    },
+    {
+      label: 'BİNGÖL',
+      value: "BİNGÖL"
+    }, {
+      label: 'BİTLİS',
+      value: "BİTLİS"
+    },
+    {
+      label: 'BOLU',
+      value: "BOLU"
+    }, {
+      label: 'BURDUR',
+      value: "BURDUR"
+    },
+    {
+      label: 'BURSA',
+      value: "BURSA"
+    }, {
+      label: 'ÇANAKKALE',
+      value: "ÇANAKKALE"
+    },
+    {
+      label: 'ÇANKIRI',
+      value: "ÇANKIRI"
+    }, {
+      label: 'ÇORUM',
+      value: "ÇORUM"
+    },
+    {
+      label: 'DENİZLİ',
+      value: "DENİZLİ"
+    }, {
+      label: 'DİYARBAKIR',
+      value: "DİYARBAKIR"
+    },
+    {
+      label: 'EDİRNE',
+      value: "EDİRNE"
+    }, {
+      label: 'ELAZIĞ',
+      value: "ELAZIĞ"
+    },
+    {
+      label: 'ERZİNCAN',
+      value: "ERZİNCAN"
+    }, {
+      label: 'ERZURUM',
+      value: "ERZURUM"
+    },
+    {
+      label: 'ESKİŞEHİR',
+      value: "ESKİŞEHİR"
+    }, {
+      label: 'GAZİANTEP',
+      value: "GAZİANTEP"
+    },
+    {
+      label: 'GİRESUN',
+      value: "GİRESUN"
+    }, {
+      label: 'GÜMÜŞHANE',
+      value: "GÜMÜŞHANE"
+    },
+    {
+      label: 'HAKKARİ',
+      value: "HAKKARİ"
+    }, {
+      label: 'HATAY',
+      value: "HATAY"
+    },
+    {
+      label: 'ISPARTA',
+      value: "ISPARTA"
+    }, {
+      label: 'MERSİN',
+      value: "MERSİN"
+    },
+    {
+      label: 'İSTANBUL',
+      value: "İSTANBUL",
+      children: [
+        {
+          value: 'Bakırköy',
+          label: 'Bakırköy',
+          children: [
+            {
+              value: 'Ataköy',
+              label: 'Ataköy',
+              code: 453400,
+            },
+          ],
+        },
+      ],
+    }, {
+      label: 'İZMİR',
+      value: "İZMİR",
+      children: [
+        {
+          value: 'Konak',
+          label: 'Konak',
+          children: [
+            {
+              value: 'Eşrefpaşa',
+              label: 'Eşrefpaşa',
+              code: 752100,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: 'KARS',
+      value: "KARS"
+    }, {
+      label: 'KASTAMONU',
+      value: "KASTAMONU"
+    },
+    {
+      label: 'KAYSERİ',
+      value: "KAYSERİ"
+    }, {
+      label: 'KIRKLARELİ',
+      value: "KIRKLARELİ"
+    },
+    {
+      label: 'KIRŞEHİR',
+      value: "KIRŞEHİR"
+    }, {
+      label: 'KOCAELİ',
+      value: "KOCAELİ"
+    },
+    {
+      label: 'KONYA',
+      value: "KONYA"
+    }, {
+      label: 'KÜTAHYA',
+      value: "KÜTAHYA"
+    },
+    {
+      label: 'MALATYA',
+      value: "MALATYA"
+    }, {
+      label: 'MANİSA',
+      value: "MANİSA"
+    },
+    {
+      label: 'KAHRAMANMARAŞ',
+      value: "KAHRAMANMARAŞ"
+    }, {
+      label: 'MARDİN',
+      value: "MARDİN"
+    },
+    {
+      label: 'MUĞLA',
+      value: "MUĞLA"
+    }, {
+      label: 'MUŞ',
+      value: "MUŞ"
+    },
+    {
+      label: 'NEVŞEHİR',
+      value: "NEVŞEHİR"
+    }, {
+      label: 'NİĞDE',
+      value: "NİĞDE"
+    },
+    {
+      label: 'ORDU',
+      value: "ORDU"
+    }, {
+      label: 'RİZE',
+      value: "RİZE"
+    },
+    {
+      label: 'SAKARYA',
+      value: "SAKARYA"
+    }, {
+      label: 'SAMSUN',
+      value: "SAMSUN"
+    },
+    {
+      label: 'SİİRT',
+      value: "SİİRT"
+    }, {
+      label: 'SİNOP',
+      value: "SİNOP"
+    },
+    {
+      label: 'SİVAS',
+      value: "SİVAS"
+    }, {
+      label: 'TEKİRDAĞ',
+      value: "TEKİRDAĞ"
+    },
+    {
+      label: 'TOKAT',
+      value: "TOKAT"
+    }, {
+      label: 'TRABZON',
+      value: "TRABZON"
+    },
+    {
+      label: 'TUNCELİ',
+      value: "TUNCELİ"
+    }, {
+      label: 'ŞANLIURFA',
+      value: "ŞANLIURFA"
+    },
+    {
+      label: 'UŞAK',
+      value: "UŞAK"
+    }, {
+      label: 'VAN',
+      value: "VAN"
+    },
+    {
+      label: 'YOZGAT',
+      value: "YOZGAT"
+    }, {
+      label: 'ZONGULDAK',
+      value: "ZONGULDAK"
+    },
+    {
+      label: 'AKSARAY',
+      value: "AKSARAY"
+    }, {
+      label: 'BAYBURT',
+      value: "BAYBURT"
+    },
+    {
+      label: 'KARAMAN',
+      value: "KARAMAN"
+    }, {
+      label: 'KIRIKKALE',
+      value: "KIRIKKALE"
+    },
+    {
+      label: 'BATMAN',
+      value: "BATMAN"
+    }, {
+      label: 'ŞIRNAK',
+      value: "ŞIRNAK"
+    },
+    {
+      label: 'BARTIN',
+      value: "BARTIN"
+    }, {
+      label: 'ARDAHAN',
+      value: "ARDAHAN"
+    },
+    {
+      label: 'IĞDIR',
+      value: "IĞDIR"
+    }, {
+      label: 'YALOVA',
+      value: "YALOVA"
+    },
+    {
+      label: 'KARABüK',
+      value: "KARABüK"
+    }, {
+      label: 'KİLİS',
+      value: "KİLİS"
+    },
+    {
+      label: 'OSMANİYE',
+      value: "OSMANİYE"
+    }, {
+      label: 'DÜZCE',
+      value: "DÜZCE"
+    },
 
   ]
-//   for (let i = 0; i < cityArray.length; i++) {
-//     statusChildren.push(<Option value={cityArray[i]}>{cityArray[i]}</Option>);
-// }
+  
   let options = [
     {
       value: 'Adana',
@@ -238,6 +473,7 @@ export default function () {
   //Get Products
   function renderProducts() {
     if (data !== undefined) {
+      debugger
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
       return productList.map(product => {
         return (
@@ -729,7 +965,7 @@ export default function () {
                       <CascaderBox
                         label={'İl / İlçe / Köy'}
                         placeholder={'İl/İlçe/Köy seçiniz'}
-                        options={options}
+                        options={cityArray}
                         displayRender={displayRender}
                         style={{ width: '100%' }}
                       />
