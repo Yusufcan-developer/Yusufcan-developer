@@ -131,7 +131,7 @@ export default (props) => {
                     </span>
                     <div style={{ marginLeft: '20px' }}>
                         <ReactSpeedometer
-                            width={filterView !== 'MobileView' ? 350 : 300}
+                            width={filterView !== 'MobileView' ? 380 : 300}
                             height={250}
                             needleHeightRatio={0.8}
                             value={calculatedRatio}
