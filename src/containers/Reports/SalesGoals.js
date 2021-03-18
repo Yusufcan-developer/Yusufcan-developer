@@ -69,7 +69,7 @@ const SalesTarget = () => {
     useEffect(() => {
     }, []);
 
-    const gaugeCount = ['KARO', 'YAPIKIMYASALI', 'VITRIFIYE', 'BANYOMOBILYASI', 'KAMPANYA', 'TOPLAM'];
+    const gaugeCount = ['KARO', 'YAPIKIMYASALI', 'VITRIFIYE', 'BANYOMOBILYASI', 'KAMPANYA', 'KAMPANYA2', 'TOPLAM'];
     const view = viewType('Reports');
     const filterView = viewType('Filter');
 

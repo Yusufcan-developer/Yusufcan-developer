@@ -92,6 +92,20 @@ export default (props) => {
         else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Kampanya, value.thresholdRatio2Kampanya, 100] }
 
     }
+    else if ((item === 'KAMPANYA2') && (value.isVisibleKampanya2)) {
+        name = 'KAMPANYA2';
+        actualTry = value.actualKampanya2Try;
+        goalTry = value.goalKampanya2Try;
+        calculatedRatio=value.calculatedRatioKampanya2;
+        
+        if (value.thresholdRatio1Kampanya2 === value.thresholdRatio2Kampanya2) {
+            customSegment = [0, value.thresholdRatio1Kampanya2, 100]
+            segmentCount = gaugeConfig.segment2Count;
+            segmentColors = gaugeConfig.segment2Colors;
+        }
+        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Kampanya2, value.thresholdRatio2Kampanya2, 100] }
+
+    }
     else if ((item === 'TOPLAM') && (value.isVisibleToplam)) {
         name = 'TOPLAM';
         actualTry = value.actualToplamTry;
