@@ -18,7 +18,6 @@ export default (props) => {
 
     const { value, item } = props;
     const listClass = `isoSingleCard card grid`;
-    const style = { zIndex: 100 - 90 };
 
     if ((item === 'KARO') && (value.isVisibleKaro)) {
         name = 'KARO';
@@ -123,15 +122,15 @@ export default (props) => {
     return (
         <React.Fragment>
             {name !== null ?
-                <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 6 }} >
+                <SingleCardWrapper className={listClass} style={{width:'100%'}}>
                     <span style={{ fontWeight: 'bold', fontSize: '120%', marginLeft: '2px' }}>
                         <Tag color={'#5D79C2'} key={false}>
                             {name}
                         </Tag>
                     </span>
-                    <div style={{ margin: filterView !== 'MobileView' ? 'auto' : 'auto' }}>
+                    <div style={{ margin: 'auto' }}>
                         <ReactSpeedometer
-                            width={filterView !== 'MobileView' ? 300 : 300}
+                            width={300}
                             height={250}
                             needleHeightRatio={0.8}
                             value={calculatedRatio}
