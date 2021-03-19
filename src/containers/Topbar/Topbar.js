@@ -12,6 +12,7 @@ import TopbarAlert from './TopbarAlert';
 import history from '@iso/lib/helpers/history';
 import bulutLogo from '@iso/assets/images/BULUT.png';
 import { Link } from 'react-router-dom';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 var jwtDecode = require('jwt-decode');
 
@@ -32,9 +33,9 @@ export default function Topbar() {
   const activeUser = localStorage.getItem("activeUser");
   const username = token.uname;
  
-  const isPointAddressDelivery = localStorage.getItem('isPointAddressDelivery');
+  const isPointAddressDelivery = getIsPointAddressDelivery();
   let backgroundColor=customizedTheme.backgroundColor;
-  if(isPointAddressDelivery==='true'){
+  if(isPointAddressDelivery===true){
     backgroundColor='#4482FF'
   }
  

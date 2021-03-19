@@ -46,17 +46,126 @@ export default function () {
     İzmir: ['Konak', 'Balçova', 'Karşıyaka'],
     İstanbul: ['Bakırköy', 'Kadıköy', 'Tuzla'],
   };
-
   const cityArray = [
-
     {
       label: 'ADANA',
-      value: "ADANA"
-    },
+      value: "ADANA",
+      children: [
+        {
+          value: 'Adana',
+          label: 'Adana',          
+        },
+     
+        {
+          value: 'Aladağ',
+          label: 'Aladağ',          
+        },
+     
+        {
+          value: 'Ceyhan',
+          label: 'Ceyhan',          
+        },
+     
+        {
+          value: 'Çukurova',
+          label: 'Çukurova',          
+        },
+      
+        {
+          value: 'Feke',
+          label: 'Feke',          
+        },
+      
+        {
+          value: 'İmamoğlu',
+          label: 'İmamoğlu',          
+        },
+     
+        {
+          value: 'Karaisalı',
+          label: 'Karaisalı',          
+        },
+      
+        {
+          value: 'Karataş',
+          label: 'Karataş',          
+        },
+        {
+          value: 'Kozan',
+          label: 'Kozan',          
+        },
+     
+        {
+          value: 'Pozantı',
+          label: 'Pozantı',          
+        },
+        {
+          value: 'Saimbeyli',
+          label: 'Saimbeyli',          
+        },
+     
+        {
+          value: 'Sarıçam',
+          label: 'Sarıçam',          
+        },
+        {
+          value: 'Seyhan',
+          label: 'Seyhan',          
+        },
+        {
+          value: 'Tufanbeyli',
+          label: 'Tufanbeyli',          
+        },
+        {
+          value: 'Yumurtalık',
+          label: 'Yumurtalık',          
+        },
+        {
+          value: 'Yüreğir',
+          label: 'Yüreğir',          
+        },
+      ]},
     {
       label: 'ADIYAMAN',
-      value:
-        "ADIYAMAN"
+      value: "ADIYAMAN",
+      children: [
+        {
+          value: 'Adıyaman',
+          label: 'Adıyaman',          
+        },
+        {
+          value: 'Besni',
+          label: 'Besni',          
+        },
+        {
+          value: 'Çelikhan',
+          label: 'Çelikhan',          
+        },
+        {
+          value: 'Gerger',
+          label: 'Gerger',          
+        },
+        {
+          value: 'Gölbaşı',
+          label: 'Gölbaşı',          
+        },
+        {
+          value: 'Kahta',
+          label: 'Kahta',          
+        },
+        {
+          value: 'Samsat',
+          label: 'Samsat',          
+        },
+        {
+          value: 'Sincik',
+          label: 'Sincik',          
+        },
+        {
+          value: 'Tut',
+          label: 'Tut',          
+        },
+      ],
     },
     {
       label: 'AFYONKARAHİSAR',

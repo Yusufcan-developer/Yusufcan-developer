@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import siteConfig from '@iso/config/site.config';
 import horizontalLogo from '@iso/assets/images/seramiksan-logo-horizontal.png';
 import iconLogo from '@iso/assets/images/seramiksan-logo-icon.png';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 export default ({ collapsed }) => {
   let className='isoLogoWrapper'
-  const isPointAddressDelivery = localStorage.getItem('isPointAddressDelivery');
-  if(isPointAddressDelivery==='true'){
+  const isPointAddressDelivery = getIsPointAddressDelivery();
+  if(isPointAddressDelivery===true){
     className='isoAddressDeliveryLogoWrapper'
   }
   return (

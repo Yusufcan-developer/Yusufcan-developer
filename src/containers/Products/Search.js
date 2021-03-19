@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message, Input } from "antd";
+import { Col, Card, Row, Button, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message, Input } from "antd";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,7 +25,6 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
 import numberFormat from "@iso/config/numberFormat";
-import ResultNumberFormat from "@iso/config/resultNumberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
 
@@ -40,10 +39,9 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 import {
-  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined, UpOutlined
+  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
-import { func } from "prop-types";
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 
@@ -113,7 +111,7 @@ const SearchComponent = () => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
-    if (category === undefined) {
+    if (typeof category === 'undefined') {
       setOnChangeFilter(true);
       setOnChangeDimensionsFilter(true);
       setOnChangeSerieFilter(true);
@@ -128,20 +126,20 @@ const SearchComponent = () => {
     const parsed = queryString.parse(location.search);
 
     //Category get url data
-    if (parsed.pg !== undefined) {
+    if (typeof parsed.pg !== 'undefined') {
       if (Array.isArray(parsed.pg)) {
         setCategory(parsed.pg)
       } else { setCategory(parsed.pg); }
     }
 
     //Type get url data
-    if (parsed.ut !== undefined) {
+    if (typeof parsed.ut !== 'undefined') {
       if (Array.isArray(parsed.ut)) {
         setType(parsed.ut)
       } else { setType([parsed.ut]); }
     }
     //Dimension get url data
-    if (parsed.dm !== undefined) {
+    if (typeof parsed.dm !== 'undefined') {
       let dimensionNewArray
       if (parsed.dm)
         if (Array.isArray(parsed.dm)) {
@@ -159,7 +157,7 @@ const SearchComponent = () => {
     }
 
     //Serie get url data
-    if (parsed.se !== undefined) {
+    if (typeof parsed.se !== 'undefined') {
       let seriesNewArray
       if (parsed.se)
         if (Array.isArray(parsed.se)) {
@@ -195,7 +193,7 @@ const SearchComponent = () => {
     }
 
     //Surface get url data
-    if (parsed.sfc !== undefined) {
+    if (typeof parsed.sfc !== 'undefined') {
       let surfaceNewArray
       if (parsed.sfc)
         if (Array.isArray(parsed.sfc)) {
@@ -213,33 +211,33 @@ const SearchComponent = () => {
     }
 
     //Sales Status get url data
-    if (parsed.ss !== undefined) {
+    if (typeof parsed.ss !== 'undefined') {
       setSalesStatus(parsed.ss)
     }
 
     //Kampanya get url data
-    if (parsed.campaign !== undefined) {
+    if (typeof parsed.campaign !== 'undefined') {
       if (parsed.campaign === 'true')
         setCampaignCode(true); else { setCampaignCode(false) }
     }
 
     //Stok Durumu get url data
-    if (parsed.stockStatus !== undefined) {
+    if (typeof parsed.stockStatus !== 'undefined') {
       setStockStatus(parsed.stockStatus);
     }
 
     //Product Quality get url data
-    if (parsed.pq !== undefined) {
+    if (typeof parsed.pq !== 'undefined') {
       if (Array.isArray(parsed.pq)) {
         setQuality(parsed.pq)
       } else { setQuality([parsed.pq]); }
     }
 
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.keyword !== undefined) { setKeyword(parsed.keyword); }
-    if (parsed.srto !== undefined) { setSortingOrder(parsed.srto); }
-    if (parsed.srtf !== undefined) {
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.keyword !== 'undefined') { setKeyword(parsed.keyword); }
+    if (typeof parsed.srto !== 'undefined') { setSortingOrder(parsed.srto); }
+    if (typeof parsed.srtf !== 'undefined') {
       setSortingField(parsed.srtf); switch (parsed.srtf) {
         case 'ItemRef':
           return setItemRefButtonType('primary');
@@ -253,7 +251,6 @@ const SearchComponent = () => {
     else { setItemRefButtonType('primary'); }
 
     return setOnChange(true);
-
   }
 
   //Redux ürünler listeleme
@@ -335,7 +332,7 @@ const SearchComponent = () => {
     const params = new URLSearchParams(location.search);
     params.delete('keyword');
     params.delete('pgindex');
-    if (keyword !== undefined) {
+    if (typeof keyword !== 'undefined') {
       if (keyword.length > 0) {
         setPageIndex(1);
         params.append('keyword', keyword);
@@ -377,7 +374,7 @@ const SearchComponent = () => {
     if (filterList.length > 0) {
       _.each(type, (cloneItem) => {
         var selectedProduct = filterList.find(item => item == cloneItem);
-        if (selectedProduct === undefined) {
+        if (typeof selectedProduct === 'undefined') {
           filterList.push(cloneItem);
         }
       });
@@ -411,7 +408,7 @@ const SearchComponent = () => {
     if (filterList.length > 0) {
       _.each(dimension, (cloneItem) => {
         var selectedDimension = filterList.find(item => item == cloneItem);
-        if (selectedDimension === undefined) {
+        if (typeof selectedDimension === 'undefined') {
           filterList.push(cloneItem);
         }
       });
@@ -448,7 +445,7 @@ const SearchComponent = () => {
       _.each(_.without(series, null)
         , (cloneItem) => {
           var selectedSerie = filterList.find(item => item == cloneItem);
-          if (selectedSerie === undefined) {
+          if (typeof selectedSerie === 'undefined') {
             filterList.push(cloneItem);
           } else if (cloneItem === '') { }
         });
@@ -485,7 +482,7 @@ const SearchComponent = () => {
       _.each(_.without(color, null)
         , (cloneItem) => {
           var selectedSerie = filterList.find(item => item == cloneItem);
-          if (selectedSerie === undefined) {
+          if (typeof selectedSerie === 'undefined') {
             filterList.push(cloneItem);
           } else if (cloneItem === '') { }
         });
@@ -522,7 +519,7 @@ const SearchComponent = () => {
       _.each(_.without(surface, null)
         , (cloneItem) => {
           var selectedSerie = filterList.find(item => item == cloneItem);
-          if (selectedSerie === undefined) {
+          if (typeof selectedSerie === 'undefined') {
             filterList.push(cloneItem);
           } else if (cloneItem === '') { }
         });
@@ -676,9 +673,7 @@ const SearchComponent = () => {
 
   //Series Filter Event
   function onChangeSerie(checkedSerieValue) {
-
     const serieNewArray = _.map(checkedSerieValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
-
     const nullOrBlankData = _.filter(serieNewArray, function (Item) {
       if (Item === null || Item === '') {
         return true;
@@ -831,14 +826,14 @@ const SearchComponent = () => {
     setCampaignCode(false);
     setStockStatus(enumerations.StockStatus.None);
 
-    if (getProductGroupName !== undefined) {
+    if (typeof getProductGroupName !== 'undefined') {
       let productGroupName = getProductGroupName;
       params.delete('pg');
       setCategory(productGroupName);
       params.append('pg', productGroupName);
       params.toString();
     } else {
-      if (parsed.pg === undefined) {
+      if (typeof parsed.pg === 'undefined') {
         if (productCategories.length > 0) {
           setCategory(productCategories[0]);
         }
@@ -870,7 +865,7 @@ const SearchComponent = () => {
   function inputNumberShowOrHide(value) {
     if (productQuantity !== null) {
       var selectedProduct = productQuantity.find(item => item.itemCode === value.itemCode);
-      if (selectedProduct === undefined) {
+      if (typeof selectedProduct === 'undefined') {
         return false;
       }
       else { return true; }
@@ -881,7 +876,7 @@ const SearchComponent = () => {
   //Input Number return quantity value
   function inputNumberQuantityValue(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (partialQuantity) { return 0 }
       return 1
     }
@@ -901,7 +896,7 @@ const SearchComponent = () => {
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValueNew(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (selectedPartialAmout < 1) {
         return 0;
       } else {
@@ -919,7 +914,7 @@ const SearchComponent = () => {
   function inputNumberPartialQuantityValue(product, isPartial) {
 
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (selectedAmout < 1) {
         return 0;
       } else {
@@ -937,7 +932,7 @@ const SearchComponent = () => {
   function addCardButtonTitle(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const titleArray = []
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       return 'Sepete Ekle'
     }
     else {
@@ -1023,7 +1018,7 @@ const SearchComponent = () => {
 
       inputNumberShowOrHide(product);
       var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
-      if (selectedProduct === undefined) { return; }
+      if (typeof selectedProduct === 'undefined') { return; }
       if (selectedProduct.quantity !== 0) {
         const newProductQuantity = [];
         let setQunatity;
@@ -1259,7 +1254,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={productTypeOnSearch}
                     onKeyUp={searchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     options={productTypeFilterSearch && productTypeFilterSearch.length > 0 ? productTypeFilterSearch : productTypeData}
@@ -1279,7 +1273,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={dimensionOnSearch}
                     onKeyUp={dimensionSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     options={
@@ -1300,7 +1293,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={serieOnSearch}
                     onKeyUp={serieSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -1321,7 +1313,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={colorOnSearch}
                     onKeyUp={colorSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -1341,7 +1332,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={surfaceOnSearch}
                     onKeyUp={surfaceSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -1450,7 +1440,6 @@ const SearchComponent = () => {
                             title={item.itemCode + ' - ' + item.description}
                             visible={true}
                             width={700}
-                            // onOk={handleOk}
                             onCancel={handleCancel}
                             maskClosable={false}
                             footer={[
@@ -1602,7 +1591,6 @@ const SearchComponent = () => {
                       </div>
                     </SingleCardWrapper>
                   ))}
-
                   <Pagination onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
                     pageSize={pageSize}

@@ -10,6 +10,7 @@ import Logo from '@iso/components/utility/logo';
 import SidebarWrapper from './Sidebar.styles';
 import SidebarMenu from './SidebarMenu';
 import _ from 'underscore';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 var jwtDecode = require('jwt-decode');
 const { Sider } = Layout;
@@ -97,10 +98,10 @@ export default function Sidebar() {
     }
     return;
   };
-  const isPointAddressDelivery = localStorage.getItem('isPointAddressDelivery');
-  let backgroundColor=customizedTheme.backgroundColor;
-  if(isPointAddressDelivery==='true'){
-    backgroundColor='#4482FF'
+  const isPointAddressDelivery = getIsPointAddressDelivery();
+  let backgroundColor = customizedTheme.backgroundColor;
+  if (isPointAddressDelivery === true) {
+    backgroundColor = '#4482FF'
   }
   const styling = {    
     backgroundColor: backgroundColor,

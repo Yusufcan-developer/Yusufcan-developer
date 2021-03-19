@@ -20,6 +20,8 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "../Reports/ReportSummary";
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { setIsPointAddressDelivery } from '@iso/lib/helpers/setIsPointAddressDelivery';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
@@ -95,11 +97,18 @@ const MainForm = () => {
   });
 
   //Url'i çözümleme işlemi
-  function getVariablesFromUrl(query) {
+  function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
+    const isPointAddress=getIsPointAddressDelivery();
+    
+    //isPointAddress paste url manuel.
+    if ((isPointAddress.toString() !==  parsed.isPointAddress) && (typeof parsed.isPointAddress !== 'undefined')) {
+      window.location.reload(false);
+    }
+    if (typeof parsed.isPointAddress !== 'undefined') { setIsPointAddressDelivery(parsed.isPointAddress); }
 
     let dealerCode = [];
-    if (parsed.dealer !== undefined) {
+    if (typeof parsed.dealer !== 'undefined') {
       if (Array.isArray(parsed.dealer)) {
         _.each(parsed.dealer, (item) => {
           dealerCode.push(item);
@@ -112,11 +121,14 @@ const MainForm = () => {
   //Get Search Data
   function dataSearch() {
     const params = new URLSearchParams(location.search);
+    const isPointAddress=getIsPointAddressDelivery();
 
+    params.delete('isPointAddress');
     params.delete('dealer'); {
       _.forEach(dealerCodes, (item) => {
         params.append('dealer', item); params.toString();
       });
+      params.append('isPointAddress', isPointAddress); params.toString();
       let createUrl = null;
       if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
       history.push(`${location.pathname}?${createUrl}`);

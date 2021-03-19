@@ -31,6 +31,8 @@ import renderFooter from "./ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import viewType from '@iso/config/viewType';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { setIsPointAddressDelivery } from '@iso/lib/helpers/setIsPointAddressDelivery';
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -113,16 +115,16 @@ const OrdersReport = () => {
         //Url değerini alıyoruz.
         const parsed = queryString.parse(location.search);
 
-        if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-        if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-        if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-        if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-        if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-        if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-        if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+        if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+        if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+        if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+        if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+        if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+        if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+        if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
 
         let getStatus = [];
-        if (parsed.status !== undefined) {
+        if (typeof parsed.status !== 'undefined') {
             if (Array.isArray(parsed.status)) {
                 _.each(parsed.status, (item) => {
                     getStatus.push(item);
@@ -132,7 +134,7 @@ const OrdersReport = () => {
         setSelectedStatus(getStatus);
 
         let getAddress = [];
-        if (parsed.address !== undefined) {
+        if (typeof parsed.address !== 'undefined') {
             if (Array.isArray(parsed.address)) {
                 _.each(parsed.address, (item) => {
                     getAddress.push(item);
@@ -143,7 +145,7 @@ const OrdersReport = () => {
 
         let newDealarCode = []
         //Field url data
-        if (parsed.fic !== undefined) {
+        if (typeof parsed.fic !== 'undefined') {
             if (Array.isArray(parsed.fic)) {
                 _.each(parsed.fic, (item, i) => {
                     newDealarCode.push(item);
@@ -152,7 +154,7 @@ const OrdersReport = () => {
         }
 
         //RegionCode url data
-        if (parsed.rec !== undefined) {
+        if (typeof parsed.rec !== 'undefined') {
             if (Array.isArray(parsed.rec)) {
                 _.each(parsed.rec, (item, i) => {
                     newDealarCode.push(item);
@@ -161,7 +163,7 @@ const OrdersReport = () => {
         }
 
         //Dealar url data
-        if (parsed.dec !== undefined) {
+        if (typeof parsed.dec !== 'undefined') {
             if (Array.isArray(parsed.dec)) {
                 _.each(parsed.dec, (item, i) => {
                     newDealarCode.push(item);
@@ -197,7 +199,7 @@ const OrdersReport = () => {
         _.each(orderDetailData, (item, i) => {
             if (item.Key === row.orderNo) { return orderDetailIndex = i }
         });
-        if (orderDetailIndex !== undefined) {
+        if (typeof orderDetailIndex !== 'undefined') {
             partialUnitData = _.groupBy(orderDetailData[orderDetailIndex].Value, function (item) { return item.unit; });
         }
         else { partialUnitData = null }
@@ -220,7 +222,9 @@ const OrdersReport = () => {
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
         const params = new URLSearchParams(location.search);
+        const isPointAddress=getIsPointAddressDelivery();
 
+        params.delete('isPointAddress');
         params.delete('dec');
         params.delete('rec');
         params.delete('fic');
@@ -246,12 +250,14 @@ const OrdersReport = () => {
         _.filter(status, function (item) {
             params.append('status', item); params.toString();
         });
-
-        if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-        if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+        
+        if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+        if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+        params.append('isPointAddress', isPointAddress); params.toString();
+
         let createUrl = null;
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
         history.push(`${location.pathname}?${createUrl}`);
@@ -335,7 +341,7 @@ const OrdersReport = () => {
             ["sortedInfo"]: sorter,
             ["filteredInfo"]: filters
         });
-        if (sorter !== undefined) {
+        if (typeof sorter !== 'undefined') {
             if (sorter.order === "descend") {
                 sortingOrder = 'DESC';
             } else { sortingOrder = 'ASC'; }
@@ -375,7 +381,7 @@ const OrdersReport = () => {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+                Authorization: "Bearer " + localStorage.getItem("id_token") ||  undefined
             }
         };
         await fetch(siteConfig.api.lookup.getAddresses.replace('{dealerCodes}', dealerCodes), requestOptions)
