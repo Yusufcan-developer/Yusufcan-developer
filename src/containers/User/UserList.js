@@ -1,16 +1,14 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
-import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect, Modal, Select, Switch, Menu, Dropdown, Tag, notification, message, Input } from "antd";
-
+import { Table, Row, Col, Modal, Select, Switch, Menu, Dropdown, Tag, message, Input } from "antd";
 
 //Fetch
 import { useUserFetch } from "@iso/lib/hooks/fetchData/usePostUserApi";
@@ -19,21 +17,19 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
-import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
 import viewType from '@iso/config/viewType';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Style
 import { DownOutlined, SettingOutlined, UserAddOutlined } from '@ant-design/icons';
-import UserModel from './UserModel';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 
 //Other Library
-import moment from 'moment';
-import _, { object, values, each } from 'underscore';
+import _ from 'underscore';
 import logMessage from '@iso/config/logMessage';
 
 const { Panel } = Collapse;
@@ -73,8 +69,6 @@ const UserList = () => {
   const [localCurrentPage, setlocalCurrentPage] = useState(1);
   const [selectedCurrentPage, setSelectedCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat));
-  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat));
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
   const [fieldCodes, setFieldCodes] = useState();
@@ -136,28 +130,28 @@ const UserList = () => {
   }
 
   //Saha kodları listesi ve Lookup döndürme işlemi
-  const [lookupFieldTreeData, customerInfoLoadingTree, customerInfoSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.getFieldCodes}`);
+  const [lookupFieldTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getFieldCodes}`);
   const lookupFieldChildren = [];
   _.each(lookupFieldTreeData, (item, i) => {
     lookupFieldChildren.push(<Option key={item}>{item}</Option>);
   });
 
   //Bölge kodları listesi ve Lookup döndürme işlemi
-  const [lookupRegionTreeData, lookupFieldLoadingTree, lookupFieldSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.getRegionCodes}`);
+  const [lookupRegionTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getRegionCodes}`);
   const lookupRegionChildren = [];
   _.each(lookupRegionTreeData, (item, i) => {
     lookupRegionChildren.push(<Option key={item}>{item}</Option>);
   });
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
-  const [lookupDealerTreeData, lookupDealerLoadingTree, lookupDealerSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
+  const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
   const lookupDealerChildren = [];
   _.each(lookupDealerTreeData, (item, i) => {
     lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
   });
 
   //Rol listesi ve Lookup döndürme işlemi
-  const [lookupRolesTreeData, lookupRolesLoadingTree, lookupRolesSetOnChangeTree] = useGetLookupTreeData(`${siteConfig.api.security.getRoles}`);
+  const [lookupRolesTreeData] = useGetLookupTreeData(`${siteConfig.api.security.getRoles}`);
   const lookupRoleChildren = [];
   const lookupRoleNameChildren = [];
   _.each(lookupRolesTreeData, (item, i) => {
@@ -173,11 +167,11 @@ const UserList = () => {
   function getVariablesFromUrl(query) {
     let role = []
     const parsed = queryString.parse(location.search);
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if ((parsed.pgindex !== undefined) && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if ((typeof parsed.pgindex !== 'undefined') && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
 
-    if (parsed.rol !== undefined) {
+    if (typeof parsed.rol !== 'undefined') {
       if (Array.isArray(parsed.rol)) {
         _.each(parsed.rol, (item, i) => {
           role.push(item);
@@ -188,7 +182,7 @@ const UserList = () => {
       setRoleNames(role);
     }
 
-    if (parsed.act !== undefined) {
+    if (typeof parsed.act !== 'undefined') {
       switch (parsed.act) {
         case 'true':
           setIsActive(true);
@@ -207,7 +201,9 @@ const UserList = () => {
   function dataSearch(selectedPageIndex, selectedPageSize) {
     postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, logMessage.User.search);
     const params = new URLSearchParams(location.search)
-
+    const isPointAddress=getIsPointAddressDelivery();
+    
+    params.delete('isPointAddress');
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
@@ -221,12 +217,14 @@ const UserList = () => {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setlocalCurrentPage(1); params.append('pgindex', 1) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    params.append('isPointAddress', isPointAddress); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 
     return setOnChange(true);
   }
+
   //Search Button Event
   const searchButton = () => {
     dataSearch();
@@ -290,11 +288,6 @@ const UserList = () => {
     selectedRoleName = userInfo.role.roleName;
     fieldRegionAndDealearVisible(userInfo.role.roleName);
     // setVisible(true);
-  };
-
-  //User modal events
-  function showModal() {
-    setVisible(true);
   };
 
   //Kullanıcı Silme işlemi
@@ -396,7 +389,7 @@ const UserList = () => {
     let selectedRoleName = []
     let selectedroleDescription = []
     setFilterRole(value);
-    if (roleInfo !== undefined) {
+    if (typeof roleInfo !== 'undefined') {
       if (Array.isArray(roleInfo)) {
         _.each(roleInfo, (item, i) => {
           selectedroleDescription.push(item.key)
@@ -450,6 +443,7 @@ const UserList = () => {
     }
     selectedRoleName = roleName;
   }
+
   //User Modal secilen öğelerin temizlenmesi
   function modalSelectedValueClear(roleName) {
     if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')) {
@@ -536,6 +530,7 @@ const UserList = () => {
   function addNewUser() {
     setVisible(true);
   }
+
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
@@ -551,12 +546,14 @@ const UserList = () => {
     setlocalCurrentPage(current);
     dataSearch(current, pageSize);
   }
+
   //Keyword 'Enter' search
   const keyPress = e => {
     if (e.keyCode === 13) {
       dataSearch();
     }
   }
+
   let columns = [
     {
       title: "Hesap",

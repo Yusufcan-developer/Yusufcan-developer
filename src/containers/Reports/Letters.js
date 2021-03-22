@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect, Radio } from "antd";
+import { Table, Row, Col, TreeSelect, Radio } from "antd";
 import Input from '@iso/components/uielements/input';
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
@@ -28,6 +28,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Other Library
 import _ from 'underscore';
@@ -69,6 +70,7 @@ export default function () {
   const queryString = require('query-string');
   const history = useHistory();
   const Option = SelectOption;
+
   //Burada ki useEffect'ler page index page size  hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
     postSaveLog(enumerations.LogSource.ReportLetters, enumerations.LogTypes.Browse, logMessage.Reports.Letters.browse);
@@ -85,19 +87,18 @@ export default function () {
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
-
     const parsed = queryString.parse(location.search);
 
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
-    if (parsed.fic !== undefined) {
+    if (typeof parsed.fic !== 'undefined') {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
           newDealarCode.push(item);
@@ -105,7 +106,7 @@ export default function () {
       } else { newDealarCode.push(parsed.fic) }
     }
 
-    if (parsed.rec !== undefined) {
+    if (typeof parsed.rec !== 'undefined') {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
           newDealarCode.push(item);
@@ -113,7 +114,7 @@ export default function () {
       } else { newDealarCode.push(parsed.rec) }
     }
 
-    if (parsed.dec !== undefined) {
+    if (typeof parsed.dec !== 'undefined') {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
           newDealarCode.push(item);
@@ -141,10 +142,13 @@ export default function () {
 
     return setOnChange(true);
   }
+
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
+    const isPointAddress=getIsPointAddressDelivery();
 
+    params.delete('isPointAddress');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -160,11 +164,13 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    params.append('isPointAddress', isPointAddress); params.toString();
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -243,7 +249,7 @@ export default function () {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }
@@ -252,23 +258,61 @@ export default function () {
       dataSearch()
     }
   };
+
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
+
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/
   function currentPageChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
+  
+  function onChangeRadioButton(e) {
+    setSelectedRadioItem(e.target.value);
+    setPrivateDate(null);
+  }
+
+  //Change Cheques Type
+  function privateDateHandleChange(value) {
+    setPrivateDate(value);
+
+    if (value === 'Tumu') {
+      setFromDate(moment(moment().subtract(180, 'days').toDate()));
+      setToDate(moment(new Date('2100-02-02')));
+    }
+    if (value === 'GelecekBirHafta') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(7, 'days').toDate()));
+    }
+    if (value === 'GelecekOnbesGun') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(15, 'days').toDate()));
+    }
+    else if (value === 'GelecekBirAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(30, 'days').toDate()));
+    }
+    else if (value === 'GelecekUcAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(90, 'days').toDate()));
+    } else if (value === 'GelecekAltiAy') {
+      setFromDate(moment(new Date()));
+      setToDate(moment(moment().add(180, 'days').toDate()));
+    }
+  }
+
   //Excel Oluştur
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportLetters, enumerations.LogTypes.Export, logMessage.Reports.Letters.exportExcel);
     ExcelExport(columns, data, 'Teminat Mektubu');
   }
+
   let columns = [
     {
       title: "Bayi Kodu",
@@ -363,6 +407,7 @@ export default function () {
       key: "fieldManager"
     },
   ];
+
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
@@ -399,39 +444,7 @@ export default function () {
       }
     }
   }
-  function onChangeRadioButton(e) {
-    setSelectedRadioItem(e.target.value);
-    setPrivateDate(null);
-  }
 
-  //Change Cheques Type
-  function privateDateHandleChange(value) {
-    setPrivateDate(value);
-
-    if (value === 'Tumu') {
-      setFromDate(moment(moment().subtract(180, 'days').toDate()));
-      setToDate(moment(new Date('2100-02-02')));
-    }
-    if (value === 'GelecekBirHafta') {
-      setFromDate(moment(new Date()));
-      setToDate(moment(moment().add(7, 'days').toDate()));
-    }
-    if (value === 'GelecekOnbesGun') {
-      setFromDate(moment(new Date()));
-      setToDate(moment(moment().add(15, 'days').toDate()));
-    }
-    else if (value === 'GelecekBirAy') {
-      setFromDate(moment(new Date()));
-      setToDate(moment(moment().add(30, 'days').toDate()));
-    }
-    else if (value === 'GelecekUcAy') {
-      setFromDate(moment(new Date()));
-      setToDate(moment(moment().add(90, 'days').toDate()));
-    } else if (value === 'GelecekAltiAy') {
-      setFromDate(moment(new Date()));
-      setToDate(moment(moment().add(180, 'days').toDate()));
-    }
-  }
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (

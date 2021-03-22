@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, Pagination, TreeSelect, Tag, Radio } from "antd";
+import { Table, Row, Col, TreeSelect, Tag, Radio } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
@@ -27,6 +27,7 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Other Library
 import _ from 'underscore';
@@ -90,16 +91,16 @@ export default function () {
 
     const parsed = queryString.parse(location.search);
 
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
-    if (parsed.fic !== undefined) {
+    if (typeof parsed.fic !== 'undefined') {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
           newDealarCode.push(item);
@@ -107,7 +108,7 @@ export default function () {
       } else { newDealarCode.push(parsed.fic) }
     }
 
-    if (parsed.rec !== undefined) {
+    if (typeof parsed.rec !== 'undefined') {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
           newDealarCode.push(item);
@@ -115,7 +116,7 @@ export default function () {
       } else { newDealarCode.push(parsed.rec) }
     }
 
-    if (parsed.dec !== undefined) {
+    if (typeof parsed.dec !== 'undefined') {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
           newDealarCode.push(item);
@@ -147,7 +148,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
+    const isPointAddress=getIsPointAddressDelivery();
 
+    params.delete('isPointAddress');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -163,11 +166,12 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    params.append('isPointAddress', isPointAddress); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -246,7 +250,7 @@ export default function () {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }
@@ -269,6 +273,7 @@ export default function () {
     setPageIndex(current);
     dataSearch(current, pageSize);
   }
+  
   function onChangeRadioButton(e) {
     setSelectedRadioItem(e.target.value);
     setPrivateDate(null);
@@ -306,6 +311,13 @@ export default function () {
       setToDate(moment(new Date()));
     }
   }
+
+  //Excel Oluştur
+  const exportExcelButton = () => {
+    postSaveLog(enumerations.LogSource.ReportAccounts, enumerations.LogTypes.Export, logMessage.Reports.Accounts.exportExcel);
+    ExcelExport(columns, data, 'Cari Kayıtlar');
+  }
+
   let columns = [
     {
       title: "Bayi Kodu",
@@ -452,12 +464,6 @@ export default function () {
         ))
       }
     }
-  }
-
-  //Excel Oluştur
-  const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportAccounts, enumerations.LogTypes.Export, logMessage.Reports.Accounts.exportExcel);
-    ExcelExport(columns, data, 'Cari Kayıtlar');
   }
 
   const view = viewType('Reports');

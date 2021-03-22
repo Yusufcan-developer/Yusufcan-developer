@@ -1,5 +1,5 @@
 //React
-import React, { useState, useEffect, state } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
@@ -28,14 +28,13 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import viewType from '@iso/config/viewType';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
-import { strikeout } from "../Ecommerce/Cart/color.css";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr'
-import { bool } from "prop-types";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -73,6 +72,7 @@ export default function () {
   const [selectAllLoading, setSelectedLoading] = useState(false);
   const [hasSelected, setHasSelected] = useState(false);
   let dataAddKeyValue;
+
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
     getVariablesFromUrl()
@@ -82,9 +82,10 @@ export default function () {
   const token = jwtDecode(localStorage.getItem("id_token"));
   let searchUrl = queryString.parse(location.search);
   let uid = parseInt(token.uid);
+
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    usePostNotificationFetch(`${siteConfig.api.security.postNotification}`, { "notificationTypes": selectedNotificationType, "isRead": selectedIsRead, "userIds": [uid], "from":fromDate !== null ?  fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ?  toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    usePostNotificationFetch(`${siteConfig.api.security.postNotification}`, { "notificationTypes": selectedNotificationType, "isRead": selectedIsRead, "userIds": [uid], "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
 
   if (data.length > 0) {
     dataAddKeyValue = _.each(data, (item) => {
@@ -103,21 +104,21 @@ export default function () {
 
     const parsed = queryString.parse(location.search);
 
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
-    if (parsed.isRead !== undefined) {
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
+    if (typeof parsed.isRead !== 'undefined') {
       if (parsed.isRead === 'true') { setSelectedIsRead(true) }
       else if (parsed.isRead === 'false') { setSelectedIsRead(false) }
       else { setSelectedIsRead(null) }
     }
 
     let type = [];
-    if (parsed.type !== undefined) {
+    if (typeof parsed.type !== 'undefined') {
       if (Array.isArray(parsed.type)) {
         _.each(parsed.type, (item) => {
           type.push(item);
@@ -132,7 +133,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
+    const isPointAddress=getIsPointAddressDelivery();
 
+    params.delete('isPointAddress');
     params.delete('isRead');
     params.delete('type');
     params.delete('from');
@@ -142,21 +145,21 @@ export default function () {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
-    if (selectedIsRead !== undefined) { params.append('isRead', selectedIsRead); }
+    if (typeof selectedIsRead !== 'undefined') { params.append('isRead', selectedIsRead); }
 
-    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
     _.filter(selectedNotificationType, function (item) {
       params.append('type', item); params.toString();
     });
-
+    params.append('isPointAddress', isPointAddress); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -176,14 +179,14 @@ export default function () {
   }
   //Change from and To date
   function changeTimePicker(value, dateString) {
-     if (value !== null) {
-            setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-            setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-        }
-        else {
-            setToDate(null);
-            setFromDate(null);
-        }
+    if (value !== null) {
+      setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+      setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+    }
+    else {
+      setToDate(null);
+      setFromDate(null);
+    }
   }
 
   const handleChange = (pagination, filters, sorter) => {
@@ -192,7 +195,7 @@ export default function () {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }
@@ -281,10 +284,10 @@ export default function () {
               {'Okunmadı'}
             </Tag>
           ) : (
-              <Tag color={'green'} key={true}>
-                {'Okundu'}
-              </Tag>
-            )}
+            <Tag color={'green'} key={true}>
+              {'Okundu'}
+            </Tag>
+          )}
         </>
       ),
     },
@@ -414,7 +417,7 @@ export default function () {
       let selectedIds = []
       if (selectedRows.length > 0) {
         _.each(selectedRows, (item) => {
-          if (item !== undefined) {
+          if (typeof item !=='undefined') {
             selectedIds.push(item.id);
           }
         });

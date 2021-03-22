@@ -32,6 +32,7 @@ import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -94,7 +95,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "orderLineItemStatus":orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "orderLineItemStatus": orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -110,17 +111,17 @@ export default function () {
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
 
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.orderLineStatus !== undefined) {setOrderLineItemStatus(parsed.orderLineStatus);}
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.orderLineStatus !== 'undefined') { setOrderLineItemStatus(parsed.orderLineStatus); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
 
     let getStatus = [];
-    if (parsed.status !== undefined) {
+    if (typeof parsed.status !== 'undefined') {
       if (Array.isArray(parsed.status)) {
         _.each(parsed.status, (item) => {
           getStatus.push(item);
@@ -130,7 +131,7 @@ export default function () {
     setSelectedStatus(getStatus);
 
     let getAddress = [];
-    if (parsed.address !== undefined) {
+    if (typeof parsed.address !== 'undefined') {
       if (Array.isArray(parsed.address)) {
         _.each(parsed.address, (item) => {
           getAddress.push(item);
@@ -141,7 +142,7 @@ export default function () {
 
     let newDealarCode = []
     //Field url data
-    if (parsed.fic !== undefined) {
+    if (typeof parsed.fic !== 'undefined') {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
           newDealarCode.push(item);
@@ -150,7 +151,7 @@ export default function () {
     }
 
     //RegionCode url data
-    if (parsed.rec !== undefined) {
+    if (typeof parsed.rec !== 'undefined') {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
           newDealarCode.push(item);
@@ -159,7 +160,7 @@ export default function () {
     }
 
     //Dealar url data
-    if (parsed.dec !== undefined) {
+    if (typeof parsed.dec !== 'undefined') {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
           newDealarCode.push(item);
@@ -215,7 +216,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
+    const isPointAddress=getIsPointAddressDelivery();
 
+    params.delete('isPointAddress');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -230,7 +233,7 @@ export default function () {
     params.delete('status');
     params.delete('orderLineStatus');
 
-    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -243,12 +246,14 @@ export default function () {
       params.append('status', item); params.toString();
     });
 
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
-    if (orderLineItemStatus !== undefined) { params.append('orderLineStatus', orderLineItemStatus);}
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
+    if (typeof orderLineItemStatus !== 'undefined') { params.append('orderLineStatus', orderLineItemStatus); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    params.append('isPointAddress', isPointAddress); params.toString();
+    
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -304,11 +309,11 @@ export default function () {
     if (value !== null) {
       setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
       setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  }
-  else {
+    }
+    else {
       setToDate(null);
       setFromDate(null);
-  }
+    }
   }
 
   //Search DailerName Tree Select Component
@@ -327,7 +332,7 @@ export default function () {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }
@@ -409,21 +414,6 @@ export default function () {
     }
   }
 
-   //Stock Status Filter Event
-   function onChangeOrderLineStatus(event) {
-    setOrderLineItemStatus(event.target.value)
-    const params = new URLSearchParams(location.search);
-    params.delete('orderLineStatus');
-    params.append('orderLineStatus', event.target.value);
-    params.delete('pgindex');
-    params.append('pgindex', 1)
-    setPageIndex(1);
-    params.toString();
-
-    history.push(`${location.pathname}?${params.toString()}`);
-
-    return setOnChange(true);
-  }
   //Order Detail Columns
   let columns = [
     {
@@ -439,9 +429,9 @@ export default function () {
             </Tag>)
 
           ) : (
-              <Tag color={'geekblue'} key={status}>
-                {status}
-              </Tag>)}
+            <Tag color={'geekblue'} key={status}>
+              {status}
+            </Tag>)}
         </>
       ),
     },
@@ -568,6 +558,7 @@ export default function () {
       footerKey: "",
     },
   ];
+
   //Hide order table column
   const token = jwtDecode(localStorage.getItem("id_token"));
   if (token.urole === 'admin') { }
@@ -607,7 +598,7 @@ export default function () {
   //Excel Oluşturma
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
-    ExcelExport(columns, data, 'Cari Hareketler');
+    ExcelExport(columns, data, 'Sipariş Kalemleri');
   }
 
   const view = viewType('Reports');
