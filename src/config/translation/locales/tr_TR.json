@@ -624,6 +624,7 @@
   "checkout.billingform.address": "Adres",
   "checkout.billingform.addressoptional": "Apartment   suite   unit etc. (optional",
   "checkout.billingform.checkbox": "Create an account?",
+  "checkout.billingform.km": "Km",
   "antTable.title.image": "Image",
   "antTable.title.firstName": "First Name",
   "antTable.title.lastName": "Last Name",

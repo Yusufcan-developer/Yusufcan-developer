@@ -102,10 +102,10 @@ const MainForm = () => {
     const isPointAddress=getIsPointAddressDelivery();
     
     //isPointAddress paste url manuel.
-    if ((isPointAddress.toString() !==  parsed.isPointAddress) && (typeof parsed.isPointAddress !== 'undefined')) {
+    if ((isPointAddress.toString() !==  parsed.ispd) && (typeof parsed.ispd !== 'undefined')) {
       window.location.reload(false);
     }
-    if (typeof parsed.isPointAddress !== 'undefined') { setIsPointAddressDelivery(parsed.isPointAddress); }
+    if (typeof parsed.ispd !== 'undefined') { setIsPointAddressDelivery(parsed.ispd); }
 
     let dealerCode = [];
     if (typeof parsed.dealer !== 'undefined') {
@@ -123,12 +123,12 @@ const MainForm = () => {
     const params = new URLSearchParams(location.search);
     const isPointAddress=getIsPointAddressDelivery();
 
-    params.delete('isPointAddress');
+    params.delete('ispd');
     params.delete('dealer'); {
       _.forEach(dealerCodes, (item) => {
         params.append('dealer', item); params.toString();
       });
-      params.append('isPointAddress', isPointAddress); params.toString();
+      params.append('ispd', isPointAddress); params.toString();
       let createUrl = null;
       if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
       history.push(`${location.pathname}?${createUrl}`);

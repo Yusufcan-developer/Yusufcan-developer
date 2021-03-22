@@ -114,7 +114,13 @@ const OrdersReport = () => {
     function getVariablesFromUrl() {
         //Url değerini alıyoruz.
         const parsed = queryString.parse(location.search);
-
+        const isPointAddress=getIsPointAddressDelivery();
+    
+        //isPointAddress paste url manuel.
+        if ((isPointAddress.toString() !==  parsed.ispd) && (typeof parsed.ispd !== 'undefined')) {
+          window.location.reload(false);
+        }
+        if (typeof parsed.ispd !== 'undefined') { setIsPointAddressDelivery(parsed.ispd); }
         if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
         if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
         if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
@@ -224,7 +230,7 @@ const OrdersReport = () => {
         const params = new URLSearchParams(location.search);
         const isPointAddress=getIsPointAddressDelivery();
 
-        params.delete('isPointAddress');
+        params.delete('ispd');
         params.delete('dec');
         params.delete('rec');
         params.delete('fic');
@@ -256,7 +262,7 @@ const OrdersReport = () => {
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-        params.append('isPointAddress', isPointAddress); params.toString();
+        params.append('ispd', isPointAddress); params.toString();
 
         let createUrl = null;
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }

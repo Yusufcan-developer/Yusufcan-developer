@@ -16,6 +16,7 @@ import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
 import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
 import Form from "@iso/components/uielements/form";
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
@@ -41,11 +42,7 @@ var jwtDecode = require('jwt-decode');
 
 let createOrderNo = 'xxxx';
 export default function () {
-  const provinceData = ['İzmir', 'İstanbul'];
-  const cityData = {
-    İzmir: ['Konak', 'Balçova', 'Karşıyaka'],
-    İstanbul: ['Bakırköy', 'Kadıköy', 'Tuzla'],
-  };
+
   const cityArray = [
     {
       label: 'ADANA',
@@ -53,117 +50,118 @@ export default function () {
       children: [
         {
           value: 'Adana',
-          label: 'Adana',          
+          label: 'Adana',
         },
-     
+
         {
           value: 'Aladağ',
-          label: 'Aladağ',          
+          label: 'Aladağ',
         },
-     
+
         {
           value: 'Ceyhan',
-          label: 'Ceyhan',          
+          label: 'Ceyhan',
         },
-     
+
         {
           value: 'Çukurova',
-          label: 'Çukurova',          
+          label: 'Çukurova',
         },
-      
+
         {
           value: 'Feke',
-          label: 'Feke',          
+          label: 'Feke',
         },
-      
+
         {
           value: 'İmamoğlu',
-          label: 'İmamoğlu',          
+          label: 'İmamoğlu',
         },
-     
+
         {
           value: 'Karaisalı',
-          label: 'Karaisalı',          
+          label: 'Karaisalı',
         },
-      
+
         {
           value: 'Karataş',
-          label: 'Karataş',          
+          label: 'Karataş',
         },
         {
           value: 'Kozan',
-          label: 'Kozan',          
+          label: 'Kozan',
         },
-     
+
         {
           value: 'Pozantı',
-          label: 'Pozantı',          
+          label: 'Pozantı',
         },
         {
           value: 'Saimbeyli',
-          label: 'Saimbeyli',          
+          label: 'Saimbeyli',
         },
-     
+
         {
           value: 'Sarıçam',
-          label: 'Sarıçam',          
+          label: 'Sarıçam',
         },
         {
           value: 'Seyhan',
-          label: 'Seyhan',          
+          label: 'Seyhan',
         },
         {
           value: 'Tufanbeyli',
-          label: 'Tufanbeyli',          
+          label: 'Tufanbeyli',
         },
         {
           value: 'Yumurtalık',
-          label: 'Yumurtalık',          
+          label: 'Yumurtalık',
         },
         {
           value: 'Yüreğir',
-          label: 'Yüreğir',          
+          label: 'Yüreğir',
         },
-      ]},
+      ]
+    },
     {
       label: 'ADIYAMAN',
       value: "ADIYAMAN",
       children: [
         {
           value: 'Adıyaman',
-          label: 'Adıyaman',          
+          label: 'Adıyaman',
         },
         {
           value: 'Besni',
-          label: 'Besni',          
+          label: 'Besni',
         },
         {
           value: 'Çelikhan',
-          label: 'Çelikhan',          
+          label: 'Çelikhan',
         },
         {
           value: 'Gerger',
-          label: 'Gerger',          
+          label: 'Gerger',
         },
         {
           value: 'Gölbaşı',
-          label: 'Gölbaşı',          
+          label: 'Gölbaşı',
         },
         {
           value: 'Kahta',
-          label: 'Kahta',          
+          label: 'Kahta',
         },
         {
           value: 'Samsat',
-          label: 'Samsat',          
+          label: 'Samsat',
         },
         {
           value: 'Sincik',
-          label: 'Sincik',          
+          label: 'Sincik',
         },
         {
           value: 'Tut',
-          label: 'Tut',          
+          label: 'Tut',
         },
       ],
     },
@@ -290,29 +288,32 @@ export default function () {
         {
           value: 'Bakırköy',
           label: 'Bakırköy',
-          children: [
-            {
-              value: 'Ataköy',
-              label: 'Ataköy',
-              code: 453400,
-            },
-          ],
+          // children: [
+          //   {
+          //     value: 'Ataköy',
+          //     label: 'Ataköy',
+          //     code: 453400,
+          //   },
+          // ],
         },
       ],
     }, {
       label: 'İZMİR',
       value: "İZMİR",
+      isLeaf: false,
+
       children: [
         {
           value: 'Konak',
           label: 'Konak',
-          children: [
-            {
-              value: 'Eşrefpaşa',
-              label: 'Eşrefpaşa',
-              code: 752100,
-            },
-          ],
+          isLeaf: false,
+          // children: [
+          //   {
+          //     value: 'Eşrefpaşa',
+          //     label: 'Eşrefpaşa',
+          //     code: 752100,
+          //   },
+          //],
         },
       ],
     },
@@ -479,66 +480,31 @@ export default function () {
     },
 
   ]
-  
-  let options = [
+  const townArray=[
     {
-      value: 'Adana',
-      label: 'Adana',
-      children: [
-        {
-          value: 'Konak',
-          label: 'Konak',
-          children: [
-            {
-              value: 'Eşrefpaşa',
-              label: 'Eşrefpaşa',
-              code: 752100,
-            },
-          ],
-        },
-      ],
+      label: 'Eşrefpaşa',
+      value: "Eşrefpaşa",
     },
     {
-      value: 'İzmir',
-      label: 'İzmir',
-      children: [
-        {
-          value: 'Konak',
-          label: 'Konak',
-          children: [
-            {
-              value: 'Eşrefpaşa',
-              label: 'Eşrefpaşa',
-              code: 752100,
-            },
-          ],
-        },
-      ],
+      label: 'Üçyol',
+      value: "Üçyol",
     },
     {
-      value: 'İstanbul',
-      label: 'İstanbul',
-      children: [
-        {
-          value: 'Bakırköy',
-          label: 'Bakırköy',
-          children: [
-            {
-              value: 'Ataköy',
-              label: 'Ataköy',
-              code: 453400,
-            },
-          ],
-        },
-      ],
-    },
-  ];
+      label: 'Hatay',
+      value: "Üçyol",
+    }
+  ]
 
   document.title = "Sipariş Onayı - Seramiksan B2B";
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
-  const [city, setCity] = useState();
-  const [town, setTown] = useState();
+  const [city, setCity] = useState('');
+  const [town, setTown] = useState('');
+  const [district,setDistrict]=useState('');
+  const [km, setKm] = useState();
+  const [cities, setCities] = useState();
+  const [optionsCities, setOptions] = useState(cityArray);
+
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
   const [form] = Form.useForm();
@@ -556,22 +522,15 @@ export default function () {
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
-  const [cities, setCities] = useState(cityData[provinceData[0]]);
-  const [secondCity, setSecondCity] = useState(
-    cityData[provinceData[0]][0]
-  );
-  const history = useHistory();
 
+  const history = useHistory();
   const [data, changeCart] = useGetCartCheckOut();
   const token = jwtDecode(localStorage.getItem("id_token"));
   const activeUser = localStorage.getItem("activeUser");
   const { Option } = Select;
   let account = token.uname;
-
-
-
   let createAddressButtonVisible = true;
-  if (activeUser != undefined) { account = activeUser }
+  if (typeof activeUser != 'undefined') { account = activeUser }
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -581,8 +540,7 @@ export default function () {
 
   //Get Products
   function renderProducts() {
-    if (data !== undefined) {
-      debugger
+    if (typeof data !== 'undefined') {
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
       return productList.map(product => {
         return (
@@ -658,6 +616,10 @@ export default function () {
     setTown(e.target.value);
   }
 
+  const onChangeKm = e => {
+    setKm(e.target.value);
+  }
+
   function onCreateAddress() {
     setCity();
     setTown();
@@ -714,7 +676,6 @@ export default function () {
 
   //get adress
   async function getAdress() {
-
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
     //Get User Info  
@@ -780,11 +741,12 @@ export default function () {
       item['amount'] = item['quantity'];
       // delete item['quantity'];
     });
+    const isPointAddress = getIsPointAddressDelivery();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let account = token.uname;
-    if (activeUser != undefined) { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    if (typeof activeUser != 'undefined') { account = activeUser }
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "isPointAddress": isPointAddress };
     const requestOptions = {
       method: "POST",
       headers: {
@@ -832,9 +794,9 @@ export default function () {
   async function postSaveAddress() {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
-    if ((addressTitle === undefined) || (address1 === undefined) || (city === undefined) || (town === undefined) || (address2 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
+    if ((typeof addressTitle === 'undefined') || (typeof address1 === 'undefined') || (typeof city === 'undefined') || (typeof town === 'undefined') || (typeof address2 === 'undefined')) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
-    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
+    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town,"district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
       method: "POST",
       headers: {
@@ -882,7 +844,7 @@ export default function () {
         return status;
       })
       .then(data => {
-        if (data !== undefined) {
+        if (typeof data !== 'undefined') {
           if (data.isSuccessful) {
             setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
             createOrderNo = data.orderNo; setSuccessOrderSave(true);
@@ -935,32 +897,22 @@ export default function () {
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     createAddressButtonVisible = false;
   }
-  const handleProvinceChange = (value) => {
-    setCities(cityData[value]);
-    setSecondCity(cityData[value][0]);
+
+  function onChangeCityAndTown(value, selectedOptions) {
+    if(typeof value!==undefined){setCity(value[0]);}
+    if (value.length > 1) {setCities(value); setTown(value[1]); setDistrict(value[2])} else {setCities("");}
   };
-
-  const onSecondCityChange = (value) => {
-    setSecondCity(value);
+  const loadData = selectedOptions => {
+    const targetOption = selectedOptions[selectedOptions.length - 1];
+    targetOption.loading = true;
+    // load options lazily
+    setTimeout(() => {
+      targetOption.loading = false;
+      targetOption.children = 
+        townArray;
+      setOptions([...optionsCities]);
+    }, 1000);
   };
-
-  function handleAreaClick(e, label, option) {
-    e.stopPropagation();
-    console.log('clicked', label, option);
-  }
-
-  const displayRender = (labels, selectedOptions) =>
-    labels.map((label, i) => {
-      const option = selectedOptions[i];
-      if (i === labels.length - 1) {
-        return (
-          <span key={option.value}>
-            {label} (<a onClick={e => handleAreaClick(e, label, option)}>{option.code}</a>)
-          </span>
-        );
-      }
-      return <span key={option.value}>{label} / </span>;
-    });
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -1028,7 +980,6 @@ export default function () {
                   confirmLoading={confirmLoading}
                   onOk={() => postSaveAddress()}
                   onCancel={() => setCreateAddress(false)}
-
                 >
                   <Form>
                     <Fieldset className="isoInputFieldset">
@@ -1041,7 +992,6 @@ export default function () {
                         important
                       />
                     </Fieldset>
-
                     <Fieldset>
                       <InputBox
                         label="Adres 1"
@@ -1052,7 +1002,19 @@ export default function () {
                         important
                       />
                     </Fieldset>
-
+                    <Fieldset>
+                      <CascaderBox
+                        label={'İl / İlçe / Mahalle'}
+                        placeholder={'İl/İlçe/Mahalle seçiniz'}
+                        options={optionsCities}
+                        onChange={onChangeCityAndTown}
+                        style={{ width: '100%' }}
+                        loadData={loadData}
+                        value={cities}
+                        changeOnSelect
+                        important
+                      />
+                    </Fieldset>
                     <Fieldset>
                       <InputBox
                         label="İlgili (İlgili kişi / Cep Telefonu)"
@@ -1069,16 +1031,7 @@ export default function () {
                         value={phone}
                         onChange={onChangePhone}
                       />
-                    </Fieldset>
-                    <Fieldset>
-                      <CascaderBox
-                        label={'İl / İlçe / Köy'}
-                        placeholder={'İl/İlçe/Köy seçiniz'}
-                        options={cityArray}
-                        displayRender={displayRender}
-                        style={{ width: '100%' }}
-                      />
-                    </Fieldset>
+                    </Fieldset>                   
                   </Form>
                 </Modal>
                 <Modal
@@ -1139,7 +1092,7 @@ export default function () {
 
                 </div>
 
-                {adressItem === undefined ? null : <React.Fragment>
+                {typeof adressItem === 'undefined' ? null : <React.Fragment>
                   <div className="isoInputFieldset">
                     <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
                       onChange={onChangeAddress1}
@@ -1178,6 +1131,11 @@ export default function () {
                       value={town}
                       disabled
                     />
+                    <InputBox label={<IntlMessages id="checkout.billingform.km" />}
+                      onChange={event => onChangeKm(event)}
+                      value={km}
+                      disabled
+                    />
                   </div>
                 </React.Fragment>}
                 {/* Ödeme özet bilgileri ve sipariş oluşturma */}
@@ -1192,15 +1150,15 @@ export default function () {
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
                     <span>Toplam</span>
-                    <span>{data != undefined ? (numberFormat(data.orderCost)) : (0)} TL</span>
+                    <span>{typeof data != 'undefined' ? (numberFormat(data.orderCost)) : (0)} TL</span>
                   </div>
                   <div className="isoOrderTableFooter">
                     <span>KDV</span>
-                    <span>{data != undefined ? (numberFormat(data.orderVat)) : (0)} TL</span>
+                    <span>{typeof data != 'undefined' ? (numberFormat(data.orderVat)) : (0)} TL</span>
                   </div>
                   <div className="isoOrderTableFooter">
                     <span>Genel Toplam</span>
-                    <span>{data != undefined ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
+                    <span>{typeof data != 'undefined' ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
                     <Button disabled={!hasOrderSavePermission} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >

@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { Link, useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 //Components
 import Box from "@iso/components/utility/box";
@@ -10,13 +10,11 @@ import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import { Table, Row, Col, message, InputNumber, Popconfirm, Form, Popover, Space, Tag } from "antd";
+import { Table, Col, message, InputNumber, Popconfirm, Form, Popover, Space, Tag } from "antd";
 import Popconfirms from '@iso/components/Feedback/Popconfirm';
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Styles
-import { DownOutlined } from '@ant-design/icons';
-import { strikeout } from "./color.css";
 import { RightOutlined } from '@ant-design/icons';
 
 //Configs
@@ -24,6 +22,7 @@ import siteConfig from "@iso/config/site.config";
 import numberFormat from "@iso/config/numberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -32,10 +31,6 @@ import moment from 'moment';
 import 'moment/locale/tr'
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
-
-const { Panel } = Collapse;
-const FormItem = Form.Item;
-const { RangePicker } = DatePicker;
 
 const OrderPartial = () => {
   document.title = "Sipariş Hazırlama - Seramiksan B2B";
@@ -62,6 +57,7 @@ const OrderPartial = () => {
   //Get Cart Listesi
   async function getCartList() {
     let productInfo;
+    const isPointAddress=getIsPointAddressDelivery();
     const requestOptions = {
       method: "GET",
       headers: {
@@ -71,9 +67,9 @@ const OrderPartial = () => {
     };
     let apiUrl='';
     const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`;}
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
+    const activeUser = localStorage.getItem("activeUser");
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}&isPointAddress=${isPointAddress}`;}
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}&isPointAddress=${isPointAddress}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -133,7 +129,7 @@ const OrderPartial = () => {
     productQuantity = JSON.parse(productQuantity);
     let sendDatabaseProductList
 
-    if (allAmountItem.amount != undefined) {//Sepet miktarının tamamını alır
+    if (typeof allAmountItem.amount != 'undefined') {//Sepet miktarının tamamını alır
       sendDatabaseProductList = _.each(productQuantity, (item) => {
         item['amount'] = item['quantity'];
         delete item['quantity'];
@@ -158,12 +154,13 @@ const OrderPartial = () => {
       });
     }
     const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
+    const activeUser = localStorage.getItem("activeUser");
+    const isPointAddress=getIsPointAddressDelivery();
     let account = token.uname;
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
 
-    if (activeUser != undefined) { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    if (typeof activeUser != 'undefined') { account = activeUser }
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "isPointAddress":isPointAddress };
     const requestOptions = {
       method: "POST",
       headers: {

@@ -29,7 +29,7 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
 
 //Other Library
-import _, { find } from 'underscore';
+import _ from 'underscore';
 import logMessage from '@iso/config/logMessage';
 
 //Desing style
@@ -70,7 +70,8 @@ const SearchComponent = () => {
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [selectedItem, setSelectedItem] = useState();
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
-  const [plusButtonDisable, setPlusButtonDisable]=useState(false);
+  const [plusButtonDisable, setPlusButtonDisable] = useState(false);
+  const [isPointAddress, setIsPointAddress] = useState();
 
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
@@ -130,6 +131,11 @@ const SearchComponent = () => {
       if (Array.isArray(parsed.pg)) {
         setCategory(parsed.pg)
       } else { setCategory(parsed.pg); }
+    }
+
+    if (typeof parsed.isPointAddress !== 'undefined') {
+      const isPoint=parsed.isPointAddress == "true" ? true : false
+      setIsPointAddress(isPoint);
     }
 
     //Type get url data
@@ -261,7 +267,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress }, category, parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -270,22 +276,22 @@ const SearchComponent = () => {
   // const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
 
   //Post Type
-  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
 
   //Get Dimension
   // const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.getDimensions}?categories=${category}`);
 
   //Post Dimension
-  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
 
   //Post Series
-  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
 
   //Post Color
-  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
 
   //Post Surface
-  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
 
   //Get Quality
   // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
@@ -954,8 +960,9 @@ const SearchComponent = () => {
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
       setSelectedItem(item.itemCode);
-      if(!isNaN(e.target.value)){
-      setSelectedAmount(parseInt(e.target.value));}
+      if (!isNaN(e.target.value)) {
+        setSelectedAmount(parseInt(e.target.value));
+      }
     }
   }
 
@@ -1101,7 +1108,7 @@ const SearchComponent = () => {
     setPartialQuantity(false);
   };
 
-  function calculateQuantity(item,minusText,quantity) {
+  function calculateQuantity(item, minusText, quantity) {
     let amountControl;
     //Girilen text miktarının kontrolü    
     if (!minusText) {
@@ -1227,7 +1234,7 @@ const SearchComponent = () => {
                   <Radio style={radioStyle} value={(category === 'KARO') ? enumerations.StockStatus.TileNotInStock : enumerations.StockStatus.GeneralNotInStock}>
                     Stok Yok
                 </Radio>
-                  {(category === 'KARO') ? (<React.Fragment>                    
+                  {(category === 'KARO') ? (<React.Fragment>
                     <Radio style={radioStyle} value={enumerations.StockStatus.Tile10000AndMore}>
                       10.000+  M2
                 </Radio></React.Fragment>) : (null)}
@@ -1327,7 +1334,7 @@ const SearchComponent = () => {
             {(surfaceData.length !== 0 && surfaceData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.surface" />} key="8">
-                <Search
+                  <Search
                     placeholder="Yüzey araması"
                     allowClear
                     onSearch={surfaceOnSearch}
@@ -1386,19 +1393,19 @@ const SearchComponent = () => {
                           </Badge.Ribbon>
                         </React.Fragment>
                       ) : (
-                          <React.Fragment>
-                            {item.campaignCode === '' ?
+                        <React.Fragment>
+                          {item.campaignCode === '' ?
+                            <div className="isoCardImage">
+                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                                <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                              </Link>{' '}
+                            </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               <div className="isoCardImage">
                                 <Link to={`${'/products/detail'}/${item.itemCode}`}>
                                   <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                 </Link>{' '}
-                              </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
-                                <div className="isoCardImage">
-                                  <Link to={`${'/products/detail'}/${item.itemCode}`}>
-                                    <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
-                                  </Link>{' '}
-                                </div></Badge.Ribbon>}
-                          </React.Fragment>)}
+                              </div></Badge.Ribbon>}
+                        </React.Fragment>)}
                       <div className="isoCardContent">
                         <Row>
                           <Col span={6} >
@@ -1554,40 +1561,40 @@ const SearchComponent = () => {
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
                               <Button
-                                disabled={calculateQuantity(item,false,0)}
+                                disabled={calculateQuantity(item, false, 0)}
                                 type="primary" style={{ width: '100%' }}
                                 onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'}
                               </Button>
                             </Col>
                           </Row>
                         ) : (
-                            <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
-                              <Col span={4} style={{ width: '100%' }} align="right">
-                                <Button type="primary" onClick={event => onRemoveProductCart(item)}>
-                                  {<IntlMessages id="product.minus" />}
-                                </Button>
-                              </Col>
-                              <Col span={8} align="middle">
-                                <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{'Palet'}</span>
-                                <Input
-                                  id={item.itemCode}
-                                  onClick={event => onSelectAll(item.itemCode)}
-                                  onChange={event => onChange(event, item, false)}
-                                  onBlur={event => onChangeQuantity(event, item)}
-                                  style={{ textAlign: "right", maxHeight: '32px' }}
-                                  maxLength={25}
-                                  defaultValue={1}
-                                  step={1}
-                                  value={inputNumberQuantityValue(item)}
-                                />
-                              </Col>
-                              <Col span={4} style={{ width: '100%' }}>
-                                <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary"  onClick={event => onAddProductCart(item)}>
-                                  {<IntlMessages id="product.plus" />}
-                                </Button>
-                              </Col>
-                            </Row>
-                          )}
+                          <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
+                            <Col span={4} style={{ width: '100%' }} align="right">
+                              <Button type="primary" onClick={event => onRemoveProductCart(item)}>
+                                {<IntlMessages id="product.minus" />}
+                              </Button>
+                            </Col>
+                            <Col span={8} align="middle">
+                              <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{'Palet'}</span>
+                              <Input
+                                id={item.itemCode}
+                                onClick={event => onSelectAll(item.itemCode)}
+                                onChange={event => onChange(event, item, false)}
+                                onBlur={event => onChangeQuantity(event, item)}
+                                style={{ textAlign: "right", maxHeight: '32px' }}
+                                maxLength={25}
+                                defaultValue={1}
+                                step={1}
+                                value={inputNumberQuantityValue(item)}
+                              />
+                            </Col>
+                            <Col span={4} style={{ width: '100%' }}>
+                              <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item)}>
+                                {<IntlMessages id="product.plus" />}
+                              </Button>
+                            </Col>
+                          </Row>
+                        )}
                       </div>
                     </SingleCardWrapper>
                   ))}

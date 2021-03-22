@@ -2,7 +2,7 @@ import React from 'react';
 import { Cascader } from "antd";
 import { InputBoxWrapper } from './Checkout.styles';
 
-export default function ({ label, placeholder, important, defaultValue, value, options, displayRender }) {
+export default function ({ label, placeholder, important, defaultValue, value, options, onChange, loadData, changeOnSelect }) {
   return (
     <InputBoxWrapper className="isoInputBox">
       <label>
@@ -14,7 +14,10 @@ export default function ({ label, placeholder, important, defaultValue, value, o
         size="large"
         options={options}
         defaultValue={defaultValue}
-        displayRender={displayRender}
+        onChange={onChange}
+        loadData={loadData}
+        changeOnSelect
+        value={value}
       />
     </InputBoxWrapper>
   );

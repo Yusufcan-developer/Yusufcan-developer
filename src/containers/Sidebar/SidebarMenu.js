@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useRouteMatch } from 'react-router-dom';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 import Menu from '@iso/components/uielements/menu';
 import IntlMessages from '@iso/components/utility/intlMessages';
@@ -15,6 +16,7 @@ export default React.memo(function SidebarMenu({
   ...rest
 }) {
   let match = useRouteMatch();
+  const isPointAddress=getIsPointAddressDelivery();
 
   const { key, label, leftIcon, children } = singleOption;
   const url = stripTrailingSlash(match.url);
@@ -36,7 +38,7 @@ export default React.memo(function SidebarMenu({
         {children.map(child => {
           const linkTo = child.withoutDashboard
             ? `/${child.key}`
-            : `${url}/${child.key}`;
+            : `${url}/${child.key}?ispd=${isPointAddress}`;
           return (
             <Menu.Item style={submenuStyle} key={child.key}>
               <Link style={submenuColor} to={linkTo}>
@@ -51,7 +53,7 @@ export default React.memo(function SidebarMenu({
 
   return (
     <Menu.Item key={key} {...rest}>
-      <Link to={`${url}/${key}`}>
+      <Link to={`${url}/${key}?ispd=${isPointAddress}`}>
         <span className="isoMenuHolder" style={submenuColor}>
           <i className={leftIcon} />
           <span className="nav-text">

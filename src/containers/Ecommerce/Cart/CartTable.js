@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, Link } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,14 +25,12 @@ import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
 import { DeleteOutlined } from '@ant-design/icons';
 import viewType from '@iso/config/viewType';
+import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
 
 //Other Library
 import { OrderTable } from '../Checkout/Checkout.styles';
 import _ from 'underscore';
 import getInitData from "../../../redux/ecommerce/config";
-import {
-  WarningTwoTone, InfoCircleTwoTone
-} from '@ant-design/icons';
 var jwtDecode = require('jwt-decode');
 
 const { changeProductQuantity } = ecommerceActions;
@@ -69,12 +67,13 @@ export default function CartTable({ style }) {
       item.orderAmount = item.amount;
     });
     const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
+    const activeUser = localStorage.getItem("activeUser");
+    const isPointAddress=getIsPointAddressDelivery();
     let account = '';
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
 
-    if (activeUser != undefined) { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    if (typeof activeUser != 'undefined') { account = activeUser }
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "isPointAddress":isPointAddress };
     const requestOptions = {
       method: "POST",
       headers: {
@@ -129,11 +128,12 @@ export default function CartTable({ style }) {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
+    const isPointAddress=getIsPointAddressDelivery();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl = '';
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true`; }
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&isPointAddress=${isPointAddress}`; }
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&isPointAddress=${isPointAddress}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -166,7 +166,7 @@ export default function CartTable({ style }) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
     if ((selectedProductItem === product.itemCode) && (isPartial === selectedIsPartial)) {
 
-      if (selectedAmout === undefined) {
+      if (typeof selectedAmout === 'undefined') {
         if (selectedAmout < 1) {
           return selectedProduct.quantity;
         } else {
@@ -222,7 +222,7 @@ export default function CartTable({ style }) {
         let productItem;
         let products;
         productItem = _.find(cartItem, function (item) { return item.itemCode == product.itemCode; });
-        if (productItem !== undefined) {
+        if (typeof productItem !== 'undefined') {
           let totalVat = productItem.totalVat;
           let itemCode = productItem.itemCode;
           products = productItem;
@@ -428,10 +428,10 @@ export default function CartTable({ style }) {
   function removeCartItemShowModal() {
 
     const token = jwtDecode(localStorage.getItem("id_token"));
-    if (token === undefined) { return }
+    if (typeof token === 'undefined') { return }
     const activeUser = localStorage.getItem("activeUser")
     let uname = token.uname;
-    if (activeUser != undefined) {
+    if (typeof activeUser != 'undefined') {
       uname = activeUser + ' hesabına ait sepetteki tüm ürünler silinecektir. Devam etmek istiyor musunuz?'
     } else {
       uname = 'Sepetinizdeki tüm ürünler silinecektir. Devam etmek istiyor musunuz?'
@@ -478,15 +478,15 @@ export default function CartTable({ style }) {
                 <div className="isoOrderTable">
                   <div className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"} >
                     <span>Toplam</span>
-                    <span>{totalCost != undefined ? (numberFormat(total)) : (0)} TL</span>
+                    <span>{typeof totalCost != 'undefined' ? (numberFormat(total)) : (0)} TL</span>
                   </div>
                   <div className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
                     <span>KDV</span>
-                    <span>{totalCost != undefined ? (numberFormat(totalVat)) : (0)} TL</span>
+                    <span>{typeof totalCost != 'undefined' ? (numberFormat(totalVat)) : (0)} TL</span>
                   </div>
                   <div className={view === 'MobileView' ? 'isoOrderTableFooterMobile' : "isoOrderTableFooter"}>
                     <span>Genel Toplam</span>
-                    <span>{totalCost != undefined ? (numberFormat(totalCost)) : (0)} TL</span>
+                    <span>{typeof totalCost != 'undefined' ? (numberFormat(totalCost)) : (0)} TL</span>
                   </div>
                 </div>
               </OrderTable>
