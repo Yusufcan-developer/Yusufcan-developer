@@ -28,7 +28,8 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import _ from 'underscore';
@@ -72,7 +73,7 @@ const ChequesReport = () => {
   const [selectedCheckqueType, setSelectedCheckqueType] = useState();
   const [status, setSelectedStatus] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
-
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
@@ -88,7 +89,7 @@ const ChequesReport = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -108,8 +109,16 @@ const ChequesReport = () => {
   }
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
-
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
+
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
@@ -191,9 +200,9 @@ const ChequesReport = () => {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    const isPointAddress=getIsPointAddressDelivery();
-
-    params.delete('isPointAddress');
+    const siteMode = getSiteMode();
+    
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -208,7 +217,7 @@ const ChequesReport = () => {
     params.delete('sortingOrder');
     params.delete('status');
 
-    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
@@ -220,7 +229,7 @@ const ChequesReport = () => {
     if (typeof serialNumber !== 'undefined') {
       if (serialNumber[0] !== '') { params.append('sno', serialNumber); params.toString(); } else { setSerialNumber(undefined) }
     }
-    params.append('isPointAddress', isPointAddress); params.toString();
+    params.append('smode', siteMode); params.toString();
 
     _.filter(selectedCheckqueType, function (item) {
       params.append('type', item); params.toString();
@@ -233,7 +242,8 @@ const ChequesReport = () => {
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-
+    setSearchSitemode(siteMode);
+    
     return setOnChange(true);
   }
 

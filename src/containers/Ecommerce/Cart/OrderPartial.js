@@ -22,7 +22,7 @@ import siteConfig from "@iso/config/site.config";
 import numberFormat from "@iso/config/numberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -57,7 +57,7 @@ const OrderPartial = () => {
   //Get Cart Listesi
   async function getCartList() {
     let productInfo;
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
     const requestOptions = {
       method: "GET",
       headers: {
@@ -68,8 +68,8 @@ const OrderPartial = () => {
     let apiUrl='';
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser");
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}&isPointAddress=${isPointAddress}`;}
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}&isPointAddress=${isPointAddress}` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}&siteMode=${siteMode}`;}
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}&siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -155,12 +155,12 @@ const OrderPartial = () => {
     }
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser");
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
     let account = token.uname;
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
 
     if (typeof activeUser != 'undefined') { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "isPointAddress":isPointAddress };
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode":siteMode };
     const requestOptions = {
       method: "POST",
       headers: {

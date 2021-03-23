@@ -16,7 +16,7 @@ import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
 import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
 import Form from "@iso/components/uielements/form";
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
@@ -43,467 +43,16 @@ var jwtDecode = require('jwt-decode');
 let createOrderNo = 'xxxx';
 export default function () {
 
-  const cityArray = [
-    {
-      label: 'ADANA',
-      value: "ADANA",
-      children: [
-        {
-          value: 'Adana',
-          label: 'Adana',
-        },
-
-        {
-          value: 'Aladağ',
-          label: 'Aladağ',
-        },
-
-        {
-          value: 'Ceyhan',
-          label: 'Ceyhan',
-        },
-
-        {
-          value: 'Çukurova',
-          label: 'Çukurova',
-        },
-
-        {
-          value: 'Feke',
-          label: 'Feke',
-        },
-
-        {
-          value: 'İmamoğlu',
-          label: 'İmamoğlu',
-        },
-
-        {
-          value: 'Karaisalı',
-          label: 'Karaisalı',
-        },
-
-        {
-          value: 'Karataş',
-          label: 'Karataş',
-        },
-        {
-          value: 'Kozan',
-          label: 'Kozan',
-        },
-
-        {
-          value: 'Pozantı',
-          label: 'Pozantı',
-        },
-        {
-          value: 'Saimbeyli',
-          label: 'Saimbeyli',
-        },
-
-        {
-          value: 'Sarıçam',
-          label: 'Sarıçam',
-        },
-        {
-          value: 'Seyhan',
-          label: 'Seyhan',
-        },
-        {
-          value: 'Tufanbeyli',
-          label: 'Tufanbeyli',
-        },
-        {
-          value: 'Yumurtalık',
-          label: 'Yumurtalık',
-        },
-        {
-          value: 'Yüreğir',
-          label: 'Yüreğir',
-        },
-      ]
-    },
-    {
-      label: 'ADIYAMAN',
-      value: "ADIYAMAN",
-      children: [
-        {
-          value: 'Adıyaman',
-          label: 'Adıyaman',
-        },
-        {
-          value: 'Besni',
-          label: 'Besni',
-        },
-        {
-          value: 'Çelikhan',
-          label: 'Çelikhan',
-        },
-        {
-          value: 'Gerger',
-          label: 'Gerger',
-        },
-        {
-          value: 'Gölbaşı',
-          label: 'Gölbaşı',
-        },
-        {
-          value: 'Kahta',
-          label: 'Kahta',
-        },
-        {
-          value: 'Samsat',
-          label: 'Samsat',
-        },
-        {
-          value: 'Sincik',
-          label: 'Sincik',
-        },
-        {
-          value: 'Tut',
-          label: 'Tut',
-        },
-      ],
-    },
-    {
-      label: 'AFYONKARAHİSAR',
-      value:
-        "AFYONKARAHİSAR"
-    },
-    {
-      label: 'AĞRI',
-      value:
-        "AĞRI"
-    },
-    {
-      label: 'AMASYA',
-      value:
-        "AMASYA"
-    },
-    {
-      label: 'ANKARA',
-      value: "ANKARA"
-    },
-    {
-      label: 'ANTALYA',
-      value: "ANTALYA"
-    },
-    {
-      label: 'ARTVİN',
-      value: "ARTVİN"
-    },
-    {
-      label: 'AYDIN',
-      value: "AYDIN"
-    },
-    {
-      label: 'BALIKESİR',
-      value: "BALIKESİR"
-    },
-    {
-      label: 'BİLECİK',
-      value: "BİLECİK"
-    },
-    {
-      label: 'BİNGÖL',
-      value: "BİNGÖL"
-    }, {
-      label: 'BİTLİS',
-      value: "BİTLİS"
-    },
-    {
-      label: 'BOLU',
-      value: "BOLU"
-    }, {
-      label: 'BURDUR',
-      value: "BURDUR"
-    },
-    {
-      label: 'BURSA',
-      value: "BURSA"
-    }, {
-      label: 'ÇANAKKALE',
-      value: "ÇANAKKALE"
-    },
-    {
-      label: 'ÇANKIRI',
-      value: "ÇANKIRI"
-    }, {
-      label: 'ÇORUM',
-      value: "ÇORUM"
-    },
-    {
-      label: 'DENİZLİ',
-      value: "DENİZLİ"
-    }, {
-      label: 'DİYARBAKIR',
-      value: "DİYARBAKIR"
-    },
-    {
-      label: 'EDİRNE',
-      value: "EDİRNE"
-    }, {
-      label: 'ELAZIĞ',
-      value: "ELAZIĞ"
-    },
-    {
-      label: 'ERZİNCAN',
-      value: "ERZİNCAN"
-    }, {
-      label: 'ERZURUM',
-      value: "ERZURUM"
-    },
-    {
-      label: 'ESKİŞEHİR',
-      value: "ESKİŞEHİR"
-    }, {
-      label: 'GAZİANTEP',
-      value: "GAZİANTEP"
-    },
-    {
-      label: 'GİRESUN',
-      value: "GİRESUN"
-    }, {
-      label: 'GÜMÜŞHANE',
-      value: "GÜMÜŞHANE"
-    },
-    {
-      label: 'HAKKARİ',
-      value: "HAKKARİ"
-    }, {
-      label: 'HATAY',
-      value: "HATAY"
-    },
-    {
-      label: 'ISPARTA',
-      value: "ISPARTA"
-    }, {
-      label: 'MERSİN',
-      value: "MERSİN"
-    },
-    {
-      label: 'İSTANBUL',
-      value: "İSTANBUL",
-      children: [
-        {
-          value: 'Bakırköy',
-          label: 'Bakırköy',
-          // children: [
-          //   {
-          //     value: 'Ataköy',
-          //     label: 'Ataköy',
-          //     code: 453400,
-          //   },
-          // ],
-        },
-      ],
-    }, {
-      label: 'İZMİR',
-      value: "İZMİR",
-      isLeaf: false,
-
-      children: [
-        {
-          value: 'Konak',
-          label: 'Konak',
-          isLeaf: false,
-          // children: [
-          //   {
-          //     value: 'Eşrefpaşa',
-          //     label: 'Eşrefpaşa',
-          //     code: 752100,
-          //   },
-          //],
-        },
-      ],
-    },
-    {
-      label: 'KARS',
-      value: "KARS"
-    }, {
-      label: 'KASTAMONU',
-      value: "KASTAMONU"
-    },
-    {
-      label: 'KAYSERİ',
-      value: "KAYSERİ"
-    }, {
-      label: 'KIRKLARELİ',
-      value: "KIRKLARELİ"
-    },
-    {
-      label: 'KIRŞEHİR',
-      value: "KIRŞEHİR"
-    }, {
-      label: 'KOCAELİ',
-      value: "KOCAELİ"
-    },
-    {
-      label: 'KONYA',
-      value: "KONYA"
-    }, {
-      label: 'KÜTAHYA',
-      value: "KÜTAHYA"
-    },
-    {
-      label: 'MALATYA',
-      value: "MALATYA"
-    }, {
-      label: 'MANİSA',
-      value: "MANİSA"
-    },
-    {
-      label: 'KAHRAMANMARAŞ',
-      value: "KAHRAMANMARAŞ"
-    }, {
-      label: 'MARDİN',
-      value: "MARDİN"
-    },
-    {
-      label: 'MUĞLA',
-      value: "MUĞLA"
-    }, {
-      label: 'MUŞ',
-      value: "MUŞ"
-    },
-    {
-      label: 'NEVŞEHİR',
-      value: "NEVŞEHİR"
-    }, {
-      label: 'NİĞDE',
-      value: "NİĞDE"
-    },
-    {
-      label: 'ORDU',
-      value: "ORDU"
-    }, {
-      label: 'RİZE',
-      value: "RİZE"
-    },
-    {
-      label: 'SAKARYA',
-      value: "SAKARYA"
-    }, {
-      label: 'SAMSUN',
-      value: "SAMSUN"
-    },
-    {
-      label: 'SİİRT',
-      value: "SİİRT"
-    }, {
-      label: 'SİNOP',
-      value: "SİNOP"
-    },
-    {
-      label: 'SİVAS',
-      value: "SİVAS"
-    }, {
-      label: 'TEKİRDAĞ',
-      value: "TEKİRDAĞ"
-    },
-    {
-      label: 'TOKAT',
-      value: "TOKAT"
-    }, {
-      label: 'TRABZON',
-      value: "TRABZON"
-    },
-    {
-      label: 'TUNCELİ',
-      value: "TUNCELİ"
-    }, {
-      label: 'ŞANLIURFA',
-      value: "ŞANLIURFA"
-    },
-    {
-      label: 'UŞAK',
-      value: "UŞAK"
-    }, {
-      label: 'VAN',
-      value: "VAN"
-    },
-    {
-      label: 'YOZGAT',
-      value: "YOZGAT"
-    }, {
-      label: 'ZONGULDAK',
-      value: "ZONGULDAK"
-    },
-    {
-      label: 'AKSARAY',
-      value: "AKSARAY"
-    }, {
-      label: 'BAYBURT',
-      value: "BAYBURT"
-    },
-    {
-      label: 'KARAMAN',
-      value: "KARAMAN"
-    }, {
-      label: 'KIRIKKALE',
-      value: "KIRIKKALE"
-    },
-    {
-      label: 'BATMAN',
-      value: "BATMAN"
-    }, {
-      label: 'ŞIRNAK',
-      value: "ŞIRNAK"
-    },
-    {
-      label: 'BARTIN',
-      value: "BARTIN"
-    }, {
-      label: 'ARDAHAN',
-      value: "ARDAHAN"
-    },
-    {
-      label: 'IĞDIR',
-      value: "IĞDIR"
-    }, {
-      label: 'YALOVA',
-      value: "YALOVA"
-    },
-    {
-      label: 'KARABüK',
-      value: "KARABüK"
-    }, {
-      label: 'KİLİS',
-      value: "KİLİS"
-    },
-    {
-      label: 'OSMANİYE',
-      value: "OSMANİYE"
-    }, {
-      label: 'DÜZCE',
-      value: "DÜZCE"
-    },
-
-  ]
-  const townArray=[
-    {
-      label: 'Eşrefpaşa',
-      value: "Eşrefpaşa",
-    },
-    {
-      label: 'Üçyol',
-      value: "Üçyol",
-    },
-    {
-      label: 'Hatay',
-      value: "Üçyol",
-    }
-  ]
-
+  let distrinctArray;
   document.title = "Sipariş Onayı - Seramiksan B2B";
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
   const [city, setCity] = useState('');
   const [town, setTown] = useState('');
-  const [district,setDistrict]=useState('');
+  const [district, setDistrict] = useState('');
   const [km, setKm] = useState();
   const [cities, setCities] = useState();
-  const [optionsCities, setOptions] = useState(cityArray);
+  const [optionsCities, setOptions] = useState();
 
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
@@ -531,6 +80,8 @@ export default function () {
   let account = token.uname;
   let createAddressButtonVisible = true;
   if (typeof activeUser != 'undefined') { account = activeUser }
+
+
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -674,6 +225,82 @@ export default function () {
     return userData;
   }
 
+  //getLocationDetail
+  async function getLocationDetail(selectedCity, selectedTown, selectedDistrict) {
+    debugger
+    //Get User Info  
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    let params;
+    if (selectedCity) { params = 'city=' + selectedCity }
+    if (selectedTown) { params += '&' + 'town=' + selectedTown }
+    if (selectedDistrict) { params += '&' + 'district=' + selectedDistrict }
+    let locationDetail = siteConfig.api.lookup.getLocationDetail;
+    await fetch(`${locationDetail}/?${params}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+       //Km bilgisi
+       setKm(78)
+      })
+      .catch();
+  }
+  //getDistricts
+  async function getDistricts(selectedCity, selectedTown) {
+    //Get User Info  
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    let newSaveOrderUrl = siteConfig.api.lookup.getDistricts.replace('{city}', selectedCity);
+    newSaveOrderUrl = newSaveOrderUrl.replace('{town}', selectedTown);
+    await fetch(`${newSaveOrderUrl}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+          distrinctArray = _.map(data, (item) => { return { 'label': item, 'value': item }; })
+          distrinctArray.push({ 'label': 'YOK', 'value': null });
+        }
+      })
+      .catch();
+  }
+
+  //getLocaitons
+  async function getLocations() {
+    //Get User Info  
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(siteConfig.api.lookup.getLocations, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+          setOptions(data);
+        }
+      })
+      .catch();
+  }
+
   //get adress
   async function getAdress() {
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -728,6 +355,7 @@ export default function () {
     await getHasSaveOrderPermission();
     await getByUserId(userId);
     await getAdress();
+    await getLocations();
   }
 
   //Sipariş temizleme işlemi
@@ -741,12 +369,12 @@ export default function () {
       item['amount'] = item['quantity'];
       // delete item['quantity'];
     });
-    const isPointAddress = getIsPointAddressDelivery();
+    const siteMode = getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let account = token.uname;
     if (typeof activeUser != 'undefined') { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "isPointAddress": isPointAddress };
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode": siteMode };
     const requestOptions = {
       method: "POST",
       headers: {
@@ -796,7 +424,7 @@ export default function () {
     const dealerCodes = token.dcode;
     if ((typeof addressTitle === 'undefined') || (typeof address1 === 'undefined') || (typeof city === 'undefined') || (typeof town === 'undefined') || (typeof address2 === 'undefined')) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
-    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town,"district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
+    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town, "district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
       method: "POST",
       headers: {
@@ -811,7 +439,8 @@ export default function () {
         return status;
       })
       .then(data => {
-        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode);
+        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode); setTown(data.town);
+        getLocationDetail(data.city, 'Bayindir', data.town);
         setVisible(false);
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
@@ -898,21 +527,22 @@ export default function () {
     createAddressButtonVisible = false;
   }
 
-  function onChangeCityAndTown(value, selectedOptions) {
-    if(typeof value!==undefined){setCity(value[0]);}
-    if (value.length > 1) {setCities(value); setTown(value[1]); setDistrict(value[2])} else {setCities("");}
+  async function onChangeCityAndTown(value, selectedOptions) {
+    debugger
+    if (typeof value !== undefined) { setCity(value[0]); }
+    if (value.length > 1) { setCities(value); setTown(value[1]); setDistrict(value[2]); getDistricts(value[0], value[1]) } else { setCities(""); }
   };
   const loadData = selectedOptions => {
     const targetOption = selectedOptions[selectedOptions.length - 1];
     targetOption.loading = true;
-    // load options lazily
     setTimeout(() => {
       targetOption.loading = false;
-      targetOption.children = 
-        townArray;
+      targetOption.children =
+        distrinctArray;
       setOptions([...optionsCities]);
     }, 1000);
   };
+
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -1031,7 +661,7 @@ export default function () {
                         value={phone}
                         onChange={onChangePhone}
                       />
-                    </Fieldset>                   
+                    </Fieldset>
                   </Form>
                 </Modal>
                 <Modal

@@ -20,8 +20,8 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "../Reports/ReportSummary";
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
-import { setIsPointAddressDelivery } from '@iso/lib/helpers/setIsPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
@@ -56,7 +56,8 @@ const MainForm = () => {
   const [pageSizeDBSTotal, setPageSizeDBSTotal] = useState(20)
   const [pageIndexAccountBalance, setPageIndexAccountBalance] = useState(1);
   const [pageSizeAccountBalance, setPageSizeAccountBalance] = useState(20);
-  const [dealerCodes, setDealerCodes] = useState()
+  const [dealerCodes, setDealerCodes] = useState();
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const location = useLocation();
   const [newUrlParams, setNewUrlParams] = useState('')
 
@@ -84,10 +85,10 @@ const MainForm = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal });
+    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal, "siteMode": searchSiteMode });
 
   const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData, expandData] =
-    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance });
+    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance, "siteMode": searchSiteMode });
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
   const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
@@ -99,13 +100,15 @@ const MainForm = () => {
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
-    const isPointAddress=getIsPointAddressDelivery();
-    
-    //isPointAddress paste url manuel.
-    if ((isPointAddress.toString() !==  parsed.ispd) && (typeof parsed.ispd !== 'undefined')) {
+    const siteMode = getSiteMode();
+
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
       window.location.reload(false);
     }
-    if (typeof parsed.ispd !== 'undefined') { setIsPointAddressDelivery(parsed.ispd); }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
 
     let dealerCode = [];
     if (typeof parsed.dealer !== 'undefined') {
@@ -121,18 +124,19 @@ const MainForm = () => {
   //Get Search Data
   function dataSearch() {
     const params = new URLSearchParams(location.search);
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode = getSiteMode();
 
-    params.delete('ispd');
+    params.delete('smode');
     params.delete('dealer'); {
       _.forEach(dealerCodes, (item) => {
         params.append('dealer', item); params.toString();
       });
-      params.append('ispd', isPointAddress); params.toString();
+      params.append('smode', siteMode); params.toString();
       let createUrl = null;
       if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
       history.push(`${location.pathname}?${createUrl}`);
 
+      setSearchSitemode(siteMode);
       AccountSetOnChange(true);
       setOnChange(true);
     }
@@ -189,16 +193,16 @@ const MainForm = () => {
   function dealerCodeHandleChange(value) {
     setDealerCodes(value);
   }
-   //Excel Oluşturma
-   const exportExcelButton = () => {
+  //Excel Oluşturma
+  const exportExcelButton = () => {
     // postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
     ExcelExport(AccountColumns, accountData, 'Cari Toplamlar');
   }
-    //Excel Oluşturma
-    const exportDBSExcelButton = () => {
-      // postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
-      ExcelExport(columns, data, 'DBS Toplamları');
-    }
+  //Excel Oluşturma
+  const exportDBSExcelButton = () => {
+    // postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
+    ExcelExport(columns, data, 'DBS Toplamları');
+  }
 
   //DBS Toplamlar Columns
   let columns = [
@@ -409,14 +413,14 @@ const MainForm = () => {
     }
   }
   const view = viewType('Reports');
-  const filterView=viewType('Filter');
+  const filterView = viewType('Filter');
   return (
     <LayoutWrapper>
       <PageHeader>
         {<IntlMessages id="page.mainForm.header" />}
       </PageHeader>
       <Box >
-        <Collapse accordion  defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }  >
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}  >
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -446,7 +450,7 @@ const MainForm = () => {
         </Collapse>
       </Box>
       <Box >
-      <Col span={8} offset={16} align="right" >
+        <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}
@@ -484,7 +488,7 @@ const MainForm = () => {
         />
       </Box>
       <Box >
-      <Col span={8} offset={16} align="right" >
+        <Col span={8} offset={16} align="right" >
           <Button type="primary" size="small" style={{ marginBottom: '5px' }}
             icon={<DownloadOutlined />} onClick={exportDBSExcelButton}>
             {<IntlMessages id="forms.button.exportExcel" />}

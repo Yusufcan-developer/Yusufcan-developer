@@ -28,7 +28,8 @@ import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
@@ -71,6 +72,7 @@ export default function () {
   const [selectedItemsId, setSelectedItemsId] = useState([]);
   const [selectAllLoading, setSelectedLoading] = useState(false);
   const [hasSelected, setHasSelected] = useState(false);
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   let dataAddKeyValue;
 
   //Burada ki useEffect'ler page index page size
@@ -85,7 +87,7 @@ export default function () {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    usePostNotificationFetch(`${siteConfig.api.security.postNotification}`, { "notificationTypes": selectedNotificationType, "isRead": selectedIsRead, "userIds": [uid], "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    usePostNotificationFetch(`${siteConfig.api.security.postNotification}`, { "notificationTypes": selectedNotificationType, "isRead": selectedIsRead, "userIds": [uid], "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
 
   if (data.length > 0) {
     dataAddKeyValue = _.each(data, (item) => {
@@ -101,9 +103,16 @@ export default function () {
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
-
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
 
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
@@ -133,9 +142,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
 
-    params.delete('isPointAddress');
+    params.delete('smode');
     params.delete('isRead');
     params.delete('type');
     params.delete('from');
@@ -159,10 +168,11 @@ export default function () {
     _.filter(selectedNotificationType, function (item) {
       params.append('type', item); params.toString();
     });
-    params.append('isPointAddress', isPointAddress); params.toString();
+    params.append('smode', siteMode); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }

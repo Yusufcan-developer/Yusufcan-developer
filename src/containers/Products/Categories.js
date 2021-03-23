@@ -8,7 +8,7 @@ import { Card, Row, Col } from "antd";
 import TopbarAddtoCart from '../Topbar/TopbarAddToCart';
 import TopbarNotification from '../Topbar/TopbarNotification';
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 const { Meta } = Card;
 
@@ -47,7 +47,7 @@ const ProductGroupList = () => {
   TopbarAddtoCart();
   TopbarNotification();
   const view = viewType('Categories');
-  const isPointAddress=getIsPointAddressDelivery();
+  const siteMode=getSiteMode();
 
   return (
     <LayoutWrapper>
@@ -58,7 +58,7 @@ const ProductGroupList = () => {
           {categories.map((item) => (
             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {/* Seçilen kategori grubuna göre Id alınıp ürün listeleme sayfasına geçiyor.*/}
-              <Link to={`${'/products/search'}/?pg=${item.Id}&isPointAddress=${isPointAddress}`}>
+              <Link to={`${'/products/search'}/?pg=${item.Id}&smode=${siteMode}`}>
 
                 <Card
                   hoverable

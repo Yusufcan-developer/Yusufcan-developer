@@ -27,7 +27,8 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import _ from 'underscore';
@@ -66,6 +67,7 @@ export default function () {
   const [newUrlParams, setNewUrlParams] = useState('');
   const [privateDate, setPrivateDate] = useState('Bugun');
   const [selectedRadioItem, setSelectedRadioItem] = useState(1);
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const Option = SelectOption;
   const location = useLocation();
   const queryString = require('query-string');
@@ -81,7 +83,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useFetch(`${siteConfig.api.security.postAccounts}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null ?  fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ?  toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.security.postAccounts}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null ?  fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ?  toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder,"siteMode": searchSiteMode }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -90,7 +92,15 @@ export default function () {
   function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
 
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
@@ -148,9 +158,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
 
-    params.delete('isPointAddress');
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -171,10 +181,11 @@ export default function () {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    params.append('isPointAddress', isPointAddress); params.toString();
+    params.append('smode', siteMode); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }

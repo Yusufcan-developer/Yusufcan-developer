@@ -6,14 +6,15 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Switch } from 'antd';
 
 //Configs
-import { setIsPointAddressDelivery } from '@iso/lib/helpers/setIsPointAddressDelivery';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
+import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import moment from 'moment';
 import 'moment/locale/tr';
 moment.locale('tr');
 
 const TopbarAdressDelivery = () => {
-  
+
   const history = useHistory();
   const location = useLocation();
   const [newUrlParams, setNewUrlParams] = useState('')
@@ -21,10 +22,10 @@ const TopbarAdressDelivery = () => {
   //Point address delivery change
   function handleChangeAddressDelivery(value) {
     const params = new URLSearchParams(location.search);
-    setIsPointAddressDelivery(value);
-
-    params.delete('isPointAddress');
-    params.append('isPointAddress', value); params.toString();
+    params.delete('smode');
+    if (value === true) {
+      setSiteMode(enumerations.SiteMode.DeliverysPoint);params.append('smode', enumerations.SiteMode.DeliverysPoint); params.toString();
+    } else { setSiteMode(enumerations.SiteMode.Normal);params.append('smode', enumerations.SiteMode.Normal); params.toString(); }
 
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
@@ -33,8 +34,8 @@ const TopbarAdressDelivery = () => {
     window.location.reload(false);
   }
 
-  let isPointAddressDelivery = localStorage.getItem('isPointAddressDelivery');
-  if (isPointAddressDelivery === 'true') { isPointAddressDelivery = true }
+  let isPointAddressDelivery = localStorage.getItem('siteMode');
+  if (isPointAddressDelivery === enumerations.SiteMode.DeliverysPoint) { isPointAddressDelivery = true }
   else { isPointAddressDelivery = false }
 
   return (

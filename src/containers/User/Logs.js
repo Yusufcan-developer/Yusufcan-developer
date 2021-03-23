@@ -28,7 +28,8 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
@@ -65,7 +66,8 @@ export default function () {
   const [newUrlParams, setNewUrlParams] = useState('');
   const [selectedLogType, setSelectedLogType] = useState();
   const [selectedLogSource, setSelectedLogSource] = useState();
-  const location = useLocation();
+  const location = useLocation();  
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const queryString = require('query-string');
   const history = useHistory();
 
@@ -83,7 +85,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource, "logTypes": selectedLogType, "userIds": userIds, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource, "logTypes": selectedLogType, "userIds": userIds, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
 
   //Kullanıcı listesi
   const [userData] =
@@ -111,7 +113,15 @@ export default function () {
   function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
 
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
@@ -181,9 +191,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
 
-    params.delete('isPointAddress');
+    params.delete('smode');
     params.delete('user')
     params.delete('type');
     params.delete('source');
@@ -204,10 +214,11 @@ export default function () {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    params.append('isPointAddress', isPointAddress); params.toString();
+    params.append('smode', siteMode); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }

@@ -3,7 +3,7 @@ import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
 import history from '@iso/lib/helpers/history';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 var jwtDecode = require('jwt-decode');
 
 export default function getInitData() {
@@ -20,7 +20,7 @@ export default function getInitData() {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     if (token === undefined) { return history.replace('/'); }
     const activeUser = localStorage.getItem("activeUser")

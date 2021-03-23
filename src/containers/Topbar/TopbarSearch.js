@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import TopbarSearchModal from './TopbarSearchModal.styles';
 import { Input } from "antd";
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 export default function TopbarSearch() {
 
@@ -12,7 +12,7 @@ export default function TopbarSearch() {
   const [keyword, setKeyword] = useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const history = useHistory();
-  const isPointAddress = getIsPointAddressDelivery();
+  const siteMode = getSiteMode();
   
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -30,7 +30,7 @@ export default function TopbarSearch() {
     if (e.keyCode == 13) {
       if (typeof keyword !== 'undefined') {
         setVisiblity(false);
-        history.push(`${'/products/search'}/?keyword=${keyword}&isPointAddress=${isPointAddress}`)
+        history.push(`${'/products/search'}/?keyword=${keyword}&siteMode=${siteMode}`)
         if (location.pathname === '/products/search/') { window.location.reload(false); }
       }
       setKeyword();
@@ -40,7 +40,7 @@ export default function TopbarSearch() {
   function onClickSearch() {
     if (typeof keyword !== 'undefined') {
       setVisiblity(false);
-      history.push(`${'/products/search'}/?keyword=${keyword}&isPointAddress=${isPointAddress}`)
+      history.push(`${'/products/search'}/?keyword=${keyword}&siteMode=${siteMode}`)
       if (location.pathname === '/products/search/') { window.location.reload(false); }
     }
     setKeyword();

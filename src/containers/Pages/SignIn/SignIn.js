@@ -17,6 +17,7 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 const { login } = authAction;
 const { clearMenu } = appAction;
@@ -88,8 +89,9 @@ export default function SignIn() {
             if(data.isSuccessful===false){return loginError();}
             else{
             localStorage.removeItem('activeUser');
+            const siteMode = getSiteMode();
             dispatch(login(data.token));
-            dispatch(clearMenu()); history.push('/products/categories');
+            dispatch(clearMenu()); history.push(`${'/products/categories'}/?siteMode=${siteMode}`);
             postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.login);
             }
           }         

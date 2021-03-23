@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useParams, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal, message } from "antd";
+import { Table, Row, Col, TreeSelect, Dropdown, Menu, Select, Modal, message } from "antd";
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
@@ -21,7 +21,6 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
 import Actions from '@iso/redux/themeSwitcher/actions';
-import config from '@iso/redux/ecommerce/config'
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Styles
@@ -68,12 +67,9 @@ const CartList = () => {
   const { addToCart, changeViewTopbarCart, changeProductQuantity, otherCart } = ecommerceActions;
   const dispatch = useDispatch();
 
-  const styleButton = { background: sidebarTheme.buttonColor };
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const [checkedKeys, setCheckedKeys] = useState();
-  const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
   const [deleteCartVisible, setDeleteCartVisible] = useState(false);
   const [tableOptions, setState] = useState({
@@ -84,11 +80,7 @@ const CartList = () => {
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [selectedCart, setSelectedCart] = useState();
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
-  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
-  const [dealerCodes, setDealerCodes] = useState()
-  const [regionCodes, setRegionCodes] = useState()
-  const [fieldCodes, setFieldCodes] = useState();
+  const [dealerCodes, setDealerCodes] = useState();
   const [accountNo, setAccountNo] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
@@ -276,7 +268,7 @@ const CartList = () => {
   }
 
   async function handleCreateCart() {
-    if (dealerCodes === undefined) { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
+    if (typeof dealerCodes === 'undefined') { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
     else {
       localStorage.setItem('activeUser', dealerCodes);
       await postStartEditingBehalfOf(dealerCodes);

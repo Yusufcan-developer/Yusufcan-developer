@@ -19,7 +19,7 @@ import { Tooltip, Button } from "antd";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
@@ -72,11 +72,11 @@ export default function TopbarAddtoCart() {
       }
     };
     let apiUrl='';
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser"); 
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&isPointAddress=${isPointAddress}`;}
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&isPointAddress=${isPointAddress}` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&siteMode=${siteMode}`;}
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)

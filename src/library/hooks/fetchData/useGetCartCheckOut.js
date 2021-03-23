@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import _ from 'underscore';
 import siteConfig from "@iso/config/site.config";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 var jwtDecode = require('jwt-decode');
 
@@ -20,12 +20,12 @@ function useGetCartCheckOut(url) {
           Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
         }
       };
-      const isPointAddress=getIsPointAddressDelivery();
+      const siteMode=getSiteMode();
       const token = jwtDecode(localStorage.getItem("id_token"));
       const activeUser = localStorage.getItem("activeUser")
       let apiUrl='';
-      if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&isPointAddress=${isPointAddress}`;}
-      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&isPointAddress=${isPointAddress}` }
+      if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&siteMode=${siteMode}`;}
+      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&siteMode=${siteMode}` }
       if (!token.uname) { return 'Unauthorized' }
     
     await fetch(apiUrl, requestOptions)

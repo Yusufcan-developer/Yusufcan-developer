@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, TreeSelect, Tag, Select, BackTop, Radio } from "antd";
+import { Table, Row, Col, TreeSelect, Tag, Select, Radio } from "antd";
 
 //Fetch
 import { usePostOrderReport } from "@iso/lib/hooks/fetchData/usePostOrderReport";
@@ -31,8 +31,8 @@ import renderFooter from "./ReportSummary";
 import numberFormat from "@iso/config/numberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
-import { setIsPointAddressDelivery } from '@iso/lib/helpers/setIsPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -68,6 +68,7 @@ const OrdersReport = () => {
     const [startingPageIndex, setStartingPageIndex] = useState(1);
     const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
     const [toDate, setToDate] = useState(moment(new Date()));
+    const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [dealerCodes, setDealerCodes] = useState()
     const [regionCodes, setRegionCodes] = useState()
     const [fieldCodes, setFieldCodes] = useState();
@@ -99,7 +100,7 @@ const OrdersReport = () => {
     
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, orderDetailData, aggregatesOverall] =
-        usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+        usePostOrderReport(`${siteConfig.api.report.postOrders}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
 
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -114,13 +115,15 @@ const OrdersReport = () => {
     function getVariablesFromUrl() {
         //Url değerini alıyoruz.
         const parsed = queryString.parse(location.search);
-        const isPointAddress=getIsPointAddressDelivery();
+        const siteMode=getSiteMode();
     
-        //isPointAddress paste url manuel.
-        if ((isPointAddress.toString() !==  parsed.ispd) && (typeof parsed.ispd !== 'undefined')) {
-          window.location.reload(false);
+        //site mode paste url manuel.
+        if ((siteMode !==  parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+            setSiteMode(parsed.smode);
+            setSearchSitemode(parsed.smode);
+            window.location.reload(false);
         }
-        if (typeof parsed.ispd !== 'undefined') { setIsPointAddressDelivery(parsed.ispd); }
+        if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
         if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
         if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
         if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
@@ -193,6 +196,7 @@ const OrdersReport = () => {
                 dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
             }
         });
+        setSearchSitemode(siteMode);
         onChangeDealerCode(newDealarCode);
 
         return setOnChange(true);
@@ -228,9 +232,9 @@ const OrdersReport = () => {
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
         const params = new URLSearchParams(location.search);
-        const isPointAddress=getIsPointAddressDelivery();
+        const siteMode=getSiteMode();
 
-        params.delete('ispd');
+        params.delete('smode');
         params.delete('dec');
         params.delete('rec');
         params.delete('fic');
@@ -262,7 +266,8 @@ const OrdersReport = () => {
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-        params.append('ispd', isPointAddress); params.toString();
+        params.append('smode', siteMode); params.toString();
+        setSearchSitemode(siteMode);
 
         let createUrl = null;
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }

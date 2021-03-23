@@ -10,7 +10,8 @@ import Logo from '@iso/components/utility/logo';
 import SidebarWrapper from './Sidebar.styles';
 import SidebarMenu from './SidebarMenu';
 import _ from 'underscore';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import enumerations from "../../config/enumerations";
 
 var jwtDecode = require('jwt-decode');
 const { Sider } = Layout;
@@ -98,9 +99,9 @@ export default function Sidebar() {
     }
     return;
   };
-  const isPointAddressDelivery = getIsPointAddressDelivery();
+  const siteMode = getSiteMode();
   let backgroundColor = customizedTheme.backgroundColor;
-  if (isPointAddressDelivery === true) {
+  if (siteMode === enumerations.SiteMode.DeliverysPoint) {
     backgroundColor = '#4482FF'
   }
   const styling = {    

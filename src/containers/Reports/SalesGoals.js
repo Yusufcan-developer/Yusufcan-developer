@@ -1,7 +1,3 @@
-
-
-import Gauge from "../Gauges/SalesGoalsGauge";
-
 //React
 import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
@@ -77,16 +73,6 @@ const SalesTarget = () => {
     const searchButton = () => {
         setOnChange(true);       
     };
-
-    //Search DailerName Tree Select Component
-    function filterTreeNodeDealerCode(value, treeNode) {
-        if (value && treeNode && treeNode.title) {
-            const filterValue = value.toLocaleLowerCase('tr')
-            const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-            return treeNodeTitle.indexOf(filterValue) !== -1;
-        }
-        return false;
-    }
 
     //Change Year
     function handleChangeYear(value) {

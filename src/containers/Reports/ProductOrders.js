@@ -32,7 +32,8 @@ import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import ExcelExport from "./ExcelExport";
@@ -52,7 +53,6 @@ let sortingOrder;
 export default function () {
   document.title = "Sipariş Kalemleri - Seramiksan B2B";
 
-  const children = [];
   const Option = SelectOption;
   const [searchKey, setSearchKey] = useState('');
   const [tableOptions, setState] = useState({
@@ -76,6 +76,7 @@ export default function () {
   const [address, setAddress] = useState();
   const [lookupAddressChildren, setLookupAddressChildren] = useState();
   const [orderLineItemStatus, setOrderLineItemStatus] = useState(enumerations.OrderLineItemStatus.None);
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
 
   const location = useLocation();
   const queryString = require('query-string');
@@ -95,7 +96,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "orderLineItemStatus": orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address }, searchUrl);
+    useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "orderLineItemStatus": orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -110,7 +111,15 @@ export default function () {
   function getVariablesFromUrl() {
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
 
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
     if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
     if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
@@ -216,9 +225,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode = getSiteMode();
 
-    params.delete('isPointAddress');
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -252,11 +261,12 @@ export default function () {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    params.append('isPointAddress', isPointAddress); params.toString();
-    
+    params.append('smode', siteMode); params.toString();
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }
@@ -356,10 +366,6 @@ export default function () {
     dataSearch(current, pageSize);
   }
 
-  //Change Transaction Type
-  function transactionTypeHandleChange(value) {
-    setSelectedTransactionType(value);
-  }
   function privateDateHandleChange(value) {
     setPrivateDate(value);
 

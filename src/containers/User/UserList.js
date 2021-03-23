@@ -21,7 +21,8 @@ import ReportPagination from "../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Style
 import { DownOutlined, SettingOutlined, UserAddOutlined } from '@ant-design/icons';
@@ -51,6 +52,7 @@ const UserList = () => {
   const [lastName, setLastName] = useState();
   const [email, setEmail] = useState();
   const [iconLoading, setIconLoading] = useState(false);
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
 
   //Modal ve Yetkilere göre Bölge,Saha kodu gizleme
   const [visible, setVisible] = useState(false);
@@ -161,12 +163,21 @@ const UserList = () => {
 
   //Kullanıcı listesi
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange,] =
-    useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize });
+    useUserFetch(`${siteConfig.api.users.postUsers}`, { "keyword": searchKey, "isActive": isActive, "roleNames": roleNames, "pageIndex": localCurrentPage - 1, "pageCount": pageSize, "siteMode": searchSiteMode });
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl(query) {
     let role = []
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
+
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
     if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
     if ((typeof parsed.pgindex !== 'undefined') && (selectedCurrentPage === 0)) { setlocalCurrentPage(parseInt(parsed.pgindex)); }
@@ -201,9 +212,9 @@ const UserList = () => {
   function dataSearch(selectedPageIndex, selectedPageSize) {
     postSaveLog(enumerations.LogSource.Users, enumerations.LogTypes.Browse, logMessage.User.search);
     const params = new URLSearchParams(location.search)
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
     
-    params.delete('isPointAddress');
+    params.delete('smode');
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
@@ -217,10 +228,11 @@ const UserList = () => {
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setlocalCurrentPage(1); params.append('pgindex', 1) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    params.append('isPointAddress', isPointAddress); params.toString();
+    params.append('smode', siteMode); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }

@@ -3,7 +3,7 @@ import actions from './actions';
 import _ from 'underscore';
 import siteConfig from "@iso/config/site.config";
 import history from '@iso/lib/helpers/history';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 var jwtDecode = require('jwt-decode');
 
@@ -34,7 +34,7 @@ export function* updateData({ productQuantity }) {
     item['amount'] = item['quantity'];
     delete item['quantity'];
   });
-  const isPointAddress=getIsPointAddressDelivery();
+  const siteMode=getSiteMode();
   const token = jwtDecode(localStorage.getItem("id_token"));
   if(typeof token==='undefined'){return  history.replace('/');}
   const activeUser = localStorage.getItem("activeUser")
@@ -42,7 +42,7 @@ export function* updateData({ productQuantity }) {
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
 
   if (typeof activeUser != 'undefined') { account = activeUser }
-  const reqBody = { "items": sendDatabaseProductList,"accountNo": account,"isPointAddress":isPointAddress };
+  const reqBody = { "items": sendDatabaseProductList,"accountNo": account,"siteMode":siteMode };
   const requestOptions = {
     method: "POST",
     headers: {

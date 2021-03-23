@@ -25,7 +25,7 @@ import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
 import { DeleteOutlined } from '@ant-design/icons';
 import viewType from '@iso/config/viewType';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 //Other Library
 import { OrderTable } from '../Checkout/Checkout.styles';
@@ -68,12 +68,12 @@ export default function CartTable({ style }) {
     });
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser");
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
     let account = '';
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
 
     if (typeof activeUser != 'undefined') { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "isPointAddress":isPointAddress };
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode":siteMode };
     const requestOptions = {
       method: "POST",
       headers: {
@@ -128,12 +128,12 @@ export default function CartTable({ style }) {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    const isPointAddress=getIsPointAddressDelivery();
+    const siteMode=getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl = '';
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&isPointAddress=${isPointAddress}`; }
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&isPointAddress=${isPointAddress}` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&siteMode=${siteMode}`; }
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)

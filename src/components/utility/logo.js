@@ -3,12 +3,13 @@ import { Link } from 'react-router-dom';
 import siteConfig from '@iso/config/site.config';
 import horizontalLogo from '@iso/assets/images/seramiksan-logo-horizontal.png';
 import iconLogo from '@iso/assets/images/seramiksan-logo-icon.png';
-import { getIsPointAddressDelivery } from '@iso/lib/helpers/isPointAddressDelivery';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import enumerations from '../../config/enumerations';
 
 export default ({ collapsed }) => {
   let className='isoLogoWrapper'
-  const isPointAddressDelivery = getIsPointAddressDelivery();
-  if(isPointAddressDelivery===true){
+  const siteMode = getSiteMode();
+  if(siteMode===enumerations.SiteMode.DeliverysPoint){
     className='isoAddressDeliveryLogoWrapper'
   }
   return (
