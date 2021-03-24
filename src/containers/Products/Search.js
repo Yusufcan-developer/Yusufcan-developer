@@ -27,6 +27,8 @@ import enumerations from "@iso/config/enumerations";
 import numberFormat from "@iso/config/numberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import _ from 'underscore';
@@ -105,6 +107,7 @@ const SearchComponent = () => {
   const [serieFilterSearch, setSerieFilterSearch] = useState();
   const [colorFilterSearch, setColorFilterSearch] = useState();
   const [surfaceFilterSearch, setSurfaceFilterSearch] = useState();
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
 
   const { Search } = Input;
 
@@ -125,7 +128,15 @@ const SearchComponent = () => {
   function getVariablesFromUrl() {
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
-
+    const siteMode=getSiteMode();
+    
+    //site mode paste url manuel.
+    if ((siteMode !==  parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+        setSiteMode(parsed.smode);
+        setSearchSitemode(parsed.smode);
+        window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     //Category get url data
     if (typeof parsed.pg !== 'undefined') {
       if (Array.isArray(parsed.pg)) {
@@ -267,7 +278,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress }, category, parsed);
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, category, parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -276,22 +287,22 @@ const SearchComponent = () => {
   // const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
 
   //Post Type
-  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
+  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Get Dimension
   // const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.getDimensions}?categories=${category}`);
 
   //Post Dimension
-  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
+  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Post Series
-  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
+  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Post Color
-  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Post Surface
-  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "isPointAddress": isPointAddress });
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode});
 
   //Get Quality
   // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
@@ -1386,7 +1397,7 @@ const SearchComponent = () => {
                               : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               </Badge.Ribbon>}
                             <div className="isoCardImage">
-                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                              <Link to={`${'/products/detail'}/${item.itemCode}&smode=${searchSiteMode}`}>
                                 <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                               </Link>{' '}
                             </div>
@@ -1401,7 +1412,7 @@ const SearchComponent = () => {
                               </Link>{' '}
                             </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               <div className="isoCardImage">
-                                <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                                <Link to={`${'/products/detail'}/${item.itemCode}?siteMode=${searchSiteMode}`}>
                                   <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                 </Link>{' '}
                               </div></Badge.Ribbon>}

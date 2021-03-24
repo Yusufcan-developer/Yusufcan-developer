@@ -25,7 +25,7 @@ export default function getInitData() {
     if (token === undefined) { return history.replace('/'); }
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl='';
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`;}
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}&siteMode=${siteMode}`;}
       else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
     if (!token.uname) { return 'Unauthorized' }
 

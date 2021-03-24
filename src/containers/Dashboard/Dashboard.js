@@ -21,7 +21,7 @@ const styles = {
     position: 'relative',
   },
   footer: {
-    background: '#ffffff',
+    background: '#f1f3f6',
     textAlign: 'center',
     borderTop: '1px solid #ededed',
   },

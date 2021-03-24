@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
-import { Link, useHistory, useRouteMatch, useParams } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 
 //Components
 import Box from '@iso/components/utility/box';
@@ -10,7 +10,7 @@ import LayoutWrapper from '@iso/components/utility/layoutWrapper';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { SwiperWithCustomNav } from '@iso/ui/SwiperSlider';
 import Input from '@iso/components/uielements/input';
-import { Row, Col, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Modal, Image, Carousel, Space, Badge, message } from 'antd';
+import { Row, Col, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Image, Space, message } from 'antd';
 import _, { select } from 'underscore';
 import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
 
@@ -26,6 +26,8 @@ import numberFormat from "@iso/config/numberFormat";
 import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Styles
 import PageHeader from '@iso/components/utility/pageHeader';
@@ -38,8 +40,6 @@ const { TabPane } = Tabs;
 const ProductDetail = () => {
   const dispatch = useDispatch();
   const { productId } = useParams();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogImageId, setDialogImageId] = useState(0);
   const [sliderImageUrl, setSliderImageUrl] = useState();
   const [removeItem, setRemoveItem] = useState();
   const [partialQuantity, setPartialQuantity] = useState(false);
@@ -49,7 +49,8 @@ const ProductDetail = () => {
   const [partialAmount, setPartialAmount] = useState(0);
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
-  const [plusButtonDisable, setPlusButtonDisable]=useState(false);
+  const [plusButtonDisable, setPlusButtonDisable] = useState(false);
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const history = useHistory();
 
   //Style States
@@ -60,17 +61,12 @@ const ProductDetail = () => {
     wrapperCol: { span: 16 },
   };
 
-  const contentStyle = {
-    height: '250px',
-    color: '#FF5733',
-    textAlign: 'center',
-  };
   //Redux States
   const { productQuantity } = useSelector(state => state.Ecommerce);
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}`);
+  const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}?siteMode=${searchSiteMode}`);
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
   document.title = "Ürün - " + description + " - Seramiksan B2B";
 
@@ -88,7 +84,7 @@ const ProductDetail = () => {
 
       inputNumberShowOrHide(product)
       var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
-      if (selectedProduct === undefined) { return; }
+      if (typeof selectedProduct === 'undefined') { return; }
       if (selectedProduct.quantity !== 0) {
         const newProductQuantity = [];
         let setQunatity;
@@ -113,8 +109,8 @@ const ProductDetail = () => {
       }
     }
   };
-  //Adding products to the cart
 
+  //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity) {
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
@@ -127,9 +123,9 @@ const ProductDetail = () => {
     else {
       inputNumberShowOrHide(itemCode)
       if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
-        if (selectedQuantity === undefined) { selectedQuantity = 1 }
+        if (typeof selectedQuantity === 'undefined') { selectedQuantity = 1 }
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
-        const buttonMinuxControl= productAmountControlDisabled(product, isPartial, parseInt(selectedQuantity));
+        const buttonMinuxControl = productAmountControlDisabled(product, isPartial, parseInt(selectedQuantity));
         setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) {
           dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
@@ -140,7 +136,7 @@ const ProductDetail = () => {
       else {
         const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
-        const buttonMinuxControl= productAmountControlDisabled(product, isPartial, parseInt(selectedProduct.quantity + 1));
+        const buttonMinuxControl = productAmountControlDisabled(product, isPartial, parseInt(selectedProduct.quantity + 1));
         setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) {
           const newProductQuantity = [];
@@ -167,7 +163,7 @@ const ProductDetail = () => {
   };
   function inputNumberShowOrHide() {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       return false;
     }
     else { return true; }
@@ -184,7 +180,7 @@ const ProductDetail = () => {
       const selectedQuantity = event.target.value;
       if ((!productQuantity.find(item => item.itemCode == productData.itemCode && item.isPartial == isPartial))) {
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
-        const buttonMinuxControl= productAmountControlDisabled(productData, isPartial, parseInt(selectedQuantity));
+        const buttonMinuxControl = productAmountControlDisabled(productData, isPartial, parseInt(selectedQuantity));
         setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) {
           onAddProductCart(productData, true, isPartial, selectedQuantity);
@@ -192,7 +188,7 @@ const ProductDetail = () => {
           setSelectedPartialAmount(0);
           postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, productData.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity); return;
         }
-        else{
+        else {
           setSelectedAmount(amountControl);
         }
       }
@@ -203,7 +199,7 @@ const ProductDetail = () => {
         const newProductQuantity = [];
         let newQuantity;
         const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
-        const buttonMinuxControl= productAmountControlDisabled(productData, isPartial, parseInt(selectedQuantity));
+        const buttonMinuxControl = productAmountControlDisabled(productData, isPartial, parseInt(selectedQuantity));
         setPlusButtonDisable(buttonMinuxControl);
         if (amountControl === -1) { newQuantity = event.target.value }
         else { newQuantity = amountControl }
@@ -237,7 +233,7 @@ const ProductDetail = () => {
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValueNew(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (selectedPartialAmout < 1) {
         return 0;
       } else {
@@ -254,7 +250,7 @@ const ProductDetail = () => {
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValue(itemCode, isPartial = false) {
     var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (selectedAmout < 1) {
         return 0;
       } else {
@@ -281,7 +277,7 @@ const ProductDetail = () => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser");
     let uname = '';
-    if (activeUser != undefined) { uname = activeUser }
+    if (typeof activeUser != 'undefined') { uname = activeUser }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
@@ -347,7 +343,7 @@ const ProductDetail = () => {
         <Breadcrumb.Item>Ürün Detayı</Breadcrumb.Item>
       </Breadcrumb>
       <Row style={rowStyle} gutter={gutter} justify="start">
-        <PageHeader >{itemCode!==undefined?itemCode:''} - {description!==undefined?description:''}</PageHeader>
+        <PageHeader >{typeof itemCode !== 'undefined' ? itemCode : ''} - {typeof description !== 'undefined' ? description : ''}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
             <SwiperWithCustomNav navigationControl={false} >
@@ -378,25 +374,25 @@ const ProductDetail = () => {
         <Col md={12} sm={12} xs={24} style={colStyle}>
           <Box>
             <Row>
-              {view !== 'MobileView' ?<React.Fragment> <Col span={12}>
+              {view !== 'MobileView' ? <React.Fragment> <Col span={12}>
                 <Form {...layout}>
-                {itemCode!==undefined? 
-                  <Form.Item label="Ürün Kodu" >
-                  <span className="ant-form-text">{itemCode || '-'}</span>
-                  </Form.Item>:null}
-                  {series!==undefined?
-                  <Form.Item label="Seri">
-                  <span className="ant-form-text">{series || '-'}</span>
-                  </Form.Item>:null}
-                  {color !==undefined?
+                  {typeof itemCode !== 'undefined' ?
+                    <Form.Item label="Ürün Kodu" >
+                      <span className="ant-form-text">{itemCode || '-'}</span>
+                    </Form.Item> : null}
+                  {typeof series !== 'undefined' ?
+                    <Form.Item label="Seri">
+                      <span className="ant-form-text">{series || '-'}</span>
+                    </Form.Item> : null}
+                  {typeof color !== 'undefined' ?
                     <Form.Item label="Renk">
-                    <span className="ant-form-text">{color || '-'}</span>
-                  </Form.Item>:null}
-                  {dimension!==undefined?
-                  <Form.Item label="Ebat">
-                    <span className="ant-form-text">{dimension || '-'}</span>
-                  </Form.Item> :null}
-                  {notes != undefined ? (
+                      <span className="ant-form-text">{color || '-'}</span>
+                    </Form.Item> : null}
+                  {typeof dimension !== 'undefined' ?
+                    <Form.Item label="Ebat">
+                      <span className="ant-form-text">{dimension || '-'}</span>
+                    </Form.Item> : null}
+                  {typeof notes != 'undefined' ? (
                     <Form.Item label="Not">
                       <Tag color="purple">
                         {notes}
@@ -405,30 +401,30 @@ const ProductDetail = () => {
                   ) : (<Form.Item> </Form.Item>)}
                 </Form>
               </Col></React.Fragment>
-               :<Col span={12}>
-                <Form {...layout}>
-                  <Form.Item label="Ürün Kodu">
-                    <span className="ant-form-text">{itemCode || '-'}</span>
-                  </Form.Item>
-                  <Form.Item label="Seri">
-                    <span className="ant-form-text">{series || '-'}</span>
-                  </Form.Item>
-                  <Form.Item label="Renk">
-                    <span className="ant-form-text">{color || '-'}</span>
-                  </Form.Item>
-                  <Form.Item label="Ebat">
-                    <span className="ant-form-text">{dimension || '-'}</span>
-                  </Form.Item>
-                  {notes != undefined ? (
-                    <Form.Item label="Not">
-                      <Tag color="purple">
-                        {notes}
-                      </Tag>
+                : <Col span={12}>
+                  <Form {...layout}>
+                    <Form.Item label="Ürün Kodu">
+                      <span className="ant-form-text">{itemCode || '-'}</span>
                     </Form.Item>
-                  ) : (<Form.Item> </Form.Item>)}
-                </Form>
-              </Col>}
-               <Col span={12}> 
+                    <Form.Item label="Seri">
+                      <span className="ant-form-text">{series || '-'}</span>
+                    </Form.Item>
+                    <Form.Item label="Renk">
+                      <span className="ant-form-text">{color || '-'}</span>
+                    </Form.Item>
+                    <Form.Item label="Ebat">
+                      <span className="ant-form-text">{dimension || '-'}</span>
+                    </Form.Item>
+                    {typeof notes != 'undefined' ? (
+                      <Form.Item label="Not">
+                        <Tag color="purple">
+                          {notes}
+                        </Tag>
+                      </Form.Item>
+                    ) : (<Form.Item> </Form.Item>)}
+                  </Form>
+                </Col>}
+              <Col span={12}>
                 {productionStatus === 'OUTLET' ? (
                   <Row >
                     <Col align="right" span={24}>

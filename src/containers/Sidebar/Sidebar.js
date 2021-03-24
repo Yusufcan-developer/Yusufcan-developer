@@ -102,7 +102,7 @@ export default function Sidebar() {
   const siteMode = getSiteMode();
   let backgroundColor = customizedTheme.backgroundColor;
   if (siteMode === enumerations.SiteMode.DeliverysPoint) {
-    backgroundColor = '#4482FF'
+    backgroundColor = '#2f82bd'
   }
   const styling = {    
     backgroundColor: backgroundColor,

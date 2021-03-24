@@ -34,6 +34,8 @@ import ReportPagination from "../../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "../../../config/enumerations";
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -58,15 +60,10 @@ const CartList = () => {
   const queryString = require('query-string');
   const history = useHistory();
   const [form] = Form.useForm();
-
-  const { switchActivation, changeTheme } = Actions;
   const { isActivated, topbarTheme, sidebarTheme, layoutTheme } = useSelector(
     state => state.ThemeSwitcher
   );
-  const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  const { addToCart, changeViewTopbarCart, changeProductQuantity, otherCart } = ecommerceActions;
   const dispatch = useDispatch();
-
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
@@ -83,9 +80,9 @@ const CartList = () => {
   const [dealerCodes, setDealerCodes] = useState();
   const [accountNo, setAccountNo] = useState();
   const [selectedDealerCode, setSelectedDealerCode] = useState();
-  const [newUrlParams, setNewUrlParams] = useState('')
+  const [newUrlParams, setNewUrlParams] = useState('');
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const location = useLocation();
-  const { searchQuery } = useParams();
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
@@ -95,7 +92,7 @@ const CartList = () => {
 
   let searchUrl = queryString.parse(location.search);
   //Cart Data
-  const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}&pageIndex=${pageIndex-1}&pageCount=${pageSize}`,{},searchUrl);
+  const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}&pageIndex=${pageIndex-1}&pageCount=${pageSize}&siteMode=${searchSiteMode}`,{},searchUrl);
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
   const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
@@ -133,11 +130,14 @@ const CartList = () => {
   function dataSearch(selectedPageIndex, selectedPageSize) {
     postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Browse, logMessage.Carts.search);
     const params = new URLSearchParams(location.search);
+    const siteMode=getSiteMode();
 
+    params.delete('smode');
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
-
+    params.append('smode', siteMode); params.toString();
+    setSearchSitemode(siteMode);
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -236,7 +236,7 @@ const CartList = () => {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    await fetch(`${siteConfig.api.carts.deleteCart}${accountNo}`, requestOptions)
+    await fetch(`${siteConfig.api.carts.deleteCart}${accountNo}&siteMode=${searchSiteMode}`, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;

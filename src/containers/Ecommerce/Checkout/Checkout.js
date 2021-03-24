@@ -227,8 +227,8 @@ export default function () {
 
   //getLocationDetail
   async function getLocationDetail(selectedCity, selectedTown, selectedDistrict) {
-    debugger
-    //Get User Info  
+    let apiUrl='';
+    
     const requestOptions = {
       method: "GET",
       headers: {
@@ -236,19 +236,17 @@ export default function () {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    let params;
-    if (selectedCity) { params = 'city=' + selectedCity }
-    if (selectedTown) { params += '&' + 'town=' + selectedTown }
-    if (selectedDistrict) { params += '&' + 'district=' + selectedDistrict }
-    let locationDetail = siteConfig.api.lookup.getLocationDetail;
-    await fetch(`${locationDetail}/?${params}`, requestOptions)
+    if(selectedDistrict.length> 0){ apiUrl = `${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}&district=${selectedDistrict}` }
+    else { apiUrl = `${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}` }
+
+    await fetch(apiUrl, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response, true);
         return status;
       })
       .then(data => {
        //Km bilgisi
-       setKm(78)
+       setKm(data.distanceKm)
       })
       .catch();
   }
@@ -356,6 +354,7 @@ export default function () {
     await getByUserId(userId);
     await getAdress();
     await getLocations();
+    await getLocationDetail('İzmir', 'Bayındır', 'Buruncuk');
   }
 
   //Sipariş temizleme işlemi
@@ -440,7 +439,7 @@ export default function () {
       })
       .then(data => {
         setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode); setTown(data.town);
-        getLocationDetail(data.city, 'Bayindir', data.town);
+        getLocationDetail(data.city, 'Bayındır', 'Buruncuk');
         setVisible(false);
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');

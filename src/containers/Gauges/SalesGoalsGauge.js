@@ -27,27 +27,28 @@ export default (props) => {
         calculatedRatio=value.calculatedRatioKaro;
         calculatedRatioText=calculatedRatio.toString();
         if (calculatedRatio < 0) { calculatedRatio = 0 }
-        else if (calculatedRatio >100) { calculatedRatio = 100 }
+        else if (calculatedRatio >150) { calculatedRatio = 150 }
 
         if (value.thresholdRatio1Karo === value.thresholdRatio1Karo) {
-            customSegment = [0, value.thresholdRatio1Karo, 100]
+            customSegment = [0, value.thresholdRatio1Karo,100, 150]
             segmentCount = gaugeConfig.segment2Count;
             segmentColors = gaugeConfig.segment2Colors;
         }
-        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Karo, value.thresholdRatio2Karo, 100] }
+        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Karo, value.thresholdRatio2Karo,100, 150] }
     }
     else if ((item === 'YAPIKIMYASALI') && (value.isVisibleYapiKimyasal)) {
         name = 'YAPI KİMYASALI';
         actualTry = value.actualYapiKimyasalTry;
         goalTry = value.goalYapiKimyasalTry;
         calculatedRatio=value.calculatedRatioYapiKimyasal;
-
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio >150) { calculatedRatio = 150 }
         if (value.thresholdRatio1YapiKimyasal === value.thresholdRatio2YapiKimyasal) {
-            customSegment = [0, value.thresholdRatio1YapiKimyasal, 100]
+            customSegment = [0, value.thresholdRatio1YapiKimyasal,100, 150]
             segmentCount = gaugeConfig.segment2Count;
             segmentColors = gaugeConfig.segment2Colors;
         }
-        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1YapiKimyasal, value.thresholdRatio2YapiKimyasal, 100] }
+        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1YapiKimyasal, value.thresholdRatio2YapiKimyasal,100, 150] }
 
     }
     else if ((item === 'VITRIFIYE') && (value.isVisibleVitrifiye)) {
@@ -55,13 +56,14 @@ export default (props) => {
         actualTry = value.actualVitrifiyeTry;
         goalTry = value.goalVitrifiyeTry;
         calculatedRatio=value.calculatedRatioVitrifiye;
-
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio >150) { calculatedRatio = 150 }
         if (value.thresholdRatio1Vitrifiye === value.thresholdRatio2Vitrifiye) {
-            customSegment = [0, value.thresholdRatio1Vitrifiye, 100]
+            customSegment = [0, value.thresholdRatio1Vitrifiye,100, 150]
             segmentCount = gaugeConfig.segment2Count;
             segmentColors = gaugeConfig.segment2Colors;
         }
-        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Vitrifiye, value.thresholdRatio2Vitrifiye, 100] }
+        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Vitrifiye, value.thresholdRatio2Vitrifiye,100, 150] }
 
     }
     else if ((item === 'BANYOMOBILYASI') && (value.isVisibleBanyoMobilyalari)) {
@@ -69,13 +71,14 @@ export default (props) => {
         actualTry = value.actualBanyoMobilyalariTry;
         goalTry = value.goalBanyoMobilyalariTry;
         calculatedRatio=value.calculatedRatioBanyoMobilyalari;
-
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio >150) { calculatedRatio = 150 }
         if (value.thresholdRatio1BanyoMobilyalari === value.thresholdRatio2BanyoMobilyalari) {
-            customSegment = [0, value.thresholdRatio1BanyoMobilyalari, 100]
+            customSegment = [0, value.thresholdRatio1BanyoMobilyalari,100, 150]
             segmentCount = gaugeConfig.segment2Count;
             segmentColors = gaugeConfig.segment2Colors;
         }
-        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1BanyoMobilyalari, value.thresholdRatio2BanyoMobilyalari, 100] }
+        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1BanyoMobilyalari, value.thresholdRatio2BanyoMobilyalari,100, 150] }
 
     }
     else if ((item === 'KAMPANYA') && (value.isVisibleKampanya)) {
@@ -83,13 +86,14 @@ export default (props) => {
         actualTry = value.actualKampanyaTry;
         goalTry = value.goalKampanyaTry;
         calculatedRatio=value.calculatedRatioKampanya;
-        
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio >150) { calculatedRatio = 150 }
         if (value.thresholdRatio1Kampanya === value.thresholdRatio2Kampanya) {
-            customSegment = [0, value.thresholdRatio1Kampanya, 100]
+            customSegment = [0, value.thresholdRatio1Kampanya,100, 150]
             segmentCount = gaugeConfig.segment2Count;
             segmentColors = gaugeConfig.segment2Colors;
         }
-        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Kampanya, value.thresholdRatio2Kampanya, 100] }
+        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Kampanya, value.thresholdRatio2Kampanya,100, 150] }
 
     }
     else if ((item === 'TOPLAM') && (value.isVisibleToplam)) {
@@ -97,14 +101,16 @@ export default (props) => {
         actualTry = value.actualToplamTry;
         goalTry = value.goalToplamTry;
         calculatedRatio=value.calculatedRatioToplam;
-
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio >150) { calculatedRatio = 150 }
         if (value.thresholdRatio1Toplam === value.thresholdRatio2Toplam) {
-            customSegment = [0, value.thresholdRatio1Toplam, 100]
+            customSegment = [0, value.thresholdRatio1Toplam,100, 150]
             segmentCount = gaugeConfig.segment2Count;
             segmentColors = gaugeConfig.segment2Colors;
         }
-        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Toplam, value.thresholdRatio2Toplam, 100] }
+        else { segmentColors = gaugeConfig.segment3Colors; segmentCount = gaugeConfig.segment3Count; customSegment = [0, value.thresholdRatio1Toplam, value.thresholdRatio2Toplam,100, 150] }
     }
+    debugger
     const filterView = viewType('Filter');
         return (
         <React.Fragment>
@@ -123,9 +129,8 @@ export default (props) => {
                         value={calculatedRatio}
                         customSegmentStops={customSegment}
                         segmentColors={segmentColors}
-
                         currentValueText={calculatedRatioText}
-                        maxValue={100}
+                        maxValue={150}
                         segments={segmentCount}
                         valueTextFontWeight={'bold'}
                         valueTextFontSize={'25px'}
