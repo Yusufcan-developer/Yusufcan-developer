@@ -41,6 +41,8 @@ export default (props) => {
         goalTry = value.goalYapiKimyasalTry;
         calculatedRatio = value.calculatedRatioYapiKimyasal * 100;
         calculatedRatioText = numberFormat(calculatedRatio.toString());
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio > 100) { calculatedRatio = 100 }
         if (value.thresholdRatio1YapiKimyasal === value.thresholdRatio2YapiKimyasal) {
             customSegment = [0, value.thresholdRatio1YapiKimyasal, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -69,6 +71,8 @@ export default (props) => {
         goalTry = value.goalBanyoMobilyalariTry;
         calculatedRatio = value.calculatedRatioBanyoMobilyalari * 100;
         calculatedRatioText = numberFormat(calculatedRatio.toString());
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio > 100) { calculatedRatio = 100 }
         if (value.thresholdRatio1BanyoMobilyalari === value.thresholdRatio2BanyoMobilyalari) {
             customSegment = [0, value.thresholdRatio1BanyoMobilyalari, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -83,6 +87,8 @@ export default (props) => {
         goalTry = value.goalKampanyaTry;
         calculatedRatio = value.calculatedRatioKampanya * 100;
         calculatedRatioText = numberFormat(calculatedRatio.toString());
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio > 100) { calculatedRatio = 100 }
         if (value.thresholdRatio1Kampanya === value.thresholdRatio2Kampanya) {
             customSegment = [0, value.thresholdRatio1Kampanya, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -97,6 +103,8 @@ export default (props) => {
         goalTry = value.goalKampanya2Try;
         calculatedRatio = value.calculatedRatioKampanya2 * 100;
         calculatedRatioText = numberFormat(calculatedRatio.toString());
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio > 100) { calculatedRatio = 100 }
         if (value.thresholdRatio1Kampanya2 === value.thresholdRatio2Kampanya2) {
             customSegment = [0, value.thresholdRatio1Kampanya2, 100]
             segmentCount = gaugeConfig.segment2Count;
@@ -111,6 +119,8 @@ export default (props) => {
         goalTry = value.goalToplamTry;
         calculatedRatio = value.calculatedRatioToplam * 100;
         calculatedRatioText = numberFormat(calculatedRatio.toString());
+        if (calculatedRatio < 0) { calculatedRatio = 0 }
+        else if (calculatedRatio > 100) { calculatedRatio = 100 }
         if (value.thresholdRatio1Toplam === value.thresholdRatio2Toplam) {
             customSegment = [0, value.thresholdRatio1Toplam, 100]
             segmentCount = gaugeConfig.segment2Count;
