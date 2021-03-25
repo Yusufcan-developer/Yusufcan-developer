@@ -1390,7 +1390,7 @@ const SearchComponent = () => {
                 <Row gutter={[24, 16]}>
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 12 }} >
-                      {item.canBeSoldPartially === true ? (
+                      {item.canBeSoldPartially === true && searchSiteMode===enumerations.SiteMode.DeliverysPoint ? (
                         <React.Fragment>
                           <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange' placement='end'>
                             {item.campaignCode === '' ? ''
@@ -1437,13 +1437,13 @@ const SearchComponent = () => {
                         {/* <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span> */}
-                        <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
-                          {item.canBeSoldPartially ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
+                        <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially&& searchSiteMode===enumerations.SiteMode.DeliverysPoint ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
+                          {item.canBeSoldPartially && searchSiteMode===enumerations.SiteMode.DeliverysPoint ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
                           <Tooltip trigger={["click", "hover"]} title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />
                               {item.m2Box ? ('1 Kutu: ' + item.m2Box + ' ' + item.unit) : null}{item.m2Box ? <br /> : null}
-                              {item.canBeSoldPartially ?
+                              {item.canBeSoldPartially && searchSiteMode===enumerations.SiteMode.DeliverysPoint ?
                                 'Sepete hem palet hem de kutu bazında ekleme yapabilirsiniz' :
                                 'Sepete palet bazında ekleme yapabilirsiniz'}
                             </div>} color={"#108ee9"}>
