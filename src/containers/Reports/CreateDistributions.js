@@ -435,17 +435,17 @@ export default function () {
             if ((item) && (item.quantity > 0)) {
                 if (record.minimumDistributableAmount === 1) {
                     setQuantity(numberFormat(item.quantity));
-                    setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                    setMaximumAmountControl(record.remainingDistributableAmount);
                     setModalVisible(true);
                 }
                 else {
                     setQuantity(numberFormat(item.quantity / record.minimumDistributableAmount));
-                    setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                    setMaximumAmountControl(record.remainingDistributableAmount);
                     setModalVisible(true);
                 }
             } else {
                 setQuantity(numberFormat(record.remainingDistributableAmount));
-                setMaximumAmountControl(numberFormat(record.remainingDistributableAmount));
+                setMaximumAmountControl(record.remainingDistributableAmount);
                 setModalVisible(true);
             }
             setEditingKey(record.itemCode);

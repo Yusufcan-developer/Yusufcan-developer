@@ -33,6 +33,7 @@ export default {
       getLocations: apiUrl + 'core/lookup/locations-tree',
       getDistricts: apiUrl + 'core/lookup/locations/{city}/{town}/districts',
       getLocationDetail: apiUrl + 'core/lookup/locations/detail',
+
       postProductCategories: apiUrl + 'b2b/lookup/product-categories',
       postProductTypes: apiUrl + 'b2b/lookup/product-types',
       postSeries: apiUrl + 'b2b/lookup/product-series',

@@ -11,7 +11,7 @@ export const apiStatusManagement = (response, notShowMessage) => {
           { return 'Unauthorized1' }
         }
         else {
-          return message.error('Veritabanından bilgiler getirilemiyor sistem yöneticinize başvurunuz.');
+          return response.json();;
         }
       case 500:
         return history.push('/');
