@@ -205,7 +205,7 @@ const SalesTarget = () => {
                 <Row gutter={[24, 16]}>
                     {salesData !== undefined ?
                         gaugeCount.map((item) => (
-                            <Col xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 8 }}  >
+                            <Col span={view !== 'MobileView' ? 8 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <SalesGoalsGauge
                                     value={salesData}
                                     item={item}
