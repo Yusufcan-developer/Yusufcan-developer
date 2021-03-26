@@ -92,13 +92,14 @@ export default function SignIn() {
               const siteMode = getSiteMode();
               dispatch(login(data.token));
               const token = jwtDecode(localStorage.getItem("id_token"));
-              if ((token.urole === 'admin') || (token.urole === 'regionmanager') || (token.urole === 'fieldmanager') || (token.urole === 'Support') || (token.urole === 'Director')) {
+              if ((token.urole === 'admin') || (token.urole === 'regionmanager') || (token.urole === 'fieldmanager') || (token.urole === 'support') || (token.urole === 'director')) {
                 dispatch(clearMenu()); history.push(`${'/reports/salesGoals'}/?siteMode=${siteMode}`);
               }
               else {
                 dispatch(clearMenu()); history.push(`${'/products/categories'}/?siteMode=${siteMode}`);
               }
               postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.login);
+
             }
           }
         }

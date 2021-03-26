@@ -59,10 +59,11 @@ const MainForm = () => {
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState();
-  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
+
   const location = useLocation();
   const [newUrlParams, setNewUrlParams] = useState('')
   const [selectedDealerCode, setSelectedDealerCode] = useState();
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
@@ -88,6 +89,7 @@ const MainForm = () => {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
+
     usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal, "siteMode": searchSiteMode },searchUrl);
 
   const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData, expandData] =
@@ -108,6 +110,7 @@ const MainForm = () => {
       window.location.reload(false);
     }
     if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+
 
     let newDealarCode = []
     //Field url data
@@ -173,11 +176,13 @@ const MainForm = () => {
     params.delete('smode');
     params.delete('dealer');
     params.append('smode', siteMode); params.toString();
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
 
     setSearchSitemode(siteMode);
+
     AccountSetOnChange(true);
     return setOnChange(true);
   }
