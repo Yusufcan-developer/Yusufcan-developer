@@ -26,7 +26,7 @@ export default function SignIn() {
   const [form] = Form.useForm();
   let history = useHistory();
   const dispatch = useDispatch();
-
+  var jwtDecode = require('jwt-decode');
   //Hook state tanımlamaları
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -91,7 +91,13 @@ export default function SignIn() {
             localStorage.removeItem('activeUser');
             const siteMode = getSiteMode();
             dispatch(login(data.token));
-            dispatch(clearMenu()); history.push(`${'/products/categories'}/?siteMode=${siteMode}`);
+            const token = jwtDecode(localStorage.getItem("id_token"));
+            if ((token.urole === 'admin')	|| (token.urole==='regionmanager')  || (token.urole==='fieldmanager') || (token.urole==='Support') || (token.urole==='Director')){
+              dispatch(clearMenu()); history.push('/reports/salesGoals');
+            }
+            else{
+            dispatch(clearMenu()); history.push('/products/categories');
+            }
             postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.login);
             }
           }         
