@@ -155,7 +155,6 @@ const MainForm = () => {
       _.forEach(dealerCodes, (item) => {
         params.append('dealer', item); params.toString();
       });
-      params.append('smode', siteMode); params.toString();
       let createUrl = null;
       if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
       history.push(`${location.pathname}?${createUrl}`);
