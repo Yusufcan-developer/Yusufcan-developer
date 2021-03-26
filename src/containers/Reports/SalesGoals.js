@@ -53,12 +53,14 @@ const SalesTarget = () => {
     //Rapor
     const [salesData, loading, setOnChange] =
         useGetSalesGoalsReport(`${siteConfig.api.report.getSalesTarget}`, '', searchUrl, year, month, regionCodes, fieldCodes);
-
+    
     if (salesData !== undefined) {
+        let monthText='';
         if (salesData.isSuccessful !== false) {        
             let criteria
             if (salesData.year !== null) {
-                criteria = 'Yıl: ' + salesData.year + ' ' + 'Ay: ' + salesData.month;
+                if(salesData.month!==null){monthText=' ' + 'Ay: ' +  salesData.month}
+                criteria = 'Yıl: ' + salesData.year +monthText ;
             }
             if (salesData.fieldCode !== null) { criteria += ' Saha kodu: ' + salesData.fieldCode }
             if (salesData.regionCode !== null) { criteria += ' Bölge kodu: ' + salesData.regionCode }
@@ -142,9 +144,9 @@ const SalesTarget = () => {
                                 <Col span={view !== 'MobileView' ? 6 : 0} >
                                     <FormItem label={<IntlMessages id="page.fieldAndRegionTitle" />}></FormItem>
                                 </Col>
-                                <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                                {/* <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                                     <FormItem label={<IntlMessages id="page.yearList" />}></FormItem>
-                                </Col>
+                                </Col> */}
                                 <Col span={view !== 'MobileView' ? 4 : 0} >
                                     <FormItem label={<IntlMessages id="page.monthList" />}></FormItem>
                                 </Col>
@@ -163,7 +165,7 @@ const SalesTarget = () => {
                                     dropdownMatchSelectWidth={350}
                                 />
                             </Col>
-                            <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                            {/* <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     placeholder='Yıl seçiniz'
                                     style={{ width: view !== 'MobileView' ? '120px' : '100%' }}
@@ -173,7 +175,7 @@ const SalesTarget = () => {
                                 >
                                     {yearsChildren}
                                 </Select>
-                            </Col>
+                            </Col> */}
                             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     placeholder='Ay seçiniz'

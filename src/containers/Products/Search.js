@@ -128,13 +128,13 @@ const SearchComponent = () => {
   function getVariablesFromUrl() {
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
-    const siteMode=getSiteMode();
-    
+    const siteMode = getSiteMode();
+
     //site mode paste url manuel.
-    if ((siteMode !==  parsed.smode) && (typeof parsed.smode !== 'undefined')) {
-        setSiteMode(parsed.smode);
-        setSearchSitemode(parsed.smode);
-        window.location.reload(false);
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
     }
     if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     //Category get url data
@@ -145,7 +145,7 @@ const SearchComponent = () => {
     }
 
     if (typeof parsed.isPointAddress !== 'undefined') {
-      const isPoint=parsed.isPointAddress == "true" ? true : false
+      const isPoint = parsed.isPointAddress == "true" ? true : false
       setIsPointAddress(isPoint);
     }
 
@@ -302,7 +302,7 @@ const SearchComponent = () => {
   const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Post Surface
-  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode});
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Get Quality
   // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
@@ -997,15 +997,17 @@ const SearchComponent = () => {
         }
       }
       else {
+
+        debugger
         const product = productData;
         var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
         const newProductQuantity = [];
         let newQuantity;
-        const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
+        const amountControl = productAmountControl(productData, product.canBeSoldPartially, parseInt(selectedQuantity));
         if (amountControl === -1) { newQuantity = event.target.value }
         else { newQuantity = amountControl }
         productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+          if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== product.canBeSoldPartially) {
             newProductQuantity.push(productItem);
           } else {
             const itemCode = productItem.itemCode
@@ -1064,7 +1066,6 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
-
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -1073,13 +1074,13 @@ const SearchComponent = () => {
       if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
     }
     if (selectedQuantity === 0) { selectedQuantity = 1 }
-    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
-        const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
+        const amountControl = productAmountControl(product, product.canBeSoldPartially, parseInt(selectedQuantity));
         if (amountControl === -1) {
-          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
+          dispatch(addToCart(product, parseInt(selectedQuantity), product.canBeSoldPartially));
           notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
           postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
         }
@@ -1390,7 +1391,7 @@ const SearchComponent = () => {
                 <Row gutter={[24, 16]}>
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 12 }} >
-                      {item.canBeSoldPartially === true && searchSiteMode===enumerations.SiteMode.DeliverysPoint ? (
+                      {item.canBeSoldPartially === true && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                         <React.Fragment>
                           <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange' placement='end'>
                             {item.campaignCode === '' ? ''
@@ -1437,13 +1438,13 @@ const SearchComponent = () => {
                         {/* <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span> */}
-                        <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially&& searchSiteMode===enumerations.SiteMode.DeliverysPoint ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
-                          {item.canBeSoldPartially && searchSiteMode===enumerations.SiteMode.DeliverysPoint ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
+                        <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
+                          {item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
                           <Tooltip trigger={["click", "hover"]} title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />
                               {item.m2Box ? ('1 Kutu: ' + item.m2Box + ' ' + item.unit) : null}{item.m2Box ? <br /> : null}
-                              {item.canBeSoldPartially && searchSiteMode===enumerations.SiteMode.DeliverysPoint ?
+                              {item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ?
                                 'Sepete hem palet hem de kutu bazında ekleme yapabilirsiniz' :
                                 'Sepete palet bazında ekleme yapabilirsiniz'}
                             </div>} color={"#108ee9"}>
@@ -1453,7 +1454,7 @@ const SearchComponent = () => {
                           </Tooltip>
                         </div>
                         {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
-                        {partialQuantity === true & item.itemCode === selectedItemCode ? (
+                        {partialQuantity === true & item.itemCode === selectedItemCode & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Modal
                             title={item.itemCode + ' - ' + item.description}
                             visible={true}
@@ -1568,30 +1569,30 @@ const SearchComponent = () => {
                           </Modal>
 
                         ) : (null)}
-                        {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) ? (
+                        {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
                               <Button
                                 disabled={calculateQuantity(item, false, 0)}
                                 type="primary" style={{ width: '100%' }}
-                                onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'}
+                                onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? addCardButtonTitle(item) : 'Sepete Ekle'}
                               </Button>
                             </Col>
                           </Row>
                         ) : (
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={4} style={{ width: '100%' }} align="right">
-                              <Button type="primary" onClick={event => onRemoveProductCart(item)}>
+                              <Button type="primary" onClick={event => onRemoveProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
                                 {<IntlMessages id="product.minus" />}
                               </Button>
                             </Col>
                             <Col span={8} align="middle">
-                              <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{'Palet'}</span>
+                              <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet' : item.unit !== 'TOR' ? 'Kutu' : 'Torba'}</span>
                               <Input
                                 id={item.itemCode}
                                 onClick={event => onSelectAll(item.itemCode)}
-                                onChange={event => onChange(event, item, false)}
-                                onBlur={event => onChangeQuantity(event, item)}
+                                onChange={event => onChange(event, item, item.isPartial)}
+                                onBlur={event => onChangeQuantity(event, item, item.isPartial)}
                                 style={{ textAlign: "right", maxHeight: '32px' }}
                                 maxLength={25}
                                 defaultValue={1}
@@ -1600,7 +1601,7 @@ const SearchComponent = () => {
                               />
                             </Col>
                             <Col span={4} style={{ width: '100%' }}>
-                              <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item)}>
+                              <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
                                 {<IntlMessages id="product.plus" />}
                               </Button>
                             </Col>
