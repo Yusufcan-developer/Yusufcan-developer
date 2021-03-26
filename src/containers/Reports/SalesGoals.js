@@ -49,16 +49,18 @@ const SalesTarget = () => {
     const [newUrlParams, setNewUrlParams] = useState('');
     let searchUrl = queryString.parse(location.search);
     let searchText = '';
-    
+
     //Rapor
     const [salesData, loading, setOnChange] =
         useGetSalesGoalsReport(`${siteConfig.api.report.getSalesTarget}`, '', searchUrl, year, month, regionCodes, fieldCodes);
 
     if (salesData !== undefined) {
-        if (salesData.isSuccessful !== false) {        
+        let monthText = '';
+        if (salesData.isSuccessful !== false) {
             let criteria
             if (salesData.year !== null) {
-                criteria = 'Yıl: ' + salesData.year + ' ' + 'Ay: ' + salesData.month;
+                if (salesData.month !== null) { monthText = ' ' + 'Ay: ' + salesData.month }
+                criteria = 'Yıl: ' + salesData.year + monthText;
             }
             if (salesData.fieldCode !== null) { criteria += ' Saha kodu: ' + salesData.fieldCode }
             if (salesData.regionCode !== null) { criteria += ' Bölge kodu: ' + salesData.regionCode }
@@ -95,7 +97,7 @@ const SalesTarget = () => {
         if (year !== undefined) { params.append('year', year); }
         if (month !== undefined) { params.append('month', month); }
         if (regionCodes) { params.append('region', regionCodes); }
-        if (fieldCodes) { params.append('field', fieldCodes) } 
+        if (fieldCodes) { params.append('field', fieldCodes) }
         let createUrl = null;
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
         history.push(`${location.pathname}?${createUrl}`);
@@ -142,9 +144,9 @@ const SalesTarget = () => {
                                 <Col span={view !== 'MobileView' ? 6 : 0} >
                                     <FormItem label={<IntlMessages id="page.fieldAndRegionTitle" />}></FormItem>
                                 </Col>
-                                <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
+                                {/* <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                                     <FormItem label={<IntlMessages id="page.yearList" />}></FormItem>
-                                </Col>
+                                </Col> */}
                                 <Col span={view !== 'MobileView' ? 4 : 0} >
                                     <FormItem label={<IntlMessages id="page.monthList" />}></FormItem>
                                 </Col>
@@ -163,7 +165,7 @@ const SalesTarget = () => {
                                     dropdownMatchSelectWidth={350}
                                 />
                             </Col>
-                            <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                {/* <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     placeholder='Yıl seçiniz'
                                     style={{ width: view !== 'MobileView' ? '120px' : '100%' }}
@@ -173,7 +175,7 @@ const SalesTarget = () => {
                                 >
                                     {yearsChildren}
                                 </Select>
-                            </Col>
+                            </Col> */}
                             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     placeholder='Ay seçiniz'
@@ -204,10 +206,10 @@ const SalesTarget = () => {
                     {salesData !== undefined ?
                         gaugeCount.map((item) => (
                             <Col xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 8 }}  >
-                            <SalesGoalsGauge
-                                value={salesData}
-                                item={item}
-                            /></Col>
+                                <SalesGoalsGauge
+                                    value={salesData}
+                                    item={item}
+                                /></Col>
                         )) : null}
                 </Row>
             </Box>
