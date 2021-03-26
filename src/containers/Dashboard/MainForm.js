@@ -8,12 +8,12 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
-import { Table, Row, Col, Select } from "antd";
+import { Table, Row, Col, Select, TreeSelect } from "antd";
 import Collapse from "@iso/components/uielements/collapse";
 
 //Fetch
-import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -57,9 +57,12 @@ const MainForm = () => {
   const [pageIndexAccountBalance, setPageIndexAccountBalance] = useState(1);
   const [pageSizeAccountBalance, setPageSizeAccountBalance] = useState(20);
   const [dealerCodes, setDealerCodes] = useState();
+  const [regionCodes, setRegionCodes] = useState()
+  const [fieldCodes, setFieldCodes] = useState();
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const location = useLocation();
   const [newUrlParams, setNewUrlParams] = useState('')
+  const [selectedDealerCode, setSelectedDealerCode] = useState();
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
@@ -82,20 +85,16 @@ const MainForm = () => {
     setChangePageSizeAccount(pageSizeAccountBalance);
   }, [pageSizeAccountBalance]);
 
-
+  let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal, "siteMode": searchSiteMode });
+    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal, "siteMode": searchSiteMode },searchUrl);
 
   const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData, expandData] =
-    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance, "siteMode": searchSiteMode });
+    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance, "siteMode": searchSiteMode },searchUrl);
 
-  //Bayi kodları listesi ve Lookup döndürme işlemi
-  const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
-  const lookupDealerChildren = [];
-  _.each(lookupDealerTreeData, (item, i) => {
-    lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
-  });
+  //Bayi,Bölge ve Saha kodlarının getirilmesi
+  const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
@@ -110,36 +109,77 @@ const MainForm = () => {
     }
     if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
 
-    let dealerCode = [];
-    if (typeof parsed.dealer !== 'undefined') {
-      if (Array.isArray(parsed.dealer)) {
-        _.each(parsed.dealer, (item) => {
-          dealerCode.push(item);
+    let newDealarCode = []
+    //Field url data
+    if (typeof parsed.fic !== 'undefined') {
+      if (Array.isArray(parsed.fic)) {
+        _.each(parsed.fic, (item, i) => {
+          newDealarCode.push(item);
         });
-      } else { dealerCode.push(parsed.dealer); }
+      } else { newDealarCode.push(parsed.fic) }
     }
-    setDealerCodes(dealerCode);
-  }
 
+    //RegionCode url data
+    if (typeof parsed.rec !== 'undefined') {
+      if (Array.isArray(parsed.rec)) {
+        _.each(parsed.rec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      } else { newDealarCode.push(parsed.rec) }
+    }
+
+    //Dealar url data
+    if (typeof parsed.dec !== 'undefined') {
+      if (Array.isArray(parsed.dec)) {
+        _.each(parsed.dec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      } else { newDealarCode.push(parsed.dec) }
+    }
+    setSelectedDealerCode(newDealarCode);
+
+    //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
+    let fieldArrObj = [];
+    let regionArrObj = [];
+    let dealerArrObj = [];
+
+    if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); }
+    _.filter(newDealarCode, function (item) {
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
+      }
+    });
+
+    onChangeDealerCode(newDealarCode);
+    AccountSetOnChange(true);
+    return setOnChange(true);
+  }
+ //Search Button Event
+ const searchButton = () => {
+  dataSearch();
+};
   //Get Search Data
   function dataSearch() {
     const params = new URLSearchParams(location.search);
     const siteMode = getSiteMode();
 
+    params.delete('fic');
+    params.delete('rec');
+    params.delete('dec');
     params.delete('smode');
-    params.delete('dealer'); {
-      _.forEach(dealerCodes, (item) => {
-        params.append('dealer', item); params.toString();
-      });
-      params.append('smode', siteMode); params.toString();
-      let createUrl = null;
-      if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
-      history.push(`${location.pathname}?${createUrl}`);
+    params.delete('dealer');
+    params.append('smode', siteMode); params.toString();
+    let createUrl = null;
+    if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
+    history.push(`${location.pathname}?${createUrl}`);
 
-      setSearchSitemode(siteMode);
-      AccountSetOnChange(true);
-      setOnChange(true);
-    }
+    setSearchSitemode(siteMode);
+    AccountSetOnChange(true);
+    return setOnChange(true);
   }
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -412,6 +452,47 @@ const MainForm = () => {
       }));
     }
   }
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) !== -1;
+    }
+    return false;
+  }
+  //Change DealerCode
+  async function onChangeDealerCode(value) {
+    let fieldArrObj = [];
+        let regionArrObj = [];
+        let dealerArrObj = [];
+        setDealerCodes([]);
+        setFieldCodes([]);
+        setRegionCodes([]);
+        const params = new URLSearchParams(location.search);
+        params.delete('dec');
+        params.delete('rec');
+        params.delete('fic');
+        params.delete('from')
+        params.delete('to');
+        params.delete('smode');
+
+        if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+        else {
+            _.filter(value, function (item) {
+                if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
+                else if (item.split("|").length === 2) {
+                    regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
+                }
+                else {
+                    dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
+                }
+                setSelectedDealerCode(value)
+                setNewUrlParams(params.toString());
+            });
+        }
+  };
+
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -424,25 +505,22 @@ const MainForm = () => {
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             <Row>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Select
-                  showSearch
-                  mode="multiple"
+                <TreeSelect
+                  treeData={treeData}
+                  value={selectedDealerCode}
+                  onChange={onChangeDealerCode}
+                  filterTreeNode={filterTreeNodeDealerCode}
+                  treeCheckable={true}
+                  showCheckedStrategy={TreeSelect.SHOW_PARENT}
+                  placeholder={"Bayi Kodu Seçiniz"}
+                  showSearch={true}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
-                  style={{ marginBottom: '8px', width: '100%' }}
-                  placeholder="Bayi seçiniz"
-                  optionFilterProp="children"
-                  value={dealerCodes}
-                  onChange={dealerCodeHandleChange}
-                  filterOption={(input, option) =>
-                    option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-                  }
-                >
-                  {lookupDealerChildren}
-                </Select>
+                />
               </Col>
               <Col span={view !== 'MobileView' ? 1 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               </Col>
-              <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={dataSearch} >
+              <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton} >
                 {<IntlMessages id="forms.button.label_Search" />}
               </Button>
             </Row>

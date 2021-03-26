@@ -4,7 +4,7 @@ import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
-function usePostAccountBalancesReport(url, reqBody) {
+function usePostAccountBalancesReport(url, reqBody,searchUrl) {
   const [data, setData] = useState([]);
   const [aggregateData, setAggregateData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +15,7 @@ function usePostAccountBalancesReport(url, reqBody) {
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [aggregates, setAggregatesOverall] = useState();
+  const [lastReqBody, setLastReqBody] = useState();
 
   async function fetchUrl() {
     const requestOptions = {
@@ -25,7 +26,6 @@ function usePostAccountBalancesReport(url, reqBody) {
       },
       body: JSON.stringify(reqBody)
     };
-    if(reqBody.dealerCodes!==undefined){
     await fetch(url, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
@@ -48,7 +48,7 @@ function usePostAccountBalancesReport(url, reqBody) {
           setAggregatesOverall(aggregatesOverall);
           setLoading(false);
           setOnChange(false);
-
+          setLastReqBody(searchUrl);
           const reqAggregateBody = { "DealerCodes": dealerCodeArray,  "pageCount":1000000000 };
           const requestAggregateOptions = {
             method: "POST",
@@ -73,10 +73,12 @@ function usePostAccountBalancesReport(url, reqBody) {
       }
       })
       .catch();
-  }}
+  }
   useEffect(() => {
+    if (!_.isEqual(lastReqBody, searchUrl)) {
     setLoading(true);
     fetchUrl();
+  } else { setOnChange(false); }
   }, [currentPage, changePageSize, onChange]);
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregates,aggregateData];
 }

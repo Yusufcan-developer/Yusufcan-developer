@@ -527,7 +527,6 @@ export default function () {
   }
 
   async function onChangeCityAndTown(value, selectedOptions) {
-    debugger
     if (typeof value !== undefined) { setCity(value[0]); }
     if (value.length > 1) { setCities(value); setTown(value[1]); setDistrict(value[2]); getDistricts(value[0], value[1]) } else { setCities(""); }
   };

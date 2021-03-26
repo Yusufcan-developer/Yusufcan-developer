@@ -30,7 +30,7 @@ export default function SignIn() {
   //Hook state tanımlamaları
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [usernameOrEmail,setUsernameOrEmail]=useState();
+  const [usernameOrEmail, setUsernameOrEmail] = useState();
   const [passwordChangeVisible, setPasswordChangeVisible] = useState(false);
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
   const [oldPassword, setOldPassword] = useState();
@@ -76,31 +76,31 @@ export default function SignIn() {
       .then(response => {
         if (!response.ok) Error(response.statusText);
         return response.json();
-      })      
+      })
       .then(data => {
         //Kullanıcı girişi başarılı oldugu durumda token değeri alınıyor ve redux'a gönderiliyor.
         //dispatch(login()) fonksiyonu redux actionlarında tanımlı değerdir.
         if (data !== undefined) {
           if (data.isPasswordExpired) { setPasswordChangeVisible(true); }
-          else if (data.isSuccessful===false) {
+          else if (data.isSuccessful === false) {
             return loginError();
           }
           else {
-            if(data.isSuccessful===false){return loginError();}
-            else{
-            localStorage.removeItem('activeUser');
-            const siteMode = getSiteMode();
-            dispatch(login(data.token));
-            const token = jwtDecode(localStorage.getItem("id_token"));
-            if ((token.urole === 'admin')	|| (token.urole==='regionmanager')  || (token.urole==='fieldmanager') || (token.urole==='Support') || (token.urole==='Director')){
-              dispatch(clearMenu()); history.push('/reports/salesGoals');
+            if (data.isSuccessful === false) { return loginError(); }
+            else {
+              localStorage.removeItem('activeUser');
+              const siteMode = getSiteMode();
+              dispatch(login(data.token));
+              const token = jwtDecode(localStorage.getItem("id_token"));
+              if ((token.urole === 'admin') || (token.urole === 'regionmanager') || (token.urole === 'fieldmanager') || (token.urole === 'Support') || (token.urole === 'Director')) {
+                dispatch(clearMenu()); history.push(`${'/reports/salesGoals'}/?siteMode=${siteMode}`);
+              }
+              else {
+                dispatch(clearMenu()); history.push(`${'/products/categories'}/?siteMode=${siteMode}`);
+              }
+              postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.login);
             }
-            else{
-            dispatch(clearMenu()); history.push('/products/categories');
-            }
-            postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.User.login);
-            }
-          }         
+          }
         }
       })
       .catch(error => loginError());
@@ -139,7 +139,7 @@ export default function SignIn() {
       })
       .then(data => {
         forgotPassword = data;
-      }).catch(forgotPassword=null);
+      }).catch(forgotPassword = null);
     return forgotPassword;
   }
   //Parola düzenleme fetch işlemi
@@ -161,14 +161,14 @@ export default function SignIn() {
         const status = apiStatusManagement(response);
         return status;
       })
-      .then(data => {        
+      .then(data => {
         userData = data;
       }).catch(error => console.log('hata', error));
     return userData;
   }
-  async function handleForgotPasswordOk() {    
+  async function handleForgotPasswordOk() {
     const password = await forgotPassword();
-    if (password.isSuccessful) { message.success(password.message);setForgotPasswordVisible(false); }
+    if (password.isSuccessful) { message.success(password.message); setForgotPasswordVisible(false); }
     else { message.error(password.message); }
 
   };
@@ -176,9 +176,9 @@ export default function SignIn() {
   async function handlePasswordOk() {
     const password = await changePassword();
 
-    if(password.isSuccessful===false){
+    if (password.isSuccessful === false) {
       message.error(password.message);
-    }else{
+    } else {
       message.success('Parola başarıyla değiştirilmiştir.'); setPasswordChangeVisible(false); handleLogin();
     }
   };
@@ -312,52 +312,52 @@ export default function SignIn() {
               </div>
 
               <div className="isoInputWrapper isoLeftRightComponent">
-              <Link to="" className="isoForgotPass" onClick={()=>setForgotPasswordVisible(true)}>
-                <IntlMessages id="page.signInForgotPass" />
-              </Link>
+                <Link to="" className="isoForgotPass" onClick={() => setForgotPasswordVisible(true)}>
+                  <IntlMessages id="page.signInForgotPass" />
+                </Link>
                 <Button type="primary" onClick={handleLogin}>
                   <IntlMessages id="page.signInButton" />
                 </Button>
               </div>
-            </form>          
+            </form>
           </div>
         </div>
         <Modal
-            visible={forgotPasswordVisible}
-            width={600}
-            title="Parolanızı mı unuttunuz?"
-            okText="İstek Gönder"
-            cancelText={null}
-            maskClosable={true}
-            onCancel={handleCancel}
-            onOk={() => {
-              form
-                .validateFields()
-                .then(values => {
-                  form.resetFields();
-                  handleForgotPasswordOk(values);
-                })
-                .catch(info => {
-                  console.log('Validate Failed:', info);
-                });
+          visible={forgotPasswordVisible}
+          width={600}
+          title="Parolanızı mı unuttunuz?"
+          okText="İstek Gönder"
+          cancelText={null}
+          maskClosable={true}
+          onCancel={handleCancel}
+          onOk={() => {
+            form
+              .validateFields()
+              .then(values => {
+                form.resetFields();
+                handleForgotPasswordOk(values);
+              })
+              .catch(info => {
+                console.log('Validate Failed:', info);
+              });
+          }}
+        >
+          <Alert message="E-postanızı girin, size bir sıfırlama bağlantısı gönderelim." type="error" style={{ marginBottom: '10px' }} />
+          <Form
+            form={form}
+            layout="vertical"
+            name="form_in_modal"
+            initialValues={{
+              modifier: 'public',
             }}
           >
-            <Alert message="E-postanızı girin, size bir sıfırlama bağlantısı gönderelim." type="error" style={{ marginBottom: '10px' }} />
-            <Form
-              form={form}
-              layout="vertical"
-              name="form_in_modal"
-              initialValues={{
-                modifier: 'public',
-              }}
+            <Form.Item
+              label="Kullanıcı Adı veya E-posta"
             >
-              <Form.Item
-                label="Kullanıcı Adı veya E-posta"
-              >
-                <Input autoComplete={"off"} value={usernameOrEmail} onChange={event => setUsernameOrEmail(event.target.value)}/>
-              </Form.Item>             
-            </Form>
-          </Modal>
+              <Input autoComplete={"off"} value={usernameOrEmail} onChange={event => setUsernameOrEmail(event.target.value)} />
+            </Form.Item>
+          </Form>
+        </Modal>
       </div>
     </SignInStyleWrapper>
   );
