@@ -12,6 +12,7 @@ function usePostDBSTotalReport(url, reqBody, searchUrl) {
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
   const [aggregates, setAggregatesOverall] = useState();
+  const [lastReqBody, setLastReqBody] = useState();
 
   async function fetchUrl() {
     const requestOptions = {
@@ -22,7 +23,6 @@ function usePostDBSTotalReport(url, reqBody, searchUrl) {
       },
       body: JSON.stringify(reqBody)
     };
-    if(reqBody.dealerCodes!==undefined){
     await fetch(url, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
@@ -43,11 +43,11 @@ function usePostDBSTotalReport(url, reqBody, searchUrl) {
         }       
       })
       .catch();
-  }
 }
   useEffect(() => {
+    if (!_.isEqual(lastReqBody, searchUrl)) {
     setLoading(true);
-    fetchUrl();
+    fetchUrl(); } else { setOnChange(false); }
   }, [currentPage, changePageSize, onChange]);
   return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregates];
 }

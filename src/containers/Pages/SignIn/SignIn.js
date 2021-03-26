@@ -90,7 +90,7 @@ export default function SignIn() {
             localStorage.removeItem('activeUser');
             dispatch(login(data.token));
             const token = jwtDecode(localStorage.getItem("id_token"));
-            if ((token.urole === 'admin')	|| (token.urole==='regionmanager')  || (token.urole==='fieldmanager') || (token.urole==='Support') || (token.urole==='Director')){
+            if ((token.urole === 'admin')	|| (token.urole==='regionmanager')  || (token.urole==='fieldmanager') || (token.urole==='support') || (token.urole==='director')){
               dispatch(clearMenu()); history.push('/reports/salesGoals');
             }
             else{

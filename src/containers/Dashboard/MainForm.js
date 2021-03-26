@@ -55,7 +55,7 @@ const MainForm = () => {
   const [pageIndexAccountBalance, setPageIndexAccountBalance] = useState(1);
   const [pageSizeAccountBalance, setPageSizeAccountBalance] = useState(20);
   const [dealerCodes, setDealerCodes] = useState();
-  const [regionCodes, setRegionCodes] = useState();
+  const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState();
   const location = useLocation();
   const [newUrlParams, setNewUrlParams] = useState('')
@@ -83,47 +83,47 @@ const MainForm = () => {
   }, [pageSizeAccountBalance]);
 
   let searchUrl = queryString.parse(location.search);
-
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal });
+    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal},searchUrl);
 
   const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData, expandData] =
-    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "dealerCodes": dealerCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance });
+    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
-    const parsed = queryString.parse(location.search); 
+    const parsed = queryString.parse(location.search);
 
+   
     let newDealarCode = []
     //Field url data
     if (typeof parsed.fic !== 'undefined') {
-        if (Array.isArray(parsed.fic)) {
-            _.each(parsed.fic, (item, i) => {
-                newDealarCode.push(item);
-            });
-        } else { newDealarCode.push(parsed.fic) }
+      if (Array.isArray(parsed.fic)) {
+        _.each(parsed.fic, (item, i) => {
+          newDealarCode.push(item);
+        });
+      } else { newDealarCode.push(parsed.fic) }
     }
 
     //RegionCode url data
     if (typeof parsed.rec !== 'undefined') {
-        if (Array.isArray(parsed.rec)) {
-            _.each(parsed.rec, (item, i) => {
-                newDealarCode.push(item);
-            });
-        } else { newDealarCode.push(parsed.rec) }
+      if (Array.isArray(parsed.rec)) {
+        _.each(parsed.rec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      } else { newDealarCode.push(parsed.rec) }
     }
 
     //Dealar url data
     if (typeof parsed.dec !== 'undefined') {
-        if (Array.isArray(parsed.dec)) {
-            _.each(parsed.dec, (item, i) => {
-                newDealarCode.push(item);
-            });
-        } else { newDealarCode.push(parsed.dec) }
+      if (Array.isArray(parsed.dec)) {
+        _.each(parsed.dec, (item, i) => {
+          newDealarCode.push(item);
+        });
+      } else { newDealarCode.push(parsed.dec) }
     }
     setSelectedDealerCode(newDealarCode);
 
@@ -132,36 +132,40 @@ const MainForm = () => {
     let regionArrObj = [];
     let dealerArrObj = [];
 
-    if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
+    if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); }
     _.filter(newDealarCode, function (item) {
-        if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
-        else if (item.split("|").length === 2) {
-            regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
-        }
-        else {
-            dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
-        }
+      if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
+      else if (item.split("|").length === 2) {
+        regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
+      }
+      else {
+        dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
+      }
     });
-    onChangeDealerCode(newDealarCode);
-  }
 
+    onChangeDealerCode(newDealarCode);
+    AccountSetOnChange(true);
+    return setOnChange(true);
+  }
+ //Search Button Event
+ const searchButton = () => {
+  dataSearch();
+};
   //Get Search Data
   function dataSearch() {
     const params = new URLSearchParams(location.search);
-    params.delete('dec');
-    params.delete('rec');
-    params.delete('fic');
-    params.delete('dealer'); {
-      _.forEach(dealerCodes, (item) => {
-        params.append('dealer', item); params.toString();
-      });
-      let createUrl = null;
-      if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
-      history.push(`${location.pathname}?${createUrl}`);
 
-      AccountSetOnChange(true);
-      setOnChange(true);
-    }
+    params.delete('fic');
+    params.delete('rec');
+    params.delete('dec');
+    params.delete('smode');
+    params.delete('dealer');
+    let createUrl = null;
+    if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
+    history.push(`${location.pathname}?${createUrl}`);
+
+    AccountSetOnChange(true);
+    return setOnChange(true);
   }
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
@@ -225,46 +229,6 @@ const MainForm = () => {
     // postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Export, logMessage.Reports.Order.exportExcel);
     ExcelExport(columns, data, 'DBS Toplamları');
   }
-
-  //Search DailerName Tree Select Component
-  function filterTreeNodeDealerCode(value, treeNode) {
-    if (value && treeNode && treeNode.title) {
-      const filterValue = value.toLocaleLowerCase('tr')
-      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-      return treeNodeTitle.indexOf(filterValue) !== -1;
-    }
-    return false;
-  }
-
-  //Change DealerCode
-  async function onChangeDealerCode(value) {
-    let fieldArrObj = [];
-    let regionArrObj = [];
-    let dealerArrObj = [];
-    setDealerCodes([]);
-    setFieldCodes([]);
-    setRegionCodes([]);
-    const params = new URLSearchParams(location.search);
-    params.delete('dec');
-    params.delete('rec');
-    params.delete('fic');
-    params.delete('dealer');
-
-    if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
-    else {
-      _.filter(value, function (item) {
-        if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
-        else if (item.split("|").length === 2) {
-          regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
-        }
-        else {
-          dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
-        }
-        setSelectedDealerCode(value)
-        setNewUrlParams(params.toString());
-      });     
-    }
-  };
 
   //DBS Toplamlar Columns
   let columns = [
@@ -474,6 +438,47 @@ const MainForm = () => {
       }));
     }
   }
+  //Search DailerName Tree Select Component
+  function filterTreeNodeDealerCode(value, treeNode) {
+    if (value && treeNode && treeNode.title) {
+      const filterValue = value.toLocaleLowerCase('tr')
+      const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
+      return treeNodeTitle.indexOf(filterValue) !== -1;
+    }
+    return false;
+  }
+  //Change DealerCode
+  async function onChangeDealerCode(value) {
+    let fieldArrObj = [];
+        let regionArrObj = [];
+        let dealerArrObj = [];
+        setDealerCodes([]);
+        setFieldCodes([]);
+        setRegionCodes([]);
+        const params = new URLSearchParams(location.search);
+        params.delete('dec');
+        params.delete('rec');
+        params.delete('fic');
+        params.delete('from')
+        params.delete('to');
+        params.delete('smode');
+
+        if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
+        else {
+            _.filter(value, function (item) {
+                if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
+                else if (item.split("|").length === 2) {
+                    regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
+                }
+                else {
+                    dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
+                }
+                setSelectedDealerCode(value)
+                setNewUrlParams(params.toString());
+            });
+        }
+  };
+
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -501,7 +506,7 @@ const MainForm = () => {
               </Col>
               <Col span={view !== 'MobileView' ? 1 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               </Col>
-              <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={dataSearch} >
+              <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton} >
                 {<IntlMessages id="forms.button.label_Search" />}
               </Button>
             </Row>
