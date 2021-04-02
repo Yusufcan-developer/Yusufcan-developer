@@ -246,8 +246,7 @@ export default function () {
   }
 
   //getLocationDetail
-  async function getLocationDetail(selectedCity, selectedTown, selectedDistrict) {
-    let apiUrl = '';
+  async function getLocationDetail(selectedCity, selectedTown) {
     const requestOptions = {
       method: "GET",
       headers: {
@@ -255,10 +254,7 @@ export default function () {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    if (selectedDistrict.length > 0) { apiUrl = `${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}&district=${selectedDistrict}` }
-    else { apiUrl = `${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}` }
-
-    await fetch(apiUrl, requestOptions)
+    await fetch(`${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}`, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response, true);
         return status;
@@ -369,13 +365,18 @@ export default function () {
   }
 
   //get adress and user id function
-  async function getInitData(userId, selectedCity) {
+  async function getInitData(userId, selectedCity, selectedTown, addressDeliveryCostCalculate) {
     await getHasSaveOrderPermission();
     await getByUserId(userId);
     await getAdress();
     await getLocations();
     if ((typeof selectedCity !== 'undefined') && (siteMode === enumerations.SiteMode.DeliverysPoint)) {
-      await getLocationDetail(selectedCity, 'Bayındır', 'Buruncuk');
+      await getLocationDetail(selectedCity, selectedTown);
+    }
+    if (typeof addressDeliveryCostCalculate == 'boolean' && addressDeliveryCostCalculate === true && siteMode === enumerations.SiteMode.DeliverysPoint) {
+      message
+        .loading('Nakliye Bedeli Hesaplanıyor Bekleyiniz..', 2.5)
+        .then(() => message.success('Nakliye bedeli hesaplandı', 2.5));
     }
   }
 
@@ -464,7 +465,7 @@ export default function () {
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
         getAdress();
-        getInitData(userId);
+        getInitData(userId,data.city,data.town,true);
         postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + logMessage.Address.saveAddress);
       })
       .catch(setConfirmLoading(false));
@@ -721,7 +722,7 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); getInitData(userId, record.city); },
+                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); getInitData(userId, record.city, record.town, true); },
                         };
                       }}
                       pagination={false}

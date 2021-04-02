@@ -33,13 +33,13 @@ export default function Topbar() {
   if (typeof token === 'undefined') { return history.replace('/'); }
   const activeUser = localStorage.getItem("activeUser");
   const username = token.uname;
- 
+
   const siteMode = getSiteMode();
-  let backgroundColor=customizedTheme.backgroundColor;
-  if(siteMode===enumerations.SiteMode.DeliverysPoint){
-    backgroundColor=customizedTheme.backgroundColor;
+  let backgroundColor = customizedTheme.backgroundColor;
+  if (siteMode === enumerations.SiteMode.DeliverysPoint) {
+    backgroundColor = customizedTheme.backgroundColor;
   }
- 
+
   const styling = {
     background: backgroundColor,
     position: 'fixed',
@@ -76,9 +76,10 @@ export default function Topbar() {
             <img src={bulutLogo} style={{ width: '100px' }} onClick={() => window.open('https://seramiksan.buluttahsilat.com/')}
             />
           </li>
-          <li>
-          <TopbarAdressDelivery />
-          </li>
+          {token.urole === 'admin' 	|| token.dcode==='B555888' ?
+            <li>
+              <TopbarAdressDelivery />
+            </li> : null}
           <li
             onClick={() => setSelectedItem('notification')}
             className={selectedItem ? 'isoNotify active' : 'isoNotify'}>
