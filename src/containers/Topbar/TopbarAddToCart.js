@@ -1,6 +1,6 @@
 //React
-import React, { useState, useEffect } from "react";
-import { Link, useRouteMatch, useHistory, useLocation } from 'react-router-dom';
+import React, { useState} from "react";
+import { Link, useRouteMatch, useLocation } from 'react-router-dom';
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,12 +19,14 @@ import { Tooltip, Button } from "antd";
 
 //Configs
 import numberFormat from "@iso/config/numberFormat";
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import _ from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
 import getInitData from '../../redux/ecommerce/config';
 import enumerations from "@iso/config/enumerations";
 import {WarningTwoTone, InfoCircleTwoTone
+
 } from '@ant-design/icons';
 
 var jwtDecode = require('jwt-decode');
@@ -50,7 +52,7 @@ export default function TopbarAddtoCart() {
     loadingInitData,
     viewTopbarCart,
   } = useSelector(state => state.Ecommerce);
-  
+  const siteMode = getSiteMode();
   function hide() {
     dispatch(changeViewTopbarCart(false));
   }
@@ -70,10 +72,11 @@ export default function TopbarAddtoCart() {
       }
     };
     let apiUrl='';
+    const siteMode=getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser"); 
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true`;}
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&siteMode=${siteMode}`;}
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -163,7 +166,7 @@ export default function TopbarAddtoCart() {
         let productItem;
         let products;
         productItem = _.find(cartItem, function (item) { return item.itemCode === product.itemCode && item.isPartial === product.isPartial });
-        if (productItem !== undefined) {
+        if (typeof productItem !== 'undefined') {
           let itemCode=productItem.itemCode;
           products=productItem;
           productItem = productItem.item;
@@ -239,7 +242,7 @@ export default function TopbarAddtoCart() {
         <Scrollbar style={{ height: 300 }}>{renderProducts()}</Scrollbar>
       </div>
       <div className="isoDropdownFooterLinks">
-        <Link to={`${url}/cart`} onClick={hide}>
+        <Link to={`${url}/cart?smode=${siteMode}`} onClick={hide}>
         <IntlMessages id="topbar.viewCart" />
         </Link>
         <h3>

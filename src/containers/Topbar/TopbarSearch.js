@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import TopbarSearchModal from './TopbarSearchModal.styles';
 import { Input } from "antd";
-import { key } from 'styled-theme';
-import { func } from 'prop-types';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+
 export default function TopbarSearch() {
 
   const location = useLocation();
@@ -12,8 +12,8 @@ export default function TopbarSearch() {
   const [keyword, setKeyword] = useState();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const history = useHistory();
-
-
+  const siteMode = getSiteMode();
+  
   React.useEffect(() => {
     const timer = setTimeout(() => {
       try {
@@ -28,30 +28,30 @@ export default function TopbarSearch() {
   //Keywor 'Enter' search
   const keyPress = e => {
     if (e.keyCode == 13) {
-      if (keyword !== undefined) {
+      if (typeof keyword !== 'undefined') {
         setVisiblity(false);
-        history.push(`${'/products/search'}/?keyword=${keyword}`)
+        history.push(`${'/products/search'}/?keyword=${keyword}&smode=${siteMode}`)
         if (location.pathname === '/products/search/') { window.location.reload(false); }
       }
       setKeyword();
     }
   }
+
   function onClickSearch() {
-    if (keyword !== undefined) {
+    if (typeof keyword !== 'undefined') {
       setVisiblity(false);
-      history.push(`${'/products/search'}/?keyword=${keyword}`)
+      history.push(`${'/products/search'}/?keyword=${keyword}&smode=${siteMode}`)
       if (location.pathname === '/products/search/') { window.location.reload(false); }
     }
     setKeyword();
   }
-  function showModal() {
-    setVisiblity(true);
-  };
+
   const handleBlur = () => {
     setTimeout(() => {
       setVisiblity(false);
     }, 200);
   };
+
   //Input
   const onchange = e => {
     setKeyword(e.target.value);

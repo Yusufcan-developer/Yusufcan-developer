@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Layout, Alert, Button } from 'antd';
+import { Layout, Switch } from 'antd';
 import appActions from '@iso/redux/app/actions';
+import TopbarAdressDelivery from './TopbarAdressDelivery';
 import TopbarNotification from './TopbarNotification';
 import TopbarSearch from './TopbarSearch';
 import TopbarUser from './TopbarUser';
@@ -11,6 +12,8 @@ import TopbarAlert from './TopbarAlert';
 import history from '@iso/lib/helpers/history';
 import bulutLogo from '@iso/assets/images/BULUT.png';
 import { Link } from 'react-router-dom';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import enumerations from '../../config/enumerations';
 
 var jwtDecode = require('jwt-decode');
 
@@ -27,12 +30,18 @@ export default function Topbar() {
   ]);
   const isCollapsed = collapsed && !openDrawer;
   const token = jwtDecode(localStorage.getItem("id_token"));
-  if (token === undefined) { return history.replace('/'); }
+  if (typeof token === 'undefined') { return history.replace('/'); }
   const activeUser = localStorage.getItem("activeUser");
   const username = token.uname;
 
+  const siteMode = getSiteMode();
+  let backgroundColor = customizedTheme.backgroundColor;
+  if (siteMode === enumerations.SiteMode.DeliverysPoint) {
+    backgroundColor = customizedTheme.backgroundColor;
+  }
+
   const styling = {
-    background: customizedTheme.backgroundColor,
+    background: backgroundColor,
     position: 'fixed',
     width: '100%',
     height: 70,
@@ -64,9 +73,13 @@ export default function Topbar() {
             <TopbarSearch />
           </li>
           <li>
-          <img src={bulutLogo} style={{ width: '100px' }} onClick={() => window.open('https://seramiksan.buluttahsilat.com/')}
- />
+            <img src={bulutLogo} style={{ width: '100px' }} onClick={() => window.open('https://seramiksan.buluttahsilat.com/')}
+            />
           </li>
+          {token.urole === 'admin' 	|| token.dcode==='B555888' ?
+            <li>
+              <TopbarAdressDelivery />
+            </li> : null}
           <li
             onClick={() => setSelectedItem('notification')}
             className={selectedItem ? 'isoNotify active' : 'isoNotify'}>

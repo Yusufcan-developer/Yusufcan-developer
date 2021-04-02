@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Breadcrumb, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message, Input } from "antd";
+import { Col, Card, Row, Button, Pagination, Collapse, Spin, Badge, notification, Typography, Tooltip, Space, Image, Tag, message, Input } from "antd";
 
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,12 +25,13 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
 import numberFormat from "@iso/config/numberFormat";
-import ResultNumberFormat from "@iso/config/resultNumberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
-import _, { find } from 'underscore';
+import _ from 'underscore';
 import logMessage from '@iso/config/logMessage';
 
 //Desing style
@@ -40,10 +41,9 @@ import PageHeader from "@iso/components/utility/pageHeader";
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 import {
-  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined, UpOutlined
+  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
-import { func } from "prop-types";
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 
@@ -72,7 +72,8 @@ const SearchComponent = () => {
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [selectedItem, setSelectedItem] = useState();
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
-  const [plusButtonDisable, setPlusButtonDisable]=useState(false);
+  const [plusButtonDisable, setPlusButtonDisable] = useState(false);
+  const [isPointAddress, setIsPointAddress] = useState();
 
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
@@ -106,6 +107,7 @@ const SearchComponent = () => {
   const [serieFilterSearch, setSerieFilterSearch] = useState();
   const [colorFilterSearch, setColorFilterSearch] = useState();
   const [surfaceFilterSearch, setSurfaceFilterSearch] = useState();
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
 
   const { Search } = Input;
 
@@ -113,7 +115,7 @@ const SearchComponent = () => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
     getVariablesFromUrl();
     setCurrentPage(pageIndex);
-    if (category === undefined) {
+    if (typeof category === 'undefined') {
       setOnChangeFilter(true);
       setOnChangeDimensionsFilter(true);
       setOnChangeSerieFilter(true);
@@ -126,22 +128,35 @@ const SearchComponent = () => {
   function getVariablesFromUrl() {
     //Url değerini alıyoruz.
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
 
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
     //Category get url data
-    if (parsed.pg !== undefined) {
+    if (typeof parsed.pg !== 'undefined') {
       if (Array.isArray(parsed.pg)) {
         setCategory(parsed.pg)
       } else { setCategory(parsed.pg); }
     }
 
+    if (typeof parsed.isPointAddress !== 'undefined') {
+      const isPoint = parsed.isPointAddress == "true" ? true : false
+      setIsPointAddress(isPoint);
+    }
+
     //Type get url data
-    if (parsed.ut !== undefined) {
+    if (typeof parsed.ut !== 'undefined') {
       if (Array.isArray(parsed.ut)) {
         setType(parsed.ut)
       } else { setType([parsed.ut]); }
     }
     //Dimension get url data
-    if (parsed.dm !== undefined) {
+    if (typeof parsed.dm !== 'undefined') {
       let dimensionNewArray
       if (parsed.dm)
         if (Array.isArray(parsed.dm)) {
@@ -159,7 +174,7 @@ const SearchComponent = () => {
     }
 
     //Serie get url data
-    if (parsed.se !== undefined) {
+    if (typeof parsed.se !== 'undefined') {
       let seriesNewArray
       if (parsed.se)
         if (Array.isArray(parsed.se)) {
@@ -195,7 +210,7 @@ const SearchComponent = () => {
     }
 
     //Surface get url data
-    if (parsed.sfc !== undefined) {
+    if (typeof parsed.sfc !== 'undefined') {
       let surfaceNewArray
       if (parsed.sfc)
         if (Array.isArray(parsed.sfc)) {
@@ -213,33 +228,33 @@ const SearchComponent = () => {
     }
 
     //Sales Status get url data
-    if (parsed.ss !== undefined) {
+    if (typeof parsed.ss !== 'undefined') {
       setSalesStatus(parsed.ss)
     }
 
     //Kampanya get url data
-    if (parsed.campaign !== undefined) {
+    if (typeof parsed.campaign !== 'undefined') {
       if (parsed.campaign === 'true')
         setCampaignCode(true); else { setCampaignCode(false) }
     }
 
     //Stok Durumu get url data
-    if (parsed.stockStatus !== undefined) {
+    if (typeof parsed.stockStatus !== 'undefined') {
       setStockStatus(parsed.stockStatus);
     }
 
     //Product Quality get url data
-    if (parsed.pq !== undefined) {
+    if (typeof parsed.pq !== 'undefined') {
       if (Array.isArray(parsed.pq)) {
         setQuality(parsed.pq)
       } else { setQuality([parsed.pq]); }
     }
 
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.keyword !== undefined) { setKeyword(parsed.keyword); }
-    if (parsed.srto !== undefined) { setSortingOrder(parsed.srto); }
-    if (parsed.srtf !== undefined) {
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.keyword !== 'undefined') { setKeyword(parsed.keyword); }
+    if (typeof parsed.srto !== 'undefined') { setSortingOrder(parsed.srto); }
+    if (typeof parsed.srtf !== 'undefined') {
       setSortingField(parsed.srtf); switch (parsed.srtf) {
         case 'ItemRef':
           return setItemRefButtonType('primary');
@@ -253,7 +268,6 @@ const SearchComponent = () => {
     else { setItemRefButtonType('primary'); }
 
     return setOnChange(true);
-
   }
 
   //Redux ürünler listeleme
@@ -264,7 +278,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, category, parsed);
+    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, category, parsed);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -273,22 +287,22 @@ const SearchComponent = () => {
   // const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.getProductTypes}?categories=${category}`);
 
   //Post Type
-  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Get Dimension
   // const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.getDimensions}?categories=${category}`);
 
   //Post Dimension
-  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Post Series
-  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Post Color
-  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Post Surface
-  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder });
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Get Quality
   // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
@@ -335,7 +349,7 @@ const SearchComponent = () => {
     const params = new URLSearchParams(location.search);
     params.delete('keyword');
     params.delete('pgindex');
-    if (keyword !== undefined) {
+    if (typeof keyword !== 'undefined') {
       if (keyword.length > 0) {
         setPageIndex(1);
         params.append('keyword', keyword);
@@ -360,8 +374,6 @@ const SearchComponent = () => {
     keywordAddUrl();
   }
 
-  //#region filter text Search values
-
   //Type
   function filterTextSearchType(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -377,7 +389,7 @@ const SearchComponent = () => {
     if (filterList.length > 0) {
       _.each(type, (cloneItem) => {
         var selectedProduct = filterList.find(item => item == cloneItem);
-        if (selectedProduct === undefined) {
+        if (typeof selectedProduct === 'undefined') {
           filterList.push(cloneItem);
         }
       });
@@ -387,6 +399,7 @@ const SearchComponent = () => {
     }
     else { setProductTypeFilterSearch(''); }
   }
+
   //Text Fields Search
   const productTypeOnSearch = value => {
     filterTextSearchType(value);
@@ -395,7 +408,6 @@ const SearchComponent = () => {
   const searchTextFilterkeyPress = e => {
     filterTextSearchType(e.target.value);
   }
-
   //Dimension
   function filterTextSearchDimension(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -411,7 +423,7 @@ const SearchComponent = () => {
     if (filterList.length > 0) {
       _.each(dimension, (cloneItem) => {
         var selectedDimension = filterList.find(item => item == cloneItem);
-        if (selectedDimension === undefined) {
+        if (typeof selectedDimension === 'undefined') {
           filterList.push(cloneItem);
         }
       });
@@ -421,6 +433,7 @@ const SearchComponent = () => {
     }
     else { setDimensionFilterSearch(''); }
   }
+
   //Text Fields Search
   const dimensionOnSearch = value => {
     filterTextSearchDimension(value);
@@ -429,7 +442,6 @@ const SearchComponent = () => {
   const dimensionSearchTextFilterkeyPress = e => {
     filterTextSearchDimension(e.target.value);
   }
-
   //Serie
   function filterTextSearchSerie(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -448,7 +460,7 @@ const SearchComponent = () => {
       _.each(_.without(series, null)
         , (cloneItem) => {
           var selectedSerie = filterList.find(item => item == cloneItem);
-          if (selectedSerie === undefined) {
+          if (typeof selectedSerie === 'undefined') {
             filterList.push(cloneItem);
           } else if (cloneItem === '') { }
         });
@@ -461,7 +473,7 @@ const SearchComponent = () => {
   //Text Fields Search
   const serieOnSearch = value => {
     filterTextSearchSerie(value);
-  }
+  }  
   //Keyword 'Enter' search
   const serieSearchTextFilterkeyPress = e => {
     filterTextSearchSerie(e.target.value);
@@ -485,7 +497,7 @@ const SearchComponent = () => {
       _.each(_.without(color, null)
         , (cloneItem) => {
           var selectedSerie = filterList.find(item => item == cloneItem);
-          if (selectedSerie === undefined) {
+          if (typeof selectedSerie === 'undefined') {
             filterList.push(cloneItem);
           } else if (cloneItem === '') { }
         });
@@ -522,7 +534,7 @@ const SearchComponent = () => {
       _.each(_.without(surface, null)
         , (cloneItem) => {
           var selectedSerie = filterList.find(item => item == cloneItem);
-          if (selectedSerie === undefined) {
+          if (typeof selectedSerie === 'undefined') {
             filterList.push(cloneItem);
           } else if (cloneItem === '') { }
         });
@@ -676,9 +688,7 @@ const SearchComponent = () => {
 
   //Series Filter Event
   function onChangeSerie(checkedSerieValue) {
-
     const serieNewArray = _.map(checkedSerieValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
-
     const nullOrBlankData = _.filter(serieNewArray, function (Item) {
       if (Item === null || Item === '') {
         return true;
@@ -831,14 +841,14 @@ const SearchComponent = () => {
     setCampaignCode(false);
     setStockStatus(enumerations.StockStatus.None);
 
-    if (getProductGroupName !== undefined) {
+    if (typeof getProductGroupName !== 'undefined') {
       let productGroupName = getProductGroupName;
       params.delete('pg');
       setCategory(productGroupName);
       params.append('pg', productGroupName);
       params.toString();
     } else {
-      if (parsed.pg === undefined) {
+      if (typeof parsed.pg === 'undefined') {
         if (productCategories.length > 0) {
           setCategory(productCategories[0]);
         }
@@ -870,7 +880,7 @@ const SearchComponent = () => {
   function inputNumberShowOrHide(value) {
     if (productQuantity !== null) {
       var selectedProduct = productQuantity.find(item => item.itemCode === value.itemCode);
-      if (selectedProduct === undefined) {
+      if (typeof selectedProduct === 'undefined') {
         return false;
       }
       else { return true; }
@@ -878,10 +888,10 @@ const SearchComponent = () => {
     else { return false; }
   }
 
-  //Input Number return quantity value
-  function inputNumberQuantityValue(product) {
+  //Input Number return pallet quantity value
+  function palletQuantityEntry(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (partialQuantity) { return 0 }
       return 1
     }
@@ -899,9 +909,9 @@ const SearchComponent = () => {
   }
 
   //Input Number return partial quantity value
-  function inputNumberPartialQuantityValueNew(product, isPartial) {
+  function partialQuantityEntry(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (selectedPartialAmout < 1) {
         return 0;
       } else {
@@ -916,10 +926,9 @@ const SearchComponent = () => {
     }
   }
   //Input Number return partial quantity value
-  function inputNumberPartialQuantityValue(product, isPartial) {
-
+  function partialPopupQuantityEntry(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       if (selectedAmout < 1) {
         return 0;
       } else {
@@ -937,7 +946,7 @@ const SearchComponent = () => {
   function addCardButtonTitle(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
     const titleArray = []
-    if (selectedProduct === undefined) {
+    if (typeof selectedProduct === 'undefined') {
       return 'Sepete Ekle'
     }
     else {
@@ -959,13 +968,15 @@ const SearchComponent = () => {
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
       setSelectedItem(item.itemCode);
-      if(!isNaN(e.target.value)){
-      setSelectedAmount(parseInt(e.target.value));}
+      if (!isNaN(e.target.value)) {
+        setSelectedAmount(parseInt(e.target.value));
+      }
     }
   }
 
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
+    if(searchSiteMode === enumerations.SiteMode.DeliverysPoint){isPartial=true;}
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
 
     const selectedQuantity = event.target.value;
@@ -1023,7 +1034,7 @@ const SearchComponent = () => {
 
       inputNumberShowOrHide(product);
       var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
-      if (selectedProduct === undefined) { return; }
+      if (typeof selectedProduct === 'undefined') { return; }
       if (selectedProduct.quantity !== 0) {
         const newProductQuantity = [];
         let setQunatity;
@@ -1051,6 +1062,7 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
+    if(searchSiteMode === enumerations.SiteMode.DeliverysPoint){isPartial=true;}
 
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
@@ -1060,7 +1072,7 @@ const SearchComponent = () => {
       if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
     }
     if (selectedQuantity === 0) { selectedQuantity = 1 }
-    if ((product.canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
@@ -1106,7 +1118,7 @@ const SearchComponent = () => {
     setPartialQuantity(false);
   };
 
-  function calculateQuantity(item,minusText,quantity) {
+  function calculateQuantity(item, minusText, quantity) {
     let amountControl;
     //Girilen text miktarının kontrolü    
     if (!minusText) {
@@ -1232,7 +1244,7 @@ const SearchComponent = () => {
                   <Radio style={radioStyle} value={(category === 'KARO') ? enumerations.StockStatus.TileNotInStock : enumerations.StockStatus.GeneralNotInStock}>
                     Stok Yok
                 </Radio>
-                  {(category === 'KARO') ? (<React.Fragment>                    
+                  {(category === 'KARO') ? (<React.Fragment>
                     <Radio style={radioStyle} value={enumerations.StockStatus.Tile10000AndMore}>
                       10.000+  M2
                 </Radio></React.Fragment>) : (null)}
@@ -1259,7 +1271,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={productTypeOnSearch}
                     onKeyUp={searchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     options={productTypeFilterSearch && productTypeFilterSearch.length > 0 ? productTypeFilterSearch : productTypeData}
@@ -1279,7 +1290,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={dimensionOnSearch}
                     onKeyUp={dimensionSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     options={
@@ -1300,7 +1310,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={serieOnSearch}
                     onKeyUp={serieSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -1321,7 +1330,6 @@ const SearchComponent = () => {
                     allowClear
                     onSearch={colorOnSearch}
                     onKeyUp={colorSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -1336,12 +1344,11 @@ const SearchComponent = () => {
             {(surfaceData.length !== 0 && surfaceData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.surface" />} key="8">
-                <Search
+                  <Search
                     placeholder="Yüzey araması"
                     allowClear
                     onSearch={surfaceOnSearch}
                     onKeyUp={surfaceSearchTextFilterkeyPress}
-                  // style={{ width: 200, margin: '0 10px' }}
                   />
                   <CheckboxGroup
                     value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
@@ -1382,33 +1389,33 @@ const SearchComponent = () => {
                 <Row gutter={[24, 16]}>
                   {data.map((item) => (
                     <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 12 }} >
-                      {item.canBeSoldPartially === true ? (
+                      {item.canBeSoldPartially === true && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                         <React.Fragment>
                           <Badge.Ribbon text="Parçalı Satışa Uygun" color='orange' placement='end'>
                             {item.campaignCode === '' ? ''
                               : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               </Badge.Ribbon>}
                             <div className="isoCardImage">
-                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                              <Link to={`${'/products/detail'}/${item.itemCode}&smode=${searchSiteMode}`}>
                                 <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                               </Link>{' '}
                             </div>
                           </Badge.Ribbon>
                         </React.Fragment>
                       ) : (
-                          <React.Fragment>
-                            {item.campaignCode === '' ?
+                        <React.Fragment>
+                          {item.campaignCode === '' ?
+                            <div className="isoCardImage">
+                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                                <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                              </Link>{' '}
+                            </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               <div className="isoCardImage">
-                                <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                                <Link to={`${'/products/detail'}/${item.itemCode}?siteMode=${searchSiteMode}`}>
                                   <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                 </Link>{' '}
-                              </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
-                                <div className="isoCardImage">
-                                  <Link to={`${'/products/detail'}/${item.itemCode}`}>
-                                    <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
-                                  </Link>{' '}
-                                </div></Badge.Ribbon>}
-                          </React.Fragment>)}
+                              </div></Badge.Ribbon>}
+                        </React.Fragment>)}
                       <div className="isoCardContent">
                         <Row>
                           <Col span={6} >
@@ -1429,13 +1436,13 @@ const SearchComponent = () => {
                         {/* <span className="isoCardDate">
                           {item.color} {item.surface && '-'} {item.surface}&nbsp;
                         </span> */}
-                        <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
-                          {item.canBeSoldPartially ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
+                        <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
+                          {item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
                           <Tooltip trigger={["click", "hover"]} title={
                             <div>
                               1 Palet: {item.m2Pallet} {item.unit}<br />
                               {item.m2Box ? ('1 Kutu: ' + item.m2Box + ' ' + item.unit) : null}{item.m2Box ? <br /> : null}
-                              {item.canBeSoldPartially ?
+                              {item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ?
                                 'Sepete hem palet hem de kutu bazında ekleme yapabilirsiniz' :
                                 'Sepete palet bazında ekleme yapabilirsiniz'}
                             </div>} color={"#108ee9"}>
@@ -1445,12 +1452,11 @@ const SearchComponent = () => {
                           </Tooltip>
                         </div>
                         {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
-                        {partialQuantity === true & item.itemCode === selectedItemCode ? (
+                        {partialQuantity === true & item.itemCode === selectedItemCode & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Modal
                             title={item.itemCode + ' - ' + item.description}
                             visible={true}
                             width={700}
-                            // onOk={handleOk}
                             onCancel={handleCancel}
                             maskClosable={false}
                             footer={[
@@ -1489,11 +1495,11 @@ const SearchComponent = () => {
                                         maxLength={5}
                                         defaultValue={0}
                                         step={1}
-                                        value={inputNumberPartialQuantityValue(item, false)}
+                                        value={partialPopupQuantityEntry(item, false)}
                                       />
                                     </Col>
                                     <Col span={4}>
-                                      <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
+                                      <Button disabled={productAmountControlDisabled(item, false, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
                                         {<IntlMessages id="product.plus" />}
                                       </Button>
                                     </Col>
@@ -1532,11 +1538,11 @@ const SearchComponent = () => {
                                       maxLength={5}
                                       defaultValue={1}
                                       step={1}
-                                      value={inputNumberPartialQuantityValueNew(item, true)}
+                                      value={partialQuantityEntry(item, true)}
                                     />
                                   </Col>
                                   <Col span={4} style={{ width: '100%' }}>
-                                    <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
+                                    <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
                                       {<IntlMessages id="product.plus" />}
                                     </Button>
                                   </Col>
@@ -1561,48 +1567,47 @@ const SearchComponent = () => {
                           </Modal>
 
                         ) : (null)}
-                        {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) ? (
+                        {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
                               <Button
-                                disabled={calculateQuantity(item,false,0)}
+                                disabled={calculateQuantity(item, false, 0)}
                                 type="primary" style={{ width: '100%' }}
-                                onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true ? addCardButtonTitle(item) : 'Sepete Ekle'}
+                                onClick={event => onAddProductCart(item)}>{item.canBeSoldPartially === true & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? addCardButtonTitle(item) : 'Sepete Ekle'}
                               </Button>
                             </Col>
                           </Row>
                         ) : (
-                            <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
-                              <Col span={4} style={{ width: '100%' }} align="right">
-                                <Button type="primary" onClick={event => onRemoveProductCart(item)}>
-                                  {<IntlMessages id="product.minus" />}
-                                </Button>
-                              </Col>
-                              <Col span={8} align="middle">
-                                <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{'Palet'}</span>
-                                <Input
-                                  id={item.itemCode}
-                                  onClick={event => onSelectAll(item.itemCode)}
-                                  onChange={event => onChange(event, item, false)}
-                                  onBlur={event => onChangeQuantity(event, item)}
-                                  style={{ textAlign: "right", maxHeight: '32px' }}
-                                  maxLength={25}
-                                  defaultValue={1}
-                                  step={1}
-                                  value={inputNumberQuantityValue(item)}
-                                />
-                              </Col>
-                              <Col span={4} style={{ width: '100%' }}>
-                                <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary"  onClick={event => onAddProductCart(item)}>
-                                  {<IntlMessages id="product.plus" />}
-                                </Button>
-                              </Col>
-                            </Row>
-                          )}
+                          <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
+                            <Col span={4} style={{ width: '100%' }} align="right">
+                              <Button type="primary" onClick={event => onRemoveProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
+                                {<IntlMessages id="product.minus" />}
+                              </Button>
+                            </Col>
+                            <Col span={8} align="middle">
+                              <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet' : item.unit !== 'TOR' ? 'Kutu' : 'Torba'}</span>
+                              <Input
+                                id={item.itemCode}
+                                onClick={event => onSelectAll(item.itemCode)}
+                                onChange={event => onChange(event, item, item.isPartial)}
+                                onBlur={event => onChangeQuantity(event, item, item.isPartial)}
+                                style={{ textAlign: "right", maxHeight: '32px' }}
+                                maxLength={25}
+                                defaultValue={1}
+                                step={1}
+                                value={palletQuantityEntry(item)}
+                              />
+                            </Col>
+                            <Col span={4} style={{ width: '100%' }}>
+                              <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
+                                {<IntlMessages id="product.plus" />}
+                              </Button>
+                            </Col>
+                          </Row>
+                        )}
                       </div>
                     </SingleCardWrapper>
                   ))}
-
                   <Pagination onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
                     pageSize={pageSize}

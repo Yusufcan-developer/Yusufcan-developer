@@ -51,7 +51,6 @@ function useGetSalesGoalsReport(url, reqBody, searchUrl, year, month, regionCode
             );
     }
     useEffect(() => {
-debugger
         if (!_.isEqual(lastReqBody, searchUrl)) {
             setLoading(true);
             fetchUrl();

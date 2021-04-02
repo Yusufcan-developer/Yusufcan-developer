@@ -66,6 +66,44 @@ const SidebarWrapper = styled.div`
         }
       }
     }
+    .isoAddressDeliveryLogoWrapper {
+      height: 70px;
+      ${'' /* background: rgba(0, 0, 0, 0.3); */}
+      background-color: addressDeliveryColor;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      margin: 0;
+      padding: 0 10px;
+      text-align: center;
+      overflow: hidden;
+      ${borderRadius()};
+
+      h3 {
+        a {
+          font-size: 21px;
+          font-weight: 300;
+          line-height: 70px;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: ${palette('grayscale', 6)};
+          display: block;
+          text-decoration: none;
+        }
+      }
+    }
+
+    &.ant-layout-sider-collapsed {
+      .isoAddressDeliveryLogoWrapper {
+        padding: 0;
+
+        h3 {
+          a {
+            font-size: 27px;
+            font-weight: 500;
+            letter-spacing: 0;
+          }
+        }
+      }
+    }
 
     .isoDashboardMenu {
       padding-top: 35px;

@@ -28,6 +28,8 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import _ from 'underscore';
@@ -44,6 +46,7 @@ const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
+
 const ChequesReport = () => {
   document.title = "Çekler - Seramiksan B2B";
 
@@ -70,7 +73,7 @@ const ChequesReport = () => {
   const [selectedCheckqueType, setSelectedCheckqueType] = useState();
   const [status, setSelectedStatus] = useState();
   const [newUrlParams, setNewUrlParams] = useState('')
-
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
@@ -83,9 +86,10 @@ const ChequesReport = () => {
   }, [pageIndex]);
 
   let searchUrl = queryString.parse(location.search);
+
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    useFetch(`${siteConfig.api.report.postCheques}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "serialNumbers": serialNumber, "types": selectedCheckqueType, "keyword": searchKey, "status": status, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData, loadingTree, setOnChangeTree] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -105,19 +109,27 @@ const ChequesReport = () => {
   }
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
-
     const parsed = queryString.parse(location.search);
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.sno !== undefined) { setSerialNumber([parsed.sno]); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    const siteMode = getSiteMode();
+
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.sno !== 'undefined') { setSerialNumber([parsed.sno]); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
 
     let getStatus = [];
-    if (parsed.status !== undefined) {
+    if (typeof parsed.status !== 'undefined') {
       if (Array.isArray(parsed.status)) {
         _.each(parsed.status, (item) => {
           getStatus.push(item);
@@ -127,7 +139,7 @@ const ChequesReport = () => {
     setSelectedStatus(getStatus);
 
     let checkType = [];
-    if (parsed.type !== undefined) {
+    if (typeof parsed.type !== 'undefined') {
       if (Array.isArray(parsed.type)) {
         _.each(parsed.type, (item) => {
           checkType.push(item);
@@ -137,7 +149,7 @@ const ChequesReport = () => {
     setSelectedCheckqueType(checkType);
     let newDealarCode = []
 
-    if (parsed.fic !== undefined) {
+    if (typeof parsed.fic !== 'undefined') {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
           newDealarCode.push(item);
@@ -146,7 +158,7 @@ const ChequesReport = () => {
 
     }
 
-    if (parsed.rec !== undefined) {
+    if (typeof parsed.rec !== 'undefined') {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
           newDealarCode.push(item);
@@ -155,7 +167,7 @@ const ChequesReport = () => {
 
     }
 
-    if (parsed.dec !== undefined) {
+    if (typeof parsed.dec !== 'undefined') {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
           newDealarCode.push(item);
@@ -188,7 +200,9 @@ const ChequesReport = () => {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
-
+    const siteMode = getSiteMode();
+    
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -203,18 +217,19 @@ const ChequesReport = () => {
     params.delete('sortingOrder');
     params.delete('status');
 
-    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-    if (serialNumber !== undefined) {
+    if (typeof serialNumber !== 'undefined') {
       if (serialNumber[0] !== '') { params.append('sno', serialNumber); params.toString(); } else { setSerialNumber(undefined) }
     }
+    params.append('smode', siteMode); params.toString();
 
     _.filter(selectedCheckqueType, function (item) {
       params.append('type', item); params.toString();
@@ -227,7 +242,8 @@ const ChequesReport = () => {
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-
+    setSearchSitemode(siteMode);
+    
     return setOnChange(true);
   }
 
@@ -260,6 +276,7 @@ const ChequesReport = () => {
     params.delete('ctype');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('smode');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -310,7 +327,7 @@ const ChequesReport = () => {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }

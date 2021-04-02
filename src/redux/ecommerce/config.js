@@ -3,6 +3,7 @@ import siteConfig from "@iso/config/site.config";
 import _ from 'underscore';
 import history from '@iso/lib/helpers/history';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 var jwtDecode = require('jwt-decode');
 
 export default function getInitData() {
@@ -19,12 +20,13 @@ export default function getInitData() {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
+    const siteMode=getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     if (token === undefined) { return history.replace('/'); }
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl='';
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}`;}
-      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}&siteMode=${siteMode}`;}
+      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?&siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -45,7 +47,6 @@ export default function getInitData() {
     if (localStorage.getItem("id_token")) {
       const cartProductQuantity = localStorage.getItem('cartProductQuantity');
       const productsData = await getDatabaseProductInfo();
-
       if (productsData !== 'Unauthorized') {
         // Database product code and product quantity send Redux  
         let sendReduxProductList = _.each(productsData.items, (item) => {

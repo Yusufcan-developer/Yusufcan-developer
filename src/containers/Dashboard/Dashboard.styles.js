@@ -312,7 +312,7 @@ export const DashboardContainer = styled.div`
   .ant-layout-footer {
     font-size: 13px;
     border-top: none !important;
-    background-color: transparent !important;
+    ${'' /* background-color: transparent !important; */}
     @media (max-width: 767px) {
       padding: 10px 20px;
     }

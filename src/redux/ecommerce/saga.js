@@ -1,12 +1,10 @@
 import { all, takeEvery, put } from 'redux-saga/effects';
 import actions from './actions';
-import fake from './fake';
-import getInitData from './config';
 import _ from 'underscore';
 import siteConfig from "@iso/config/site.config";
 import history from '@iso/lib/helpers/history';
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from 'react-redux';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+
 var jwtDecode = require('jwt-decode');
 
 export function* changedCard() {
@@ -36,14 +34,15 @@ export function* updateData({ productQuantity }) {
     item['amount'] = item['quantity'];
     delete item['quantity'];
   });
+  const siteMode=getSiteMode();
   const token = jwtDecode(localStorage.getItem("id_token"));
-  if(token===undefined){return  history.replace('/');}
+  if(typeof token==='undefined'){return  history.replace('/');}
   const activeUser = localStorage.getItem("activeUser")
   let account = '';
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
 
-  if (activeUser != undefined) { account = activeUser }
-  const reqBody = { "items": sendDatabaseProductList,"accountNo": account };
+  if (typeof activeUser != 'undefined') { account = activeUser }
+  const reqBody = { "items": sendDatabaseProductList,"accountNo": account,"siteMode":siteMode };
   const requestOptions = {
     method: "POST",
     headers: {

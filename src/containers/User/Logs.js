@@ -28,6 +28,8 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "../Reports/ReportPagination";
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
@@ -64,7 +66,8 @@ export default function () {
   const [newUrlParams, setNewUrlParams] = useState('');
   const [selectedLogType, setSelectedLogType] = useState();
   const [selectedLogSource, setSelectedLogSource] = useState();
-  const location = useLocation();
+  const location = useLocation();  
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const queryString = require('query-string');
   const history = useHistory();
 
@@ -82,7 +85,7 @@ export default function () {
   let searchUrl = queryString.parse(location.search);
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource, "logTypes": selectedLogType, "userIds": userIds, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    usePostLogFetch(`${siteConfig.api.security.postLog}`, { "logSources": selectedLogSource, "logTypes": selectedLogType, "userIds": userIds, "from":fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
 
   //Kullanıcı listesi
   const [userData] =
@@ -110,17 +113,25 @@ export default function () {
   function getVariablesFromUrl() {
 
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
 
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
 
     let type = [];
-    if (parsed.type !== undefined) {
+    if (typeof parsed.type !== 'undefined') {
       if (Array.isArray(parsed.type)) {
         _.each(parsed.type, (item) => {
           type.push(item);
@@ -129,7 +140,7 @@ export default function () {
     }
 
     let source = [];
-    if (parsed.source !== undefined) {
+    if (typeof parsed.source !== 'undefined') {
       if (Array.isArray(parsed.source)) {
         _.each(parsed.source, (item) => {
           source.push(item);
@@ -138,7 +149,7 @@ export default function () {
     }
 
     let user = [];
-    if (parsed.user !== undefined) {
+    if (typeof parsed.user !== 'undefined') {
       if (Array.isArray(parsed.user)) {
         _.each(parsed.user, (item) => {
           user.push(parseInt(item));
@@ -167,6 +178,8 @@ export default function () {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('smode');
+
     if (value.length === 0) { setNewUrlParams(''); params.delete('user'); setUserIds(userObj); }
     else {
       _.filter(value, function (item) {
@@ -180,6 +193,9 @@ export default function () {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
+    const siteMode=getSiteMode();
+
+    params.delete('smode');
     params.delete('user')
     params.delete('type');
     params.delete('source');
@@ -195,14 +211,16 @@ export default function () {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    params.append('smode', siteMode); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }
@@ -231,7 +249,7 @@ export default function () {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }

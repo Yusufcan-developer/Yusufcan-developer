@@ -8,6 +8,7 @@ import { Card, Row, Col } from "antd";
 import TopbarAddtoCart from '../Topbar/TopbarAddToCart';
 import TopbarNotification from '../Topbar/TopbarNotification';
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 const { Meta } = Card;
 
@@ -42,11 +43,12 @@ const categories = [
 
 const ProductGroupList = () => {
   document.title = "Kategoriler - Seramiksan B2B";
-  let products = localStorage.getItem('cartProductQuantity');
 
   TopbarAddtoCart();
   TopbarNotification();
   const view = viewType('Categories');
+  const siteMode=getSiteMode();
+
   return (
     <LayoutWrapper>
       <PageHeader>Sipariş İçin Ürün Grubu Seçiniz</PageHeader>
@@ -56,7 +58,7 @@ const ProductGroupList = () => {
           {categories.map((item) => (
             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {/* Seçilen kategori grubuna göre Id alınıp ürün listeleme sayfasına geçiyor.*/}
-              <Link to={`${'/products/search'}/?pg=${item.Id}`}>
+              <Link to={`${'/products/search'}/?pg=${item.Id}&smode=${siteMode}`}>
 
                 <Card
                   hoverable

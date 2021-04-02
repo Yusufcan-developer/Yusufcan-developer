@@ -30,6 +30,8 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import _ from 'underscore';
@@ -38,7 +40,6 @@ import moment from 'moment';
 import 'moment/locale/tr';
 import logMessage from '@iso/config/logMessage';
 import enumerations from "../../config/enumerations";
-import { func } from "prop-types";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -68,6 +69,7 @@ const DeliveriesReport = () => {
   const [selectedRadioItem, setSelectedRadioItem] = useState(1);
   const [newUrlParams, setNewUrlParams] = useState('');
   const [privateDate, setPrivateDate] = useState('Bugun');
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const location = useLocation();
   const queryString = require('query-string');
   const history = useHistory();
@@ -86,21 +88,30 @@ const DeliveriesReport = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, deliveryDetailData, aggregatesOverall] =
-  usePostDeliveryReport(`${siteConfig.api.report.postDeliveriesv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from":fromDate !== null? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    usePostDeliveryReport(`${siteConfig.api.report.postDeliveriesv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
 
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2);setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    const siteMode = getSiteMode();
+
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
-    if (parsed.fic !== undefined) {
+    if (typeof parsed.fic !== 'undefined') {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
           newDealarCode.push(item);
@@ -108,7 +119,7 @@ const DeliveriesReport = () => {
       } else { newDealarCode.push(parsed.fic) }
     }
 
-    if (parsed.rec !== undefined) {
+    if (typeof parsed.rec !== 'undefined') {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
           newDealarCode.push(item);
@@ -116,7 +127,7 @@ const DeliveriesReport = () => {
       } else { newDealarCode.push(parsed.rec) }
     }
 
-    if (parsed.dec !== undefined) {
+    if (typeof parsed.dec !== 'undefined') {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
           newDealarCode.push(item);
@@ -148,7 +159,9 @@ const DeliveriesReport = () => {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
+    const siteMode = getSiteMode();
 
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -159,18 +172,21 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
-    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    params.append('smode', siteMode); params.toString();
+
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }
@@ -186,6 +202,7 @@ const DeliveriesReport = () => {
       dataSearch();
     }
   }
+
   //Change DealerCode
   function onChangeDealerCode(value) {
     let fieldArrObj = [];
@@ -200,6 +217,7 @@ const DeliveriesReport = () => {
     params.delete('keyword');
     params.delete('pgindex');
     params.delete('pgsize');
+    params.delete('smode');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {
@@ -245,7 +263,7 @@ const DeliveriesReport = () => {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }
@@ -268,76 +286,79 @@ const DeliveriesReport = () => {
     setPageSize(pageSize);
     dataSearch(current, pageSize);
   }
+
   function onChangeRadioButton(e) {
     setSelectedRadioItem(e.target.value);
     setPrivateDate(null);
   }
 
-   //Sevkiyat Kalemleri Expand İşlemi
-   function expandedRowRender(row, index) {
+  //Sevkiyat Kalemleri Expand İşlemi
+  function expandedRowRender(row, index) {
     let deliveryDetailIndex;
     let partialUnitData;
     _.each(deliveryDetailData, (item, i) => {
-        if (item.Key === row.waybillId) { return deliveryDetailIndex = i }
+      if (item.Key === row.waybillId) { return deliveryDetailIndex = i }
     });
-    if (deliveryDetailIndex !== undefined) {
-        partialUnitData = _.groupBy(deliveryDetailData[deliveryDetailIndex].Value, function (item) { return item.unit; });
+    if (typeof deliveryDetailIndex !== 'undefined') {
+      partialUnitData = _.groupBy(deliveryDetailData[deliveryDetailIndex].Value, function (item) { return item.unit; });
     }
     else { partialUnitData = null }
     const r = _.map(partialUnitData, (item) => {
-        return (
-            <Table
-                columns={deliveryDetailDataColumn}
-                dataSource={item}
-                pagination={false}
-                bordered={false}
-                summary={() => {
-                    return renderFooter(deliveryDetailDataColumn, item, false)
-                }}
-            />);
+      return (
+        <Table
+          columns={deliveryDetailDataColumn}
+          dataSource={item}
+          pagination={false}
+          bordered={false}
+          summary={() => {
+            return renderFooter(deliveryDetailDataColumn, item, false)
+          }}
+        />);
     });
 
     return (<React.Fragment>{r} </React.Fragment>);
-};
+  };
 
-  //Excel Oluşturma
-  const exportExcelButton = () => {
-    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
-    ExcelExport(columns, data, 'Sevkiyatlar',deliveryDetailData, deliveryDetailDataColumn,'delivery');
-  }
   //Change Cheques Type
   function privateDateHandleChange(value) {
 
     setPrivateDate(value);
-        
-        if (value === 'SonBirHafta') {
-            setFromDate(moment(moment().subtract(7, 'days').toDate()));
-            setToDate(moment(new Date()));
-        }
-        else if (value === 'Bugun') {
-            setFromDate(moment(moment().subtract(0, 'days').toDate()));
-            setToDate(moment(new Date()));
-        }
-        else if (value === 'SonUcGun') {
-            setFromDate(moment(moment().subtract(3, 'days').toDate()));
-            setToDate(moment(new Date()));
-        } else if (value === 'SonBirAy') {
-            setFromDate(moment(moment().subtract(30, 'days').toDate()));
-            setToDate(moment(new Date()));
-        }
-        else if(value==='SonUcAy'){
-            setFromDate(moment(moment().subtract(90, 'days').toDate()));
-            setToDate(moment(new Date()));
-        }
-        else if(value==='SonAltiAy'){
-            setFromDate(moment(moment().subtract(180, 'days').toDate()));
-            setToDate(moment(new Date()));
-        }
-        else if(value==='SonBirYil'){
-            setFromDate(moment(moment().subtract(366, 'days').toDate()));
-            setToDate(moment(new Date()));
-        }
+
+    if (value === 'SonBirHafta') {
+      setFromDate(moment(moment().subtract(7, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'Bugun') {
+      setFromDate(moment(moment().subtract(0, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonUcGun') {
+      setFromDate(moment(moment().subtract(3, 'days').toDate()));
+      setToDate(moment(new Date()));
+    } else if (value === 'SonBirAy') {
+      setFromDate(moment(moment().subtract(30, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonUcAy') {
+      setFromDate(moment(moment().subtract(90, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonAltiAy') {
+      setFromDate(moment(moment().subtract(180, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
+    else if (value === 'SonBirYil') {
+      setFromDate(moment(moment().subtract(366, 'days').toDate()));
+      setToDate(moment(new Date()));
+    }
   }
+
+  //Excel Oluşturma
+  const exportExcelButton = () => {
+    postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
+    ExcelExport(columns, data, 'Sevkiyatlar', deliveryDetailData, deliveryDetailDataColumn, 'delivery');
+  }
+
   let columns = [
     {
       title: "Bayi Kodu",
@@ -393,14 +414,14 @@ const DeliveriesReport = () => {
       dataIndex: "description3",
       key: "description3"
     },
-     {
+    {
       title: "Belge No",
       dataIndex: "documentId",
       key: "documentId",
       sorter: (a, b) => '',
       sortOrder: tableOptions.sortedInfo.columnKey === 'documentId' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
-    },    
+    },
     {
       title: "Açıklama 1",
       dataIndex: "description1",
@@ -445,7 +466,7 @@ const DeliveriesReport = () => {
     },
   ];
 
-  let deliveryDetailDataColumn=[{
+  let deliveryDetailDataColumn = [{
     title: "Bayi Kodu",
     dataIndex: "dealerCode",
     key: "dealerCode"
@@ -518,7 +539,7 @@ const DeliveriesReport = () => {
     dataIndex: "unit",
     key: "unit",
     align: "center"
-  },  
+  },
   {
     title: "Plaka",
     dataIndex: "plateNo",
@@ -634,7 +655,7 @@ const DeliveriesReport = () => {
         {<IntlMessages id="page.shippingReportsTitle.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] :null}>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
             {view !== 'MobileView' ?
               <Row>
@@ -704,7 +725,7 @@ const DeliveriesReport = () => {
                         format={siteConfig.dateFormat}
                         onChange={changeTimePicker}
                         style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                        value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)]:null}
+                        value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
                       />
                     </Col>
                   </Row>

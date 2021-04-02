@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
@@ -10,18 +10,20 @@ import Button from '@iso/components/uielements/button';
 import SingleOrderInfo from './SingleOrder';
 import { OrderTable } from './Checkout.styles';
 import InputBox from './InputBox';
+import CascaderBox from './CascaderBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
-import { Col, Modal, Table, Input, Space, message, Alert } from "antd";
+import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
 import Form from "@iso/components/uielements/form";
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Styles
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import {
   Fieldset,
 } from '../../FirestoreCRUD/Article/Article.styles';
@@ -40,18 +42,24 @@ var jwtDecode = require('jwt-decode');
 
 let createOrderNo = 'xxxx';
 export default function () {
+  const queryString = require('query-string');
+  let distrinctArray;
   document.title = "Sipariş Onayı - Seramiksan B2B";
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
-  const [city, setCity] = useState();
-  const [town, setTown] = useState();
+  const [city, setCity] = useState('');
+  const [town, setTown] = useState('');
+  const [district, setDistrict] = useState('');
+  const [km, setKm] = useState();
+  const [cities, setCities] = useState();
+  const [optionsCities, setOptions] = useState();
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
   const [form] = Form.useForm();
   const [hasOrderSavePermission, setHasOrderSavePermission] = useState();
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
-  const [addressCode, setAddressCode] = useState();
+  const [addressCode, setAddressCode] = useState('');
   const [adressItem, setAdressItem] = useState();
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
@@ -62,25 +70,36 @@ export default function () {
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
+  const [days, setDays] = useState([]);
+  const [userId, setUserId] = useState();
   const history = useHistory();
+  const location = useLocation();
 
-  const [data, changeCart] = useGetCartCheckOut();
+  // const [data, changeCart] = useGetCartCheckOut(city,town);
   const token = jwtDecode(localStorage.getItem("id_token"));
-  const activeUser = localStorage.getItem("activeUser")
+  const activeUser = localStorage.getItem("activeUser");
+  const { Option } = Select;
   let account = token.uname;
 
-  let  createAddressButtonVisible=true;
-  if (activeUser != undefined) { account = activeUser }
+  let createAddressButtonVisible = true;
+  if (typeof activeUser != 'undefined') { account = activeUser };
+  const siteMode = getSiteMode();
+
+  let searchUrl = queryString.parse(location.search);
+  const [data, setOnChange] =
+    useGetCartCheckOut(addressCode, searchUrl);
+
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
+    setUserId(token.uid);
     getInitData(token.uid);
     postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Browse, logMessage.Order.browse);
-  }, []);
+  }, [days]);
 
   //Get Products
   function renderProducts() {
-    if (data !== undefined) {
+    if (typeof data !== 'undefined') {
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
       return productList.map(product => {
         return (
@@ -156,6 +175,10 @@ export default function () {
     setTown(e.target.value);
   }
 
+  const onChangeKm = e => {
+    setKm(e.target.value);
+  }
+
   function onCreateAddress() {
     setCity();
     setTown();
@@ -186,6 +209,18 @@ export default function () {
     window.location.reload(false);
   }
 
+  //Save order persmission button disabled
+  function saveOrderPermissions() {
+    if (siteMode === enumerations.SiteMode.DeliverysPoint) {
+      if ((addressCode === '') & (hasOrderSavePermission)) {
+        return true
+      }
+      else { return false }
+    }
+    else {
+      return !hasOrderSavePermission;
+    }
+  }
   //get user by id
   async function getByUserId(userId) {
     let userData;
@@ -210,9 +245,78 @@ export default function () {
     return userData;
   }
 
+  //getLocationDetail
+  async function getLocationDetail(selectedCity, selectedTown) {
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(`${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        setDays([data]);
+        setOnChange(true);
+      })
+      .catch();
+  }
+
+  //getDistricts
+  async function getDistricts(selectedCity, selectedTown) {
+    //Get User Info  
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    let newSaveOrderUrl = siteConfig.api.lookup.getDistricts.replace('{city}', selectedCity);
+    newSaveOrderUrl = newSaveOrderUrl.replace('{town}', selectedTown);
+    await fetch(`${newSaveOrderUrl}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+          distrinctArray = _.map(data, (item) => { return { 'label': item, 'value': item }; })
+          distrinctArray.push({ 'label': 'YOK', 'value': null });
+        }
+      })
+      .catch();
+  }
+
+  //getLocaitons
+  async function getLocations() {
+    //Get User Info  
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(siteConfig.api.lookup.getLocations, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data !== 'Unauthorized1') {
+          setOptions(data);
+        }
+      })
+      .catch();
+  }
+
   //get adress
   async function getAdress() {
-
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
     //Get User Info  
@@ -261,10 +365,19 @@ export default function () {
   }
 
   //get adress and user id function
-  async function getInitData(userId) {
+  async function getInitData(userId, selectedCity, selectedTown, addressDeliveryCostCalculate) {
     await getHasSaveOrderPermission();
     await getByUserId(userId);
     await getAdress();
+    await getLocations();
+    if ((typeof selectedCity !== 'undefined') && (siteMode === enumerations.SiteMode.DeliverysPoint)) {
+      await getLocationDetail(selectedCity, selectedTown);
+    }
+    if (typeof addressDeliveryCostCalculate == 'boolean' && addressDeliveryCostCalculate === true && siteMode === enumerations.SiteMode.DeliverysPoint) {
+      message
+        .loading('Nakliye Bedeli Hesaplanıyor Bekleyiniz..', 2.5)
+        .then(() => message.success('Nakliye bedeli hesaplandı', 2.5));
+    }
   }
 
   //Sipariş temizleme işlemi
@@ -281,8 +394,8 @@ export default function () {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let account = token.uname;
-    if (activeUser != undefined) { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account };
+    if (typeof activeUser != 'undefined') { account = activeUser }
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode": siteMode };
     const requestOptions = {
       method: "POST",
       headers: {
@@ -315,7 +428,7 @@ export default function () {
               });
             }
             localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-            changeCart(true);
+            setOnChange(true);
           }
         }
         else {
@@ -328,12 +441,11 @@ export default function () {
 
   //post address
   async function postSaveAddress() {
-
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
-    if ((addressTitle === undefined) || (address1 === undefined) || (city === undefined) || (town === undefined) || (address2 === undefined)) { return message.error('Lütfen zorunlu alanları giriniz.'); }
+    if ((typeof addressTitle === 'undefined') || (typeof address1 === 'undefined') || (typeof city === 'undefined') || (typeof town === 'undefined') || (typeof address2 === 'undefined')) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
-    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
+    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town, "district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
       method: "POST",
       headers: {
@@ -348,11 +460,12 @@ export default function () {
         return status;
       })
       .then(data => {
-        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode);
+        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode); setTown(data.town);
         setVisible(false);
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
         getAdress();
+        getInitData(userId,data.city,data.town,true);
         postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + logMessage.Address.saveAddress);
       })
       .catch(setConfirmLoading(false));
@@ -361,6 +474,7 @@ export default function () {
 
   //Save Order
   async function postSaveOrder() {
+    const siteMode = getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
     setConfirmLoading(true);
@@ -375,13 +489,13 @@ export default function () {
     };
     let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', dealerCodes);
     newSaveOrderUrl = newSaveOrderUrl.replace('{addressCode}', addressCode);
-    await fetch(`${newSaveOrderUrl}`, requestOptions)
+    await fetch(`${newSaveOrderUrl}/?siteMode=${siteMode}`, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
       })
       .then(data => {
-        if (data !== undefined) {
+        if (typeof data !== 'undefined') {
           if (data.isSuccessful) {
             setItemsWaitingManufacturing(data.itemsWaitingManufacturing);
             createOrderNo = data.orderNo; setSuccessOrderSave(true);
@@ -423,6 +537,11 @@ export default function () {
       key: "city",
     },
     {
+      title: "İlçe",
+      dataIndex: "town",
+      key: "town",
+    },
+    {
       title: 'İşlem',
       key: 'operation',
       fixed: 'right',
@@ -430,9 +549,131 @@ export default function () {
       render: () => <a>Seç</a>,
     },
   ];
+
+  let dayColumns = [
+    {
+      title: "Pazartesi",
+      dataIndex: "monday",
+      key: "monday",
+      align: 'center',
+      render: (monday) => (
+        monday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Salı",
+      dataIndex: "tuesday",
+      key: "tuesday",
+      align: 'center',
+      render: (tuesday) => (
+        tuesday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Çarşamba",
+      dataIndex: "wednesday",
+      key: "wednesday",
+      align: 'center',
+      render: (wednesday) => (
+        wednesday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Perşembe",
+      dataIndex: "thursday",
+      key: "thursday",
+      align: 'center',
+      render: (thursday) => (
+        thursday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Cuma",
+      dataIndex: "friday",
+      key: "friday",
+      align: 'center',
+      render: (friday) => (
+        friday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Cumartesi",
+      dataIndex: "saturday",
+      key: "saturday",
+      align: 'center',
+      render: (saturday) => (
+        saturday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Pazar",
+      dataIndex: "sunday",
+      key: "sunday",
+      align: 'center',
+      render: (sunday) => (
+        sunday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+  ]
+
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-    createAddressButtonVisible=false;
+    createAddressButtonVisible = false;
   }
+
+  async function onChangeCityAndTown(value, selectedOptions) {
+    if (typeof value !== undefined) { setCity(value[0]); }
+    if (value.length > 1) {
+      setCities(value); setTown(value[1]); //setDistrict(value[2]);
+      //getDistricts(value[0],value[1])
+    } else { setCities(""); }
+  };
+
+  const loadData = selectedOptions => {
+    const targetOption = selectedOptions[selectedOptions.length - 1];
+    // targetOption.loading = true;
+    // setTimeout(() => {
+    //   targetOption.loading = false;
+    //   targetOption.children =
+    //     distrinctArray;
+    //   setOptions([...optionsCities]);
+    // }, 1000);
+  };
+
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -481,7 +722,7 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false) },
+                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); getInitData(userId, record.city, record.town, true); },
                         };
                       }}
                       pagination={false}
@@ -500,7 +741,6 @@ export default function () {
                   confirmLoading={confirmLoading}
                   onOk={() => postSaveAddress()}
                   onCancel={() => setCreateAddress(false)}
-
                 >
                   <Form>
                     <Fieldset className="isoInputFieldset">
@@ -513,7 +753,6 @@ export default function () {
                         important
                       />
                     </Fieldset>
-
                     <Fieldset>
                       <InputBox
                         label="Adres 1"
@@ -524,7 +763,19 @@ export default function () {
                         important
                       />
                     </Fieldset>
-
+                    <Fieldset>
+                      <CascaderBox
+                        label={'İl / İlçe'}
+                        placeholder={'İl/İlçe seçiniz'}
+                        options={optionsCities}
+                        onChange={onChangeCityAndTown}
+                        style={{ width: '100%' }}
+                        loadData={loadData}
+                        value={cities}
+                        changeOnSelect
+                        important
+                      />
+                    </Fieldset>
                     <Fieldset>
                       <InputBox
                         label="İlgili (İlgili kişi / Cep Telefonu)"
@@ -540,24 +791,6 @@ export default function () {
                         placeholder="Telefon Giriniz"
                         value={phone}
                         onChange={onChangePhone}
-                      />
-                    </Fieldset>
-                    <Fieldset>
-                      <InputBox
-                        label="Şehir"
-                        placeholder="Şehir Giriniz"
-                        value={city}
-                        onChange={onChangeAddressCity}
-                        important
-                      />
-                    </Fieldset>
-                    <Fieldset>
-                      <InputBox
-                        label="İlçe"
-                        placeholder="İlçe Giriniz"
-                        value={town}
-                        onChange={onChangeAddressTown}
-                        important
                       />
                     </Fieldset>
                   </Form>
@@ -620,7 +853,7 @@ export default function () {
 
                 </div>
 
-                {adressItem === undefined ? null : <React.Fragment>
+                {typeof adressItem === 'undefined' ? null : <React.Fragment>
                   <div className="isoInputFieldset">
                     <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
                       onChange={onChangeAddress1}
@@ -659,8 +892,19 @@ export default function () {
                       value={town}
                       disabled
                     />
+                    {/* <InputBox label={<IntlMessages id="checkout.billingform.km" />}
+                      onChange={event => onChangeKm(event)}
+                      value={km}
+                      disabled
+                    /> */}
                   </div>
+                  {siteMode === enumerations.SiteMode.DeliverysPoint ?
+                    <Table title={() => 'Sevkiyat Günleri'} columns={dayColumns} dataSource={days} pagination={false}
+                      scroll={{ x: 'max-content' }}
+                      size="medium"
+                      bordered={false} /> : null}
                 </React.Fragment>}
+
                 {/* Ödeme özet bilgileri ve sipariş oluşturma */}
               </BillingFormWrapper>
               <OrderTable className="isoOrderInfo">
@@ -673,23 +917,24 @@ export default function () {
                   <div className="isoOrderTableBody">{renderProducts()}</div>
                   <div className="isoOrderTableFooter">
                     <span>Toplam</span>
-                    <span>{data != undefined ? (numberFormat(data.orderCost)) : (0)} TL</span>
+                    <span>{typeof data != 'undefined' ? (numberFormat(data.orderCost)) : (0)} TL</span>
                   </div>
                   <div className="isoOrderTableFooter">
                     <span>KDV</span>
-                    <span>{data != undefined ? (numberFormat(data.orderVat)) : (0)} TL</span>
+                    <span>{typeof data != 'undefined' ? (numberFormat(data.orderVat)) : (0)} TL</span>
                   </div>
                   <div className="isoOrderTableFooter">
                     <span>Genel Toplam</span>
-                    <span>{data != undefined ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
+                    <span>{typeof data != 'undefined' ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
-                    <Button disabled={!hasOrderSavePermission} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
+                    <Button disabled={saveOrderPermissions()} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
                       Sipariş Oluştur
         </Button>
                     {/* <Button disabled={!hasOrderSavePermission} type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
                       Sipariş Temizle
         </Button> */}
+
                   </Space>
                 </div>
               </OrderTable>

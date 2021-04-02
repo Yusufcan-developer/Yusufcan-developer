@@ -10,6 +10,9 @@ import Logo from '@iso/components/utility/logo';
 import SidebarWrapper from './Sidebar.styles';
 import SidebarMenu from './SidebarMenu';
 import _ from 'underscore';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import enumerations from "../../config/enumerations";
+
 var jwtDecode = require('jwt-decode');
 const { Sider } = Layout;
 
@@ -96,15 +99,22 @@ export default function Sidebar() {
     }
     return;
   };
+  const siteMode = getSiteMode();
+  let backgroundColor = customizedTheme.backgroundColor;
+  if (siteMode === enumerations.SiteMode.DeliverysPoint) {
+    backgroundColor = '#fffcf2'
+  }
   const styling = {
-    backgroundColor: customizedTheme.backgroundColor,
+    backgroundColor: backgroundColor,
   };
-  const submenuStyle = {
+
+  let submenuStyle = {
     backgroundColor: 'rgba(0,0,0,0.3)',
-    color: customizedTheme.textColor,
+    color: siteMode !== enumerations.SiteMode.DeliverysPoint ? customizedTheme.textColor : '#black',
   };
-  const submenuColor = {
-    color: customizedTheme.textColor,
+  
+  let submenuColor = {
+    color: siteMode !== enumerations.SiteMode.DeliverysPoint ? 'black' : '#black',
   };
 
   //SidebarMenu Desing

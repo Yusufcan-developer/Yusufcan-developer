@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory, useRouteMatch, useParams, useLocation } from 'react-router-dom';
+import { useHistory, useParams, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -12,7 +12,7 @@ import Button from "@iso/components/uielements/button";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 import Input from '@iso/components/uielements/input';
-import { Table, Row, Col, Pagination, TreeSelect, Dropdown, Menu, Select, Modal, message } from "antd";
+import { Table, Row, Col, TreeSelect, Dropdown, Menu, Select, Modal, message } from "antd";
 //Fetch
 import { useCartListData } from "@iso/lib/hooks/fetchData/useGetCartList";
 import { useGetLookupTreeData } from "@iso/lib/hooks/fetchData/useGetLookupTreeData";
@@ -21,7 +21,6 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 //Redux
 import { useDispatch, useSelector } from 'react-redux';
 import Actions from '@iso/redux/themeSwitcher/actions';
-import config from '@iso/redux/ecommerce/config'
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Styles
@@ -35,6 +34,8 @@ import ReportPagination from "../../Reports/ReportPagination";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "../../../config/enumerations";
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 // import ExcelExport from "./ExcelExport";
@@ -55,25 +56,18 @@ const CartList = () => {
 
   //Bayi Kodu Tekli veya çoklu seçim kontrolü
   const [dealerCodeSelectModSingle, setDealerCodeSelectModSingle] = useState(false);
+  const [dealerCodeFilterSelectModSingle, setDealerCodeFilterSelectModSingle] = useState(true);
 
   const queryString = require('query-string');
   const history = useHistory();
   const [form] = Form.useForm();
-
-  const { switchActivation, changeTheme } = Actions;
   const { isActivated, topbarTheme, sidebarTheme, layoutTheme } = useSelector(
     state => state.ThemeSwitcher
   );
-  const { productQuantity, products } = useSelector(state => state.Ecommerce);
-  const { addToCart, changeViewTopbarCart, changeProductQuantity, otherCart } = ecommerceActions;
   const dispatch = useDispatch();
-
-  const styleButton = { background: sidebarTheme.buttonColor };
   const [searchKey, setSearchKey] = useState('');
   const [expandedKeys, setExpandedKeys] = useState();
   const [autoExpandParent, setAutoExpandParent] = useState(true);
-  const [checkedKeys, setCheckedKeys] = useState();
-  const [selectedKeys, setSelectedKeys] = useState([]);
   const [iconLoading, setIconLoading] = useState(false);
   const [deleteCartVisible, setDeleteCartVisible] = useState(false);
   const [tableOptions, setState] = useState({
@@ -84,26 +78,23 @@ const CartList = () => {
   const [pageSize, setPageSize] = useState(20)
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [selectedCart, setSelectedCart] = useState();
-  const [fromDate, setFromDate] = useState(moment(moment().subtract(180, 'days').toDate()).format(siteConfig.dateFormat))
-  const [toDate, setToDate] = useState(moment(new Date()).format(siteConfig.dateFormat))
-  const [dealerCodes, setDealerCodes] = useState()
-  const [regionCodes, setRegionCodes] = useState()
-  const [fieldCodes, setFieldCodes] = useState();
+  const [dealerCodes, setDealerCodes] = useState();
   const [accountNo, setAccountNo] = useState();
-  const [selectedDealerCode, setSelectedDealerCode] = useState();
-  const [newUrlParams, setNewUrlParams] = useState('')
+  const [selectedDealerCode, setSelectedDealerCode] = useState('');
+  const [newUrlParams, setNewUrlParams] = useState('');
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const location = useLocation();
-  const { searchQuery } = useParams();
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
-    // getVariablesFromUrl();
+    getVariablesFromUrl();
     postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Browse, logMessage.Carts.browse);
   }, [pageIndex]);
 
   let searchUrl = queryString.parse(location.search);
+
   //Cart Data
-  const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}&pageIndex=${pageIndex-1}&pageCount=${pageSize}`,{},searchUrl);
+  const [cartData, loadingCartData, setOnChange, cartDetailData, totalDataCount] = useCartListData(`${siteConfig.api.carts.cartGetAll}?includeItems=${true}&pageIndex=${pageIndex - 1}&pageCount=${pageSize}&siteMode=${searchSiteMode}&keyword=${searchKey}&accountNo=${selectedDealerCode}`, {}, searchUrl);
 
   //Bayi kodları listesi ve Lookup döndürme işlemi
   const [lookupDealerTreeData] = useGetLookupTreeData(`${siteConfig.api.lookup.getDealerCodes}`);
@@ -111,6 +102,37 @@ const CartList = () => {
   _.each(lookupDealerTreeData, (item, i) => {
     lookupDealerChildren.push(<Option key={item.Key}>{item.Key + '-' + item.Value}</Option>);
   });
+
+  //Url'i çözümleme işlemi
+  function getVariablesFromUrl() {
+    //Url değerini alıyoruz.
+    const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
+
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+
+    let getAccountData = [];
+    if (typeof parsed.dealer !== 'undefined') {
+      if (Array.isArray(parsed.dealer)) {
+        _.each(parsed.dealer, (item) => {
+          getAccountData.push(item);
+        });
+      } else { getAccountData.push(parsed.dealer); }
+    }
+    setSelectedDealerCode(getAccountData);
+    setSearchSitemode(siteMode);
+
+    return setOnChange(true);
+  }
 
   //Sipariş Kalemleri Görüntüleme
   async function onExpand(expandedKeys) {
@@ -141,11 +163,17 @@ const CartList = () => {
   function dataSearch(selectedPageIndex, selectedPageSize) {
     postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Browse, logMessage.Carts.search);
     const params = new URLSearchParams(location.search);
+    const siteMode = getSiteMode();
 
+    params.delete('smode');
     params.delete('keyword');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('dealer');
 
+    params.append('smode', siteMode); params.toString();
+    setSearchSitemode(siteMode);
+    if (selectedDealerCode !== '') { params.append('dealer', selectedDealerCode); params.toString(); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -244,7 +272,7 @@ const CartList = () => {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    await fetch(`${siteConfig.api.carts.deleteCart}${accountNo}`, requestOptions)
+    await fetch(`${siteConfig.api.carts.deleteCart}${accountNo}&siteMode=${searchSiteMode}`, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
@@ -274,9 +302,15 @@ const CartList = () => {
       setDealerCodes(value);
     }
   }
-
+  //Select Component Bayi Kodu değiştirme 
+  function dealerCodeFilterHandleChange(value) {
+    if (typeof value === 'undefined') { setSelectedDealerCode('') }
+    else {
+      setSelectedDealerCode(value);
+    }
+  }
   async function handleCreateCart() {
-    if (dealerCodes === undefined) { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
+    if (typeof dealerCodes === 'undefined') { message.warning('Sepet Oluşturmak İçin Lütfen Bayi Seçiniz') }
     else {
       localStorage.setItem('activeUser', dealerCodes);
       await postStartEditingBehalfOf(dealerCodes);
@@ -381,7 +415,7 @@ const CartList = () => {
   ];
 
   const view = viewType('CartList');
-  const filterView=viewType('Filter');
+  const filterView = viewType('Filter');
   return (
 
     <LayoutWrapper>
@@ -423,39 +457,54 @@ const CartList = () => {
         {<IntlMessages id="page.ActiveCarts.header" />}
       </PageHeader>
       <Box>
-        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0']  :null }>
+        <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
           <Panel header={<IntlMessages id="page.filtered" />} key="0">
-          {view !== 'MobileView' ?
+            {view !== 'MobileView' ?
+              <Row>
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                  <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
+                </Col>
+                <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                  <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                </Col>
+              </Row>
+              : null}
             <Row>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <FormItem label={<IntlMessages id="page.accountNo" />}></FormItem>
-              </Col>
-              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-              </Col>
-            </Row>
-            : null}
-            <Row>
-              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <TreeSelect
+                <Select
+                  allowClear
+                  mode="single"
+                  showSearch
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '350px' : '100%' }}
+                  placeholder="Hesap Kodu seçiniz"
+                  optionFilterProp="children"
+                  value={selectedDealerCode}
+                  onChange={dealerCodeFilterHandleChange}
+                  filterOption={(input, option) =>
+                    option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                  }
+                >
+                  {lookupDealerChildren}
+                </Select>
+                {/* <TreeSelect
                   // treeData={{}}
                   value={selectedDealerCode}
                   treeCheckable={true}
                   showCheckedStrategy={TreeSelect.SHOW_PARENT}
                   placeholder={"Hesap Kodu Seçiniz"}
                   showSearch={true}
-                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'}}
+                  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                   dropdownMatchSelectWidth={500}
-                />
+                /> */}
               </Col>
               <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%'}} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
+                <Input size="small" placeholder="Anahtar kelime" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onChange={event => setSearchKey(event.target.value)} />
               </Col>
-              <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+              {<Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" loading={iconLoading} onClick={searchButton}>
                   {<IntlMessages id="forms.button.label_Search" />}
                 </Button>
-              </Col>
+              </Col>}
             </Row>
           </Panel>
         </Collapse>

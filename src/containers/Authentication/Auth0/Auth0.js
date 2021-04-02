@@ -45,6 +45,7 @@ class Auth0 extends EventEmitter {
     localStorage.removeItem('id_token');
     localStorage.removeItem('expires_at');
     localStorage.removeItem('distributions');
+    localStorage.removeItem('cartProductQuantity');
     // navigate to the home route
     history.replace('/');
   };

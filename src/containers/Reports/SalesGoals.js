@@ -23,6 +23,8 @@ import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import siteConfig from "@iso/config/site.config";
 import dateMonthList from "@iso/config/dateMonthList";
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import _ from 'underscore';
@@ -47,6 +49,7 @@ const SalesTarget = () => {
     const [fieldCodes, setFieldCodes] = useState();
     const [selectedFieldOrRegionCode, setSelectedFieldOrRegionCode] = useState();
     const [newUrlParams, setNewUrlParams] = useState('');
+    const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     let searchUrl = queryString.parse(location.search);
     let searchText = '';
 
@@ -55,6 +58,7 @@ const SalesTarget = () => {
         useGetSalesGoalsReport(`${siteConfig.api.report.getSalesTarget}`, '', searchUrl, year, month, regionCodes, fieldCodes);
 
     if (salesData !== undefined) {
+
         let monthText = '';
         if (salesData.isSuccessful !== false) {
             let criteria
@@ -67,6 +71,7 @@ const SalesTarget = () => {
             searchText = criteria;
         }
     }
+
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}?excludeDealer=true`, searchUrl);
 
@@ -78,8 +83,60 @@ const SalesTarget = () => {
 
     //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
     useEffect(() => {
+        if (salesData !== null) {
+            getVariablesFromUrl();
+        }
     }, []);
 
+    //Url'i çözümleme işlemi
+    function getVariablesFromUrl() {
+        //Url değerini alıyoruz.
+        const parsed = queryString.parse(location.search);
+        const siteMode = getSiteMode();
+
+        //site mode paste url manuel.
+        if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+            setSiteMode(parsed.smode);
+            setSearchSitemode(parsed.smode);
+            window.location.reload(false);
+        }
+        if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+        if (typeof parsed.month !== 'undefined') { setMonth(parseInt(parsed.month)); }
+
+        let newDealarCode = []
+        //Field url data
+        if (typeof parsed.field !== 'undefined') {
+            if (Array.isArray(parsed.field)) {
+                _.each(parsed.field, (item, i) => {
+                    newDealarCode.push(item);
+                });
+            } else { newDealarCode.push(parsed.field) }
+        }
+
+        //RegionCode url data
+        if (typeof parsed.region !== 'undefined') {
+            if (Array.isArray(parsed.region)) {
+                _.each(parsed.region, (item, i) => {
+                    newDealarCode.push(item);
+                });
+            } else { newDealarCode.push(parsed.region) }
+        }
+        //Bölge ve Saha kodlarının Tree select özelliğine göre düzenlenmesi.
+        let fieldArrObj = [];
+        let regionArrObj = [];
+        if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); }
+        _.filter(newDealarCode, function (item) {
+            if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
+            else if (item.split("|").length === 2) {
+                regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
+            }
+        });
+
+        onChangeDealerCode(newDealarCode[0]);
+        setSearchSitemode(siteMode);
+
+        return setOnChange(true);
+    }
     const gaugeCount = ['KARO', 'YAPIKIMYASALI', 'VITRIFIYE', 'BANYOMOBILYASI', 'KAMPANYA', 'KAMPANYA2', 'TOPLAM'];
     const view = viewType('Reports');
     const filterView = viewType('Filter');
@@ -88,16 +145,14 @@ const SalesTarget = () => {
     const searchButton = () => {
         const params = new URLSearchParams(location.search);
 
+        params.delete('field');
+        params.delete('region');
+        params.delete('smode');
         params.delete('year');
         params.delete('month');
-        params.delete('region');
-        params.delete('field');
-
 
         if (year !== undefined) { params.append('year', year); }
         if (month !== undefined) { params.append('month', month); }
-        if (regionCodes) { params.append('region', regionCodes); }
-        if (fieldCodes) { params.append('field', fieldCodes) }
         let createUrl = null;
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
         history.push(`${location.pathname}?${createUrl}`);
@@ -105,10 +160,10 @@ const SalesTarget = () => {
         return setOnChange(true);
     };
 
-    //Change Year
-    function handleChangeYear(value) {
-        setYear(value);
-    }
+    // //Change Year
+    // function handleChangeYear(value) {
+    //     setYear(value);
+    // }
 
     //Change Month
     function handleChangeMonth(value) {
@@ -121,14 +176,23 @@ const SalesTarget = () => {
         let regionArrObj = [];
         setFieldCodes([]);
         setRegionCodes([]);
+        const params = new URLSearchParams(location.search);
+        params.delete('field');
+        params.delete('region');
+        params.delete('smode');
+        params.delete('year');
+        params.delete('month');
+        params.delete('smode');
 
         if (value.length === 0) { setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setSelectedFieldOrRegionCode([]) }
         else {
-            if (value.split("|").length === 1) { fieldArrObj.push(value); setFieldCodes(fieldArrObj); }
+            if (value.split("|").length === 1) { fieldArrObj.push(value); params.append('field', value); setFieldCodes(fieldArrObj); }
             else if (value.split("|").length === 2) {
-                regionArrObj.push(value.split("|")[1]); setRegionCodes(regionArrObj);
+                regionArrObj.push(value.split("|")[1]); setRegionCodes(regionArrObj); params.append('region', value);
             }
+
             setSelectedFieldOrRegionCode(value);
+            setNewUrlParams(params.toString());
         }
     };
     return (
@@ -165,7 +229,8 @@ const SalesTarget = () => {
                                     dropdownMatchSelectWidth={350}
                                 />
                             </Col>
-                                {/* <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                            {/* <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+
                                 <Select
                                     placeholder='Yıl seçiniz'
                                     style={{ width: view !== 'MobileView' ? '120px' : '100%' }}

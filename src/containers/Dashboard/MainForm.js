@@ -20,6 +20,8 @@ import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "../Reports/ReportSummary";
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import ExcelExport from "../Reports/ExcelExport";
@@ -57,9 +59,11 @@ const MainForm = () => {
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState()
   const [fieldCodes, setFieldCodes] = useState();
+
   const location = useLocation();
   const [newUrlParams, setNewUrlParams] = useState('')
   const [selectedDealerCode, setSelectedDealerCode] = useState();
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
 
   //Burada ki useEffect'ler page index page size ve tarih değişimlerinde hook'ları tetikleyip yeni sorgu sonuçlarına göre veri getiriyor.
   useEffect(() => {
@@ -83,12 +87,13 @@ const MainForm = () => {
   }, [pageSizeAccountBalance]);
 
   let searchUrl = queryString.parse(location.search);
+  
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal},searchUrl);
+    usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal, "siteMode": searchSiteMode },searchUrl);
 
   const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData, expandData] =
-    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance },searchUrl);
+    usePostAccountBalancesReport(`${siteConfig.api.report.postAccountBalances}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexAccountBalance - 1, "pageCount": pageSizeAccountBalance, "siteMode": searchSiteMode },searchUrl);
 
   //Bayi,Bölge ve Saha kodlarının getirilmesi
   const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -96,8 +101,17 @@ const MainForm = () => {
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
+    const siteMode = getSiteMode();
 
-   
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+
+
     let newDealarCode = []
     //Field url data
     if (typeof parsed.fic !== 'undefined') {
@@ -154,15 +168,24 @@ const MainForm = () => {
   //Get Search Data
   function dataSearch() {
     const params = new URLSearchParams(location.search);
+    const siteMode = getSiteMode();
 
     params.delete('fic');
     params.delete('rec');
     params.delete('dec');
     params.delete('smode');
     params.delete('dealer');
+    params.append('smode', siteMode); params.toString();
+    setPageSizeAccountBalance(20);
+    setPageIndexAccountBalance(1);
+    setPageSizeDBSTotal(20);
+    setPageIndexDBSTotal(1);
+    
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+
+    setSearchSitemode(siteMode);
 
     AccountSetOnChange(true);
     return setOnChange(true);
@@ -182,8 +205,8 @@ const MainForm = () => {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowCariToplamlarSizeChange(current, pageSize) {
-    setPageSizeAccountBalance(pageSize);
     setPageIndexAccountBalance(current);
+    setPageSizeAccountBalance(pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/

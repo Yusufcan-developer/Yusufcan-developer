@@ -1,4 +1,10 @@
 export default {
+
+    SiteMode:
+    {
+        Normal:'Normal',
+        DeliverysPoint:'DeliveryToPoint',
+    },
     SalesStatus:
     {
         All: 'All',

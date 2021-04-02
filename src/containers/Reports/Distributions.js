@@ -32,6 +32,8 @@ import ReportPagination from "./ReportPagination";
 import numberFormat from "@iso/config/numberFormat";
 import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
 import _ from 'underscore';
@@ -40,7 +42,6 @@ import moment from 'moment';
 import 'moment/locale/tr';
 import logMessage from '@iso/config/logMessage';
 import enumerations from "../../config/enumerations";
-import { func } from "prop-types";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -64,6 +65,7 @@ const DeliveriesReport = () => {
   const [pageSize, setPageSize] = useState(20);
   const [startingPageIndex, setStartingPageIndex] = useState(1);
   const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
+  const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const [toDate, setToDate] = useState(moment(new Date()));
   const [dealerCodes, setDealerCodes] = useState();
   const [regionCodes, setRegionCodes] = useState();
@@ -97,7 +99,7 @@ const DeliveriesReport = () => {
 
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, distributionDetailData, aggregatesOverall] =
-  usePostDistributionReport(`${siteConfig.api.report.postDistributionv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') :null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') :null, "keyword": searchKey,"status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder }, searchUrl);
+    usePostDistributionReport(`${siteConfig.api.report.postDistributionv2}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": selectedStatusType, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
 
   //Durum Tipleri
   const [statusTypeData] = useFilterData(`${siteConfig.api.lookup.getDistributionStatusTypes}`, searchUrl);
@@ -108,16 +110,25 @@ const DeliveriesReport = () => {
   //Url'i çözümleme işlemi
   function getVariablesFromUrl() {
     const parsed = queryString.parse(location.search);
-    if (parsed.from !== undefined) { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
-    if (parsed.from !== undefined) { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
-    if (parsed.keyword !== undefined) { setSearchKey(parsed.keyword); }
-    if (parsed.pgsize !== undefined) { setPageSize(parseInt(parsed.pgsize)); }
-    if (parsed.pgindex !== undefined) { setPageIndex(parseInt(parsed.pgindex)); }
-    if (parsed.sortingField !== undefined) { sortingField = parsed.sortingField; }
-    if (parsed.sortingOrder !== undefined) { sortingOrder = parsed.sortingOrder; }
+    const siteMode = getSiteMode();
+
+    //site mode paste url manuel.
+    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
+      setSiteMode(parsed.smode);
+      setSearchSitemode(parsed.smode);
+      window.location.reload(false);
+    }
+    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
+    if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
+    if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
+    if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
+    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
+    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
+    if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
+    if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
     let newDealarCode = []
 
-    if (parsed.fic !== undefined) {
+    if (typeof parsed.fic !== 'undefined') {
       if (Array.isArray(parsed.fic)) {
         _.each(parsed.fic, (item, i) => {
           newDealarCode.push(item);
@@ -125,7 +136,7 @@ const DeliveriesReport = () => {
       } else { newDealarCode.push(parsed.fic) }
     }
 
-    if (parsed.rec !== undefined) {
+    if (typeof parsed.rec !== 'undefined') {
       if (Array.isArray(parsed.rec)) {
         _.each(parsed.rec, (item, i) => {
           newDealarCode.push(item);
@@ -133,7 +144,7 @@ const DeliveriesReport = () => {
       } else { newDealarCode.push(parsed.rec) }
     }
 
-    if (parsed.dec !== undefined) {
+    if (typeof parsed.dec !== 'undefined') {
       if (Array.isArray(parsed.dec)) {
         _.each(parsed.dec, (item, i) => {
           newDealarCode.push(item);
@@ -165,7 +176,9 @@ const DeliveriesReport = () => {
   //Get Search Data
   function dataSearch(selectedPageIndex, selectedPageSize) {
     const params = new URLSearchParams(location.search);
+    const siteMode = getSiteMode();
 
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -176,23 +189,26 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('smode');
 
     _.filter(selectedStatusType, function (item) {
       params.append('status', item); params.toString();
     });
 
-    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)){
+    if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
       params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
       params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
     }
-    if (sortingOrder !== undefined) { params.append('sortingOrder', sortingOrder); }
-    if (sortingField !== undefined) { params.append('sortingField', sortingField); }
+    if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
+    if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
     if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
     if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
     if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+    params.append('smode', siteMode); params.toString();
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
+    setSearchSitemode(siteMode);
 
     return setOnChange(true);
   }
@@ -245,11 +261,11 @@ const DeliveriesReport = () => {
     if (value !== null) {
       setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
       setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-  }
-  else {
+    }
+    else {
       setToDate(null);
       setFromDate(null);
-  }
+    }
   }
 
   //Search DailerName Tree Select Component
@@ -268,7 +284,7 @@ const DeliveriesReport = () => {
       ["sortedInfo"]: sorter,
       ["filteredInfo"]: filters
     });
-    if (sorter !== undefined) {
+    if (typeof sorter !== 'undefined') {
       if (sorter.order === "descend") {
         sortingOrder = 'DESC';
       } else { sortingOrder = 'ASC'; }
@@ -303,7 +319,7 @@ const DeliveriesReport = () => {
     _.each(distributionDetailData, (item, i) => {
       if (item.Key === row.distributionNo) { return distributionDetailIndex = i }
     });
-    if (distributionDetailIndex !== undefined) {
+    if (typeof distributionDetailIndex !== 'undefined') {
       partialUnitData = _.groupBy(distributionDetailData[distributionDetailIndex].Value, function (item) { return item.unit; });
     }
     else { partialUnitData = null }
@@ -358,7 +374,7 @@ const DeliveriesReport = () => {
   //Excel Oluşturma
   const exportExcelButton = () => {
     postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Export, logMessage.Reports.Deliveries.exportExcel);
-    ExcelExport(columns, data, 'Dağıtımlar', distributionDetailData, distributionDetailDataColumn,'distribution');
+    ExcelExport(columns, data, 'Dağıtımlar', distributionDetailData, distributionDetailDataColumn, 'distribution');
   }
   //Change Cheques Type
   function privateDateHandleChange(value) {
@@ -426,8 +442,8 @@ const DeliveriesReport = () => {
       sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
 
-    },  
-    
+    },
+
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
@@ -468,7 +484,7 @@ const DeliveriesReport = () => {
     dataIndex: "dealerName",
     key: "dealerName",
     width: 200,
-    ellipsis:true
+    ellipsis: true
   },
   {
     title: "Durum",
@@ -507,7 +523,7 @@ const DeliveriesReport = () => {
     dataIndex: "addressDescription",
     key: "addressDescription",
     width: 200,
-    ellipsis:true
+    ellipsis: true
   },
   {
     title: "Sipariş No",
