@@ -30,7 +30,7 @@ export default function TopbarSearch() {
     if (e.keyCode == 13) {
       if (typeof keyword !== 'undefined') {
         setVisiblity(false);
-        history.push(`${'/products/search'}/?keyword=${keyword}&siteMode=${siteMode}`)
+        history.push(`${'/products/search'}/?keyword=${keyword}&smode=${siteMode}`)
         if (location.pathname === '/products/search/') { window.location.reload(false); }
       }
       setKeyword();
@@ -40,7 +40,7 @@ export default function TopbarSearch() {
   function onClickSearch() {
     if (typeof keyword !== 'undefined') {
       setVisiblity(false);
-      history.push(`${'/products/search'}/?keyword=${keyword}&siteMode=${siteMode}`)
+      history.push(`${'/products/search'}/?keyword=${keyword}&smode=${siteMode}`)
       if (location.pathname === '/products/search/') { window.location.reload(false); }
     }
     setKeyword();

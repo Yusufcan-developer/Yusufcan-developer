@@ -175,6 +175,7 @@ const ProductDetail = () => {
   }
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial) {
+    if (searchSiteMode === enumerations.SiteMode.DeliverysPoint) { isPartial = true; }
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     if (event.target.value > 0) {
       const selectedQuantity = event.target.value;
@@ -249,19 +250,21 @@ const ProductDetail = () => {
   }
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValue(itemCode, isPartial = false) {
-    var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
-    if (typeof selectedProduct === 'undefined') {
-      if (selectedAmout < 1) {
-        return 0;
-      } else {
-        { return selectedAmout }
+    if (typeof itemCode !== 'undefined') {
+      var selectedProduct = productQuantity.find(item => item.itemCode == itemCode && item.isPartial === isPartial);
+      if (typeof selectedProduct === 'undefined') {
+        if (selectedAmout < 1) {
+          return 0;
+        } else {
+          { return selectedAmout }
+        }
       }
-    }
-    else {
-      if (selectedAmout < 1) {
-        return selectedProduct.quantity;
+      else {
+        if (selectedAmout < 1) {
+          return selectedProduct.quantity;
+        }
+        else { return selectedAmout }
       }
-      else { return selectedAmout }
     }
   }
   //Get Warehouse Amount Data
@@ -455,41 +458,42 @@ const ProductDetail = () => {
                   paddingBottom: '15px',
                 }}
               >
-                <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
-                  <Row align="middle">
-                    <Col span={4} align="right">
-                      <Button type="primary" onClick={event => onRemoveProductCart(data, true, false)}>
-                        {removeItem === true ? (< IntlMessages id="---" />) : (<IntlMessages id="-" />)}
+                {searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
+                  <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
+                    <Row align="middle">
+                      <Col span={4} align="right">
+                        <Button type="primary" onClick={event => onRemoveProductCart(data, true, false)}>
+                          {removeItem === true ? (< IntlMessages id="---" />) : (<IntlMessages id="-" />)}
 
-                      </Button>
-                    </Col>
-                    <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                      <Input
-                        id={'Paletli' + itemCode}
-                        onClick={event => onSelectAll('Paletli' + itemCode)}
-                        onChange={event => onChange(event, productItem, false)}
-                        onBlur={event => onChangeQuantity(event, productItem, false)}
-                        style={{ textAlign: "right" }}
-                        maxLength={5}
-                        defaultValue={0}
-                        step={1}
-                        value={inputNumberPartialQuantityValue(itemCode)}
-                      />
-                    </Col>
-                    <Col span={4}>
-                      <Button disabled={plusButtonDisable} type="primary" onClick={event => onAddProductCart(data, true, false)}>
-                        {<IntlMessages id="+" />}
-                      </Button>
-                    </Col>
-                    <Space size={2}>
-                      <Col span={4}>
-                        <Tag color="blue">
-                          1 Palet: {m2Pallet} {unit}
-                        </Tag>
+                        </Button>
                       </Col>
-                    </Space>
-                  </Row>
-                </Form.Item>
+                      <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                        <Input
+                          id={'Paletli' + itemCode}
+                          onClick={event => onSelectAll('Paletli' + itemCode)}
+                          onChange={event => onChange(event, productItem, false)}
+                          onBlur={event => onChangeQuantity(event, productItem, false)}
+                          style={{ textAlign: "right" }}
+                          maxLength={5}
+                          defaultValue={0}
+                          step={1}
+                          value={inputNumberPartialQuantityValue(itemCode)}
+                        />
+                      </Col>
+                      <Col span={4}>
+                        <Button disabled={plusButtonDisable} type="primary" onClick={event => onAddProductCart(data, true, false)}>
+                          {<IntlMessages id="+" />}
+                        </Button>
+                      </Col>
+                      <Space size={2}>
+                        <Col span={4}>
+                          <Tag color="blue">
+                            1 Palet: {m2Pallet} {unit}
+                          </Tag>
+                        </Col>
+                      </Space>
+                    </Row>
+                  </Form.Item>) : null}
               </div>
               <br />
               {canBeSoldPartially === true ? (

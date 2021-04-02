@@ -64,7 +64,7 @@ const OrdersReport = () => {
     });
     const statusChildren = [];
     const [pageIndex, setPageIndex] = useState(1);
-    const [pageSize, setPageSize] = useState(20)
+    const [pageSize, setPageSize] = useState(20);
     const [startingPageIndex, setStartingPageIndex] = useState(1);
     const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
     const [toDate, setToDate] = useState(moment(new Date()));
@@ -295,6 +295,7 @@ const OrdersReport = () => {
         setFieldCodes([]);
         setRegionCodes([]);
         const params = new URLSearchParams(location.search);
+        params.delete('smode');
         params.delete('dec');
         params.delete('rec');
         params.delete('fic');

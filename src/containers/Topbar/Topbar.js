@@ -30,14 +30,14 @@ export default function Topbar() {
   ]);
   const isCollapsed = collapsed && !openDrawer;
   const token = jwtDecode(localStorage.getItem("id_token"));
-  if (token === undefined) { return history.replace('/'); }
+  if (typeof token === 'undefined') { return history.replace('/'); }
   const activeUser = localStorage.getItem("activeUser");
   const username = token.uname;
  
   const siteMode = getSiteMode();
   let backgroundColor=customizedTheme.backgroundColor;
   if(siteMode===enumerations.SiteMode.DeliverysPoint){
-    backgroundColor='#2f82bd'
+    backgroundColor=customizedTheme.backgroundColor;
   }
  
   const styling = {

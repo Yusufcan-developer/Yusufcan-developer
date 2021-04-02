@@ -52,7 +52,7 @@ export default function TopbarAddtoCart() {
     loadingInitData,
     viewTopbarCart,
   } = useSelector(state => state.Ecommerce);
-  
+  const siteMode = getSiteMode();
   function hide() {
     dispatch(changeViewTopbarCart(false));
   }
@@ -242,7 +242,7 @@ export default function TopbarAddtoCart() {
         <Scrollbar style={{ height: 300 }}>{renderProducts()}</Scrollbar>
       </div>
       <div className="isoDropdownFooterLinks">
-        <Link to={`${url}/cart`} onClick={hide}>
+        <Link to={`${url}/cart?smode=${siteMode}`} onClick={hide}>
         <IntlMessages id="topbar.viewCart" />
         </Link>
         <h3>

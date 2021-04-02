@@ -10,7 +10,7 @@ export default ({ collapsed }) => {
   let className='isoLogoWrapper'
   const siteMode = getSiteMode();
   if(siteMode===enumerations.SiteMode.DeliverysPoint){
-    className='isoAddressDeliveryLogoWrapper'
+    className='isoLogoWrapper'
   }
   return (
     <div className={className}>

@@ -7,6 +7,7 @@ import { Switch } from 'antd';
 
 //Configs
 import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import enumerations from "../../config/enumerations";
 import _ from 'underscore';
 import moment from 'moment';
@@ -30,16 +31,18 @@ const TopbarAdressDelivery = () => {
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
-
+    localStorage.removeItem('cartProductQuantity');
+    
     window.location.reload(false);
   }
 
   let isPointAddressDelivery = localStorage.getItem('siteMode');
   if (isPointAddressDelivery === enumerations.SiteMode.DeliverysPoint) { isPointAddressDelivery = true }
   else { isPointAddressDelivery = false }
+  const siteMode = getSiteMode();
 
   return (
-    <Switch checked={isPointAddressDelivery} checkedChildren="Adrese teslim" unCheckedChildren="Adrese teslim" onChange={handleChangeAddressDelivery} />
+    <Switch checked={isPointAddressDelivery} style={{backgroundColor:siteMode !== enumerations.SiteMode.DeliverysPoint ? '#black' : '#2f9bff'}} checkedChildren="Adrese teslim" unCheckedChildren="Adrese teslim" onChange={handleChangeAddressDelivery} />
   );
 }
 export default TopbarAdressDelivery;

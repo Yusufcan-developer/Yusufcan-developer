@@ -69,7 +69,7 @@ const OrderPartial = () => {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser");
     if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}&siteMode=${siteMode}`;}
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}&siteMode=${siteMode}` }
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}/?siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)

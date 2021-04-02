@@ -374,8 +374,6 @@ const SearchComponent = () => {
     keywordAddUrl();
   }
 
-  //#region filter text Search values
-
   //Type
   function filterTextSearchType(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -401,6 +399,7 @@ const SearchComponent = () => {
     }
     else { setProductTypeFilterSearch(''); }
   }
+
   //Text Fields Search
   const productTypeOnSearch = value => {
     filterTextSearchType(value);
@@ -409,7 +408,6 @@ const SearchComponent = () => {
   const searchTextFilterkeyPress = e => {
     filterTextSearchType(e.target.value);
   }
-
   //Dimension
   function filterTextSearchDimension(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -435,6 +433,7 @@ const SearchComponent = () => {
     }
     else { setDimensionFilterSearch(''); }
   }
+
   //Text Fields Search
   const dimensionOnSearch = value => {
     filterTextSearchDimension(value);
@@ -443,7 +442,6 @@ const SearchComponent = () => {
   const dimensionSearchTextFilterkeyPress = e => {
     filterTextSearchDimension(e.target.value);
   }
-
   //Serie
   function filterTextSearchSerie(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -475,7 +473,7 @@ const SearchComponent = () => {
   //Text Fields Search
   const serieOnSearch = value => {
     filterTextSearchSerie(value);
-  }
+  }  
   //Keyword 'Enter' search
   const serieSearchTextFilterkeyPress = e => {
     filterTextSearchSerie(e.target.value);
@@ -890,8 +888,8 @@ const SearchComponent = () => {
     else { return false; }
   }
 
-  //Input Number return quantity value
-  function inputNumberQuantityValue(product) {
+  //Input Number return pallet quantity value
+  function palletQuantityEntry(product) {
     var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode);
     if (typeof selectedProduct === 'undefined') {
       if (partialQuantity) { return 0 }
@@ -911,7 +909,7 @@ const SearchComponent = () => {
   }
 
   //Input Number return partial quantity value
-  function inputNumberPartialQuantityValueNew(product, isPartial) {
+  function partialQuantityEntry(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
     if (typeof selectedProduct === 'undefined') {
       if (selectedPartialAmout < 1) {
@@ -928,8 +926,7 @@ const SearchComponent = () => {
     }
   }
   //Input Number return partial quantity value
-  function inputNumberPartialQuantityValue(product, isPartial) {
-
+  function partialPopupQuantityEntry(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
     if (typeof selectedProduct === 'undefined') {
       if (selectedAmout < 1) {
@@ -979,6 +976,7 @@ const SearchComponent = () => {
 
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
+    if(searchSiteMode === enumerations.SiteMode.DeliverysPoint){isPartial=true;}
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
 
     const selectedQuantity = event.target.value;
@@ -997,17 +995,15 @@ const SearchComponent = () => {
         }
       }
       else {
-
-        debugger
         const product = productData;
         var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
         const newProductQuantity = [];
         let newQuantity;
-        const amountControl = productAmountControl(productData, product.canBeSoldPartially, parseInt(selectedQuantity));
+        const amountControl = productAmountControl(productData, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) { newQuantity = event.target.value }
         else { newQuantity = amountControl }
         productQuantity.forEach(productItem => {
-          if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== product.canBeSoldPartially) {
+          if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
             newProductQuantity.push(productItem);
           } else {
             const itemCode = productItem.itemCode
@@ -1066,6 +1062,8 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
+    if(searchSiteMode === enumerations.SiteMode.DeliverysPoint){isPartial=true;}
+
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -1078,9 +1076,9 @@ const SearchComponent = () => {
     else {
       inputNumberShowOrHide(product)
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
-        const amountControl = productAmountControl(product, product.canBeSoldPartially, parseInt(selectedQuantity));
+        const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
-          dispatch(addToCart(product, parseInt(selectedQuantity), product.canBeSoldPartially));
+          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
           notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
           postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
         }
@@ -1497,11 +1495,11 @@ const SearchComponent = () => {
                                         maxLength={5}
                                         defaultValue={0}
                                         step={1}
-                                        value={inputNumberPartialQuantityValue(item, false)}
+                                        value={partialPopupQuantityEntry(item, false)}
                                       />
                                     </Col>
                                     <Col span={4}>
-                                      <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
+                                      <Button disabled={productAmountControlDisabled(item, false, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
                                         {<IntlMessages id="product.plus" />}
                                       </Button>
                                     </Col>
@@ -1540,11 +1538,11 @@ const SearchComponent = () => {
                                       maxLength={5}
                                       defaultValue={1}
                                       step={1}
-                                      value={inputNumberPartialQuantityValueNew(item, true)}
+                                      value={partialQuantityEntry(item, true)}
                                     />
                                   </Col>
                                   <Col span={4} style={{ width: '100%' }}>
-                                    <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
+                                    <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
                                       {<IntlMessages id="product.plus" />}
                                     </Button>
                                   </Col>
@@ -1597,11 +1595,11 @@ const SearchComponent = () => {
                                 maxLength={25}
                                 defaultValue={1}
                                 step={1}
-                                value={inputNumberQuantityValue(item)}
+                                value={palletQuantityEntry(item)}
                               />
                             </Col>
                             <Col span={4} style={{ width: '100%' }}>
-                              <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, inputNumberQuantityValue(item))} type="primary" onClick={event => onAddProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
+                              <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
                                 {<IntlMessages id="product.plus" />}
                               </Button>
                             </Col>

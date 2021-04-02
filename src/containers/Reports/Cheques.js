@@ -276,6 +276,7 @@ const ChequesReport = () => {
     params.delete('ctype');
     params.delete('pgsize');
     params.delete('pgindex');
+    params.delete('smode');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {

@@ -1,6 +1,6 @@
 //React
 import React, { useState, useEffect } from "react";
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
@@ -23,7 +23,7 @@ import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut"
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Styles
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import {
   Fieldset,
 } from '../../FirestoreCRUD/Article/Article.styles';
@@ -42,7 +42,7 @@ var jwtDecode = require('jwt-decode');
 
 let createOrderNo = 'xxxx';
 export default function () {
-
+  const queryString = require('query-string');
   let distrinctArray;
   document.title = "Sipariş Onayı - Seramiksan B2B";
   const [phone, setPhone] = useState();
@@ -53,14 +53,13 @@ export default function () {
   const [km, setKm] = useState();
   const [cities, setCities] = useState();
   const [optionsCities, setOptions] = useState();
-
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
   const [form] = Form.useForm();
   const [hasOrderSavePermission, setHasOrderSavePermission] = useState();
   const [user, setUser] = useState();
   const [adress, setAdress] = useState();
-  const [addressCode, setAddressCode] = useState();
+  const [addressCode, setAddressCode] = useState('');
   const [adressItem, setAdressItem] = useState();
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
@@ -71,23 +70,32 @@ export default function () {
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
-
+  const [days, setDays] = useState([]);
+  const [userId, setUserId] = useState();
   const history = useHistory();
-  const [data, changeCart] = useGetCartCheckOut();
+  const location = useLocation();
+
+  // const [data, changeCart] = useGetCartCheckOut(city,town);
   const token = jwtDecode(localStorage.getItem("id_token"));
   const activeUser = localStorage.getItem("activeUser");
   const { Option } = Select;
   let account = token.uname;
-  let createAddressButtonVisible = true;
-  if (typeof activeUser != 'undefined') { account = activeUser }
 
+  let createAddressButtonVisible = true;
+  if (typeof activeUser != 'undefined') { account = activeUser };
+  const siteMode = getSiteMode();
+
+  let searchUrl = queryString.parse(location.search);
+  const [data, setOnChange] =
+    useGetCartCheckOut(addressCode, searchUrl);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
     const token = jwtDecode(localStorage.getItem("id_token"));
+    setUserId(token.uid);
     getInitData(token.uid);
     postSaveLog(enumerations.LogSource.Order, enumerations.LogTypes.Browse, logMessage.Order.browse);
-  }, []);
+  }, [days]);
 
   //Get Products
   function renderProducts() {
@@ -201,6 +209,18 @@ export default function () {
     window.location.reload(false);
   }
 
+  //Save order persmission button disabled
+  function saveOrderPermissions() {
+    if (siteMode === enumerations.SiteMode.DeliverysPoint) {
+      if ((addressCode === '') & (hasOrderSavePermission)) {
+        return true
+      }
+      else { return false }
+    }
+    else {
+      return !hasOrderSavePermission;
+    }
+  }
   //get user by id
   async function getByUserId(userId) {
     let userData;
@@ -227,8 +247,7 @@ export default function () {
 
   //getLocationDetail
   async function getLocationDetail(selectedCity, selectedTown, selectedDistrict) {
-    let apiUrl='';
-    
+    let apiUrl = '';
     const requestOptions = {
       method: "GET",
       headers: {
@@ -236,7 +255,7 @@ export default function () {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    if(selectedDistrict.length> 0){ apiUrl = `${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}&district=${selectedDistrict}` }
+    if (selectedDistrict.length > 0) { apiUrl = `${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}&district=${selectedDistrict}` }
     else { apiUrl = `${siteConfig.api.lookup.getLocationDetail}?city=${selectedCity}&town=${selectedTown}` }
 
     await fetch(apiUrl, requestOptions)
@@ -245,11 +264,12 @@ export default function () {
         return status;
       })
       .then(data => {
-       //Km bilgisi
-       setKm(data.distanceKm)
+        setDays([data]);
+        setOnChange(true);
       })
       .catch();
   }
+
   //getDistricts
   async function getDistricts(selectedCity, selectedTown) {
     //Get User Info  
@@ -349,12 +369,14 @@ export default function () {
   }
 
   //get adress and user id function
-  async function getInitData(userId) {
+  async function getInitData(userId, selectedCity) {
     await getHasSaveOrderPermission();
     await getByUserId(userId);
     await getAdress();
     await getLocations();
-    await getLocationDetail('İzmir', 'Bayındır', 'Buruncuk');
+    if ((typeof selectedCity !== 'undefined') && (siteMode === enumerations.SiteMode.DeliverysPoint)) {
+      await getLocationDetail(selectedCity, 'Bayındır', 'Buruncuk');
+    }
   }
 
   //Sipariş temizleme işlemi
@@ -368,7 +390,6 @@ export default function () {
       item['amount'] = item['quantity'];
       // delete item['quantity'];
     });
-    const siteMode = getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let account = token.uname;
@@ -406,7 +427,7 @@ export default function () {
               });
             }
             localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
-            changeCart(true);
+            setOnChange(true);
           }
         }
         else {
@@ -439,11 +460,11 @@ export default function () {
       })
       .then(data => {
         setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode); setTown(data.town);
-        getLocationDetail(data.city, 'Bayındır', 'Buruncuk');
         setVisible(false);
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
         getAdress();
+        getInitData(userId);
         postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + logMessage.Address.saveAddress);
       })
       .catch(setConfirmLoading(false));
@@ -452,6 +473,7 @@ export default function () {
 
   //Save Order
   async function postSaveOrder() {
+    const siteMode = getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
     setConfirmLoading(true);
@@ -466,7 +488,7 @@ export default function () {
     };
     let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', dealerCodes);
     newSaveOrderUrl = newSaveOrderUrl.replace('{addressCode}', addressCode);
-    await fetch(`${newSaveOrderUrl}`, requestOptions)
+    await fetch(`${newSaveOrderUrl}/?siteMode=${siteMode}`, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
@@ -514,6 +536,11 @@ export default function () {
       key: "city",
     },
     {
+      title: "İlçe",
+      dataIndex: "town",
+      key: "town",
+    },
+    {
       title: 'İşlem',
       key: 'operation',
       fixed: 'right',
@@ -522,23 +549,128 @@ export default function () {
     },
   ];
 
+  let dayColumns = [
+    {
+      title: "Pazartesi",
+      dataIndex: "monday",
+      key: "monday",
+      align: 'center',
+      render: (monday) => (
+        monday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Salı",
+      dataIndex: "tuesday",
+      key: "tuesday",
+      align: 'center',
+      render: (tuesday) => (
+        tuesday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Çarşamba",
+      dataIndex: "wednesday",
+      key: "wednesday",
+      align: 'center',
+      render: (wednesday) => (
+        wednesday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Perşembe",
+      dataIndex: "thursday",
+      key: "thursday",
+      align: 'center',
+      render: (thursday) => (
+        thursday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Cuma",
+      dataIndex: "friday",
+      key: "friday",
+      align: 'center',
+      render: (friday) => (
+        friday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Cumartesi",
+      dataIndex: "saturday",
+      key: "saturday",
+      align: 'center',
+      render: (saturday) => (
+        saturday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+    {
+      title: "Pazar",
+      dataIndex: "sunday",
+      key: "sunday",
+      align: 'center',
+      render: (sunday) => (
+        sunday !== true ? <span style={{ color: "red" }}>
+          <CloseOutlined />
+        </span> :
+          <span style={{ color: "green" }}>
+            <CheckOutlined />
+          </span>
+      )
+    },
+  ]
+
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     createAddressButtonVisible = false;
   }
 
   async function onChangeCityAndTown(value, selectedOptions) {
     if (typeof value !== undefined) { setCity(value[0]); }
-    if (value.length > 1) { setCities(value); setTown(value[1]); setDistrict(value[2]); getDistricts(value[0], value[1]) } else { setCities(""); }
+    if (value.length > 1) {
+      setCities(value); setTown(value[1]); //setDistrict(value[2]);
+      //getDistricts(value[0],value[1])
+    } else { setCities(""); }
   };
+
   const loadData = selectedOptions => {
     const targetOption = selectedOptions[selectedOptions.length - 1];
-    targetOption.loading = true;
-    setTimeout(() => {
-      targetOption.loading = false;
-      targetOption.children =
-        distrinctArray;
-      setOptions([...optionsCities]);
-    }, 1000);
+    // targetOption.loading = true;
+    // setTimeout(() => {
+    //   targetOption.loading = false;
+    //   targetOption.children =
+    //     distrinctArray;
+    //   setOptions([...optionsCities]);
+    // }, 1000);
   };
 
   return (
@@ -589,7 +721,7 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false) },
+                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); getInitData(userId, record.city); },
                         };
                       }}
                       pagination={false}
@@ -632,8 +764,8 @@ export default function () {
                     </Fieldset>
                     <Fieldset>
                       <CascaderBox
-                        label={'İl / İlçe / Mahalle'}
-                        placeholder={'İl/İlçe/Mahalle seçiniz'}
+                        label={'İl / İlçe'}
+                        placeholder={'İl/İlçe seçiniz'}
                         options={optionsCities}
                         onChange={onChangeCityAndTown}
                         style={{ width: '100%' }}
@@ -759,13 +891,19 @@ export default function () {
                       value={town}
                       disabled
                     />
-                    <InputBox label={<IntlMessages id="checkout.billingform.km" />}
+                    {/* <InputBox label={<IntlMessages id="checkout.billingform.km" />}
                       onChange={event => onChangeKm(event)}
                       value={km}
                       disabled
-                    />
+                    /> */}
                   </div>
+                  {siteMode === enumerations.SiteMode.DeliverysPoint ?
+                    <Table title={() => 'Sevkiyat Günleri'} columns={dayColumns} dataSource={days} pagination={false}
+                      scroll={{ x: 'max-content' }}
+                      size="medium"
+                      bordered={false} /> : null}
                 </React.Fragment>}
+
                 {/* Ödeme özet bilgileri ve sipariş oluşturma */}
               </BillingFormWrapper>
               <OrderTable className="isoOrderInfo">
@@ -789,12 +927,13 @@ export default function () {
                     <span>{typeof data != 'undefined' ? (numberFormat(data.orderOverallCost)) : (0)} TL</span>
                   </div>
                   <Space size={50}>
-                    <Button disabled={!hasOrderSavePermission} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
+                    <Button disabled={saveOrderPermissions()} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
                       Sipariş Oluştur
         </Button>
                     {/* <Button disabled={!hasOrderSavePermission} type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
                       Sipariş Temizle
         </Button> */}
+
                   </Space>
                 </div>
               </OrderTable>

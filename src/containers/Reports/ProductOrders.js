@@ -285,6 +285,7 @@ export default function () {
     setFieldCodes([]);
     setRegionCodes([]);
     const params = new URLSearchParams(location.search);
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');

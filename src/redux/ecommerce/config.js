@@ -26,7 +26,7 @@ export default function getInitData() {
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl='';
     if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}&siteMode=${siteMode}`;}
-      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}` }
+      else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?&siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)
@@ -47,7 +47,6 @@ export default function getInitData() {
     if (localStorage.getItem("id_token")) {
       const cartProductQuantity = localStorage.getItem('cartProductQuantity');
       const productsData = await getDatabaseProductInfo();
-
       if (productsData !== 'Unauthorized') {
         // Database product code and product quantity send Redux  
         let sendReduxProductList = _.each(productsData.items, (item) => {

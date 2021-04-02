@@ -217,6 +217,7 @@ const DeliveriesReport = () => {
     params.delete('keyword');
     params.delete('pgindex');
     params.delete('pgsize');
+    params.delete('smode');
 
     if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
     else {

@@ -182,6 +182,8 @@ const SalesTarget = () => {
         params.delete('smode');
         params.delete('year');
         params.delete('month');
+        params.delete('smode');
+
         if (value.length === 0) { setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setSelectedFieldOrRegionCode([]) }
         else {
             if (value.split("|").length === 1) { fieldArrObj.push(value); params.append('field', value); setFieldCodes(fieldArrObj); }

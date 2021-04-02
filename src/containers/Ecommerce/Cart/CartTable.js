@@ -111,7 +111,8 @@ export default function CartTable({ style }) {
               localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
             }
           }
-          history.push('/checkout');
+          history.push(`/checkout?smode=${siteMode}`);
+
           window.location.reload(false);
 
         }

@@ -37,7 +37,7 @@ export default (columns, data, fileName, dataDetail, detailColumns,groupType) =>
       }
       dataTable.push(item);
 
-      if (detailColumns !== undefined) {
+      if (typeof detailColumns !== 'undefined') {
         if (dataDetail.length > 0) {
           //Detail Column Name Array  
           _.each(detailColumns, (columnItem) => {
@@ -45,12 +45,12 @@ export default (columns, data, fileName, dataDetail, detailColumns,groupType) =>
             viewerDetailColumns.push(columnItem.dataIndex);
             if (columnItem.type === 'date') { dateTypeColumns.push(columnItem.dataIndex); }
           });
-          if (itemDetail === undefined) { dataTable.push([])} else {
+          if (typeof itemDetail === 'undefined') { dataTable.push([])} else {
             dataTable.push(detailColumnsName);
           }
           
           //Detail Data
-          if(itemDetail===undefined){}
+          if(typeof itemDetail==='undefined'){}
           else{
           _.each(itemDetail.Value, (detail) => {
             detail = _.pick(detail, viewerDetailColumns);

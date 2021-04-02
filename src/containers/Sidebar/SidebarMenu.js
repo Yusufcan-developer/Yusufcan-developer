@@ -16,7 +16,7 @@ export default React.memo(function SidebarMenu({
   ...rest
 }) {
   let match = useRouteMatch();
-  const siteMode=getSiteMode();
+  const siteMode = getSiteMode();
 
   const { key, label, leftIcon, children } = singleOption;
   const url = stripTrailingSlash(match.url);
@@ -26,9 +26,9 @@ export default React.memo(function SidebarMenu({
       <SubMenu
         key={key}
         title={
-          <span className="isoMenuHolder" style={submenuColor}>
-            <i className={leftIcon} />
-            <span className="nav-text">
+          <span className="isoMenuHolder" style={submenuColor} >
+            <i className={leftIcon} style={submenuColor} />
+            <span style={submenuColor}>
               <IntlMessages id={label} />
             </span>
           </span>
@@ -41,8 +41,10 @@ export default React.memo(function SidebarMenu({
             : `${url}/${child.key}?smode=${siteMode}`;
           return (
             <Menu.Item style={submenuStyle} key={child.key}>
-              <Link style={submenuColor} to={linkTo}>
-                <IntlMessages id={child.label} />
+              <Link style={submenuColor} to={linkTo} >
+                <span style={submenuColor}>
+                  <IntlMessages id={child.label} />
+                </span>
               </Link>
             </Menu.Item>
           );
@@ -55,8 +57,8 @@ export default React.memo(function SidebarMenu({
     <Menu.Item key={key} {...rest}>
       <Link to={`${url}/${key}?smode=${siteMode}`}>
         <span className="isoMenuHolder" style={submenuColor}>
-          <i className={leftIcon} />
-          <span className="nav-text">
+          <i className={leftIcon} style={submenuColor} />
+          <span style={submenuColor}>
             <IntlMessages id={label} />
           </span>
         </span>

@@ -102,17 +102,19 @@ export default function Sidebar() {
   const siteMode = getSiteMode();
   let backgroundColor = customizedTheme.backgroundColor;
   if (siteMode === enumerations.SiteMode.DeliverysPoint) {
-    backgroundColor = '#2f82bd'
+    backgroundColor = '#fffcf2'
   }
-  const styling = {    
+  const styling = {
     backgroundColor: backgroundColor,
   };
-  const submenuStyle = {
+
+  let submenuStyle = {
     backgroundColor: 'rgba(0,0,0,0.3)',
-    color: customizedTheme.textColor,
+    color: siteMode !== enumerations.SiteMode.DeliverysPoint ? customizedTheme.textColor : '#black',
   };
+  
   let submenuColor = {
-    color: customizedTheme.textColor,
+    color: siteMode !== enumerations.SiteMode.DeliverysPoint ? 'black' : '#black',
   };
 
   //SidebarMenu Desing

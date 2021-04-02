@@ -87,9 +87,9 @@ const MainForm = () => {
   }, [pageSizeAccountBalance]);
 
   let searchUrl = queryString.parse(location.search);
+  
   //Rapor
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-
     usePostDBSTotalReport(`${siteConfig.api.report.postDBSTotal}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "pageIndex": pageIndexDBSTotal - 1, "pageCount": pageSizeDBSTotal, "siteMode": searchSiteMode },searchUrl);
 
   const [accountData, accountLoading, accountCurrentPage, setCurrentPageAccount, accountPageSize, setChangePageSizeAccount, AccountTotalDataCount, AccountSetOnChange, aggregateData, expandData] =
@@ -176,7 +176,11 @@ const MainForm = () => {
     params.delete('smode');
     params.delete('dealer');
     params.append('smode', siteMode); params.toString();
-
+    setPageSizeAccountBalance(20);
+    setPageIndexAccountBalance(1);
+    setPageSizeDBSTotal(20);
+    setPageIndexDBSTotal(1);
+    
     let createUrl = null;
     if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
     history.push(`${location.pathname}?${createUrl}`);
@@ -201,8 +205,8 @@ const MainForm = () => {
 
   /**Pagination : Tablo  pageSize'ı değiştirir*/
   function onShowCariToplamlarSizeChange(current, pageSize) {
-    setPageSizeAccountBalance(pageSize);
     setPageIndexAccountBalance(current);
+    setPageSizeAccountBalance(pageSize);
   }
 
   /**Pagination : Seçili sayfanın saklandığı state'i değiştirir*/

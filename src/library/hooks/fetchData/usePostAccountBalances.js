@@ -48,7 +48,6 @@ function usePostAccountBalancesReport(url, reqBody,searchUrl) {
           setAggregatesOverall(aggregatesOverall);
           setLoading(false);
           setOnChange(false);
-          setLastReqBody(searchUrl);
           const reqAggregateBody = { "DealerCodes": dealerCodeArray,  "pageCount":1000000000 };
           const requestAggregateOptions = {
             method: "POST",

@@ -52,7 +52,7 @@ export default function SignIn() {
     // e.preventDefault();
     let requestOptions;
     if (!username || !password) { return loginError() }
-    if (newPassword !== undefined) {
+    if (typeof newPassword !== 'undefined') {
       requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,7 +80,7 @@ export default function SignIn() {
       .then(data => {
         //Kullanıcı girişi başarılı oldugu durumda token değeri alınıyor ve redux'a gönderiliyor.
         //dispatch(login()) fonksiyonu redux actionlarında tanımlı değerdir.
-        if (data !== undefined) {
+        if (typeof data !== 'undefined') {
           if (data.isPasswordExpired) { setPasswordChangeVisible(true); }
           else if (data.isSuccessful === false) {
             return loginError();

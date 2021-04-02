@@ -178,6 +178,8 @@ export default function () {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('smode');
+
     if (value.length === 0) { setNewUrlParams(''); params.delete('user'); setUserIds(userObj); }
     else {
       _.filter(value, function (item) {

@@ -189,6 +189,7 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
+    params.delete('smode');
 
     _.filter(selectedStatusType, function (item) {
       params.append('status', item); params.toString();
