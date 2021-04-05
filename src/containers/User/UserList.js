@@ -371,6 +371,7 @@ const UserList = () => {
     setRegionCodes();
     setUserInfoFieldCodes();
     setTitle();
+    setUserId(-1);
     setUsername();
     setFirstName();
     setLastName();
@@ -385,6 +386,7 @@ const UserList = () => {
 
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
   function handleCancel() {
+    setUserId(-1);
     cancelAndClearValues();
   };
 
