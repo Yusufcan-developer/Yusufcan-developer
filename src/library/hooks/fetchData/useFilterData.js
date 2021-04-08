@@ -43,7 +43,7 @@ function useFilterData(url,searchUrl) {
       .catch();
   }
   useEffect(() => {
-    if (!_.isEqual(lastReqBody, searchUrl)) {
+    if ((!_.isEqual(lastReqBody, searchUrl))&&(url!=='undefined')) {
       setLoading(true);
       fetchUrl();
     }
