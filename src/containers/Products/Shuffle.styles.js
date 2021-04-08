@@ -23,8 +23,8 @@ const WDSingleCardWrapper = styled.li`
     background-color: ${palette('grayscale', 6)};
 
     img {
-      width: 100%;
-      height: 100%;
+      max-width: 100%;
+      max-height: 250px;
       object-fit: cover;
     }
   }
