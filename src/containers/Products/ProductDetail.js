@@ -352,11 +352,14 @@ const ProductDetail = () => {
             <SwiperWithCustomNav navigationControl={false} >
               <Card
                 style={{ textAlign: 'center' }}>
-                {<Image
-                  key={`customnav-slider--key${sliderImageUrl || imageUrl}`}
-                  src={sliderImageUrl || imageUrl}
-                  style={{maxHeight:"500px"}}
-                />}
+                {
+                  <div style={{ height: '500px' }}>
+                    <img
+                      key={`customnav-slider--key${sliderImageUrl || imageUrl}`}
+                      src={sliderImageUrl || imageUrl}
+                      style={{ maxHeight: "500px", maxWidth: "100%" }} />
+                  </div>
+                }
               </Card>
             </SwiperWithCustomNav>
             {
