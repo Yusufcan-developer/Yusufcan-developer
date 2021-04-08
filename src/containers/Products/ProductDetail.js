@@ -355,7 +355,7 @@ const ProductDetail = () => {
                 {<Image
                   key={`customnav-slider--key${sliderImageUrl || imageUrl}`}
                   src={sliderImageUrl || imageUrl}
-                  height="500px"
+                  style={{maxHeight:"500px"}}
                 />}
               </Card>
             </SwiperWithCustomNav>
