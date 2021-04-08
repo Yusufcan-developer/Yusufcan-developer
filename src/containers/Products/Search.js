@@ -1396,7 +1396,7 @@ const SearchComponent = () => {
                               : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               </Badge.Ribbon>}
                             <div className="isoCardImage">
-                              <Link to={`${'/products/detail'}/${item.itemCode}&smode=${searchSiteMode}`}>
+                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
                                 <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                               </Link>{' '}
                             </div>
@@ -1411,7 +1411,7 @@ const SearchComponent = () => {
                               </Link>{' '}
                             </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               <div className="isoCardImage">
-                                <Link to={`${'/products/detail'}/${item.itemCode}?siteMode=${searchSiteMode}`}>
+                                <Link to={`${'/products/detail'}/${item.itemCode}`}>
                                   <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                 </Link>{' '}
                               </div></Badge.Ribbon>}
