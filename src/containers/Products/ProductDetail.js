@@ -67,7 +67,7 @@ const ProductDetail = () => {
 
   //Product Detail Hook
   const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}?siteMode=${searchSiteMode}`);
-  const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}`);
+  const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}?siteMode=${searchSiteMode}`);
   document.title = "Ürün - " + description + " - Seramiksan B2B";
 
   useEffect(() => {
