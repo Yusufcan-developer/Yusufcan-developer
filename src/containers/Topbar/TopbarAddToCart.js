@@ -87,7 +87,7 @@ export default function TopbarAddtoCart() {
       .then(data => {
         cartItem = data.items;
         setTotalPrice(data.totalCost);
-        if ((data !== 'Unauthorized1') || (typeof data !== 'undefined')) {
+        if ((data !== 'Unauthorized1') && (typeof data !== 'undefined')) {
           setQuantity(cartItem.length);
           getInitData();//Send Redux Data;        
           //Redux Data refresh
