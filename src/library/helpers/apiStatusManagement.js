@@ -8,10 +8,10 @@ export const apiStatusManagement = (response, notShowMessage) => {
         break;
       case 404:
         if (notShowMessage) {
-          { return 'Unauthorized1' }
+          { return response.json(); }
         }
         else {
-          return response.json();;
+          return response.json();
         }
       case 500:
         return history.push('/');

@@ -1,5 +1,5 @@
 //React
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { Link, useRouteMatch, useLocation } from 'react-router-dom';
 
 //Redux
@@ -25,7 +25,8 @@ import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
 import getInitData from '../../redux/ecommerce/config';
 import enumerations from "@iso/config/enumerations";
-import {WarningTwoTone, InfoCircleTwoTone
+import {
+  WarningTwoTone, InfoCircleTwoTone
 
 } from '@ant-design/icons';
 
@@ -71,11 +72,11 @@ export default function TopbarAddtoCart() {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    let apiUrl='';
-    const siteMode=getSiteMode();
+    let apiUrl = '';
+    const siteMode = getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser"); 
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&siteMode=${siteMode}`;}
+    const activeUser = localStorage.getItem("activeUser");
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&siteMode=${siteMode}`; }
     else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&siteMode=${siteMode}` }
     if (!token.uname) { return 'Unauthorized' }
 
@@ -85,9 +86,10 @@ export default function TopbarAddtoCart() {
         return status;
       })
       .then(data => {
-        cartItem = data.items;
-        setTotalPrice(data.totalCost);
-        if ((data !== 'Unauthorized1') && (typeof data !== 'undefined')) {
+        if (data.isSuccessful === false) { return setQuantity(0) }
+        else {
+          cartItem = data.items;
+          setTotalPrice(data.totalCost);
           setQuantity(cartItem.length);
           getInitData();//Send Redux Data;        
           //Redux Data refresh
@@ -103,36 +105,34 @@ export default function TopbarAddtoCart() {
             return memo + item.quantity;
           }, 0);
         }
-        else { setQuantity(0) }
       })
       .catch();
 
     setTopbarItemCartLastTotal(updateTopbarCartItemTotal)
     return productInfo;
   }
-  function renderUpdateNotes(productItem){
-    let message=null;
-    if(productItem.Key==='Self'){
-      message=  null;
+  function renderUpdateNotes(productItem) {
+    let message = null;
+    if (productItem.Key === 'Self') {
+      message = null;
     }
-    else if(productItem.Key==='UpdaterNonDealerUser')
-    {
-      message=  <Tooltip trigger={["click", "hover"]} title={
+    else if (productItem.Key === 'UpdaterNonDealerUser') {
+      message = <Tooltip trigger={["click", "hover"]} title={
         <div>
-         {productItem.Value}                        
-        </div>} style={{margin:'-12px'}} color={"#108ee9"}>
+          {productItem.Value}
+        </div>} style={{ margin: '-12px' }} color={"#108ee9"}>
         <Button type='link' size="small"
-          icon={<WarningTwoTone twoToneColor="#FF0000"/>} >
+          icon={<WarningTwoTone twoToneColor="#FF0000" />} >
         </Button>
       </Tooltip>
     }
-    else if(productItem.Key==='UpdaterDealerUser'){
-      message=   <Tooltip trigger={["click", "hover"]} title={
+    else if (productItem.Key === 'UpdaterDealerUser') {
+      message = <Tooltip trigger={["click", "hover"]} title={
         <div>
-          {productItem.Value}                            
-        </div>} style={{margin:'-12px'}} color={"#108ee9"}>
+          {productItem.Value}
+        </div>} style={{ margin: '-12px' }} color={"#108ee9"}>
         <Button type='link' size="small"
-          icon={<InfoCircleTwoTone twoToneColor="#FF0000"/>} >
+          icon={<InfoCircleTwoTone twoToneColor="#FF0000" />} >
         </Button>
       </Tooltip>
     }
@@ -167,35 +167,35 @@ export default function TopbarAddtoCart() {
         let products;
         productItem = _.find(cartItem, function (item) { return item.itemCode === product.itemCode && item.isPartial === product.isPartial });
         if (typeof productItem !== 'undefined') {
-          let itemCode=productItem.itemCode;
-          products=productItem;
+          let itemCode = productItem.itemCode;
+          products = productItem;
           productItem = productItem.item;
           return (
             <TopbarCartWrapper className="isoCartItems">
-             {productItem!==null ?
-              <div className="isoItemImage">
-                <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} />
-              </div>:null}
+              {productItem !== null ?
+                <div className="isoItemImage">
+                  <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} />
+                </div> : null}
               <div className="isoCartDetails">
                 {productItem !== null ?
                   <h3>
                     <a href="#!">{productItem.itemCode} - {productItem.description}</a>
                     {products.validationMessages.map((item) => (
-                    <React.Fragment>
-                      {renderUpdateNotes(item)}
-                    </React.Fragment>))}
-                  </h3>: <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
+                      <React.Fragment>
+                        {renderUpdateNotes(item)}
+                      </React.Fragment>))}
+                  </h3> : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
                 <p className="isoItemPriceQuantity">
                   {productItem !== null ?
                     <span>{numberFormat(productItem.listPrice)} TL</span> : null}
-                    {productItem !== null ?
-                  <span className="itemMultiplier">/</span>:null}
+                  {productItem !== null ?
+                    <span className="itemMultiplier">/</span> : null}
                   {productItem !== null ?
                     <span className="isoItemQuantity">{productItem.unit}</span> : null}
                   <span className="itemMultiplier"> </span>
                   {productItem !== null ?
                     <span className="isoItemQuantity"> {'('}{product.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
-                    : null}                   
+                    : null}
                 </p>
               </div>
               <a
@@ -243,7 +243,7 @@ export default function TopbarAddtoCart() {
       </div>
       <div className="isoDropdownFooterLinks">
         <Link to={`${url}/cart?smode=${siteMode}`} onClick={hide}>
-        <IntlMessages id="topbar.viewCart" />
+          <IntlMessages id="topbar.viewCart" />
         </Link>
         <h3>
           <IntlMessages id="topbar.totalPrice" />:{' '}
@@ -268,8 +268,8 @@ export default function TopbarAddtoCart() {
         {quantity === 0 ? (
           ''
         ) : (
-            <span>{quantity}</span>
-          )}
+          <span>{quantity}</span>
+        )}
       </div>
     </Popover>
   );
