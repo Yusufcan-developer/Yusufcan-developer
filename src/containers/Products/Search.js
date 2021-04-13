@@ -1161,6 +1161,7 @@ const SearchComponent = () => {
       .catch();
     return productInfo;
   }
+  const siteMode = getSiteMode();
   return (
     <React.Fragment>
       <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
@@ -1396,7 +1397,7 @@ const SearchComponent = () => {
                               : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               </Badge.Ribbon>}
                             <div className="isoCardImage">
-                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                              <Link to={`${'/products/detail'}/${item.itemCode}?smode=${siteMode}`}>
                                 <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                               </Link>{' '}
                             </div>
@@ -1406,12 +1407,12 @@ const SearchComponent = () => {
                         <React.Fragment>
                           {item.campaignCode === '' ?
                             <div className="isoCardImage">
-                              <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                              <Link to={`${'/products/detail'}/${item.itemCode}?smode=${siteMode}`}>
                                 <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                               </Link>{' '}
                             </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                               <div className="isoCardImage">
-                                <Link to={`${'/products/detail'}/${item.itemCode}`}>
+                                <Link to={`${'/products/detail'}/${item.itemCode}?smode=${siteMode}`}>
                                   <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                 </Link>{' '}
                               </div></Badge.Ribbon>}
