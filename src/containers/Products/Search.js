@@ -944,20 +944,22 @@ const SearchComponent = () => {
   }
   //Parçalı ürün sepete ekle butonunda ki değerlerin belirlenmesi
   function addCardButtonTitle(product) {
-    var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
-    const titleArray = []
-    if (typeof selectedProduct === 'undefined') {
-      return 'Sepete Ekle'
+    if (productQuantity) {
+      var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode);
+      const titleArray = []
+      if (typeof selectedProduct === 'undefined') {
+        return 'Sepete Ekle'
+      }
+      else {
+        productQuantity.forEach(productItem => {
+          if (productItem.itemCode === selectedProduct.itemCode) {
+            if (productItem.isPartial === true) { product.unit !== 'TOR' ? titleArray.push(productItem.quantity + ' Kutu') : titleArray.push(productItem.quantity + ' Torba') }
+            else { titleArray.push(productItem.quantity + ' Palet') }
+          }
+        });
+      }
+      return titleArray.join(" + ")
     }
-    else {
-      productQuantity.forEach(productItem => {
-        if (productItem.itemCode === selectedProduct.itemCode) {
-          if (productItem.isPartial === true) { product.unit !== 'TOR' ? titleArray.push(productItem.quantity + ' Kutu') : titleArray.push(productItem.quantity + ' Torba') }
-          else { titleArray.push(productItem.quantity + ' Palet') }
-        }
-      });
-    }
-    return titleArray.join(" + ")
   }
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
@@ -1208,7 +1210,7 @@ const SearchComponent = () => {
             </Collapse>
             {!!category ? null :
               <div style={{ color: 'red', fontSize: '90%' }}>*: Detaylı filtreleme için kategori seçiniz</div>}
-            <Collapse {...collapseProps}>
+            {/* <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="filter.salesStatus" />} key="1">
                 <RadioGroup onChange={onChangeSalesStatus} defaultValue={salesStatus}>
                   <Radio style={radioStyle} value={enumerations.SalesStatus.All}>
@@ -1219,7 +1221,7 @@ const SearchComponent = () => {
                 </Radio>
                 </RadioGroup>
               </Panel>
-            </Collapse>
+            </Collapse> */}
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="filter.campaing" />} key="2">
                 <RadioGroup onChange={onChangeCampaing} value={campaign} defaultValue={campaign}>
@@ -1445,7 +1447,7 @@ const SearchComponent = () => {
                               {item.m2Box ? ('1 Kutu: ' + item.m2Box + ' ' + item.unit) : null}{item.m2Box ? <br /> : null}
                               {item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ?
                                 'Sepete hem palet hem de kutu bazında ekleme yapabilirsiniz' :
-                                'Sepete palet bazında ekleme yapabilirsiniz'}
+                                null}
                             </div>} color={"#108ee9"}>
                             <Button type='link' size="small"
                               icon={<InfoCircleOutlined />} >

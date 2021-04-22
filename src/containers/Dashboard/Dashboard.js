@@ -27,11 +27,11 @@ export default function Dashboard() {
     content: {
       padding: '70px 0 0',
       flexShrink: '0',
-      background: siteMode !== enumerations.SiteMode.DeliverysPoint ? '#f1f3f6' : '#fffcf2',//fe9d9d 
+      background: siteMode !== enumerations.SiteMode.DeliverysPoint ? '#f1f3f6' : '#f2f5ff',//fe9d9d 
       position: 'relative',
     },
     footer: {
-      background: siteMode !== enumerations.SiteMode.DeliverysPoint ? '#f1f3f6' : '#fffcf2',
+      background: siteMode !== enumerations.SiteMode.DeliverysPoint ? '#f1f3f6' : '#f2f5ff',
       textAlign: 'center',
       borderTop: '1px solid #ededed',
     },

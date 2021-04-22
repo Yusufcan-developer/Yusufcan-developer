@@ -80,7 +80,7 @@ function usePostOrderReport(url, reqBody, searchUrl) {
       .catch(setOnChange(false));
   }
   useEffect(() => {
-    if ((reqBody.DealerCodes === undefined) & (reqBody.regionCodes === undefined) & (reqBody.fieldCodes === undefined)) {
+    if ((reqBody.DealerCodes === undefined) && (reqBody.regionCodes === undefined) && (reqBody.fieldCodes === undefined)) {
       setLoading(false);
       setOnChange(false);
     }

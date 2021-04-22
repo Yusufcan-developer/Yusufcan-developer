@@ -202,7 +202,8 @@ export default function TopbarNotification() {
           className="ion-android-notifications"
           style={{ color: customizedTheme.textColor }}
         />
-        <span>{quantity}</span>
+        {quantity  < 9 ? <span>{quantity}</span> : <span>{'9+'}</span>}
+
       </div>
     </Popover>
 

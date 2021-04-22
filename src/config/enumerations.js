@@ -2,8 +2,13 @@ export default {
 
     SiteMode:
     {
-        Normal:'Normal',
-        DeliverysPoint:'DeliveryToPoint',
+        Normal: 'Normal',
+        DeliverysPoint: 'DeliveryToPoint',
+    },
+    DistributionItemStatus:
+    {
+        Preferential: 'Öncelikli',
+        Stay: 'Kalabilir',
     },
     SalesStatus:
     {
@@ -16,9 +21,9 @@ export default {
         None: 'None',
         GeneralInStock: 'GeneralInStock',
         GeneralNotInStock: 'GeneralNotInStock',
-        TileUpTo10000:'TileUpTo10000',
-        Tile10000AndMore:'Tile10000AndMore',
-        TileNotInStock:'TileNotInStock'
+        TileUpTo10000: 'TileUpTo10000',
+        Tile10000AndMore: 'Tile10000AndMore',
+        TileNotInStock: 'TileNotInStock'
     },
     OrderLineItemStatus:
     {

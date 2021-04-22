@@ -42,7 +42,7 @@ const TopbarAdressDelivery = () => {
   const siteMode = getSiteMode();
 
   return (
-    <Switch checked={isPointAddressDelivery} style={{backgroundColor:siteMode !== enumerations.SiteMode.DeliverysPoint ? '#black' : '#2f9bff'}} checkedChildren="Adrese teslim" unCheckedChildren="Adrese teslim" onChange={handleChangeAddressDelivery} />
+    <Switch checked={isPointAddressDelivery} style={{backgroundColor:siteMode !== enumerations.SiteMode.DeliverysPoint ? '#black' : '#2f9bff'}} checkedChildren="Parçalı Satış" unCheckedChildren="Parçalı Satış" onChange={handleChangeAddressDelivery} />
   );
 }
 export default TopbarAdressDelivery;

@@ -36,6 +36,7 @@ import moment from 'moment';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
+import viewType from '@iso/config/viewType';
 
 moment.locale('tr')
 var jwtDecode = require('jwt-decode');
@@ -69,6 +70,7 @@ export default function () {
   const [addressTitle, setAddressTitle] = useState();
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
+  const [shippingType, setShippingType] = useState();
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
   const [days, setDays] = useState([]);
   const [userId, setUserId] = useState();
@@ -86,8 +88,7 @@ export default function () {
   const siteMode = getSiteMode();
 
   let searchUrl = queryString.parse(location.search);
-  const [data, setOnChange] =
-    useGetCartCheckOut(addressCode, searchUrl);
+  const [data, setOnChange] = useGetCartCheckOut(addressCode, searchUrl);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -212,7 +213,7 @@ export default function () {
   //Save order persmission button disabled
   function saveOrderPermissions() {
     if (siteMode === enumerations.SiteMode.DeliverysPoint) {
-      if ((addressCode === '') & (hasOrderSavePermission)) {
+      if ((addressCode === '') && (hasOrderSavePermission) || (typeof shippingType === 'undefined')) {
         return true
       }
       else { return false }
@@ -221,6 +222,16 @@ export default function () {
       return !hasOrderSavePermission;
     }
   }
+
+  //Nakliye şekli seçme işlemi
+  async function shippingMethodHandleChange(value) {
+    setShippingType(value);
+    if (value === 'IncludingShipping') {
+      getInitData(userId, city, town, true);
+    }
+    else { setOnChange(true); getInitData(userId, city, town, false); }
+  }
+
   //get user by id
   async function getByUserId(userId) {
     let userData;
@@ -370,10 +381,10 @@ export default function () {
     await getByUserId(userId);
     await getAdress();
     await getLocations();
-    if ((typeof selectedCity !== 'undefined') && (siteMode === enumerations.SiteMode.DeliverysPoint)) {
+    if ((typeof selectedCity !== 'undefined') && (siteMode === enumerations.SiteMode.DeliverysPoint) && (addressDeliveryCostCalculate === true)) {
       await getLocationDetail(selectedCity, selectedTown);
     }
-    if (typeof addressDeliveryCostCalculate == 'boolean' && addressDeliveryCostCalculate === true && siteMode === enumerations.SiteMode.DeliverysPoint) {
+    if (typeof addressDeliveryCostCalculate === 'boolean' && addressDeliveryCostCalculate === true && siteMode === enumerations.SiteMode.DeliverysPoint) {
       message
         .loading('Nakliye Bedeli Hesaplanıyor Bekleyiniz..', 2.5)
         .then(() => message.success('Nakliye bedeli hesaplandı', 2.5));
@@ -465,7 +476,7 @@ export default function () {
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
         getAdress();
-        getInitData(userId,data.city,data.town,true);
+        // getInitData(userId,data.city,data.town,true);
         postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + logMessage.Address.saveAddress);
       })
       .catch(setConfirmLoading(false));
@@ -673,6 +684,7 @@ export default function () {
     //   setOptions([...optionsCities]);
     // }, 1000);
   };
+  const view = viewType('Reports');
 
   return (
     <CheckoutContents>
@@ -722,7 +734,9 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); getInitData(userId, record.city, record.town, true); },
+                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); 
+                          //getInitData(userId, record.city, record.town, true);
+                          },
                         };
                       }}
                       pagination={false}
@@ -828,7 +842,7 @@ export default function () {
                 >
                   <p>Sipariş kaydettikten sonra değişiklik yapılamayacaktır. Kaydettikten sonra değişiklik/iptal İçin Seramiksan Satış Destek birimine başvurabilirsiniz.</p>
                   <p style={{ marginTop: '20px' }}><b>Önemli Not:</b> Sevkiyat, formdaki bilgilere uygun ödeme şirketimize ulaştığında ve risk limiti dahilinde yapılacaktır.</p>
-                  <p style={{ marginTop: '20px' }}>SAYIN YETKİLİ SATICIMIZ, SİPARİŞ ETTİĞİNİZ, STOKLARIMIZDA MEVCUT OLAN MALZEMELERİ 20 GÜN İÇERİSİNDE TESLİM ALMANIZ GEREKMEKTEDİR. AKSİ TAKDİRDE BEDELİ TARAFINIZCA ÖDEMEK KAYDI İLE GÜNCEL NAKLİYE FİYATLARINDAN SEVK EDİLECEKTİR.</p>
+                  <p style={{ marginTop: '20px' }}>SAYIN YETKİLİ SATICIMIZ, SİPARİŞ ETTİĞİNİZ, STOKLARIMIZDA MEVCUT OLAN MALZEMELERİ 7 GÜN İÇERİSİNDE TESLİM ALMANIZ GEREKMEKTEDİR. AKSİ TAKDİRDE BEDELİ TARAFINIZCA ÖDEMEK KAYDI İLE GÜNCEL NAKLİYE FİYATLARINDAN SEVK EDİLECEKTİR.</p>
                   <Form
                     form={form}
                     layout="vertical"
@@ -852,8 +866,22 @@ export default function () {
                   />
 
                 </div>
-
                 {typeof adressItem === 'undefined' ? null : <React.Fragment>
+                  {siteMode === enumerations.SiteMode.DeliverysPoint ? 
+                    <React.Fragment> <label>{<IntlMessages id="page.shippingType" />}  {<span className="asterisk">*</span>}</label>
+                <div className="isoInputFieldset">
+                  <Select
+                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '750px' : '100%' }}
+                    placeholder={'Nakliye tipi seçiniz!'}
+                    onChange={shippingMethodHandleChange}
+                    optionFilterProp="children"
+                    value={shippingType}
+                  >
+                    <Option value="IncludingShipping">Nakliye Dahil İstiyorum</Option>:
+                      <Option value="dontWantShipping">Nakliye İstemiyorum</Option>
+                  </Select>
+                </div></React.Fragment>
+                    : null} 
                   <div className="isoInputFieldset">
                     <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
                       onChange={onChangeAddress1}
@@ -891,13 +919,13 @@ export default function () {
                       onChange={event => onChangeAddressTown(event)}
                       value={town}
                       disabled
-                    />
+                    />                  
                     {/* <InputBox label={<IntlMessages id="checkout.billingform.km" />}
                       onChange={event => onChangeKm(event)}
                       value={km}
                       disabled
                     /> */}
-                  </div>
+                  </div>                
                   {siteMode === enumerations.SiteMode.DeliverysPoint ?
                     <Table title={() => 'Sevkiyat Günleri'} columns={dayColumns} dataSource={days} pagination={false}
                       scroll={{ x: 'max-content' }}

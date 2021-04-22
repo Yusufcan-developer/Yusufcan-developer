@@ -36,7 +36,7 @@ const categories = [
     "Id": "BANYO MOBİLYASI",
     "title": "Banyo Mobilyası",
     "description": "Banyo Mobilyası Ürün Grubu ",
-    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/betonmekan_0856e.jpg",
+    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/blanc_beyaz__nordik_beyaz__matt_frame_antrasit2_67830.jpg",
   },
 
 ];

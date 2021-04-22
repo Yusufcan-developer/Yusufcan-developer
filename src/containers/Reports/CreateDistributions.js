@@ -3,16 +3,16 @@ import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
-import Form from "@iso/components/uielements/form";
+// import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
-import DatePicker from "@iso/components/uielements/datePicker";
+// import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message, Alert, Checkbox, Tag } from "antd";
+import { Form, Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message, Alert, Checkbox, Tag, Input, DatePicker } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
-import Input from '@iso/components/uielements/input';
+// import Input from '@iso/components/uielements/input';
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
@@ -39,10 +39,12 @@ import _ from 'underscore';
 import logMessage from "../../config/logMessage";
 import moment, { now } from 'moment';
 import 'moment/locale/tr'
+import { object } from "prop-types";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
 const { Panel } = Collapse;
+const { TextArea } = Input;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 let sortingField;
@@ -56,13 +58,16 @@ export default function () {
     const Option = SelectOption;
     const [selectedRadioItem, setSelectedRadioItem] = useState(1);
     const [privateDate, setPrivateDate] = useState('Bugun');
+    const [distributionStatus, setDistributionStatus] = useState();
+    const [distributionItem, setDistributionItem]=useState();
     const [searchKey, setSearchKey] = useState('');
     const [tableOptions, setState] = useState({
         sortedInfo: "",
         filteredInfo: ""
     });
-    let tarih;
+    let tarih=true;
     const [driverName, setDriverName] = useState();
+    const [boolDate,setBooldate]=useState(true);
     const [carPlate, setCarPlate] = useState();
     const [phone, setPhone] = useState();
     const [dates, setDate] = useState();
@@ -95,11 +100,12 @@ export default function () {
     const [modalVisible, setModalVisible] = useState(true);
     const [totalWight, setTotalWeight] = useState();
     const [selectedDistributionData, setSelectedDistributionData] = useState();
+    const [description, setDescription] = useState();
     const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId && record.orderNo === orderNo;
 
     const queryString = require('query-string');
     const history = useHistory();
-    let getSelectedKey = []
+    let getSelectedKey = [];
 
     //Burada ki useEffect'ler page index page size sonuçlarına göre veri getiriyor.
     useEffect(() => {
@@ -464,10 +470,11 @@ export default function () {
         });
         return control;
     }
-
+    
     function addDistributionItemAll(items, selectedItem) {
         const control = dealerCodesControl(items);
         if (control) {
+            //Buradaki kod alanı güncellenecek...
         }
         else {
             let distributions = localStorage.getItem('distributions');
@@ -497,7 +504,8 @@ export default function () {
                         unit: item.unit,
                         dealerCode: item.dealerCode,
                         unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : quantity),
-                        plannedAmount: item.plannedAmount
+                        plannedAmount: item.plannedAmount,
+                        distributionStatus:'Öncelikli'
                     })
                 }
 
@@ -580,7 +588,8 @@ export default function () {
                     unit: item.unit,
                     dealerCode: item.dealerCode,
                     unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : selectedQuantity),
-                    plannedAmount: item.plannedAmount
+                    plannedAmount: item.plannedAmount,
+                    distributionStatus:'Öncelikli',
                 })
             }
             localStorage.setItem('distributions', JSON.stringify(distributions));
@@ -869,6 +878,22 @@ export default function () {
 
         },
         {
+            title: "Dağıtım Durumu",
+            dataIndex: "distributionStatus",
+            key: "distributionStatus",
+            width: 150,
+            render: (text, record) => (
+                <Select
+                onChange={distributionStatusHandleChange}
+                optionFilterProp="children"
+                defaultValue={text}
+            >
+                <Option value="Öncelikli">Öncelikli</Option>
+                <Option value="Kalabilir">Kalabilir</Option>
+            </Select>
+              ),
+        },
+        {
             title: "Ürün Açıklaması",
             dataIndex: "itemDescription",
             key: "itemDescription",
@@ -892,9 +917,7 @@ export default function () {
             key: "unitWeight",
             align: "right",
             width: 150,
-
             render: (unitWeight) => numberFormat(unitWeight),
-
             footerKey: "unitWeight"
         },
         {
@@ -903,9 +926,7 @@ export default function () {
             key: "plannedAmount",
             align: "right",
             width: 150,
-
             render: (plannedAmount) => numberFormat(plannedAmount),
-
             footerKey: "plannedAmount"
         },
         {
@@ -916,7 +937,6 @@ export default function () {
             key: 'quantity',
             footerKey: "quantity",
             width: 150,
-
             render: (quantity) => numberFormat(quantity),
         },
     ];
@@ -980,6 +1000,17 @@ export default function () {
             setToDate(moment(new Date()));
         }
     }
+    function distributionStatusHandleChange(value) {
+        let distributions = localStorage.getItem('distributions');
+        distributions = JSON.parse(distributions);
+        if (value) {
+            const index = _.findIndex(distributions, function (i) { return i.distributionLineId === distributionItem.distributionLineId });
+            if (index > -1) {
+                distributions[index].distributionStatus = value;
+            }
+            localStorage.setItem('distributions', JSON.stringify(distributions));
+        }
+    }
 
     const handleChangeDriverNAme = e => {
         setDriverName(e.target.value);
@@ -994,13 +1025,16 @@ export default function () {
     }
 
     function handleChangeDistributionDate(value, dateString) {
+        console.log('xxxx c',value);
         setDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
     }
 
     function handleChangeTime(value, dateString) {
         setTime(moment(dateString, format));
     }
-
+    function handleDescription(value) {
+        setDescription(value);
+    }
     function disabledMinutes() {
         var minutes = [];
         for (let i = 0; i < 60; i++) {
@@ -1019,7 +1053,23 @@ export default function () {
     function handleSubmitCheck(value) {
         setSubmitButtonVisible(!value.target.checked);
     }
-
+    const onFinish = (fieldsValue) => {
+        // Should format date value before submit.
+        const rangeValue = fieldsValue['range-picker'];
+        const rangeTimeValue = fieldsValue['range-time-picker'];
+        const values = {
+          ...fieldsValue,
+          'date-picker': fieldsValue['date-picker'].format('DD-MM-YYYY'),
+          'date-time-picker': fieldsValue['date-time-picker'].format('YYYY-MM-DD HH:mm:ss'),
+          'month-picker': fieldsValue['month-picker'].format('YYYY-MM'),
+          'range-picker': [rangeValue[0].format('YYYY-MM-DD'), rangeValue[1].format('YYYY-MM-DD')],
+          'range-time-picker': [
+            rangeTimeValue[0].format('YYYY-MM-DD HH:mm:ss'),
+            rangeTimeValue[1].format('YYYY-MM-DD HH:mm:ss'),
+          ],
+          'time-picker': fieldsValue['time-picker'].format('HH:mm:ss'),
+        };
+    }
     //Hide order table column
     const token = jwtDecode(localStorage.getItem("id_token"));
     if (token.urole === 'admin') { }
@@ -1253,12 +1303,12 @@ export default function () {
                             <Row>
                                 <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     <Form.Item name="driverName"
-                                        rules={[{ required: true, message: 'Şoför adı giriniz!' }]}
+                                    //    rules={[{ required: true, message: 'Şoför adı giriniz!' }]}
                                     >
                                         <label style={{
                                             fontSize: '14px', fontWeight: '500'
                                         }}>
-                                            Şoför Adı
+                                            Şoför Adı *
                                     <Input
                                                 label="Şoför Adı"
                                                 type="driverName"
@@ -1270,12 +1320,12 @@ export default function () {
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     <Form.Item name="plate"
-                                        rules={[{ required: true, message: 'Plaka giriniz!' }]}
+                                      //  rules={[{ required: true, message: 'Plaka giriniz!' }]}
                                     >
                                         <label style={{
                                             fontSize: '14px', fontWeight: '500'
                                         }}>
-                                            Plaka
+                                            Plaka *
                                     <Input
                                                 label="Plaka"
                                                 type='plate'
@@ -1286,12 +1336,12 @@ export default function () {
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     <Form.Item name="phone"
-                                        rules={[{ required: true, message: 'Telefon giriniz!' }]}
+                                        // rules={[{ required: true, message: 'Telefon giriniz!' }]}
                                     >
                                         <label style={{
                                             fontSize: '14px', fontWeight: '500'
                                         }}>
-                                            Telefon
+                                            Telefon *
                                     <Input
                                                 label="Telefon"
                                                 type='phone'
@@ -1301,32 +1351,44 @@ export default function () {
                                             /></label></Form.Item>
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                    <Form.Item name="date-picker"
-                                    >
+                               
+                                <Form.Item name="date-picker">
                                         <label style={{
                                             fontSize: '14px', fontWeight: '500'
                                         }}>
-                                            Tarih
+                                            Tarih *
                                             <DatePicker
-                                                name="date-picker"
+                                                placeholder="Zorunlu alan giriniz"
                                                 format={siteConfig.dateFormat}
                                                 disabledDate={disabledDate}
                                                 onChange={handleChangeDistributionDate}
                                                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                             // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
-                                            /></label></Form.Item>
+                                            /></label></Form.Item> 
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     {<label style={{
                                         fontSize: '14px', fontWeight: '500'
                                     }}>
-                                        Saat
+                                        Saat *
                                 {
-                                            <TimePicker showNow={false} disabledMinutes={disabledMinutes} format={format} value={time} onChange={handleChangeTime} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                            <TimePicker placeholder="Zorunlu alan giriniz"
+                                                showNow={false} disabledMinutes={disabledMinutes} format={format} onChange={handleChangeTime} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                             />}
                                     </label>}
                                 </Col>
                             </Row>
+                            <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                    {<label style={{
+                                        fontSize: '14px', fontWeight: '500'
+                                    }}>
+                                        Açıklama
+                                {
+                                            <TextArea onChange={handleDescription} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                            />
+                                            }
+                                    </label>}
+                                </Col>
                         </Box>
                         <Table
                             columns={summaryColumns}
@@ -1337,6 +1399,9 @@ export default function () {
                             size="medium"
                             bordered={false}
                             scroll={{ y: 300 }}
+                            onRow={(record) => ({
+                                onClick: () => (setDistributionItem(record))
+                            })}
                             summary={() => {
                                 return renderFooter(summaryColumns, selectedDistributionData, false, aggregatesOverall, false)
                             }}
