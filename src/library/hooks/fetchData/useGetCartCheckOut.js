@@ -7,12 +7,11 @@ import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 var jwtDecode = require('jwt-decode');
 
-function useGetCartCheckOut(addressCode, searchUrl) {
+function useGetCartCheckOut(addressCode, searchUrl, includeTransportation) {
   const [data, setData] = useState([]);
   const [onChangeFilter, setOnChangeFilter] = useState(false);
   const [lastReqBody, setLastReqBody] = useState();
   const [lastAddressCode, setLastAddressCode] = useState();
-
   async function fetchUrl() {
 
     const requestOptions = {
@@ -26,8 +25,8 @@ function useGetCartCheckOut(addressCode, searchUrl) {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl = '';
-    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&siteMode=${siteMode}&addressCode=${addressCode}`; }
-    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&siteMode=${siteMode}&addressCode=${addressCode}` }
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&siteMode=${siteMode}&addressCode=${addressCode}&includeTransportation=${includeTransportation}`; }
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includePallet=true&checkBalance=true&includeUpdateDetails=true&checkDependentProducts=true&siteMode=${siteMode}&addressCode=${addressCode}&includeTransportation=${includeTransportation}` }
     if (!token.uname) { return 'Unauthorized' }
 
     await fetch(apiUrl, requestOptions)

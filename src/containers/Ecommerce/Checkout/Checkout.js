@@ -70,7 +70,7 @@ export default function () {
   const [addressTitle, setAddressTitle] = useState();
   const [address1, setAddress1] = useState();
   const [address2, setAddress2] = useState();
-  const [shippingType, setShippingType] = useState();
+  const [includeTransportation, setIncludeTransportation] = useState(false);
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
   const [days, setDays] = useState([]);
   const [userId, setUserId] = useState();
@@ -88,7 +88,7 @@ export default function () {
   const siteMode = getSiteMode();
 
   let searchUrl = queryString.parse(location.search);
-  const [data, setOnChange] = useGetCartCheckOut(addressCode, searchUrl);
+  const [data, setOnChange] = useGetCartCheckOut(addressCode, searchUrl,includeTransportation);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -225,11 +225,11 @@ export default function () {
 
   //Nakliye şekli seçme işlemi
   async function shippingMethodHandleChange(value) {
-    setShippingType(value);
     if (value === 'IncludingShipping') {
+      setIncludeTransportation(true);
       getInitData(userId, city, town, true);
     }
-    else { setOnChange(true); getInitData(userId, city, town, false); }
+    else { setIncludeTransportation(false); setOnChange(true); getInitData(userId, city, town, false); }
   }
 
   //get user by id
@@ -500,7 +500,7 @@ export default function () {
     };
     let newSaveOrderUrl = siteConfig.api.carts.postSaveOrder.replace('{accountNo}', dealerCodes);
     newSaveOrderUrl = newSaveOrderUrl.replace('{addressCode}', addressCode);
-    await fetch(`${newSaveOrderUrl}/?siteMode=${siteMode}`, requestOptions)
+    await fetch(`${newSaveOrderUrl}/?siteMode=${siteMode}&includeTransportation=${includeTransportation}`, requestOptions)
       .then(response => {
         const status = apiStatusManagement(response);
         return status;
@@ -875,7 +875,6 @@ export default function () {
                     placeholder={'Nakliye tipi seçiniz!'}
                     onChange={shippingMethodHandleChange}
                     optionFilterProp="children"
-                    value={shippingType}
                   >
                     <Option value="IncludingShipping">Nakliye Dahil İstiyorum</Option>:
                       <Option value="dontWantShipping">Nakliye İstemiyorum</Option>

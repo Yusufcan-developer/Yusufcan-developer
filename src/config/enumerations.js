@@ -5,10 +5,11 @@ export default {
         Normal: 'Normal',
         DeliverysPoint: 'DeliveryToPoint',
     },
-    DistributionItemStatus:
+    status:
     {
-        Preferential: 'Öncelikli',
-        Stay: 'Kalabilir',
+        Priority: 'Priority',
+        NotUrgent: 'NotUrgent',
+    
     },
     SalesStatus:
     {

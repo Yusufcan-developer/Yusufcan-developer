@@ -58,7 +58,6 @@ export default function () {
     const Option = SelectOption;
     const [selectedRadioItem, setSelectedRadioItem] = useState(1);
     const [privateDate, setPrivateDate] = useState('Bugun');
-    const [distributionStatus, setDistributionStatus] = useState();
     const [distributionItem, setDistributionItem]=useState();
     const [searchKey, setSearchKey] = useState('');
     const [tableOptions, setState] = useState({
@@ -73,7 +72,7 @@ export default function () {
     const [dates, setDate] = useState();
     const [time, setTime] = useState();
     const [visible, setVisible] = useState();
-    const [submitButtonVisible, setSubmitButtonVisible] = useState(true);
+    const [specification, setSpecification] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [validation, setValidation] = useState(true);
     const [pageIndex, setPageIndex] = useState(1);
@@ -100,7 +99,9 @@ export default function () {
     const [modalVisible, setModalVisible] = useState(true);
     const [totalWight, setTotalWeight] = useState();
     const [selectedDistributionData, setSelectedDistributionData] = useState();
-    const [description, setDescription] = useState();
+    const [description, setDescription] = useState('');
+    const [dateValidation, setDateValidation]= useState(true);
+    const [timeValidation, setTimeValidation]= useState(true);
     const isEditing = record => record.itemCode === editingKey && record.distributionId === distributionId && record.orderNo === orderNo;
 
     const queryString = require('query-string');
@@ -360,7 +361,6 @@ export default function () {
     };
 
     //Send selected distribution items
-    //Save Order
     async function sendDistributionItems(items, selectedDealerCode) {
         const token = jwtDecode(localStorage.getItem("id_token"));
         let accountNo;
@@ -375,7 +375,7 @@ export default function () {
         let selectedTime = time.format('HH:mm:ssZ');
         let sendDate = moment((selectedDate + " " + selectedTime));
 
-        const reqBody = { 'items': items, "driverName": driverName, "phone": phone, "plateNo": carPlate, "date": sendDate.format('YYYY-MM-DDTHH:mm:ss.sssZ') }
+        const reqBody = { 'items': items, "driverName": driverName, "phone": phone, "plateNo": carPlate, "description": description,  "date": sendDate.format('YYYY-MM-DDTHH:mm:ss.sssZ') }
 
         const requestOptions = {
             method: "POST",
@@ -397,13 +397,15 @@ export default function () {
                     setDriverName();
                     setCarPlate();
                     setPhone();
+                    setDescription();
                     message.info(data.message, 8);
                     setSelectedRowKeys([]);
-                    setSubmitButtonVisible(false);
+                    setSpecification(false);
                     setConfirmLoading(false);
                     setVisible(false);
                 } else {
                     message.warning(data.message, 8);
+                    setConfirmLoading(false);
                 }
             })
             .catch();
@@ -411,9 +413,14 @@ export default function () {
 
     //Seçilenleri onaylama işlemi
     async function handleOk() {
-        if ((!driverName) | (!carPlate) | (!phone) | (!dates) | (!time)) {
+        if ((!driverName) || (!carPlate) || (!phone) || (!dates) || (!time)) {
             setValidation(false);
             message.warning('Lütfen bilgileri eksiksiz giriniz', 3);
+            if (!dates) { setDateValidation(false); }
+            if (!time) { setTimeValidation(false); }
+        }
+        else if (specification === false) {
+            message.warning('Lütfen şartnameyi kabul olarak işaretleyiniz', 3);
         }
         else {
             let items = [];
@@ -423,10 +430,16 @@ export default function () {
                 items.push({
                     distributionLineId: item.distributionLineId,
                     amount: item.quantity,
+                    status: item.status
                 });
             });
-            await sendDistributionItems(items, selectedDealerCode);
-
+            const NotUrgentCount = _.filter(selectedDistributionData, function (item) { return item.status === enumerations.status.NotUrgent; });
+            if ((items.length > 1) && (NotUrgentCount.length === 0)) {
+                message.warning('En az 1 ürünün kalem durumunu kalabilir olarak seçmelisiniz.', 3);
+            }
+            else {
+                await sendDistributionItems(items, selectedDealerCode);
+            }
         }
     };
 
@@ -589,7 +602,7 @@ export default function () {
                     dealerCode: item.dealerCode,
                     unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : selectedQuantity),
                     plannedAmount: item.plannedAmount,
-                    distributionStatus:'Öncelikli',
+                    status:'Öncelikli',
                 })
             }
             localStorage.setItem('distributions', JSON.stringify(distributions));
@@ -878,9 +891,9 @@ export default function () {
 
         },
         {
-            title: "Dağıtım Durumu",
-            dataIndex: "distributionStatus",
-            key: "distributionStatus",
+            title: "Durumu",
+            dataIndex: "status",
+            key: "status",
             width: 150,
             render: (text, record) => (
                 <Select
@@ -888,8 +901,8 @@ export default function () {
                 optionFilterProp="children"
                 defaultValue={text}
             >
-                <Option value="Öncelikli">Öncelikli</Option>
-                <Option value="Kalabilir">Kalabilir</Option>
+                <Option value="Priority">Öncelikli</Option>
+                <Option value="NotUrgent">Kalabilir</Option>
             </Select>
               ),
         },
@@ -1006,7 +1019,7 @@ export default function () {
         if (value) {
             const index = _.findIndex(distributions, function (i) { return i.distributionLineId === distributionItem.distributionLineId });
             if (index > -1) {
-                distributions[index].distributionStatus = value;
+                distributions[index].status = value;
             }
             localStorage.setItem('distributions', JSON.stringify(distributions));
         }
@@ -1025,15 +1038,22 @@ export default function () {
     }
 
     function handleChangeDistributionDate(value, dateString) {
-        console.log('xxxx c',value);
+        if (dateString === '') { setDateValidation(false); }
+        else {
+            setDateValidation(true);
+        }
         setDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
     }
 
     function handleChangeTime(value, dateString) {
+        if (dateString === '') { setTimeValidation(false); }
+        else {
+            setTimeValidation(true);
+        }
         setTime(moment(dateString, format));
     }
-    function handleDescription(value) {
-        setDescription(value);
+    function handleDescription(e) {
+        setDescription(e.target.value);
     }
     function disabledMinutes() {
         var minutes = [];
@@ -1051,7 +1071,7 @@ export default function () {
     }
 
     function handleSubmitCheck(value) {
-        setSubmitButtonVisible(!value.target.checked);
+        setSpecification(value);
     }
     const onFinish = (fieldsValue) => {
         // Should format date value before submit.
@@ -1288,7 +1308,7 @@ export default function () {
                     maskClosable={false}
                     onCancel={handleCancel}
                     onOk={handleOk}
-                    okButtonProps={{ disabled: submitButtonVisible }}
+                    okButtonProps={{ disabled: specification }}
                     footer={null}
 
                 >
@@ -1303,7 +1323,7 @@ export default function () {
                             <Row>
                                 <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     <Form.Item name="driverName"
-                                    //    rules={[{ required: true, message: 'Şoför adı giriniz!' }]}
+                                        rules={[{ required: true, message: 'Şoför adı giriniz!' }]}
                                     >
                                         <label style={{
                                             fontSize: '14px', fontWeight: '500'
@@ -1320,7 +1340,7 @@ export default function () {
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     <Form.Item name="plate"
-                                      //  rules={[{ required: true, message: 'Plaka giriniz!' }]}
+                                        rules={[{ required: true, message: 'Plaka giriniz!' }]}
                                     >
                                         <label style={{
                                             fontSize: '14px', fontWeight: '500'
@@ -1336,7 +1356,7 @@ export default function () {
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     <Form.Item name="phone"
-                                        // rules={[{ required: true, message: 'Telefon giriniz!' }]}
+                                        rules={[{ required: true, message: 'Telefon giriniz!' }]}
                                     >
                                         <label style={{
                                             fontSize: '14px', fontWeight: '500'
@@ -1354,9 +1374,9 @@ export default function () {
                                
                                 <Form.Item name="date-picker">
                                         <label style={{
-                                            fontSize: '14px', fontWeight: '500'
+                                            fontSize: '14px', fontWeight: '500', color:dateValidation ===true ? 'black' : 'red'
                                         }}>
-                                            Tarih *
+                                            {dateValidation ===true ? 'Tarih *' : 'Tarih Giriniz!'}
                                             <DatePicker
                                                 placeholder="Zorunlu alan giriniz"
                                                 format={siteConfig.dateFormat}
@@ -1368,9 +1388,9 @@ export default function () {
                                 </Col>
                                 <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                     {<label style={{
-                                        fontSize: '14px', fontWeight: '500'
+                                        fontSize: '14px', fontWeight: '500', color:timeValidation ===true ? 'black' : 'red'
                                     }}>
-                                        Saat *
+                                            {timeValidation ===true ? 'Saat *' : 'Saat Giriniz!'}
                                 {
                                             <TimePicker placeholder="Zorunlu alan giriniz"
                                                 showNow={false} disabledMinutes={disabledMinutes} format={format} onChange={handleChangeTime} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
@@ -1379,16 +1399,17 @@ export default function () {
                                 </Col>
                             </Row>
                             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                    {<label style={{
-                                        fontSize: '14px', fontWeight: '500'
-                                    }}>
-                                        Açıklama
+                                {<label style={{
+                                    fontSize: '14px', fontWeight: '500'
+                                }}>
+                                Açıklama
                                 {
-                                            <TextArea onChange={handleDescription} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                            />
-                                            }
-                                    </label>}
-                                </Col>
+                                      
+                                    }
+                                </label>}
+                            </Col>
+                            <TextArea onChange={handleDescription} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '830px' : '100%' }}
+                                        />
                         </Box>
                         <Table
                             columns={summaryColumns}
@@ -1409,7 +1430,7 @@ export default function () {
 
                         <Row style={{ margin: '10px' }}>
                             <Col align="left" span={view !== 'MobileView' ? 12 : 0} >
-                                <Checkbox onChange={handleSubmitCheck}>Tarafınıza vermiş olduğumuz siparişlerden,listede bulunanları plakasını belirttiğimiz araca sarınız. Nakliye esnasında doğabilecek kaza,hırsızlık,cezalar,hasar vs. sorumluluk tarafımıza aittir.</Checkbox>
+                                <Checkbox onChange={handleSubmitCheck}>Tarafınıza vermiş olduğumuz siparişlerden,listede bulunanları plakasını belirttiğimiz araca sarınız. Nakliye esnasında doğabilecek kaza, hırsızlık, cezalar, hasar vs. sorumluluk tarafımıza aittir.</Checkbox>
                             </Col>
                             <Col align={'right'} span={view !== 'MobileView' ? 10 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                                 <Button key="back" type="primary" onClick={handleCancel}>
@@ -1418,7 +1439,7 @@ export default function () {
 
                             <Col htmlType="submit" align={'right'} span={view !== 'MobileView' ? 2 : 0}  >
                                 <Form.Item>
-                                    <Button loading={confirmLoading} htmlType="submit" disabled={submitButtonVisible} key="back" type="primary" onClick={handleOk}>
+                                    <Button loading={confirmLoading} htmlType="submit"  key="back" type="primary" onClick={handleOk}>
                                         Kaydet
                               </Button>
                                 </Form.Item>
