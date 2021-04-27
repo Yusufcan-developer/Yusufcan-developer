@@ -430,7 +430,7 @@ export default function () {
                 items.push({
                     distributionLineId: item.distributionLineId,
                     amount: item.quantity,
-                    status: item.status
+                    status: item.status,
                 });
             });
             const NotUrgentCount = _.filter(selectedDistributionData, function (item) { return item.status === enumerations.status.NotUrgent; });
@@ -510,7 +510,6 @@ export default function () {
                         quantity: selectedItem === true ? item.plannedAmount : quantity,
                         orderNo: item.orderNo,
                         distributionLineId: item.distributionLineId,
-                        status: item.status,
                         distributionNo: item.distributionNo,
                         addressDescription: item.addressDescription,
                         itemDescription: item.itemDescription,
@@ -594,7 +593,6 @@ export default function () {
                     quantity: selectedItem === true ? item.plannedAmount : selectedQuantity,
                     orderNo: item.orderNo,
                     distributionLineId: item.distributionLineId,
-                    status: item.status,
                     distributionNo: item.distributionNo,
                     addressDescription: item.addressDescription,
                     itemDescription: item.itemDescription,
