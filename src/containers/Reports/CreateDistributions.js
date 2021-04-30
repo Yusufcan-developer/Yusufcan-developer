@@ -9,7 +9,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 // import DatePicker from "@iso/components/uielements/datePicker";
 import Button from "@iso/components/uielements/button";
-import { Form, Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message, Alert, Checkbox, Tag, Input, DatePicker } from "antd";
+import { Form, Table, Row, Col, TreeSelect, Radio, InputNumber, Popover, Space, Modal, TimePicker, Tooltip, message, Alert, Checkbox, Tag, Input, DatePicker, Tabs } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import Collapse from "@iso/components/uielements/collapse";
 // import Input from '@iso/components/uielements/input';
@@ -50,6 +50,7 @@ const { RangePicker } = DatePicker;
 let sortingField;
 let sortingOrder;
 const format = 'HH:mm';
+const { TabPane } = Tabs;
 
 export default function () {
     document.title = "Dağıtım Listesi - Seramiksan B2B";
@@ -397,7 +398,7 @@ export default function () {
                     setDriverName();
                     setCarPlate();
                     setPhone();
-                    setDescription();
+                    setDescription('');
                     message.info(data.message, 8);
                     setSelectedRowKeys([]);
                     setSpecification(false);
@@ -425,7 +426,10 @@ export default function () {
         else {
             let items = [];
             let selectedDealerCode;
-            _.each(selectedDistributionData, (item) => {
+            let distributions = localStorage.getItem('distributions');
+            distributions = JSON.parse(distributions);
+            distributions = _.filter(distributions, function (i) { return i.quantity > 0 });         
+            _.each(distributions, (item) => {
                 selectedDealerCode = item.dealerCode;
                 items.push({
                     distributionLineId: item.distributionLineId,
@@ -433,7 +437,7 @@ export default function () {
                     status: item.status,
                 });
             });
-            const NotUrgentCount = _.filter(selectedDistributionData, function (item) { return item.status === enumerations.status.NotUrgent; });
+            const NotUrgentCount = _.filter(distributions, function (item) { return item.status === enumerations.status.NotUrgent; });
             if ((items.length > 1) && (NotUrgentCount.length === 0)) {
                 message.warning('En az 1 ürünün kalem durumunu kalabilir olarak seçmelisiniz.', 3);
             }
@@ -444,6 +448,7 @@ export default function () {
     };
 
     const edit = (record) => {
+        debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== record.dealerCode && i.quantity > 0 });
@@ -517,7 +522,7 @@ export default function () {
                         dealerCode: item.dealerCode,
                         unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : quantity),
                         plannedAmount: item.plannedAmount,
-                        distributionStatus:'Öncelikli'
+                        distributionStatus:enumerations.status.Priority
                     })
                 }
 
@@ -600,7 +605,7 @@ export default function () {
                     dealerCode: item.dealerCode,
                     unitWeight: item.unitWeight * (selectedItem === true ? item.plannedAmount : selectedQuantity),
                     plannedAmount: item.plannedAmount,
-                    status:'Öncelikli',
+                    status:enumerations.status.Priority,
                 })
             }
             localStorage.setItem('distributions', JSON.stringify(distributions));
@@ -717,12 +722,11 @@ export default function () {
             title: "Sipariş T.",
             dataIndex: "distributionOrderDate",
             key: "distributionOrderDate",
-            key: "toDate",
-            render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
             width: 120,
+            render: (distributionOrderDate) => moment(distributionOrderDate).format(siteConfig.dateFormat),
         },
         {
             title: "Adres Açıklama",
@@ -756,10 +760,9 @@ export default function () {
             key: "itemCode",
             // width: 120,
             ellipsis: true,
-            sorter: (a, b) => a.itemCode.length - b.itemCode.length,
-            sortOrder:
-                tableOptions.sortedInfo.columnKey === "itemCode" &&
-                tableOptions.sortedInfo.order
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'itemCode' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
         },
         {
             title: "Ürün Açıklaması",
@@ -841,6 +844,9 @@ export default function () {
                                         <InputNumber type="numeric" min={1} defaultValue={1} value={quantity} onChange={InputNumberOnchange} />
                                         <Button type="primary" onClick={() => addDistributionItem(record, undefined, rowIndex)}>Onayla</Button>
                                     </Space>
+                                    <Col span={16} align="middle">
+                                        <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{record.unit === 'M2' ? 'M2 : ' + numberFormat(parseInt(quantity) * record.minimumDistributableAmount) : ''}</span>
+                                    </Col>
                                 </div>
                             }
                             placement="left"
@@ -1407,7 +1413,7 @@ export default function () {
                                 </label>}
                             </Col>
                             <TextArea onChange={handleDescription} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '830px' : '100%' }}
-                                        />
+                            />
                         </Box>
                         <Table
                             columns={summaryColumns}
