@@ -118,6 +118,9 @@ export default function () {
         if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
             getAdress(token.dcode);
         }
+        return () => {
+            localStorage.removeItem('distributions');
+         }
     }, [pageIndex]);
 
     let searchUrl = queryString.parse(location.search);
@@ -421,7 +424,7 @@ export default function () {
             if (!time) { setTimeValidation(false); }
         }
         else if (specification === false) {
-            message.warning('Lütfen şartnameyi kabul olarak işaretleyiniz', 3);
+            message.warning('Lütfen sol alt köşede bulunan şartnameyi işaretleyiniz', 3);
         }
         else {
             let items = [];
