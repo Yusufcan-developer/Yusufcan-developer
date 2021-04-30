@@ -451,7 +451,6 @@ export default function () {
     };
 
     const edit = (record) => {
-        debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== record.dealerCode && i.quantity > 0 });
@@ -460,20 +459,42 @@ export default function () {
         } else {
             const item = _.find(distributions, function (i) { return i.distributionLineId === record.distributionLineId });
             if ((item) && (item.quantity > 0)) {
-                if (record.minimumDistributableAmount === 1) {
+                if(record.canBeSoldPartially===true){
+                if (record.minimumDistributableAmountInPartial === 1) {
                     setQuantity(numberFormat(item.quantity));
-                    setMaximumAmountControl(record.remainingDistributableAmount);
+                    setMaximumAmountControl(record.remainingDistributableAmountInPartial);
                     setModalVisible(true);
                 }
                 else {
-                    setQuantity(numberFormat(item.quantity / record.minimumDistributableAmount));
-                    setMaximumAmountControl(record.remainingDistributableAmount);
+                    setQuantity(numberFormat(item.quantity / record.minimumDistributableAmountInPartial));
+                    setMaximumAmountControl(record.remainingDistributableAmountInPartial);
                     setModalVisible(true);
                 }
-            } else {
-                setQuantity(numberFormat(record.remainingDistributableAmount));
-                setMaximumAmountControl(record.remainingDistributableAmount);
+            }
+            else{
+                if (record.minimumDistributableAmountInPallet === 1) {
+                    setQuantity(numberFormat(item.quantity));
+                    setMaximumAmountControl(record.remainingDistributableAmountInPallet);
+                    setModalVisible(true);
+                }
+                else {
+                    setQuantity(numberFormat(item.quantity / record.minimumDistributableAmountInPallet));
+                    setMaximumAmountControl(record.remainingDistributableAmountInPallet);
+                    setModalVisible(true);
+                }
+            }
+            } 
+            else {
+                if(record.canBeSoldPartially===true){
+                setQuantity(numberFormat(record.remainingDistributableAmountInPartial));
+                setMaximumAmountControl(record.remainingDistributableAmountInPartial);
                 setModalVisible(true);
+                }
+                else{
+                    setQuantity(numberFormat(record.remainingDistributableAmountInPallet));
+                    setMaximumAmountControl(record.remainingDistributableAmountInPallet);
+                    setModalVisible(true);
+                }
             }
             setEditingKey(record.itemCode);
             setOrderNo(record.orderNo);
@@ -575,27 +596,51 @@ export default function () {
                     distributions[index].quantity = 0;
                 }
                 else {
-                    if (item.minimumDistributableAmount === 1) {
+                    if(item.canBeSoldPartially===true){
+                    if (item.minimumDistributableAmountInPartial === 1) {
                         distributions[index].unitWeight = parseFloat(quantity) * item.unitWeight;
                         distributions[index].quantity = parseFloat(quantity);
                     }
                     else {
-                        distributions[index].unitWeight = parseFloat(quantity) * item.minimumDistributableAmount * item.unitWeight;
+                        distributions[index].unitWeight = parseFloat(quantity) * item.minimumDistributableAmountInPartial * item.unitWeight;
 
-                        distributions[index].quantity = parseFloat(quantity) * item.minimumDistributableAmount;
+                        distributions[index].quantity = parseFloat(quantity) * item.minimumDistributableAmountInPartial;
+                    }
+                }
+                    else{
+                        if (item.minimumDistributableAmountInPallet === 1) {
+                            distributions[index].unitWeight = parseFloat(quantity) * item.unitWeight;
+                            distributions[index].quantity = parseFloat(quantity);
+                        }
+                        else {
+                            distributions[index].unitWeight = parseFloat(quantity) * item.minimumDistributableAmountInPallet * item.unitWeight;
+    
+                            distributions[index].quantity = parseFloat(quantity) * item.minimumDistributableAmountInPallet;
+                        }
                     }
 
                 }
             } else {
                 let selectedQuantity;
                 let seletedUnitWeight;
-                if (item.minimumDistributableAmount === 1) {
+                if(item.canBeSoldPartially===true){
+                if (item.minimumDistributableAmountInPartial === 1) {
                     selectedQuantity = parseFloat(quantity);
                 }
                 else {
                     const amount = parseFloat(quantity);
-                    selectedQuantity = amount * item.minimumDistributableAmount;
+                    selectedQuantity = amount * item.minimumDistributableAmountInPartial;
                 }
+            }
+            else{
+                if (item.minimumDistributableAmountInPallet === 1) {
+                    selectedQuantity = parseFloat(quantity);
+                }
+                else {
+                    const amount = parseFloat(quantity);
+                    selectedQuantity = amount * item.minimumDistributableAmountInPallet;
+                }
+            }
                 distributions.push({
                     itemCode: item.itemCode,
                     quantity: selectedItem === true ? item.plannedAmount : selectedQuantity,
@@ -837,6 +882,10 @@ export default function () {
             ellipsis: true,
             render: (_, record, rowIndex) => {
                 const editable = isEditing(record);
+                let minimumDistributableAmount=0;
+                if(record.canBeSoldPartially===true){
+                    minimumDistributableAmount=record.minimumDistributableAmountInPartial
+                }else(minimumDistributableAmount= record.minimumDistributableAmountInPallet);
                 return editable ? (
                     <span>
                         <Popover
@@ -848,7 +897,7 @@ export default function () {
                                         <Button type="primary" onClick={() => addDistributionItem(record, undefined, rowIndex)}>Onayla</Button>
                                     </Space>
                                     <Col span={16} align="middle">
-                                        <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{record.unit === 'M2' ? 'M2 : ' + numberFormat(parseInt(quantity) * record.minimumDistributableAmount) : ''}</span>
+                                        <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{record.unit === 'M2' ? 'M2 : ' + numberFormat(parseInt(quantity) * minimumDistributableAmount) : ''}</span>
                                     </Col>
                                 </div>
                             }
