@@ -120,7 +120,7 @@ export default function () {
         }
         return () => {
             localStorage.removeItem('distributions');
-         }
+        }
     }, [pageIndex]);
 
     let searchUrl = queryString.parse(location.search);
