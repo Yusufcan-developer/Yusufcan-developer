@@ -89,6 +89,7 @@ export default function SignIn() {
             if (data.isSuccessful === false) { return loginError(); }
             else {
               localStorage.removeItem('activeUser');
+              localStorage.removeItem('distributions');
               const siteMode = getSiteMode();
               dispatch(login(data.token));
               const token = jwtDecode(localStorage.getItem("id_token"));
