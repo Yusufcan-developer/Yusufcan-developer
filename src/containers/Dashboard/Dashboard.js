@@ -58,7 +58,7 @@ export default function Dashboard() {
               <Content className="isomorphicContent" style={styles.content}>
                 {siteMode === enumerations.SiteMode.DeliverysPoint ?
                   <Col style={{ width: '100%' }} align="right">
-                    <Tag icon={<CarOutlined />} style={{ margin: '5px' }} color="magenta">Adrese teslim modundasız</Tag>
+                    <Tag icon={<CarOutlined />} style={{ margin: '5px' }} color="magenta">Parçalı sevkiyat modundasınız</Tag>
                   </Col> : null}
                 <DashboardRoutes />
               </Content>
