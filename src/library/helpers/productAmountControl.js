@@ -1,7 +1,6 @@
 import history from '@iso/lib/helpers/history';
 import { message } from "antd";
-export const productAmountControl = (product, isPartial, selectedQuantity) => {  
-    
+export const productAmountControl = (product, isPartial, selectedQuantity) => {
         if (isPartial) {
             if (product.maxAvailableBox < selectedQuantity) { message.error('Toplam izin verilen sepet miktarına ulaştınız!'); return product.maxAvailableBox }
             { return -1; }
