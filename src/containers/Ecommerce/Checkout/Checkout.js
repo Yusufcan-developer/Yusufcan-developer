@@ -11,12 +11,14 @@ import SingleOrderInfo from './SingleOrder';
 import { OrderTable } from './Checkout.styles';
 import InputBox from './InputBox';
 import CascaderBox from './CascaderBox';
+import SelectBox from './SelectBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
 import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
 import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import { InputBoxWrapper } from './Checkout.styles';
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
@@ -42,6 +44,8 @@ moment.locale('tr')
 var jwtDecode = require('jwt-decode');
 
 let createOrderNo = 'xxxx';
+const cityChildren = [];
+let townChildren = [];
 export default function () {
   const queryString = require('query-string');
   let distrinctArray;
@@ -53,7 +57,10 @@ export default function () {
   const [district, setDistrict] = useState('');
   const [km, setKm] = useState();
   const [cities, setCities] = useState();
+  const [towns, setTowns] = useState();
   const [optionsCities, setOptions] = useState();
+  const [lookupCities,setLookupCities]=useState();
+  const [cityAndTown, setCityAndTow] = useState();
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
   const [form] = Form.useForm();
@@ -72,6 +79,7 @@ export default function () {
   const [address2, setAddress2] = useState();
   const [includeTransportation, setIncludeTransportation] = useState(false);
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
+  const [transportation,setTransportation] = useState('');
   const [days, setDays] = useState([]);
   const [userId, setUserId] = useState();
   const history = useHistory();
@@ -183,6 +191,8 @@ export default function () {
   function onCreateAddress() {
     setCity();
     setTown();
+    setTowns();
+    setCities();
     setAddressTitle();
     setAddress1();
     setAddress2();
@@ -213,7 +223,7 @@ export default function () {
   //Save order persmission button disabled
   function saveOrderPermissions() {
     if (siteMode === enumerations.SiteMode.DeliverysPoint) {
-      if ((addressCode === '') && (hasOrderSavePermission) || (typeof shippingType === 'undefined')) {
+      if ((addressCode === '') && (hasOrderSavePermission) || (transportation === '')) {
         return true
       }
       else { return false }
@@ -225,6 +235,7 @@ export default function () {
 
   //Nakliye şekli seçme işlemi
   async function shippingMethodHandleChange(value) {
+    setTransportation(value);
     if (value === 'IncludingShipping') {
       setIncludeTransportation(true);
       getInitData(userId, city, town, true);
@@ -321,6 +332,11 @@ export default function () {
       .then(data => {
         if (data !== 'Unauthorized1') {
           setOptions(data);
+          setCityAndTow(data);
+          _.each(data, (item) => {
+            cityChildren.push(<Option key={item.value}>{item.value}</Option>);
+          });
+          setLookupCities(cityChildren)
         }
       })
       .catch();
@@ -454,9 +470,9 @@ export default function () {
   async function postSaveAddress() {
     const token = jwtDecode(localStorage.getItem("id_token"));
     const dealerCodes = token.dcode;
-    if ((typeof addressTitle === 'undefined') || (typeof address1 === 'undefined') || (typeof city === 'undefined') || (typeof town === 'undefined') || (typeof address2 === 'undefined')) { return message.error('Lütfen zorunlu alanları giriniz.'); }
+    if ((typeof addressTitle === 'undefined') || (typeof address1 === 'undefined') || (typeof cities === 'undefined') || (typeof towns === 'undefined') || (typeof address2 === 'undefined')) { return message.error('Lütfen zorunlu alanları giriniz.'); }
     setConfirmLoading(true);
-    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": city, "town": town, "district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
+    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": cities, "town": towns, "district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
     const requestOptions = {
       method: "POST",
       headers: {
@@ -471,7 +487,7 @@ export default function () {
         return status;
       })
       .then(data => {
-        setAdressItem(data.addressTitle); setPhone(data.phone); setCity(data.city); setAddressCode(data.addressCode); setTown(data.town);
+        setAdressItem(data.addressTitle); setPhone(data.phone); setCities(data.city); setAddressCode(data.addressCode); setTowns(data.town);
         setVisible(false);
         setCreateAddress(false);
         message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
@@ -665,25 +681,27 @@ export default function () {
   if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
     createAddressButtonVisible = false;
   }
-
-  async function onChangeCityAndTown(value, selectedOptions) {
-    if (typeof value !== undefined) { setCity(value[0]); }
-    if (value.length > 1) {
-      setCities(value); setTown(value[1]); //setDistrict(value[2]);
-      //getDistricts(value[0],value[1])
-    } else { setCities(""); }
+  //Change Status Type
+  function onChangeHandleCity(value) {
+    townChildren=[];
+    setCities(value);
+    var townList;
+    if (value !== '') {
+      _.each(cityAndTown, (item) => {
+        if (item.value === value) {
+          return townList = item.children
+        }
+      });
+      _.each(townList, (item) => {
+        townChildren.push(<Option key={item.value}>{item.value}</Option>);
+      });
+      setTowns(townChildren)
+    }
+  }
+  function onChangeHandleTown(value) {
+    setTowns(value);  
   };
 
-  const loadData = selectedOptions => {
-    const targetOption = selectedOptions[selectedOptions.length - 1];
-    // targetOption.loading = true;
-    // setTimeout(() => {
-    //   targetOption.loading = false;
-    //   targetOption.children =
-    //     distrinctArray;
-    //   setOptions([...optionsCities]);
-    // }, 1000);
-  };
   const view = viewType('Reports');
 
   return (
@@ -734,7 +752,7 @@ export default function () {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCity(record.city); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); 
+                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCities(record.city);setTowns(record.town); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); 
                           //getInitData(userId, record.city, record.town, true);
                           },
                         };
@@ -777,18 +795,45 @@ export default function () {
                         important
                       />
                     </Fieldset>
-                    <Fieldset>
-                      <CascaderBox
-                        label={'İl / İlçe'}
-                        placeholder={'İl/İlçe seçiniz'}
-                        options={optionsCities}
-                        onChange={onChangeCityAndTown}
+                    <InputBoxWrapper className="isoInputBox">
+                      <label>
+                        {'İl'}
+                        {<span className="asterisk">*</span>}
+                      </label>
+                      <Select
+                        mode={"single"}
                         style={{ width: '100%' }}
-                        loadData={loadData}
+                        placeholder="İl Seçiniz"
                         value={cities}
-                        changeOnSelect
-                        important
-                      />
+                        showSearch
+                        onChange={onChangeHandleCity}
+                        filterOption={(input, option) =>
+                          option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                        }
+                      >
+                        {cityChildren}
+                      </Select>
+                    </InputBoxWrapper>
+                    <Fieldset>
+                    <InputBoxWrapper className="isoInputBox">
+                      <label style={{marginTop:'15px'}}>
+                        {'İlçe'}
+                        {<span className="asterisk">*</span>}
+                      </label>
+                      <Select
+                        mode={"single"}
+                        style={{ width: '100%' }}
+                        placeholder="İlçe Seçiniz"
+                        value={towns}
+                        showSearch
+                        onChange={onChangeHandleTown}
+                        filterOption={(input, option) =>
+                          option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                        }
+                      >
+                        {townChildren}
+                      </Select>
+                    </InputBoxWrapper>
                     </Fieldset>
                     <Fieldset>
                       <InputBox
@@ -877,7 +922,7 @@ export default function () {
                     optionFilterProp="children"
                   >
                     <Option value="IncludingShipping">Nakliye Dahil İstiyorum</Option>:
-                      <Option value="dontWantShipping">Nakliye İstemiyorum</Option>
+                    <Option value="dontWantShipping">Nakliye İstemiyorum</Option>
                   </Select>
                 </div></React.Fragment>
                     : null} 
@@ -911,12 +956,12 @@ export default function () {
                   <div className="isoInputFieldset">
                     <InputBox label={<IntlMessages id="checkout.billingform.city" />}
                       onChange={event => onChangeCity(event)}
-                      value={city}
+                      value={cities}
                       disabled
                     />
                     <InputBox label={<IntlMessages id="checkout.billingform.town" />}
                       onChange={event => onChangeAddressTown(event)}
-                      value={town}
+                      value={towns}
                       disabled
                     />                  
                     {/* <InputBox label={<IntlMessages id="checkout.billingform.km" />}
