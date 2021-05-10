@@ -72,6 +72,7 @@ export default function () {
   const [address2, setAddress2] = useState();
   const [includeTransportation, setIncludeTransportation] = useState(false);
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
+  const [transportation,setTransportation] = useState('');
   const [days, setDays] = useState([]);
   const [userId, setUserId] = useState();
   const history = useHistory();
@@ -212,8 +213,9 @@ export default function () {
 
   //Save order persmission button disabled
   function saveOrderPermissions() {
+    debugger
     if (siteMode === enumerations.SiteMode.DeliverysPoint) {
-      if ((addressCode === '') && (hasOrderSavePermission) || (typeof shippingType === 'undefined')) {
+      if ((addressCode === '') && (hasOrderSavePermission) || (transportation === '')) {
         return true
       }
       else { return false }
@@ -225,6 +227,7 @@ export default function () {
 
   //Nakliye şekli seçme işlemi
   async function shippingMethodHandleChange(value) {
+    setTransportation(value);
     if (value === 'IncludingShipping') {
       setIncludeTransportation(true);
       getInitData(userId, city, town, true);
@@ -877,7 +880,7 @@ export default function () {
                     optionFilterProp="children"
                   >
                     <Option value="IncludingShipping">Nakliye Dahil İstiyorum</Option>:
-                      <Option value="dontWantShipping">Nakliye İstemiyorum</Option>
+                    <Option value="dontWantShipping">Nakliye İstemiyorum</Option>
                   </Select>
                 </div></React.Fragment>
                     : null} 
