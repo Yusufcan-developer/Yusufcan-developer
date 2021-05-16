@@ -107,6 +107,9 @@ export default {
       putCacheRefresh: apiUrl + 'security/reset-cache',
 
     },
+    product:{
+      productDetail: apiUrl + 'b2b/products/'
+    },
     image: {
       getProductsOfImages: apiUrl + 'images/products-for-images',
       getTypes: apiUrl + 'images/types',

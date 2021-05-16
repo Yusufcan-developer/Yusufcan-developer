@@ -78,6 +78,10 @@ const SearchComponent = () => {
   const [plusButtonDisable, setPlusButtonDisable] = useState(false);
   const [isPointAddress, setIsPointAddress] = useState();
   const [ilgiliUrunAmount, setIlgiliUrunAmount]=useState();
+  const [dependentProductCodes,setDependentProductCodes]=useState();
+  const [relatedProductCodes,setRelatedProductCodes]=useState();
+  const [dependentProducts, setDependentProducts]=useState([]);
+  const [relatedProducts, setRelatedProducts]=useState([]);
 
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
@@ -1065,8 +1069,8 @@ const SearchComponent = () => {
   };
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
+    debugger
     if(searchSiteMode === enumerations.SiteMode.DeliverysPoint){isPartial=true;}
-
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
     const token = jwtDecode(localStorage.getItem("id_token"));
@@ -1075,7 +1079,7 @@ const SearchComponent = () => {
       if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
     }
     if (selectedQuantity === 0) { selectedQuantity = 1;}
-    if ((product.canBeSoldPartially) && (!orderPartialAddTobox) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    if ((product.canBeSoldPartially) && (!orderPartialAddTobox) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint)|| (product.hasDependentOrRelatedProducts===true)&& (partialQuantity!==true)) { getProductDetail(product.itemCode);getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
     else {
       inputNumberShowOrHide(product);
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
@@ -1117,17 +1121,21 @@ const SearchComponent = () => {
   };
 
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
-  function handleCancel() {
-    const popupClose=calculatePopupQuantity();
+  function handleCancel(item) {
+    const popupClose = calculatePopupQuantity();
 
-    if(popupClose){setPartialQuantity(false);}
-    else{message.warning('Eklemiş olduğunuz ana ürün sayısı kadar bağlantılı ürün eklemelisiniz');}
+    if (popupClose) {
+      setPartialQuantity(false);
+      setRelatedProducts([]);
+      setDependentProducts([]);
+    }
+    else { message.warning('Eklemiş olduğunuz ana ürün sayısı kadar bağlantılı ürün eklemelisiniz'); }
   }
 
   //Popup içerisinde girilen ana ürün ile bağıl ve ilgili ürünlerin miktar toplamları hesaplaması.
   function calculatePopupQuantity() {
     let control = false;
-    const urunlerArrayData = ["C001202S", "C001203", "C001202"];
+    const urunlerArrayData = relatedProductCodes.concat(dependentProductCodes);
     let reduxProductBox = localStorage.getItem('cartProductQuantity');
     reduxProductBox = JSON.parse(reduxProductBox);
 
@@ -1156,6 +1164,37 @@ const SearchComponent = () => {
     }
 
     return amountControl;
+  }
+
+  //Get Product Detail
+  async function getProductDetail(itemCode) {
+    let productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+
+    await fetch(`${siteConfig.api.products.getProductDetail}${itemCode}?siteMode=${siteMode}&includeDependentAndRelatedProductDetails=true`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        debugger
+        if (data && data.dependentProducts!==null) {
+        setDependentProducts(data.dependentProducts);
+        setDependentProductCodes(data.dependentProductCodes);        
+        }
+        if (data && data.relatedProducts!==null) {
+        setRelatedProducts(data.relatedProducts);
+        setRelatedProductCodes(data.relatedProductCodes);  
+        }
+      })
+      .catch();
+    return productInfo;
   }
   //Get Warehouse Amount Data
   async function getWarehouseList(itemCode) {
@@ -1483,7 +1522,7 @@ const SearchComponent = () => {
                         </div>
                         {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
                         
-                        {1===1 ?
+                        {item.hasDependentOrRelatedProducts===true ?
                         partialQuantity === true & item.itemCode === selectedItemCode & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Modal
                             title={item.itemCode + ' - ' + item.description}
@@ -1559,7 +1598,9 @@ const SearchComponent = () => {
                                 </Form.Item>
                               :null}
                               </div>
-                              <br /> {siteMode === enumerations.SiteMode.DeliverysPoint ?
+                              <br /> 
+                              {/* {siteMode !== enumerations.SiteMode.DeliverysPoint ? */}
+                              {item.canBeSoldPartially===true ?
                               <Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
                                 <Row align="middle">
                                   <Col span={4} align="right">
@@ -1611,7 +1652,7 @@ const SearchComponent = () => {
             <span>Bağlantılı Ürünler</span>
             <Scrollbar style={{ height: 500 }}><Box> 
                                   <Row gutter={[24, 8]}>
-                                    {data.map((item) => (
+                                    {relatedProducts.map((item) => (
                                       <SingleCardWrapper style={style} xs={{ span: 24 }} sm={{ span: 24 }} lg={{ span: 24 }} >
                                         <React.Fragment>
                                           {item.campaignCode === '' ?
@@ -1702,7 +1743,7 @@ const SearchComponent = () => {
           <span>İlgili Ürünler</span>
                                 <Scrollbar style={{ height: 500 }}><Box>
                                   <Row gutter={[24, 8]}>
-                                    {data.map((item) => (
+                                    {dependentProducts.map((item) => (
                                       <SingleCardWrapper style={style} xs={{ span: 24 }} sm={{ span: 24 }} lg={{ span: 24 }} >
                                         <React.Fragment>
                                           {item.campaignCode === '' ?
