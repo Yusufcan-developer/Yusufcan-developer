@@ -53,7 +53,7 @@ const format = 'HH:mm';
 const { TabPane } = Tabs;
 
 export default function () {
-    document.title = "Dağıtım Listesi - Seramiksan B2B";
+    document.title = "Dağıtım Planlama - Seramiksan B2B";
 
     const children = [];
     const Option = SelectOption;
