@@ -58,6 +58,11 @@ export default {
             leftIcon: 'ion-android-mail',
           },
           {
+            key: 'plan/distribution',
+            label: 'sidebar.planDistributions',
+            leftIcon: 'ion-android-mail',
+          },
+          {
             key: 'reports/salesGoals',
             label: 'sidebar.salesGoals',
             leftIcon: 'ion-android-mail',
@@ -158,6 +163,11 @@ export default {
             leftIcon: 'ion-android-mail',
           },
           {
+            key: 'plan/distribution',
+            label: 'sidebar.planDistributions',
+            leftIcon: 'ion-android-mail',
+          },
+          {
             key: 'reports/salesGoals',
             label: 'sidebar.salesGoals',
             leftIcon: 'ion-android-mail',
@@ -239,6 +249,11 @@ export default {
             leftIcon: 'ion-android-mail',
           },
           {
+            key: 'plan/distribution',
+            label: 'sidebar.planDistributions',
+            leftIcon: 'ion-android-mail',
+          },
+          {
             key: 'reports/salesGoals',
             label: 'sidebar.salesGoals',
             leftIcon: 'ion-android-mail',
@@ -316,6 +331,11 @@ export default {
           {
             key: 'reports/distributions',
             label: 'sidebar.distributions',
+            leftIcon: 'ion-android-mail',
+          },
+          {
+            key: 'plan/distribution',
+            label: 'sidebar.planDistributions',
             leftIcon: 'ion-android-mail',
           },
           {
@@ -400,6 +420,11 @@ export default {
               leftIcon: 'ion-android-mail',
             },
             {
+              key: 'plan/distribution',
+              label: 'sidebar.planDistributions',
+              leftIcon: 'ion-android-mail',
+            },
+            {
               key: 'reports/salesGoals',
               label: 'sidebar.salesGoals',
               leftIcon: 'ion-android-mail',
@@ -473,6 +498,11 @@ export default {
             {
               key: 'reports/accounts/',
               label: 'sidebar.customerList',
+              leftIcon: 'ion-android-mail',
+            },
+            {
+              key: 'plan/distribution',
+              label: 'sidebar.planDistributions',
               leftIcon: 'ion-android-mail',
             },
             {
