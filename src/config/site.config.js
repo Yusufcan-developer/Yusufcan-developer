@@ -1,5 +1,5 @@
-const apiUrl = 'https://b2b.seramiksan.com.tr/b2b/api/';
-// const apiUrl = 'http://localhost:5000/api/';
+//const apiUrl = 'https://b2b.seramiksan.com.tr/b2b/api/';
+const apiUrl = 'http://localhost:5000/api/';
 
 export default {
   siteName: 'SERAMİKSAN B2B',
@@ -107,8 +107,10 @@ export default {
       putCacheRefresh: apiUrl + 'security/reset-cache',
 
     },
-    product:{
-      productDetail: apiUrl + 'b2b/products/'
+    product: {
+      productDetail: apiUrl + 'b2b/products/',
+      postProductRelation: apiUrl + 'b2b/products/relation',
+      deleteProductRelation: apiUrl +'b2b/products/relation/{mainProductCode}/{subsidiaryProductCode}'
     },
     image: {
       getProductsOfImages: apiUrl + 'images/products-for-images',

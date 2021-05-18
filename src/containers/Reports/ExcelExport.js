@@ -3,6 +3,7 @@ import "antd/dist/antd.css";
 import ExportJsonExcel from "js-export-excel";
 import _ from 'underscore';
 import moment from 'moment';
+import siteConfig from "@iso/config/site.config";
 
 export default (columns, data, fileName, dataDetail, detailColumns,groupType) => {
   var option = {};
@@ -32,7 +33,7 @@ export default (columns, data, fileName, dataDetail, detailColumns,groupType) =>
       })
       if (dateTypeColumns.length > 0) {
         _.each(dateTypeColumns, (itemDateColumn) => {
-          item[itemDateColumn] = ((moment(item[itemDateColumn]).toDate()))
+          item[itemDateColumn] = (moment(item[itemDateColumn]).format(siteConfig.dateFormat))
         });
       }
       dataTable.push(item);

@@ -1,15 +1,13 @@
 
 import React from 'react';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
-import Uppy from '@uppy/core';
-import { Dashboard } from '@uppy/react';
 import "@uppy/core/dist/style.css";
 import "@uppy/dashboard/dist/style.css";
 import turkishLocale from '@uppy/locales/lib/tr_TR';
 import * as _ from 'underscore';
 import { ReactSortable } from "react-sortablejs";
 import { Form } from 'antd';
-import { Input, Card, Modal, Button, Row, Col, Select, message, Divider, Popconfirm, Tag, Badge, Tabs } from 'antd';
+import { Card, Button, Row, Col, Select, message, Popconfirm, Tag, Tabs, Radio } from 'antd';
 import { DeleteFilled, DragOutlined } from '@ant-design/icons';
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
@@ -20,7 +18,6 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import enumerations from "../../config/enumerations";
 import '../User/Image.css';
 
-const { TextArea } = Input;
 const { Option } = Select;
 const { TabPane } = Tabs;
 const { Meta } = Card;
@@ -32,89 +29,31 @@ class ImageUpload extends React.Component {
 
         this.state = {
             productList: [],
-            imageTypes: [],
             productImages: [],
-            filesUppy: [],
-            filesToSend: [],
             uploadFormModel: [],
-            base64Str: [],
             categoricalImageList: [],
             list: [],
             productCode: null,
             otherProductCode: null,
-            otherProductDetail:null,
-            productType:null,
+            otherProductDetail: null,
+            productType: null,
             isDialogOpen: false,
             btnUpdateOrder: false,
             dialogImageId: 0,
             draggedItem: {},
-            productTypeTitle: 'Bağıl Ürün'
+            productTypeTitle: 'Bağlı Ürün',
+            productRelatedTypeTab: enumerations.ProductRelationTypestring.Dependent,
+            ProductRelationType: enumerations.ProductRelationTypestring.None,
+            dependentProducts: [],
+            relatedProducts: [],
         }
         this.sendImagesThrottled = _.throttle(this.onFinishSaveForm, 5000);
         this.updateImageThrottled = _.throttle(this.onFinishUpdateForm, 5000);
         this.updateSortedImagesThrottled = _.throttle(this.updateSortedImages, 5000);
 
-        this.setUppy()
-    }
-
-    setUppy = () => {
-        this.uppy = new Uppy({
-            meta: { type: 'image' },
-            restrictions: {
-                maxNumberOfFiles: 10,
-                maxFileSize: 1000000000,
-                minNumberOfFiles: 1,
-                allowedFileTypes: ['image/*'],
-            },
-            locale: turkishLocale,
-            id: 'uppy',
-            autoProceed: false,
-            debug: true
-        })
-            .on("upload-error", (file, error) => {
-                message.error(error)
-            })
-            .on("complete", async result => {
-                this.setState({ filesUppy: [], base64Str: [] })
-                const countFile = (result.successful).length;
-                if (countFile > 0) {
-                    for (let count = 0; count < countFile; count++) {
-                        const file = result.successful[count].data;
-                        const { filesUppy } = this.state;
-                        const tmp = filesUppy.slice();
-                        tmp.push(file);
-
-                        this.setState({ filesUppy: tmp });
-                        await this.getBase64(file)
-                    }
-                    this.setImageModel()
-                }
-            })
-    }
-
-    async getBase64(file) {
-        let result = await this.getBase64Async(file);
-
-        const { base64Str } = this.state;
-        const tmp = base64Str.slice();
-        tmp.push({ "str": result });
-        this.setState({ base64Str: tmp })
-    }
-
-    getBase64Async(file) {
-        return new Promise((resolve, reject) => {
-            let reader = new FileReader();
-            reader.readAsDataURL(file);
-
-            reader.onload = () => {
-                resolve(reader.result)
-            }
-            reader.onerror = reject;
-        })
     }
 
     componentWillUnmount() {
-        this.uppy.close()
         this.sendImagesThrottled.cancel();
         this.updateImageThrottled.cancel();
         this.updateSortedImagesThrottled.cancel();
@@ -122,42 +61,29 @@ class ImageUpload extends React.Component {
 
     componentDidMount() {
         this.getProducts();
-        this.getImageTypes();
-        document.title = "Ürün Fotoğrafları - Seramiksan B2B";
+        document.title = "Bağlı ve İlgili Ürün Ekleme - Seramiksan B2B";
     }
 
     getProducts = () => {
+        const reqBody = { "pageIndex": 0, "pageCount": 3500 };
+
         const requestOptions = {
-            method: "GET",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-            }
+            },
+            body: JSON.stringify(reqBody)
+
         };
-        fetch(siteConfig.api.image.getProductsOfImages, requestOptions)
+        fetch(siteConfig.api.products.postProducts, requestOptions)
             .then(response => response.json())
             .then(products => {
-                this.setState({ productList: products })
-            }).catch(error => console.log(error));
-    }
-
-    getImageTypes = () => {
-        const requestOptions = {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-            }
-        };
-        fetch(siteConfig.api.image.getTypes, requestOptions)
-            .then(response => response.json())
-            .then(imageTypes => {
-                this.setState({ imageTypes: imageTypes })
+                this.setState({ productList: products.data })
             }).catch(error => console.log(error));
     }
 
     getProductImages = async productCode => {
-        const { imageTypes } = this.state;
         const requestOptions = {
             method: "GET",
             headers: {
@@ -165,30 +91,27 @@ class ImageUpload extends React.Component {
                 Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
             }
         };
-        await fetch(siteConfig.api.image.getProductImages.replace('{productCode}', productCode), requestOptions)
+        await fetch(`${siteConfig.api.products.getProductDetail}${productCode}?includeDependentAndRelatedProductDetails=true`, requestOptions)
             .then(response => {
                 const status = apiStatusManagement(response);
                 return status;
             })
-            .then(images => {
-                var categoricalImages = [];
-                _.each(imageTypes, function (imageType) {
-                    let list = _.filter(images, (image) => image.imageType.includes(imageType.imageTypeName));
-                    list = _.map(list, (image) => _.extend({ 'canBeMainImage': imageType.isMainImageAllowed }, image))
-                    categoricalImages.push(list);
-                });
+            .then(data => {
                 this.setState({
-                    productImages: images,
-                    categoricalImageList: categoricalImages,
+                    productImages: data,
+                    dependentProducts: data.dependentProducts,
+                    relatedProducts: data.relatedProducts,
                     productCode: productCode
                 });
             }).catch(error => console.log(error));
     }
-    getProductType= type  => {
-        debugger
-        this.setState({productType : type});
+
+    getProductRelationType = type => {
+        this.setState({ ProductRelationType: type.target.value });
     };
-    getProductDetail= async otherProductCode  => {
+
+    //Ürün detayı getirme
+    getProductDetail = async otherProductCode => {
         // const { imageTypes } = this.state;
         const requestOptions = {
             method: "GET",
@@ -217,6 +140,8 @@ class ImageUpload extends React.Component {
                 });
             }).catch(error => console.log(error));
     }
+
+    //Diğer Ürünü getirme işlemi
     getOtherProductImages = async otherProductCode => {
         const { imageTypes } = this.state;
         const requestOptions = {
@@ -246,88 +171,82 @@ class ImageUpload extends React.Component {
             }).catch(error => console.log(error));
     }
 
-    //api' ye dosya gönderme
-    sendImageModel = async e => {
-        const { filesToSend } = this.state;
+    //ilişkili ürün kaydetme
+    saveProductRelation = async e => {
+        debugger
+        const { otherProductCode, productCode, ProductRelationType } = this.state;
+        if ((otherProductCode) && (productCode) && (ProductRelationType !== enumerations.ProductRelationTypestring.None)) {
+            const reqBody = { "subsidiaryProductCode": otherProductCode, "mainProductCode": productCode, "relationType": ProductRelationType };
 
-        const key = 'upload';
-        message.loading({ content: 'Kaydediliyor...', key })
+            await fetch(siteConfig.api.product.postProductRelation,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
+                    },
+                    body: JSON.stringify(reqBody)
+                }).then(response => {
+                    const status = apiStatusManagement(response);
+                    return status;
+                })
+                .then((data) => setTimeout(() => {
+                    if (data.isSuccessful === false) {
+                        const getMessage = data.message;
+                        message.warning({ content: 'kaydetme işlemi başarısızdır. ' + data.message, getMessage, duration: 2 })
+                        this.setState({
+                            otherProductDetail: [],
+                            ProductRelationType: enumerations.ProductRelationTypestring.None
+                        });
+                    } else {
+                        message.success({ content: 'başarıyla kaydedildi', otherProductCode, duration: 2 })
+                        // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Add, filesToSend.ProductCode + ' fotoğraf eklendi');
+                        this.setState({
+                            dependentProducts: data.dependentProducts,
+                            relatedProducts: data.relatedProducts,
+                            otherProductDetail: [],
+                            ProductRelationType: enumerations.ProductRelationTypestring.None
+                        });
+                    }
+                })
 
-        if (filesToSend.length > 0) {
-            for (var i in filesToSend) {
-                var ImageUploadModel = filesToSend[i];
-                await fetch(siteConfig.api.image.uploadImage,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'Content-type': 'application/json',
-                            'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
-                        },
-                        body: JSON.stringify(ImageUploadModel)
-                    })
-                    .then((data) => setTimeout(() => {
-                        message.success({ content: 'Dosya başarıyla kaydedildi', key, duration: 2 })
-                        postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Add, filesToSend.ProductCode + ' fotoğraf eklendi');
+                ).catch((err) => setTimeout(() => {
+                    message.error({ content: 'İşlem başarısız ', otherProductCode, duration: 2 })
+                }));
 
-                    }, 250)
-
-                    ).catch((err) => setTimeout(() => {
-                        message.error({ content: 'İşlem başarısız ', key, duration: 2 })
-                    }, 250));
-                this.getProductImages(this.state.productCode)
-            }
+            this.onReset();
         }
-        this.setState({
-            filesUppy: [],
-            filesToSend: [],
-            base64Str: [],
-            uploadFormModel: []
-        });
-        this.onReset();
-        this.setUppy();
     }
 
-    setImageModel = () => {
-        const { filesUppy, base64Str, filesToSend, uploadFormModel } = this.state;
+    //İlişkili ürün silme
+    deleteProductRelation = async value => {
+        const { productCode } = this.state;
 
-        for (var i in filesUppy) {
-
-            let imageInfo = {
-                FileName: filesUppy[i].name,
-                Base64Str: base64Str[i].str,
-                Size: filesUppy[i].size,
-                Description: uploadFormModel.Description,
-                ProductCode: uploadFormModel.ProductCode,
-                ImageTypeId: uploadFormModel.ImageTypeId
-            };
-
-            filesToSend.push(imageInfo);
-            this.setState({
-                filesToSend: filesToSend
-            })
-        }
-        this.sendImageModel();
-
-    }
-
-    deleteImage = async value => {
         const key = 'delete';
-        message.loading({ content: 'Siliniyor...', key })
-
-        await fetch(siteConfig.api.image.deleteImage + value, {
+        // message.loading({ content: 'Siliniyor...', key })
+        let newSaveOrderUrl = siteConfig.api.product.deleteProductRelation.replace('{mainProductCode}', productCode);
+        newSaveOrderUrl = newSaveOrderUrl.replace('{subsidiaryProductCode}', value);
+        await fetch(newSaveOrderUrl, {
             method: 'DELETE',
             headers: {
                 'Content-type': 'application/json',
                 'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
             }
+        }).then(response => {
+            const status = apiStatusManagement(response);
+            return status;
         })
             .then(data => setTimeout(() => {
-                message.success({ content: 'Fotoğraf başarıyla silindi', key, duration: 2 })
-                postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, value + ' fotoğraf silindi');
+                if (data.isSuccessful === false) {
+                    const getMessage = data.message;
+                    message.warning({ content: 'silme işlemi başarısızdır. ' + data.message, getMessage, duration: 2 })
+                } else {
+                    message.success({ content: 'silme başarıyla gerçekleştirildi.', value, duration: 2 })
+                }
 
             }, 250))
             .catch((err) => setTimeout(() => {
-                message.error({ content: 'Fotoğraf silinemedi', key, duration: 2 })
+                message.error({ content: 'ürün silinemedi', key, duration: 2 })
             }, 250));
 
         this.getProducts()
@@ -346,75 +265,15 @@ class ImageUpload extends React.Component {
 
     onReset = () => {
         this.formRef.current.resetFields();
-        this.formRef.current.setFieldsValue({ product: this.state.productCode })
+        this.formRef.current.setFieldsValue({ product: this.state.productCode });
+        this.setState({ otherProductDetail: [] })
     };
-
-    setAsMainImage = async imageId => {
-        const { productList, productCode } = this.state;
-        var productObject = productList.find(item => item.productCode === productCode);
-        productObject.mainImageId = imageId;
-
-        const key = 'update';
-        message.loading({ content: 'Kaydediliyor...', key })
-        await fetch(siteConfig.api.image.updateProduct,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json',
-                    'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
-                },
-                body: JSON.stringify(productObject)
-            })
-            .then((data) => setTimeout(() => {
-                message.success({ content: 'Ana Fotoğraf Olarak Ayarlandı', key, duration: 2 })
-            }, 250)
-
-            ).catch((err) => setTimeout(() => {
-                message.error({ content: 'İşlem başarısız ', key, duration: 2 })
-            }, 250));
-
-        this.getProducts()
-        this.getProductImages(this.state.productCode)
-    }
 
     handleShowDialog = (e) => {
         this.setState({
             isDialogOpen: !this.state.isDialogOpen,
             dialogImageId: e
         });
-    }
-
-    onFinishUpdateForm = async values => {
-        const { dialogImageId } = this.state;
-        var productImagesModel = {
-            ImageId: dialogImageId,
-            Description: values.imageDescription,
-            ImageTypeId: values.imageTypeId
-        }
-
-        const key = 'update';
-        message.loading({ content: 'Güncelleniyor...', key })
-
-        await fetch(siteConfig.api.image.updateImageInfo,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json',
-                    'Authorization': "Bearer " + localStorage.getItem("id_token") || undefined
-                },
-                body: JSON.stringify(productImagesModel)
-            })
-            .then((data) => setTimeout(() => {
-                message.success({ content: 'Fotoğraf bilgileri güncellendi', key, duration: 2 })
-            }, 250)
-
-            ).catch((err) => setTimeout(() => {
-                message.error({ content: 'İşlem başarısız ', key, duration: 2 })
-            }, 250));
-
-        this.getProducts();
-        this.getProductImages(this.state.productCode)
-        this.setState({ isDialogOpen: false })
     }
 
     updateSortedImages = async e => {
@@ -485,22 +344,32 @@ class ImageUpload extends React.Component {
         }
         this.setState({ categoricalImageList: tmp })
     }
+
     callback = (key) => {
-        debugger
-        console.log(key);
-        if (key === '1') { this.setState({ productTypeTitle: 'Bağıl Ürün' }); }
-        else { this.setState({ productTypeTitle: 'İlgili Ürün' }); }
+        if (key === enumerations.ProductRelationTypestring.Dependent) { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Dependent, productTypeTitle: 'Bağlı Ürün' }); }
+        else { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Related, productTypeTitle: 'İlgili Ürün' }); }
         this.formRef.current.resetFields();
         this.formRef.current.setFieldsValue({ product: this.state.productCode })
     }
 
     render() {
-        const { productList, productImages, imageTypes, btnUpdateOrder, isDialogOpen, dialogImageId, categoricalImageList, productCode, productTypeTitle, otherProductCode, otherProductDetail,productType } = this.state;
+        const { productList, productCode, productTypeTitle, otherProductCode, otherProductDetail, dependentProducts, relatedProducts, productRelatedTypeTab } = this.state;
+        let selectedData = [];
+        if (productRelatedTypeTab === enumerations.ProductRelationTypestring.Dependent) { selectedData = dependentProducts; }
+        else {selectedData = relatedProducts;}
+        let relatedProductsCount=0;
+        let dependentProductsCount=0;
+        
+        if(relatedProducts && relatedProducts!==null){relatedProductsCount=relatedProducts.length;}
+        if(dependentProducts && dependentProducts!==null){dependentProductsCount=dependentProducts.length}
+        
+        const tabTitleRelation='İlgili Ürün ('+relatedProductsCount+')';
+        const tabTitleDepent='Bağlı Ürün ('+dependentProductsCount+')';
 
         return (
             <LayoutWrapper>
                 <PageHeader>
-                    {<IntlMessages id="Bağıl Ve İlgili Ürün Ekleme" />}
+                    {<IntlMessages id="Bağlı Ve İlgili Ürün Ekleme" />}
                 </PageHeader>
                 <Box>
                     <Row>
@@ -519,13 +388,13 @@ class ImageUpload extends React.Component {
                                             option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }>
                                         {productList.map(list =>
-                                            <Option key={list.productCode} value={list.productCode}>{list.productCode} - {list.productName} - {list.productDescription}</Option>
+                                            <Option key={list.itemCode} value={list.itemCode}>{list.itemCode} - {list.description} </Option>
                                         )}
                                     </Select>
                                 </Form.Item>
-                                {/*Bağıl veya ilgili ürün seçimi */}
+                                {/*Bağlı veya ilgili ürün seçimi */}
                                 <h4>Diğer Ürün</h4>
-                                <Form.Item name="otherProductCode" rules={[{ required: true, message: 'Lütfen bir ürün seçiniz!' }]}>
+                                <Form.Item name="other" rules={[{ required: true, message: 'Lütfen bir ürün seçiniz!' }]}>
                                     <Select showSearch
                                         ref="otherProductCode"
                                         placeholder={productTypeTitle + " Seçiniz"}
@@ -536,10 +405,11 @@ class ImageUpload extends React.Component {
                                             option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }>
                                         {productList.map(list =>
-                                            <Option key={list.productCode} value={list.productCode}>{list.productCode} - {list.productName} - {list.productDescription}</Option>
+                                            <Option key={list.itemCode} value={list.itemCode}>{list.itemCode} - {list.description}</Option>
                                         )}
                                     </Select>
-                                    {otherProductDetail!==null ? 
+                                </Form.Item>
+                                {otherProductDetail !== null ?
                                     <Card key={'image.imageId'}
                                         className="imageCard"
                                         hoverable
@@ -547,7 +417,7 @@ class ImageUpload extends React.Component {
                                         cover={
                                             <div className="divWrapper" >
                                                 <div className="image">
-                                                    <img style={{ width: '170px' }} alt="Fotoğraf Bulunamadı" draggable="false" src={otherProductDetail.imageMediumBaseUrl + otherProductDetail.imageMainFileName}
+                                                    <img style={{ width: '170px' }} alt="" draggable="false" src={otherProductDetail.imageMediumBaseUrl + otherProductDetail.imageMainFileName}
                                                         onClick={() => this.handleShowDialog('image.imageId')}
                                                     />
                                                 </div>
@@ -560,158 +430,92 @@ class ImageUpload extends React.Component {
                                         <div className="imageType" >
                                             <Tag color="volcano">{otherProductDetail.category}</Tag>
                                         </div>
-                                        {/* <div style={{ marginTop: '10px' }}>
-                                            <p className="imageDescription">{otherProductDetail.description || '-'}</p>
-                                        </div> */}
-                                        {/* <div className="imageDate">
-                                            <i>{'image.imageUploadDateStr'}</i>
-                                        </div> */}
-                                    </Card>:null}
-                                </Form.Item>
-                                <Form.Item name="imageType" rules={[{ required: true, message: 'Lütfen bir ürün tipi seçiniz!' }]}>
-                                    <Select placeholder="Ürün Tipi Seçiniz" value={productType} onChange={this.getProductType}>
-                                        <Option value="BagilUrun">Bagil ürün</Option>
-                                        <Option value="ilgiliUrun">İlgili ürün</Option>
-                                    </Select>
+                                    </Card> : null}
+                                <Form.Item name="productRelationType" rules={[{ required: true, message: 'Lütfen bir ürün ilişki tipi seçiniz!' }]}>
+                                    <Radio.Group onChange={this.getProductRelationType} defaultValue={enumerations.ProductRelationTypestring.None}>
+                                        <Radio value={enumerations.ProductRelationTypestring.Dependent}>Bağlı Ürün</Radio>
+                                        <Radio value={enumerations.ProductRelationTypestring.Related}>İlgili Ürün</Radio>
+                                    </Radio.Group>
                                 </Form.Item>
                                 <Row >
                                     <Col style={{ textAlign: 'left' }} span={12}>
-                                        <Form.Item>
-                                            <Button style={{ width: '75%' }} type="primary" htmlType="submit">KAYDET</Button>
+                                    <Form.Item >
+                                            <Button style={{ width: '75%' }} onClick={this.onReset}>TEMİZLE</Button>
                                         </Form.Item>
                                     </Col>
-                                    <Col style={{ textAlign: 'right' }} span={12}>
-                                        <Form.Item >
-                                            <Button style={{ width: '75%' }} onClick={this.onReset}>İPTAL</Button>
+                                    <Col style={{ textAlign: 'right' }} span={12}>                                       
+                                        <Form.Item>
+                                            <Button style={{ width: '75%' }} type="primary" htmlType="submit" onClick={this.saveProductRelation}>KAYDET</Button>
                                         </Form.Item>
                                     </Col>
                                 </Row>
                             </Form>
                         </Col>
-                        {/* image display , delete, update, sort*/}
                         <Col md={12} sm={12} xs={24}>
                             <div style={{ margin: '35px' }}>
 
-                                {/*Bağıl ve İlgili ürün tab sekmeleri */}
-                                <Tabs defaultActiveKey="1" onChange={this.callback} >
-                                    <TabPane tab="Bağıl Ürün" key="1">
+                                {/* Bağıl ve İlgili ürün tab sekmeleri */}
+                                <Tabs defaultActiveKey="dependentProducts" onChange={this.callback} >
+                                    <TabPane tab={tabTitleDepent} key={enumerations.ProductRelationTypestring.Dependent}>
                                     </TabPane>
-                                    <TabPane tab="İlgili Ürün" key="2">
+                                    <TabPane tab={tabTitleRelation} key={enumerations.ProductRelationTypestring.Related}>
                                     </TabPane>
                                 </Tabs>
-                                {productImages.length > 0 ?
+                                {selectedData !== null ?
                                     <div>
-                                        <Row className="topRow" style={{ height: 40 }} >
-                                            <Col span={18}>
-                                                <h4>Bu ürüne ait toplam {productImages.length} {productTypeTitle} vardır.</h4>
-                                            </Col>
-                                            <Col span={6}>
-                                                {btnUpdateOrder ?
-                                                    <Button style={{ float: 'right', zIndex: 3 }} type="primary" onClick={this.updateSortedImagesThrottled}>Güncel Sıralamayı Kaydet</Button>
-                                                    : ''
+                                        <div key={'index'}>
+                                            <ReactSortable className="ant-row cardRow" list={selectedData}
+                                                setList={newState => this.updateState(newState)} handle=".handle" animation={150}>
+                                                {
+                                                    selectedData.map(item =>
+                                                        <Col md={12} sm={12} xs={24}
+                                                            key={item.itemCode}
+                                                            style={{ padding: '10px' }}
+                                                            onDrop={this.handleDrop}
+                                                            onDragStart={this.handleDragStart}>
+                                                            <Card
+                                                                key={item.itemCode}
+                                                                className="imageCard"
+                                                                hoverable
+                                                                style={{ width: '100%', height: '100%', margin: '10px' }}
+                                                                cover={
+                                                                    <div className="divWrapper" >
+                                                                        <DragOutlined className="handle dragIcon" />
+                                                                        <div className="image">
+                                                                            <img style={{ width: '170px' }} alt="Fotoğraf Bulunamadı" draggable="false" src={item.imageMediumBaseUrl + item.imageMainFileName}
+                                                                                onClick={() => this.handleShowDialog(item.itemCode)}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                }
+                                                                actions={[
+                                                                    <div>
+                                                                        <Row >
+                                                                            <Col span={8}>
+                                                                                <Popconfirm
+                                                                                    title="Bu ürünü kaldırmak istediğinizden emin misiniz?"
+                                                                                    onConfirm={() => this.deleteProductRelation(item.itemCode)}
+                                                                                    okText="Evet"
+                                                                                    cancelText="Hayır"
+                                                                                >
+                                                                                    <Button danger className="buttonDelete" ><DeleteFilled /></Button>
+                                                                                </Popconfirm>
+                                                                            </Col>
+                                                                        </Row>
+                                                                    </div>
+                                                                ]}>
+                                                                <Meta
+                                                                    title={item.itemCode}
+                                                                    description={item.description}
+                                                                />
+                                                                <div className="imageType" >
+                                                                    <Tag color="volcano">{item.category}</Tag>
+                                                                </div>
+                                                            </Card>
+                                                        </Col>)
                                                 }
-                                            </Col>
-                                        </Row>
-                                        {categoricalImageList.map((imageList, index) =>
-                                            <div key={index}>
-                                                {imageList.length > 0 ?
-                                                    <Divider style={{ paddingLeft: '25px', marginTop: '35px' }} orientation="right" plain>{'Ürün Bilgisi'}</Divider>
-                                                    : null}
-                                                <ReactSortable className="ant-row cardRow" list={imageList}
-                                                    setList={newState => this.updateState(newState)} handle=".handle" animation={150}>
-                                                    {
-                                                        imageList.map(image =>
-                                                            <Col md={12} sm={12} xs={24}
-                                                                key={image.imageId}
-                                                                style={{ padding: '10px', order: productList.some(item => item.mainImageId === image.imageId) ? -1 : 1 }}
-                                                                onDrop={this.handleDrop}
-                                                                onDragStart={this.handleDragStart}>
-                                                                <Card key={image.imageId}
-                                                                    className="imageCard"
-                                                                    hoverable
-                                                                    style={{ width: '100%', height: '100%', margin: '10px' }}
-                                                                    cover={
-                                                                        <div className="divWrapper" >
-                                                                            {productList.some(item => item.mainImageId === image.imageId) ?
-                                                                                <div className="imageBadge">
-                                                                                    <Badge count={'Ana Foto'} />
-                                                                                </div>
-                                                                                : null
-                                                                            }
-                                                                            <DragOutlined className="handle dragIcon" />
-                                                                            <div className="image">
-                                                                                <img style={{ width: '170px' }} alt="Fotoğraf Bulunamadı" draggable="false" src={image.imagePath}
-                                                                                    onClick={() => this.handleShowDialog(image.imageId)}
-                                                                                />
-                                                                            </div>
-                                                                        </div>
-                                                                    }
-                                                                    actions={[
-                                                                        <div>
-                                                                            <Row >
-                                                                                <Col span={8}>
-                                                                                    <Popconfirm
-                                                                                        title="Bu fotoğrafı silmek istediğinizden emin misiniz?"
-                                                                                        onConfirm={() => this.deleteImage(image.imageId)}
-                                                                                        okText="Evet"
-                                                                                        cancelText="Hayır"
-                                                                                    >
-                                                                                        <Button danger className="buttonDelete" ><DeleteFilled /></Button>
-                                                                                    </Popconfirm>
-                                                                                </Col>
-                                                                                <Col span={16}>
-                                                                                    {_.any(imageList, (item) => item.canBeMainImage) ?
-                                                                                        _.any(productList, (item) => item.mainImageId === image.imageId) ?
-                                                                                            <Button className="buttonMainImage" disabled>Ana Foto. Yap</Button>
-                                                                                            :
-                                                                                            <Button className="buttonMainImage" draggable="false" onClick={() => this.setAsMainImage(image.imageId)} >Ana Foto. Yap</Button>
-                                                                                        : null}
-                                                                                </Col>
-                                                                            </Row>
-                                                                        </div>
-                                                                    ]}>
-                                                                    <Meta
-                                                                        title="Card title"
-                                                                        description="This is the description"
-                                                                    />
-                                                                    <div className="imageType" >
-                                                                        <Tag color="volcano">{image.imageType}</Tag>
-                                                                    </div>
-                                                                    <div style={{ marginTop: '10px' }}>
-                                                                        <p className="imageDescription">{image.description || '-'}</p>
-                                                                    </div>
-                                                                    <div className="imageDate">
-                                                                        <i>{image.imageUploadDateStr}</i>
-                                                                    </div>
-                                                                </Card>
-                                                                {isDialogOpen && image.imageId == dialogImageId ?
-                                                                    <Modal visible={isDialogOpen} title="Fotoğraf Güncelleme" okText="Güncelle" cancelText="İptal" closable footer={null} onCancel={this.handleShowDialog}>
-                                                                        <img
-                                                                            draggable="false"
-                                                                            className="imageDialog"
-                                                                            src={image.imagePath}
-                                                                            alt="Fotoğraf Bulunamadı"
-                                                                            style={{ width: '99%' }}
-                                                                        />
-                                                                        <Form onFinish={this.updateImageThrottled} style={{ marginTop: '15px' }} >
-                                                                            <Form.Item name="imageDescription" initialValue={image.description} rules={[{ required: false, message: 'Lütfen bir açıklama giriniz!' }]}>
-                                                                                <TextArea onChange={this.onChangeDescription} allowClear />
-                                                                            </Form.Item>
-                                                                            <Form.Item name="imageTypeId" >
-                                                                                <Select placeholder={image.imageType}>
-                                                                                    {imageTypes.map(item =>
-                                                                                        <Option key={item.imageTypeId} value={item.imageTypeId}>{item.imageTypeName}</Option>
-                                                                                    )}
-                                                                                </Select>
-                                                                            </Form.Item>
-                                                                            <Button style={{ width: '100%' }} type="primary" htmlType="submit">Güncelle</Button>
-                                                                        </Form>
-                                                                    </Modal>
-                                                                    : null}
-                                                            </Col>)
-                                                    }
-                                                </ReactSortable>
-                                            </div>)}
+                                            </ReactSortable>
+                                        </div>
                                     </div> : (<div className="message"><h3 >Gösterilecek {productTypeTitle} Yok...</h3></div>)}
 
                             </div>
