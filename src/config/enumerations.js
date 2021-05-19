@@ -11,6 +11,12 @@ export default {
         NotUrgent: 'NotUrgent',
     
     },
+    ProductRelationTypestring:
+    {   
+        None: 'None',
+        Dependent: 'Dependent',
+        Related: 'Related',
+    },
     SalesStatus:
     {
         All: 'All',

@@ -44,10 +44,12 @@ export default function ({
         } else {
           const itemCode = productItem.itemCode
           const quantity = parseInt(event.target.value);
+          const totalM2  = productItem.totalM2;
           newProductQuantity.push({
             itemCode,
             quantity,
             isPartial,
+            totalM2,
           });
         }
       });

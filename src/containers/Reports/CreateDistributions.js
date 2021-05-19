@@ -451,6 +451,7 @@ export default function () {
     };
 
     const edit = (record) => {
+        debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== record.dealerCode && i.quantity > 0 });
@@ -1423,6 +1424,7 @@ export default function () {
                                                 type='phone'
                                                 placeholder="Zorunlu alan giriniz"
                                                 value={phone}
+                                                step={1}
                                                 onChange={handleChangePhone}
                                             /></label></Form.Item>
                                 </Col>
