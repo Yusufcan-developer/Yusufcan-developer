@@ -73,6 +73,7 @@ const SearchComponent = () => {
   const [palletAmount, setPalletAmount] = useState(0);
   const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
   const [selectedAmout, setSelectedAmount] = useState(0);
+  const [entryProductCode, setEntryProductCode] = useState(null);
   const [selectedItem, setSelectedItem] = useState();
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
   const [plusButtonDisable, setPlusButtonDisable] = useState(false);
@@ -904,8 +905,15 @@ const SearchComponent = () => {
       return 1
     }
     else {
+      if (entryProductCode !== null) {
+        if (entryProductCode === product.itemCode) {
+          return selectedAmout;
+        }
+        else{
+          return selectedProduct.quantity;
+        }
+      } else {
       if (selectedAmout === 0) {
-
         return selectedProduct.quantity;
       } else {
         if (selectedItem === product.itemCode) {
@@ -914,6 +922,7 @@ const SearchComponent = () => {
         else { return selectedProduct.quantity; }
       }
     }
+  }
   }
 
   //Input Number return partial quantity value
@@ -944,10 +953,19 @@ const SearchComponent = () => {
       }
     }
     else {
-      if (selectedAmout < 1) {
-        return selectedProduct.quantity;
+      if (entryProductCode !== null) {
+        if (entryProductCode === product.itemCode) {
+          return selectedAmout;
+        }
+        else{
+          return selectedProduct.quantity;
+        }
+      } else {
+        if (selectedAmout < 1) {
+          return selectedProduct.quantity;
+        }
+        else { return selectedAmout }
       }
-      else { return selectedAmout }
     }
   }
   //Parçalı ürün sepete ekle butonunda ki değerlerin belirlenmesi
@@ -974,7 +992,8 @@ const SearchComponent = () => {
     document.getElementById(id).select();
   }
 
-  function onChange(e, item, isPartial) {
+  function onChange(e, item, isPartial,hasRealionProduct=false) {
+    if(hasRealionProduct){setEntryProductCode(item.itemCode);}
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
       setSelectedItem(item.itemCode);
@@ -1017,16 +1036,19 @@ const SearchComponent = () => {
           } else {
             const itemCode = productItem.itemCode
             const quantity = parseInt(newQuantity);
+            const totalM2  = parseFloat(productItem.m2Pallet);
             newProductQuantity.push({
               itemCode,
               quantity,
               isPartial,
+              totalM2,
             });
           }
         });
         dispatch(changeProductQuantity(newProductQuantity));
         setSelectedAmount(0);
         setSelectedPartialAmount(0);
+        setEntryProductCode(null);
       }
       if ((productData.canBeSoldPartially) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint) || (productData.hasDependentOrRelatedProducts === true) && (partialQuantity !== true)) { getProductDetail(productData.itemCode); getWarehouseList(productData.itemCode); setSelectedItemCode(productData.itemCode); return setPartialQuantity(true); }
     }
@@ -1051,12 +1073,14 @@ const SearchComponent = () => {
           } else {
             const itemCode = productItem.itemCode;
             const quantity = productItem.quantity - 1;
+            const totalM2  = (productItem.quantity - 1) * product.m2Pallet;
             setQunatity = quantity;
             if (quantity === 0) { return postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + logMessage.Carts.removeProduct); }
             newProductQuantity.push({
               itemCode,
               quantity,
               isPartial,
+              totalM2,
             });
           }
         });
@@ -1084,7 +1108,7 @@ const SearchComponent = () => {
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
-          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
+          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial,(parseInt(selectedQuantity)*product.m2Pallet)));
           notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
           postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
         }
@@ -1101,11 +1125,13 @@ const SearchComponent = () => {
             } else {
               const itemCode = productItem.itemCode;
               const quantity = productItem.quantity + 1;
+              const totalM2  = (productItem.quantity + 1) * (product.m2Pallet);
               setQunatity = quantity;
               newProductQuantity.push({
                 itemCode,
                 quantity,
                 isPartial,
+                totalM2,
               });
             }
           });
@@ -1133,17 +1159,16 @@ const SearchComponent = () => {
   //Popup içerisinde girilen ana ürün ile bağıl ve ilgili ürünlerin miktar toplamları hesaplaması.
   function calculatePopupQuantity() {
     let control = 0;
-    const urunlerArrayData = relatedProductCodes.concat(dependentProductCodes);
     let reduxProductBox = localStorage.getItem('cartProductQuantity');
     reduxProductBox = JSON.parse(reduxProductBox);
 
     let mainProductQuantity = 0;
     let bagilVeIlgiliUrunMiktari = 0;
     _.each(reduxProductBox, (item) => {
-      if (selectedItemCode === item.itemCode) { mainProductQuantity = parseInt(item.quantity) }
+      if (selectedItemCode === item.itemCode) { mainProductQuantity = parseFloat(item.totalM2); }
       else {
-        var even = _.find(urunlerArrayData, function (x) { return x === item.itemCode })
-        if (typeof even !== 'undefined') { bagilVeIlgiliUrunMiktari += parseInt(item.quantity); }
+        var even = _.find(dependentProductCodes, function (x) { return x === item.itemCode })
+        if (typeof even !== 'undefined') { bagilVeIlgiliUrunMiktari += parseFloat(item.totalM2); }
       }
     });
     if ((mainProductQuantity === 0) || (bagilVeIlgiliUrunMiktari >= mainProductQuantity)) {
@@ -1184,12 +1209,11 @@ const SearchComponent = () => {
         return status;
       })
       .then(data => {
-        debugger
-        if (data && data.dependentProducts !== null) {
+        if (data && typeof data.dependentProducts !== 'undefined') {
           setDependentProducts(data.dependentProducts);
           setDependentProductCodes(data.dependentProductCodes);
         }
-        if (data && data.relatedProducts !== null) {
+        if (data && typeof data.relatedProducts !== 'undefined') {
           setRelatedProducts(data.relatedProducts);
           setRelatedProductCodes(data.relatedProductCodes);
         }
@@ -1725,7 +1749,7 @@ const SearchComponent = () => {
                                                 <Input
                                                   id={'b' + item.itemCode}
                                                   onClick={event => onSelectAll('b' + item.itemCode)}
-                                                  onChange={event => onChange(event, item, item.isPartial)}
+                                                  onChange={event => onChange(event, item, item.isPartial,true)}
                                                   onBlur={event => onChangeQuantity(event, item, item.isPartial)}
                                                   style={{ textAlign: "right", maxHeight: '32px' }}
                                                   maxLength={25}
@@ -1816,7 +1840,7 @@ const SearchComponent = () => {
                                                 <Input
                                                   id={'A' + item.itemCode}
                                                   onClick={event => onSelectAll('A' + item.itemCode)}
-                                                  onChange={event => onChange(event, item, item.isPartial, true)}
+                                                  onChange={event => onChange(event, item, item.isPartial, true,true)}
                                                   onBlur={event => onChangeQuantity(event, item, item.isPartial, true)}
                                                   style={{ textAlign: "right", maxHeight: '32px' }}
                                                   maxLength={25}

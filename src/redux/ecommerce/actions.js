@@ -24,11 +24,11 @@ const actions = {
       });
     };
   },
-  addToCart: (product,quantity,isPartial) => {
+  addToCart: (product,quantity,isPartial,totalM2) => {
     return (dispatch, getState) => {
       const { productQuantity } = getState().Ecommerce;
       const itemCode = product.itemCode;
-      productQuantity.push({ itemCode, quantity: quantity,isPartial:isPartial });
+      productQuantity.push({ itemCode, quantity: quantity,isPartial:isPartial, totalM2:totalM2 });
       dispatch({
         type: actions.UPDATE_DATA_SAGA,
         productQuantity,

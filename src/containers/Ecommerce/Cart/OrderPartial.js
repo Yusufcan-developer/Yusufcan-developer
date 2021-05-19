@@ -188,7 +188,8 @@ const OrderPartial = () => {
                   itemCode: product.itemCode,
                   quantity: product.quantity,
                   orderAmount: product.orderAmount,
-                  isPartial: product.isPartial
+                  isPartial: product.isPartial,
+                  totalM2:product.totalM2,
                 });
               });
             }

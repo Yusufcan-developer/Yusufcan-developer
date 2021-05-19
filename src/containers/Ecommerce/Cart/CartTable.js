@@ -104,7 +104,8 @@ export default function CartTable({ style }) {
                     itemCode: product.itemCode,
                     quantity: product.quantity,
                     orderAmount: product.orderAmount,
-                    isPartial: product.isPartial
+                    isPartial: product.isPartial,
+                    totalM2:  product.totalM2
                   });
                 });
               }
@@ -327,11 +328,13 @@ export default function CartTable({ style }) {
         } else {
           const itemCode = productItem.itemCode
           const quantity = parseInt(inputAmount);
+          const totalM2  = parseFloat(productItem.totalM2);
           setQunatity = quantity;
           newProductQuantity.push({
             itemCode,
             quantity,
             isPartial,
+            totalM2,
           });
         }
       });

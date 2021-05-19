@@ -93,7 +93,7 @@ const routes = [
     component: lazy(() => import('@iso/containers/Reports/CreateDistributions')),
   },
   {
-    path: 'reports/relativeProduct',
+    path: 'products/relation',
     component: lazy(() => import('@iso/containers/Reports/RelativeProductAdmin')),
   },
   {

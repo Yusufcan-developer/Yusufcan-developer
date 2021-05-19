@@ -450,7 +450,8 @@ export default function () {
                   itemCode: product.itemCode,
                   quantity: product.quantity,
                   orderAmount: 0,
-                  isPartial: product.isPartial
+                  isPartial: product.isPartial,
+                  totalM2: product.totalM2,
                 });
               });
             }
