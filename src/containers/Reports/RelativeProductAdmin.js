@@ -93,7 +93,6 @@ class ImageUpload extends React.Component {
         };
         await fetch(`${siteConfig.api.products.getProductDetail}${productCode}?includeDependentAndRelatedProductDetails=true`, requestOptions)
             .then(response => {
-                debugger
                 const status = apiStatusManagement(response);
                 return status;
             })
@@ -113,7 +112,6 @@ class ImageUpload extends React.Component {
 
     //Ürün detayı getirme
     getProductDetail = async otherProductCode => {
-        // const { imageTypes } = this.state;
         const requestOptions = {
             method: "GET",
             headers: {
@@ -127,17 +125,9 @@ class ImageUpload extends React.Component {
                 return status;
             })
             .then(data => {
-                // var categoricalImages = [];
-                // _.each(imageTypes, function (imageType) {
-                //     let list = _.filter(images, (image) => image.imageType.includes(imageType.imageTypeName));
-                //     list = _.map(list, (image) => _.extend({ 'canBeMainImage': imageType.isMainImageAllowed }, image))
-                //     categoricalImages.push(list);
-                // });
                 this.setState({
                     otherProductDetail: data,
                     otherProductCode: otherProductCode,
-                    // categoricalImageList: categoricalImages,
-                    // productCode: productCode
                 });
             }).catch(error => console.log(error));
     }
@@ -174,7 +164,6 @@ class ImageUpload extends React.Component {
 
     //ilişkili ürün kaydetme
     saveProductRelation = async e => {
-        debugger
         const { otherProductCode, productCode, ProductRelationType } = this.state;
         if ((otherProductCode) && (productCode) && (ProductRelationType !== enumerations.ProductRelationTypestring.None)) {
             const reqBody = { "subsidiaryProductCode": otherProductCode, "mainProductCode": productCode, "relationType": ProductRelationType };
@@ -201,7 +190,6 @@ class ImageUpload extends React.Component {
                         });
                     } else {
                         message.success({ content: 'başarıyla kaydedildi', otherProductCode, duration: 2 })
-                        // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Add, filesToSend.ProductCode + ' fotoğraf eklendi');
                         this.setState({
                             dependentProducts: data.dependentProducts|| [] ,
                             relatedProducts: data.relatedProducts|| [] ,
@@ -224,7 +212,6 @@ class ImageUpload extends React.Component {
         const { productCode } = this.state;
 
         const key = 'delete';
-        // message.loading({ content: 'Siliniyor...', key })
         let newSaveOrderUrl = siteConfig.api.product.deleteProductRelation.replace('{mainProductCode}', productCode);
         newSaveOrderUrl = newSaveOrderUrl.replace('{subsidiaryProductCode}', value);
         await fetch(newSaveOrderUrl, {

@@ -2018,15 +2018,15 @@ const SearchComponent = () => {
                         )}
                       </div>
                     </SingleCardWrapper>
-                  ))}
-                  <Pagination onShowSizeChange={onShowSizeChange}
+                  ))}                 
+                </Row>
+                <Pagination onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
                     pageSize={pageSize}
                     total={totalDataCount}
                     current={pageIndex}
                     hideOnSinglePage
                     position="top" />
-                </Row>
               </Spin>
             </Box>
           </ContentHolder>
