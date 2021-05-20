@@ -22,7 +22,6 @@ export function* initData() {
   });
 }
 export function* updateData({ productQuantity }) {
-  debugger
   localStorage.setItem('cartProductQuantity', JSON.stringify(productQuantity));
   yield put({
     type: actions.UPDATE_DATA,

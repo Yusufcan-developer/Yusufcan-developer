@@ -52,7 +52,6 @@ const { Panel } = Collapse;
 const SearchComponent = () => {
   document.title = "Ürün Arama - Seramiksan B2B";
   const { rowStyle, colStyle, gutter } = basicStyle;
-
   const [state, setState] = React.useState({
     collapsed: true,
   });
@@ -78,12 +77,10 @@ const SearchComponent = () => {
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
   const [plusButtonDisable, setPlusButtonDisable] = useState(false);
   const [isPointAddress, setIsPointAddress] = useState();
-  const [ilgiliUrunAmount, setIlgiliUrunAmount] = useState();
   const [dependentProductCodes, setDependentProductCodes] = useState([]);
   const [relatedProductCodes, setRelatedProductCodes] = useState([]);
   const [dependentProducts, setDependentProducts] = useState([]);
   const [relatedProducts, setRelatedProducts] = useState([]);
-
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -1036,12 +1033,10 @@ const SearchComponent = () => {
           } else {
             const itemCode = productItem.itemCode
             const quantity = parseInt(newQuantity);
-            const totalM2  = parseFloat(productItem.m2Pallet);
             newProductQuantity.push({
               itemCode,
               quantity,
               isPartial,
-              totalM2,
             });
           }
         });
@@ -1073,14 +1068,12 @@ const SearchComponent = () => {
           } else {
             const itemCode = productItem.itemCode;
             const quantity = productItem.quantity - 1;
-            const totalM2  = (productItem.quantity - 1) * product.m2Pallet;
             setQunatity = quantity;
             if (quantity === 0) { return postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + logMessage.Carts.removeProduct); }
             newProductQuantity.push({
               itemCode,
               quantity,
               isPartial,
-              totalM2,
             });
           }
         });
@@ -1108,7 +1101,7 @@ const SearchComponent = () => {
       if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
         const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
         if (amountControl === -1) {
-          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial,(parseInt(selectedQuantity)*product.m2Pallet)));
+          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
           notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
           postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
         }
@@ -1125,13 +1118,11 @@ const SearchComponent = () => {
             } else {
               const itemCode = productItem.itemCode;
               const quantity = productItem.quantity + 1;
-              const totalM2  = (productItem.quantity + 1) * (product.m2Pallet);
               setQunatity = quantity;
               newProductQuantity.push({
                 itemCode,
                 quantity,
                 isPartial,
-                totalM2,
               });
             }
           });
@@ -1146,14 +1137,14 @@ const SearchComponent = () => {
   };
 
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
-  function handleCancel(hasRealionProduct=false) {
+  function handleCancel(hasRealionProduct=false,item) {
     const quantity = calculatePopupQuantity();
     if ((quantity<=0)	|| (hasRealionProduct===false)) {
       setPartialQuantity(false);
       setRelatedProducts([]);
       setDependentProducts([]);
     }
-    else { message.warning('Eklemiş olduğunuz ana ürün sayısı kadar bağlantılı ürün eklemelisiniz'); }
+    else { message.warning(quantity <= 0 ?null :<span style={{color:'red'}}>{numberFormat(quantity)} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint  && item.unit==='M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>); }
   }
 
   //Popup içerisinde girilen ana ürün ile bağıl ve ilgili ürünlerin miktar toplamları hesaplaması.
@@ -1162,22 +1153,25 @@ const SearchComponent = () => {
     let reduxProductBox = localStorage.getItem('cartProductQuantity');
     reduxProductBox = JSON.parse(reduxProductBox);
 
-    let mainProductQuantity = 0;
     let bagilVeIlgiliUrunMiktari = 0;
+    const mainProduct= _.filter(reduxProductBox, function (item) {
+      if (selectedItemCode === item.itemCode) {
+        return true;
+      }  });
+     const mainProductTotal=_.reduce(mainProduct, function(memo, x){ return memo + x.totalM2; }, 0);
+
     _.each(reduxProductBox, (item) => {
-      if (selectedItemCode === item.itemCode) { mainProductQuantity = parseFloat(item.totalM2); }
-      else {
+      if (selectedItemCode !== item.itemCode) {
         var even = _.find(dependentProductCodes, function (x) { return x === item.itemCode })
         if (typeof even !== 'undefined') { bagilVeIlgiliUrunMiktari += parseFloat(item.totalM2); }
       }
     });
-    if ((mainProductQuantity === 0) || (bagilVeIlgiliUrunMiktari >= mainProductQuantity)) {
+    if ((mainProductTotal === 0) || (bagilVeIlgiliUrunMiktari >= mainProductTotal)) {
       control = 0;
     }
     else{
-      control=mainProductQuantity-bagilVeIlgiliUrunMiktari;
+      control=mainProductTotal-bagilVeIlgiliUrunMiktari;
     }
-
     return control;
   }
 
@@ -1255,7 +1249,10 @@ const SearchComponent = () => {
     return productInfo;
   }
   const siteMode = getSiteMode();
-  const addedQuantity=calculatePopupQuantity();
+  let permission=false;;
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  if ((token.urole === 'admin') || (token.dcode === 'B555888')) { permission = true; }
+
   return (
     <React.Fragment>
       <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
@@ -1548,25 +1545,25 @@ const SearchComponent = () => {
                         </div>
                         {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
                         {/* partialQuantity === true && item.itemCode === selectedItemCode && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? ( */}
-                        {item.hasDependentOrRelatedProducts === true ?                          
-                            partialQuantity === true && item.itemCode === selectedItemCode ? (
+                        {item.hasDependentOrRelatedProducts === true  && permission===true  ?                          
+                            partialQuantity === true && item.itemCode === selectedItemCode  ? (
                             <Modal
                               title={item.itemCode + ' - ' + item.description}
                               visible={true}
                               width={1500}
                               height={800}
-                              onCancel={event => handleCancel(true)}
+                              onCancel={event => handleCancel(true,item)}
                               maskClosable={false}
                               footer={[
-                                <Button key="back" type="primary" onClick={event =>handleCancel(true)}>
+                                <Button key="back" type="primary" onClick={event =>handleCancel(true,item)}>
                                   Kapat
                               </Button>
                               ]}>
 
                               {/* Eklenmesi gereken ürün sayısı bilgisi */}
-                              <Col style={{ width: '100%' }} align="center">
-                                {addedQuantity <= 0 ?null :<span style={{color:'red'}}>{addedQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet' : item.unit !== 'TOR' ? 'Kutu' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>}
-                              </Col>
+                              {/* <Col style={{ width: '100%' }} align="center">
+                                {calculatePopupQuantity() <= 0 ?null :<span style={{color:'red'}}>{numberFormat(calculatePopupQuantity())} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit==='M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>}
+                              </Col> */}
 
                               <Row style={rowStyle} gutter={gutter} justify="start">
                                 <Col md={12} sm={12} xs={24} style={colStyle} >
@@ -1862,7 +1859,7 @@ const SearchComponent = () => {
                                 </Col></Row>
                             </Modal>
 
-                          ) : (null) : partialQuantity === true & item.itemCode === selectedItemCode & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
+                          ) : (null) : partialQuantity === true & item.itemCode === selectedItemCode & searchSiteMode !== enumerations.SiteMode.DeliverysPoint  && permission===false && item.canBeSoldPartially===true ? (
                             <Modal
                               title={item.itemCode + ' - ' + item.description}
                               visible={true}
