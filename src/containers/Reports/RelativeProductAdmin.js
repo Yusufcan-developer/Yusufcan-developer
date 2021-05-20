@@ -93,14 +93,15 @@ class ImageUpload extends React.Component {
         };
         await fetch(`${siteConfig.api.products.getProductDetail}${productCode}?includeDependentAndRelatedProductDetails=true`, requestOptions)
             .then(response => {
+                debugger
                 const status = apiStatusManagement(response);
                 return status;
             })
             .then(data => {
                 this.setState({
                     productImages: data,
-                    dependentProducts: data.dependentProducts,
-                    relatedProducts: data.relatedProducts,
+                    dependentProducts:data.dependentProducts || [] ,
+                    relatedProducts: data.relatedProducts || [] ,
                     productCode: productCode
                 });
             }).catch(error => console.log(error));
@@ -202,8 +203,8 @@ class ImageUpload extends React.Component {
                         message.success({ content: 'başarıyla kaydedildi', otherProductCode, duration: 2 })
                         // postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Add, filesToSend.ProductCode + ' fotoğraf eklendi');
                         this.setState({
-                            dependentProducts: data.dependentProducts,
-                            relatedProducts: data.relatedProducts,
+                            dependentProducts: data.dependentProducts|| [] ,
+                            relatedProducts: data.relatedProducts|| [] ,
                             otherProductDetail: [],
                             ProductRelationType: enumerations.ProductRelationTypestring.None
                         });
@@ -254,7 +255,6 @@ class ImageUpload extends React.Component {
     }
 
     onFinishSaveForm = values => {
-        this.uppy.upload();
         var model = {
             Description: values.description,
             ProductCode: values.product,
