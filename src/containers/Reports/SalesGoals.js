@@ -66,8 +66,8 @@ const SalesTarget = () => {
                 if (salesData.month !== null) { monthText = ' ' + 'Ay: ' + salesData.month }
                 criteria = 'Yıl: ' + salesData.year + monthText;
             }
-            if (salesData.fieldCode !== null) { criteria += ' Saha kodu: ' + salesData.fieldCode }
-            if (salesData.regionCode !== null) { criteria += ' Bölge kodu: ' + salesData.regionCode }
+            if (typeof salesData.fieldCode !== 'undefined') { criteria += ' Saha kodu: ' + salesData.fieldCode  }
+            if (typeof salesData.regionCode !== 'undefined') { criteria += ' Bölge kodu: ' + salesData.regionCode }
             searchText = criteria;
         }
     }
