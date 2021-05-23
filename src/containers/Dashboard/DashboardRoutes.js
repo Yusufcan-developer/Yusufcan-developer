@@ -118,7 +118,7 @@ const routes = [
     component: lazy(() => import('@iso/containers/User/ImageUpload')),
   },
   {
-    path: 'admin/products/relation',
+    path: 'admin/products/relations',
     component: lazy(() => import('@iso/containers/Reports/RelativeProductAdmin')),
   },
   {
