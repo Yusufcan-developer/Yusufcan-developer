@@ -990,6 +990,7 @@ const SearchComponent = () => {
   }
 
   function onChange(e, item, isPartial, hasRealionProduct = false) {
+    debugger
     if (hasRealionProduct) { setEntryProductCode(item.itemCode); }
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
@@ -1002,6 +1003,7 @@ const SearchComponent = () => {
 
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
+    debugger
     if (searchSiteMode === enumerations.SiteMode.DeliverysPoint) { isPartial = true; }
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     const selectedQuantity = event.target.value;
@@ -1045,7 +1047,7 @@ const SearchComponent = () => {
         setSelectedPartialAmount(0);
         setEntryProductCode(null);
       }
-      if ((productData.canBeSoldPartially) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint) || (productData.hasDependentOrRelatedProducts === true) && (partialQuantity !== true)) { getProductDetail(productData.itemCode); getWarehouseList(productData.itemCode); setSelectedItemCode(productData.itemCode); return setPartialQuantity(true); }
+      // if ((productData.canBeSoldPartially) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint) || (productData.hasDependentOrRelatedProducts === true) && (partialQuantity !== true)) { getProductDetail(productData.itemCode); getWarehouseList(productData.itemCode); setSelectedItemCode(productData.itemCode); return setPartialQuantity(true); }
     }
   };
 
@@ -1137,9 +1139,9 @@ const SearchComponent = () => {
   };
 
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
-  function handleCancel(hasRealionProduct = false, item) {
+  function handleCancel(item) {
     const quantity = calculatePopupQuantity();
-    if ((quantity <= 0) || (hasRealionProduct === false)) {
+    if ((quantity <= 0) || (item.hasDependentOrRelatedProducts === false)) {
       setPartialQuantity(false);
       setRelatedProducts([]);
       setDependentProducts([]);
@@ -1525,10 +1527,7 @@ const SearchComponent = () => {
                             {item.descriptionExtra}
                           </Col>
                         </span>
-
-                        {/* <span className="isoCardDate">
-                          {item.color} {item.surface && '-'} {item.surface}&nbsp;
-                        </span> */}
+                        {/* //Tooltip Bölümü ürün palet, kutu veya adet bilgileri içerir */}
                         <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '70px' }}>{(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
                           {item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
                           <Tooltip trigger={["click", "hover"]} title={
@@ -1546,17 +1545,17 @@ const SearchComponent = () => {
                         </div>
                         {/* //Burada kısım parçalı ürün ise popup şeklinde açılacaktır. */}
                         {/* partialQuantity === true && item.itemCode === selectedItemCode && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? ( */}
-                        {true === true ?
+                        {
                           partialQuantity === true && item.itemCode === selectedItemCode ? (
                             <Modal
                               title={item.itemCode + ' - ' + item.description}
                               visible={true}
                               width={1500}
                               height={800}
-                              onCancel={event => handleCancel(true, item)}
+                              onCancel={event => handleCancel(item)}
                               maskClosable={false}
                               footer={[
-                                <Button key="back" type="primary" onClick={event => handleCancel(true, item)}>
+                                <Button key="back" type="primary" onClick={event => handleCancel(item)}>
                                   Kapat
                               </Button>
                               ]}>
@@ -1678,6 +1677,7 @@ const SearchComponent = () => {
                                   </Box>
 
                                 </Col>
+                                {dependentProducts.length>0 ? 
                                 <Col md={6} sm={6} xs={12} style={colStyle}>
                                   <span style={{ fontWeight: 'bold' }}>Bağlı Ürünler</span>
                                   <Scrollbar style={{ height: 500 }}><Box>
@@ -1750,7 +1750,7 @@ const SearchComponent = () => {
                                                             <Input
                                                               id={'Paletli' + item.itemCode}
                                                               onClick={event => onSelectAll('Paletli' + item.itemCode)}
-                                                              onChange={event => onChange(event, item, false)}
+                                                              onChange={event => onChange(event, item, false, false)}
                                                               onBlur={event => onChangeQuantity(event, item)}
                                                               style={{ textAlign: "right" }}
                                                               maxLength={5}
@@ -1791,7 +1791,7 @@ const SearchComponent = () => {
                                                           <Input
                                                             id={'Parçalı' + item.itemCode}
                                                             onClick={event => onSelectAll('Parçalı' + item.itemCode)}
-                                                            onChange={event => onChange(event, item, true)}
+                                                            onChange={event => onChange(event, item, true, false)}
                                                             onBlur={event => onChangeQuantity(event, item, true)}
                                                             style={{ textAlign: "right" }}
                                                             maxLength={5}
@@ -1867,7 +1867,8 @@ const SearchComponent = () => {
 
                                   </Box>
                                   </Scrollbar>
-                                </Col>
+                                </Col>:(null)}
+                                {dependentProducts.length>0 ? 
                                 <Col md={6} sm={6} xs={12} style={colStyle}>
                                   <span style={{ fontWeight: 'bold' }}>İlgili Ürünler</span>
                                   <Scrollbar style={{ height: 500 }}><Box>
@@ -2052,127 +2053,10 @@ const SearchComponent = () => {
                                         </SingleCardWrapper>))}
                                     </Row>
                                   </Box>   </Scrollbar>
-                                </Col></Row>
+                                </Col>:(null)}</Row>
                             </Modal>
 
-                          ) : (null) : partialQuantity === true & item.itemCode === selectedItemCode & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
-                            <Modal
-                              title={item.itemCode + ' - ' + item.description}
-                              visible={true}
-                              width={700}
-                              onCancel={event => handleCancel(false)}
-                              maskClosable={false}
-                              footer={[
-                                <Button key="back" type="primary" onClick={event => handleCancel(false)}>
-                                  Kapat
-                              </Button>
-                              ]}>
-                              <Card bodyStyle={{ textAlign: 'center' }}>
-                                {<Image
-                                  key={`customnav-slider--key${item.imageUrl}`}
-                                  src={item.imageMediumBaseUrl + item.imageMainFileName}
-                                  width='300px'
-                                />}
-                              </Card>
-                              <div>
-                                <div
-                                  style={{
-                                    borderBottom: '1px solid #E9E9E9',
-                                    paddingBottom: '15px',
-                                  }}
-                                >
-                                  <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
-                                    <Row align="middle">
-                                      <Col span={4} align="right">
-                                        <Button type="primary" onClick={event => onRemoveProductCart(item, true, false)}>
-                                          {<IntlMessages id="product.minus" />}
-                                        </Button>
-                                      </Col>
-                                      <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                                        <Input
-                                          id={'Paletli' + item.itemCode}
-                                          onClick={event => onSelectAll('Paletli' + item.itemCode)}
-                                          onChange={event => onChange(event, item, false)}
-                                          onBlur={event => onChangeQuantity(event, item)}
-                                          style={{ textAlign: "right" }}
-                                          maxLength={5}
-                                          defaultValue={0}
-                                          step={1}
-                                          value={partialPopupQuantityEntry(item, false)}
-                                        />
-                                      </Col>
-                                      <Col span={4}>
-                                        <Button disabled={productAmountControlDisabled(item, false, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
-                                          {<IntlMessages id="product.plus" />}
-                                        </Button>
-                                      </Col>
-                                      <Col span={4} style={{ width: '100%' }}>
-                                        <Space size={1}>
-                                          <Col span={4}>
-                                            <Tag color="blue">
-                                              1 Palet: {item.m2Pallet} {item.unit}
-                                            </Tag>
-                                          </Col>
-                                          {palletAmount > 0 ? (<Col span={4}>
-                                            <Tag color="blue">
-                                              Stok: {salableBalanceFriendlyText}
-                                            </Tag>
-                                          </Col>) : null}
-                                        </Space>
-                                      </Col>
-                                    </Row>
-                                  </Form.Item>
-                                </div>
-                                <br />
-                                <Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
-                                  <Row align="middle">
-                                    <Col span={4} align="right">
-                                      <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
-                                        {<IntlMessages id="product.minus" />}
-                                      </Button>
-                                    </Col>
-                                    <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                                      <Input
-                                        id={'Parçalı' + item.itemCode}
-                                        onClick={event => onSelectAll('Parçalı' + item.itemCode)}
-                                        onChange={event => onChange(event, item, true)}
-                                        onBlur={event => onChangeQuantity(event, item, true)}
-                                        style={{ textAlign: "right" }}
-                                        maxLength={5}
-                                        defaultValue={1}
-                                        step={1}
-                                        value={partialQuantityEntry(item, true)}
-                                      />
-                                    </Col>
-                                    <Col span={4} style={{ width: '100%' }}>
-                                      <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
-                                        {<IntlMessages id="product.plus" />}
-                                      </Button>
-                                    </Col>
-                                    <Col span={4} style={{ width: '100%' }}>
-                                      <Space size={5}>
-                                        <Col span={4}>
-                                          {item.unit !== 'TOR' ? <Tag color="blue">
-                                            1 Kutu: {item.m2Box} {item.unit}
-                                          </Tag> : null}
-
-                                        </Col>
-                                        {partialAmount > 0 ? (<Col span={4}>
-                                          <Tag color="blue">
-                                            Stok: {numberFormat(partialAmount)} {item.unit}
-                                          </Tag>
-                                        </Col>) : null}
-                                      </Space>
-                                    </Col>
-                                  </Row>
-                                </Form.Item>
-                              </div>
-                            </Modal>
-
-                          ) : (null)}
-
-
-
+                          ):null}
 
                         {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>

@@ -65,21 +65,17 @@ class ImageUpload extends React.Component {
     }
 
     getProducts = () => {
-        const reqBody = { "pageIndex": 0, "pageCount": 3500 };
-
         const requestOptions = {
-            method: "POST",
+            method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-            },
-            body: JSON.stringify(reqBody)
-
+            }
         };
-        fetch(siteConfig.api.products.postProducts, requestOptions)
+        fetch(siteConfig.api.image.getProductsOfImages, requestOptions)
             .then(response => response.json())
             .then(products => {
-                this.setState({ productList: products.data })
+                this.setState({ productList: products })
             }).catch(error => console.log(error));
     }
 
@@ -375,7 +371,7 @@ class ImageUpload extends React.Component {
                                             option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }>
                                         {productList.map(list =>
-                                            <Option key={list.itemCode} value={list.itemCode}>{list.itemCode} - {list.description} </Option>
+                                            <Option key={list.productCode} value={list.productCode}>{list.productCode} - {list.productName} - {list.productDescription}</Option>
                                         )}
                                     </Select>
                                 </Form.Item>
@@ -392,7 +388,7 @@ class ImageUpload extends React.Component {
                                             option.children.toString().toLowerCase().indexOf(input.toLowerCase()) >= 0
                                         }>
                                         {productList.map(list =>
-                                            <Option key={list.itemCode} value={list.itemCode}>{list.itemCode} - {list.description}</Option>
+                                            <Option key={list.productCode} value={list.productCode}>{list.productCode} - {list.productName} - {list.productDescription}</Option>
                                         )}
                                     </Select>
                                 </Form.Item>
