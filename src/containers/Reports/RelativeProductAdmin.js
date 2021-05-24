@@ -87,7 +87,7 @@ class ImageUpload extends React.Component {
                 Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
             }
         };
-        await fetch(`${siteConfig.api.products.getProductDetail}${productCode}?includeDependentAndRelatedProductDetails=true`, requestOptions)
+        await fetch(`${siteConfig.api.products.getProductDetail}${productCode}?includeDependentAndRelatedProductDetails=true&siteMode=Admin`, requestOptions)
             .then(response => {
                 const status = apiStatusManagement(response);
                 return status;
@@ -115,7 +115,7 @@ class ImageUpload extends React.Component {
                 Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
             }
         };
-        await fetch(`${siteConfig.api.product.productDetail}${otherProductCode}`, requestOptions)
+        await fetch(`${siteConfig.api.product.productDetail}${otherProductCode}?includeDependentAndRelatedProductDetails=true&siteMode=Admin`, requestOptions)
             .then(response => {
                 const status = apiStatusManagement(response);
                 return status;
