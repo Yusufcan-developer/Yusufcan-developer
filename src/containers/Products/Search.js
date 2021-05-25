@@ -73,6 +73,7 @@ const SearchComponent = () => {
   const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
   const [selectedAmout, setSelectedAmount] = useState(0);
   const [entryProductCode, setEntryProductCode] = useState(null);
+  const [entryProductCodeIsPartial, setEntryProductCodeIsPartial] = useState();
   const [selectedItem, setSelectedItem] = useState();
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
   const [plusButtonDisable, setPlusButtonDisable] = useState(false);
@@ -933,25 +934,40 @@ const SearchComponent = () => {
       }
     }
     else {
-      if (selectedPartialAmout < 1) {
-        return selectedProduct.quantity;
+      if (entryProductCode !== null) {
+        if ((entryProductCode === product.itemCode)&& (isPartial===entryProductCodeIsPartial)) {
+          return selectedPartialAmout;
+        }
+        else {
+          return selectedProduct.quantity;
+        }
+      } else {
+        if (selectedPartialAmout < 1) {
+          return selectedProduct.quantity;
+        }
+        else { return selectedPartialAmout }
       }
-      else { return selectedPartialAmout }
     }
-  }
+    }
   //Input Number return partial quantity value
   function partialPopupQuantityEntry(product, isPartial) {
     var selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial === isPartial);
     if (typeof selectedProduct === 'undefined') {
-      if (selectedAmout < 1) {
+      if((product.itemCode!==entryProductCode)&& (isPartial!==entryProductCodeIsPartial)){
         return 0;
-      } else {
-        { return selectedAmout }
+      }
+      else{
+        if(product.itemCode!==entryProductCode){
+          return 0;
+        }
+        else{
+          return selectedAmout;
+        }
       }
     }
     else {
       if (entryProductCode !== null) {
-        if (entryProductCode === product.itemCode) {
+        if ((entryProductCode === product.itemCode)&& (isPartial===entryProductCodeIsPartial)) {
           return selectedAmout;
         }
         else {
@@ -990,8 +1006,7 @@ const SearchComponent = () => {
   }
 
   function onChange(e, item, isPartial, hasRealionProduct = false) {
-    debugger
-    if (hasRealionProduct) { setEntryProductCode(item.itemCode); }
+    if (hasRealionProduct) { setEntryProductCode(item.itemCode);setEntryProductCodeIsPartial(isPartial); }
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
       setSelectedItem(item.itemCode);
@@ -1003,7 +1018,6 @@ const SearchComponent = () => {
 
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
-    debugger
     if (searchSiteMode === enumerations.SiteMode.DeliverysPoint) { isPartial = true; }
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     const selectedQuantity = event.target.value;
@@ -1046,6 +1060,7 @@ const SearchComponent = () => {
         setSelectedAmount(0);
         setSelectedPartialAmount(0);
         setEntryProductCode(null);
+        setEntryProductCodeIsPartial()
       }
       // if ((productData.canBeSoldPartially) && (searchSiteMode !== enumerations.SiteMode.DeliverysPoint) || (productData.hasDependentOrRelatedProducts === true) && (partialQuantity !== true)) { getProductDetail(productData.itemCode); getWarehouseList(productData.itemCode); setSelectedItemCode(productData.itemCode); return setPartialQuantity(true); }
     }
@@ -1136,6 +1151,9 @@ const SearchComponent = () => {
         }
       }
     }
+
+    setEntryProductCode(null);
+    setEntryProductCodeIsPartial()
   };
 
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
@@ -1595,7 +1613,7 @@ const SearchComponent = () => {
                                                 <Input
                                                   id={'Paletli' + item.itemCode}
                                                   onClick={event => onSelectAll('Paletli' + item.itemCode)}
-                                                  onChange={event => onChange(event, item, false)}
+                                                  onChange={event => onChange(event, item, false, true)}
                                                   onBlur={event => onChangeQuantity(event, item)}
                                                   style={{ textAlign: "right" }}
                                                   maxLength={5}
@@ -1641,7 +1659,7 @@ const SearchComponent = () => {
                                               <Input
                                                 id={'Parçalı' + item.itemCode}
                                                 onClick={event => onSelectAll('Parçalı' + item.itemCode)}
-                                                onChange={event => onChange(event, item, true)}
+                                                onChange={event => onChange(event, item, true,true)}
                                                 onBlur={event => onChangeQuantity(event, item, true)}
                                                 style={{ textAlign: "right" }}
                                                 maxLength={5}
@@ -1750,7 +1768,7 @@ const SearchComponent = () => {
                                                             <Input
                                                               id={'Paletli' + item.itemCode}
                                                               onClick={event => onSelectAll('Paletli' + item.itemCode)}
-                                                              onChange={event => onChange(event, item, false, false)}
+                                                              onChange={event => onChange(event, item, false, true)}
                                                               onBlur={event => onChangeQuantity(event, item)}
                                                               style={{ textAlign: "right" }}
                                                               maxLength={5}
@@ -1791,7 +1809,7 @@ const SearchComponent = () => {
                                                           <Input
                                                             id={'Parçalı' + item.itemCode}
                                                             onClick={event => onSelectAll('Parçalı' + item.itemCode)}
-                                                            onChange={event => onChange(event, item, true, false)}
+                                                            onChange={event => onChange(event, item, true, true)}
                                                             onBlur={event => onChangeQuantity(event, item, true)}
                                                             style={{ textAlign: "right" }}
                                                             maxLength={5}
@@ -1936,11 +1954,11 @@ const SearchComponent = () => {
                                                               {<IntlMessages id="product.minus" />}
                                                             </Button>
                                                           </Col>
-                                                          <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                                                            <Input
+                                                          <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>                                                            
+                                                          <Input
                                                               id={'Paletli' + item.itemCode}
                                                               onClick={event => onSelectAll('Paletli' + item.itemCode)}
-                                                              onChange={event => onChange(event, item, false)}
+                                                              onChange={event => onChange(event, item, false, true)}
                                                               onBlur={event => onChangeQuantity(event, item)}
                                                               style={{ textAlign: "right" }}
                                                               maxLength={5}
@@ -1978,10 +1996,10 @@ const SearchComponent = () => {
                                                           </Button>
                                                         </Col>
                                                         <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                                                          <Input
+                                                        <Input
                                                             id={'Parçalı' + item.itemCode}
                                                             onClick={event => onSelectAll('Parçalı' + item.itemCode)}
-                                                            onChange={event => onChange(event, item, true)}
+                                                            onChange={event => onChange(event, item, true, true)}
                                                             onBlur={event => onChangeQuantity(event, item, true)}
                                                             style={{ textAlign: "right" }}
                                                             maxLength={5}
