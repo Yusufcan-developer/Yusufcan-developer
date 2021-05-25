@@ -83,6 +83,10 @@ export default {
             label: 'sidebar.uploadingPhotos',
           },
           {
+            key: 'admin/products/relations',
+            label: 'sidebar.relations',
+          },
+          {
             key: 'admin/carts',
             label: 'sidebar.carts',
           },
