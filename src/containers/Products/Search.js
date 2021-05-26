@@ -1159,7 +1159,8 @@ const SearchComponent = () => {
   //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
   function handleCancel(item) {
     const quantity = calculatePopupQuantity();
-    if ((quantity <= 0) || (item.hasDependentOrRelatedProducts === false)) {
+    if (typeof item.dependentProductCodes==='undefined'|| item.dependentProductCodes.length===0) {
+    //if ((quantity <= 0) || (item.hasDependentOrRelatedProducts === false)) {
       setPartialQuantity(false);
       setRelatedProducts([]);
       setDependentProducts([]);
