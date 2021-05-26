@@ -7,7 +7,7 @@ import turkishLocale from '@uppy/locales/lib/tr_TR';
 import * as _ from 'underscore';
 import { ReactSortable } from "react-sortablejs";
 import { Form } from 'antd';
-import { Card, Button, Row, Col, Select, message, Popconfirm, Tag, Tabs, Radio } from 'antd';
+import { Card, Button, Row, Col, Select, message, Popconfirm, Tag, Tabs, Radio, Typography } from 'antd';
 import { DeleteFilled, DragOutlined } from '@ant-design/icons';
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
@@ -17,11 +17,12 @@ import siteConfig from "@iso/config/site.config";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import enumerations from "../../config/enumerations";
 import '../User/Image.css';
+import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
 const { Option } = Select;
 const { TabPane } = Tabs;
 const { Meta } = Card;
-
+const { Text } = Typography;
 class ImageUpload extends React.Component {
     constructor(props) {
         super(props)
@@ -348,6 +349,7 @@ class ImageUpload extends React.Component {
         
         const tabTitleRelation='İlgili Ürün ('+relatedProductsCount+')';
         const tabTitleDepent='Bağlı Ürün ('+dependentProductsCount+')';
+        const siteMode = getSiteMode();
 
         return (
             <LayoutWrapper>
@@ -487,10 +489,21 @@ class ImageUpload extends React.Component {
                                                                         </Row>
                                                                     </div>
                                                                 ]}>
-                                                                <Meta
-                                                                    title={item.itemCode}
-                                                                    description={item.description}
-                                                                />
+                                                                <Row>
+                                                                    <Col span={6} >
+                                                                        <h3 className="isoCardTitle">{item.itemCode}</h3>
+                                                                    </Col>
+                                                                    <Col span={18} align="right" >
+                                                                        <Text mark style={{ fontSize: '80%' }}>{siteMode !== enumerations.SiteMode.DeliverysPoint ? ('Stok: ' + item.salableNormalBalance +' '+ item.unit):('Stok: ' + item.salablePartialBalance +' '+ item.unit)}{ }</Text>
+                                                                    </Col>
+                                                                </Row>
+                                                                <span className="isoCardDate" style={{ minHeight: '70px' }}>
+                                                                    {item.description}
+                                                                    <br />
+                                                                    <Col className="isoCardTitle" align="center" >
+                                                                        {item.descriptionExtra}
+                                                                    </Col>
+                                                                </span>
                                                                 <div className="imageType" >
                                                                     <Tag color="volcano">{item.category}</Tag>
                                                                 </div>

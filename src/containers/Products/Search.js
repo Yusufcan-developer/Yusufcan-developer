@@ -1705,10 +1705,10 @@ const SearchComponent = () => {
                                           <React.Fragment>
                                             {item.campaignCode === '' ?
                                               <div className="isoCardImage">
-                                                <img style={{ height: '150px' }} alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                                                <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                               </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                                                 <div className="isoCardImage">
-                                                  <img style={{ height: '150px' }} alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                                                  <img  alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                                 </div></Badge.Ribbon>}
                                           </React.Fragment>
                                           <div className="isoCardContent">
@@ -1720,7 +1720,7 @@ const SearchComponent = () => {
                                                 <Text mark style={{ fontSize: '80%' }}>{item.salableBalanceFriendlyText ? ('Stok: ' + item.salableBalanceFriendlyText) : null}{ }</Text>
                                               </Col>
                                             </Row>
-                                            <span className="isoCardDate" >
+                                            <span className="isoCardDate" style={{ minHeight: '70px' }}>
                                               {item.description}
                                               <br />
                                               <Col className="isoCardTitle" align="center" >
@@ -1896,10 +1896,10 @@ const SearchComponent = () => {
                                           <React.Fragment>
                                             {item.campaignCode === '' ?
                                               <div className="isoCardImage">
-                                                <img style={{ height: '150px' }} alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                                                <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                               </div> : <Badge.Ribbon text="Kampanyalı" color='blue' placement='start'>
                                                 <div className="isoCardImage">
-                                                  <img style={{ height: '150px' }} alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
+                                                  <img alt="Ürün Fotoğrafı" src={item.imageMediumBaseUrl + item.imageMainFileName} />
                                                 </div></Badge.Ribbon>}
                                           </React.Fragment>
                                           <div className="isoCardContent">
