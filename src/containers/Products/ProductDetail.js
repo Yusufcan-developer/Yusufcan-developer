@@ -13,6 +13,7 @@ import Input from '@iso/components/uielements/input';
 import { Row, Col, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Image, Space, message } from 'antd';
 import _, { select } from 'underscore';
 import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
+import popupProductRelation from '../../../src/containers/Products/PopupProductRelation'
 
 //Fetch
 import { useGetProductItem } from "@iso/lib/hooks/fetchData/useGetProductItem";
@@ -27,13 +28,14 @@ import enumerations from "@iso/config/enumerations";
 import logMessage from '@iso/config/logMessage';
 import viewType from '@iso/config/viewType';
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
-import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Styles
 import PageHeader from '@iso/components/utility/pageHeader';
 import basicStyle from '@iso/assets/styles/constants';
 import Form from "@iso/components/uielements/form";
 import { LinkOutlined } from '@ant-design/icons';
+import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
+import Item from "antd/lib/list/Item";
 var jwtDecode = require('jwt-decode');
 const { TabPane } = Tabs;
 
@@ -51,6 +53,7 @@ const ProductDetail = () => {
   const [selectedPartialAmout, setSelectedPartialAmount] = useState(0);
   const [plusButtonDisable, setPlusButtonDisable] = useState(false);
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
+  const [hide,setHide]=useState(false);
   const history = useHistory();
 
   //Style States
@@ -66,7 +69,7 @@ const ProductDetail = () => {
   const { addToCart, changeViewTopbarCart, changeProductQuantity } = ecommerceActions;
 
   //Product Detail Hook
-  const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}?siteMode=${searchSiteMode}`);
+  const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}?siteMode=${searchSiteMode}&includeDependentAndRelatedProductDetails=true`);
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}?siteMode=${searchSiteMode}`);
   document.title = "Ürün - " + description + " - Seramiksan B2B";
 
@@ -112,54 +115,56 @@ const ProductDetail = () => {
 
   //Adding products to the cart
   function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity) {
-    const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
-    //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    const activeUser = localStorage.getItem("activeUser")
-    if ((!activeUser) | (activeUser === null)) {
-      if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
-    }
-    if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
-    else {
-      inputNumberShowOrHide(itemCode)
-      if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
-        if (typeof selectedQuantity === 'undefined') { selectedQuantity = 1 }
-        const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
-        const buttonMinuxControl = productAmountControlDisabled(product, isPartial, parseInt(selectedQuantity));
-        setPlusButtonDisable(buttonMinuxControl);
-        if (amountControl === -1) {
-          dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
-          notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
-          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
-        }
-      }
-      else {
-        const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
-        const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
-        const buttonMinuxControl = productAmountControlDisabled(product, isPartial, parseInt(selectedProduct.quantity + 1));
-        setPlusButtonDisable(buttonMinuxControl);
-        if (amountControl === -1) {
-          const newProductQuantity = [];
-          let setQunatity;
-          productQuantity.forEach(productItem => {
-            if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
-              newProductQuantity.push(productItem);
-            } else {
-              const itemCode = productItem.itemCode;
-              const quantity = productItem.quantity + 1;
-              setQunatity = quantity;
-              newProductQuantity.push({
-                itemCode,
-                quantity,
-                isPartial,
-              });
-            }
-          });
-          dispatch(changeProductQuantity(newProductQuantity));
-          postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + logMessage.Carts.increaseProduct + setQunatity);
-        }
-      }
-    }
+    debugger
+    setHide(true);
+    // const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
+    // //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
+    // const token = jwtDecode(localStorage.getItem("id_token"));
+    // const activeUser = localStorage.getItem("activeUser")
+    // if ((!activeUser) | (activeUser === null)) {
+    //   if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
+    // }
+    // if ((canBeSoldPartially) && (!orderPartialAddTobox)) { getWarehouseList(product.itemCode); setSelectedItemCode(product.itemCode); setPartialQuantity(true); }
+    // else {
+    //   inputNumberShowOrHide(itemCode)
+    //   if (productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial) === undefined) {
+    //     if (typeof selectedQuantity === 'undefined') { selectedQuantity = 1 }
+    //     const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
+    //     const buttonMinuxControl = productAmountControlDisabled(product, isPartial, parseInt(selectedQuantity));
+    //     setPlusButtonDisable(buttonMinuxControl);
+    //     if (amountControl === -1) {
+    //       dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
+    //       notification.info({ message: 'Sepet', description: 'Ürün Sepete Eklenmiştir', placement: 'bottomRight' });
+    //       postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
+    //     }
+    //   }
+    //   else {
+    //     const selectedProduct = productQuantity.find(item => item.itemCode == product.itemCode && item.isPartial == isPartial);
+    //     const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
+    //     const buttonMinuxControl = productAmountControlDisabled(product, isPartial, parseInt(selectedProduct.quantity + 1));
+    //     setPlusButtonDisable(buttonMinuxControl);
+    //     if (amountControl === -1) {
+    //       const newProductQuantity = [];
+    //       let setQunatity;
+    //       productQuantity.forEach(productItem => {
+    //         if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+    //           newProductQuantity.push(productItem);
+    //         } else {
+    //           const itemCode = productItem.itemCode;
+    //           const quantity = productItem.quantity + 1;
+    //           setQunatity = quantity;
+    //           newProductQuantity.push({
+    //             itemCode,
+    //             quantity,
+    //             isPartial,
+    //           });
+    //         }
+    //       });
+    //       dispatch(changeProductQuantity(newProductQuantity));
+    //       postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + logMessage.Carts.increaseProduct + setQunatity);
+    //     }
+    //   }
+    // }
   };
   function inputNumberShowOrHide() {
     var selectedProduct = productQuantity.find(item => item.itemCode == productId);
@@ -345,6 +350,13 @@ const ProductDetail = () => {
           <Link to="/products/search">Ürün Arama</Link></Breadcrumb.Item>
         <Breadcrumb.Item>Ürün Detayı</Breadcrumb.Item>
       </Breadcrumb>
+      {hide===true ?
+      <PopupProductRelation
+          hide={hide}
+          item={data}
+          dependentProducts={[]}
+          relatedProducts={[]}
+        />:null}
       <Row style={rowStyle} gutter={gutter} justify="start">
         <PageHeader >{typeof itemCode !== 'undefined' ? itemCode : ''} - {typeof description !== 'undefined' ? description : ''}</PageHeader>
         <Col md={12} sm={12} xs={24} style={colStyle}>

@@ -1002,10 +1002,12 @@ const SearchComponent = () => {
   }
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
+    debugger
     document.getElementById(id).select();
   }
 
   function onChange(e, item, isPartial, hasRealionProduct = false) {
+    debugger
     if (hasRealionProduct) { setEntryProductCode(item.itemCode);setEntryProductCodeIsPartial(isPartial); }
     if (isPartial) { parseInt(setSelectedPartialAmount(e.target.value)) }
     else {
@@ -1018,6 +1020,7 @@ const SearchComponent = () => {
 
   //Redux product quantity change event
   function onChangeQuantity(event, productData, isPartial = false) {
+    debugger
     if (searchSiteMode === enumerations.SiteMode.DeliverysPoint) { isPartial = true; }
     const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
     const selectedQuantity = event.target.value;
@@ -1887,7 +1890,7 @@ const SearchComponent = () => {
                                   </Box>
                                   </Scrollbar>
                                 </Col>:(null)}
-                                {dependentProducts.length>0 ? 
+                                {relatedProducts.length>0 ? 
                                 <Col md={6} sm={6} xs={12} style={colStyle}>
                                   <span style={{ fontWeight: 'bold' }}>İlgili Ürünler</span>
                                   <Scrollbar style={{ height: 500 }}><Box>
