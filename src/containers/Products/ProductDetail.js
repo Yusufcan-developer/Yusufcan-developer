@@ -15,7 +15,7 @@ import SwiperCore, {
 } from 'swiper/core';
 // Import Swiper styles
 import "swiper/swiper.min.css";
-import "swiper/components/navigation/navigation.min.css"
+//import "swiper/components/navigation/navigation.min.css"
 import "swiper/components/pagination/pagination.min.css"
 import Input from '@iso/components/uielements/input';
 import { Row, Col, Tabs, Button, Breadcrumb, notification, Table, Tag, Card, Image, Space, message } from 'antd';
