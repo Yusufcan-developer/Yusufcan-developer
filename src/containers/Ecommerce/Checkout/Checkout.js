@@ -19,6 +19,7 @@ import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
 import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { InputBoxWrapper } from './Checkout.styles';
+import PopupProductRelation from '../../../../src/containers/Products/PopupProductRelation'
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
@@ -82,6 +83,9 @@ export default function () {
   const [transportation,setTransportation] = useState('');
   const [days, setDays] = useState([]);
   const [userId, setUserId] = useState();
+  const [hide,setHide]=useState(false);
+  const [productDetail,setProduct]= useState();
+
   const history = useHistory();
   const location = useLocation();
 
@@ -110,16 +114,64 @@ export default function () {
   function renderProducts() {
     if (typeof data !== 'undefined') {
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
+      let quantityLess;     
       return productList.map(product => {
+        debugger
+        if (productList.length > 0) {
+          debugger
+          quantityLess = _.find(product.validationMessages, function(x){ return x.Key === "DependentProduct"; });
+        }
         return (
           <SingleOrderInfo
             key={product.objectID}
             productItem={product}
+            popupShow={e => popupShow(product.item)}
+            onComplete={onCompletePopupRelation}
+            quantityLess={quantityLess}
           />
         );
       });
     }
   }
+  async function popupShow(productItem) {
+    if (productItem.hasDependentOrRelatedProducts === true) {
+      await getProductDetail(productItem.itemCode);
+
+      return setHide(true);
+    }
+  }
+
+  function onCompletePopupRelation() {
+    setHide(false);
+    window.location.reload(false);
+  }
+//Get Product Detail
+async function getProductDetail(itemCode) {
+  const siteMode=getSiteMode();
+  let productInfo;
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+    }
+  };
+  const token = jwtDecode(localStorage.getItem("id_token"));
+  const activeUser = localStorage.getItem("activeUser");
+  let uname = '';
+  if (typeof activeUser != 'undefined') { uname = activeUser }
+  if (!token.uname) { return 'Unauthorized' }
+  await fetch(`${siteConfig.api.products.getProductDetail}${itemCode}?siteMode=${siteMode}&includeDependentAndRelatedProductDetails=true`, requestOptions)
+    .then(response => {
+      const status = apiStatusManagement(response);
+      return status;
+    })
+    .then(data => {
+      setProduct(data);  
+    })
+    .catch();
+  return productInfo;
+}
   //Change First Name 
   function saveOrderQuestionModal() {
     if (adressItem) {
@@ -1013,6 +1065,15 @@ export default function () {
               </OrderTable>
             </div>
           </div>
+          {hide === true ?
+            <PopupProductRelation
+              hide={hide}
+              item={productDetail}
+              dependentProducts={[]}
+              relatedProducts={[]}
+              checkOutPage={true}
+              onComplete={onCompletePopupRelation}
+            /> : null}
         </Box>
       </LayoutWrapper>
     </CheckoutContents>

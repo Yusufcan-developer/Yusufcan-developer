@@ -20,15 +20,15 @@ const Wrapper = styled.div`
 export default function SwiperWithCustomNav(props) {
   const [swiper, updateSwiper] = useState(null);
   const { children, navigationControl } = props;
-
+  debugger
   const goNext = () => {
-    if (swiper !== null) {
+    if (swiper === null) {
       swiper.slideNext();
     }
   };
 
   const goPrev = () => {
-    if (swiper !== null) {
+    if (swiper === null) {
       swiper.slidePrev();
     }
   };

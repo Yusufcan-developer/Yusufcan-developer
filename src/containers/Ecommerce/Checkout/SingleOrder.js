@@ -1,11 +1,12 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import numberFormat from "@iso/config/numberFormat";
-export default function ({ productItem }) {
+export default function ({ productItem, popupShow, quantityLess }) {
   const trimName = productItem.item.description ? productItem.item.description.substring(0, 30) : '';
   return (
     <div className="isoSingleOrderInfo">
       <p>
-        <span style={{ color: '#000000' }}>{productItem.itemCode}</span>
+      <a ><span onClick={popupShow} style={{ color: '#000000',cursor:'pointer', textDecorationLine:typeof quantityLess!=='undefined'? 'underline':null }}>{productItem.itemCode} </span></a>
         <span style={{ color: '#000000' }}>-</span>
         <span style={{ color: '#000000' }}>{trimName}</span>
         <span style={{ color: '#000000' }}>x</span>

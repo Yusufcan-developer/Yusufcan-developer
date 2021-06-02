@@ -26,6 +26,7 @@ import logMessage from '@iso/config/logMessage';
 import { DeleteOutlined } from '@ant-design/icons';
 import viewType from '@iso/config/viewType';
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
+import PopupProductRelation from '../../../../src/containers/Products/PopupProductRelation'
 
 //Other Library
 import { OrderTable } from '../Checkout/Checkout.styles';
@@ -38,6 +39,7 @@ let cartItem = null;
 export default function CartTable({ style }) {
   const [cartChangeItem, setCartChangeItem] = useState(false);
   const view = viewType('CartTable');
+  const [hide, setHide] = useState(false);
 
   useEffect(() => {
     getCartList();
@@ -52,6 +54,7 @@ export default function CartTable({ style }) {
   const [selectedProductItem, setSelectedProductItem] = useState();
   const [selectedIsPartial, setSelectedIsPartial] = useState();
   const [deleteCartVisible, setDeleteCartVisible] = useState(false);
+  const [productDetail, setProduct] = useState();
   const [title, setTitle] = useState();
   const dispatch = useDispatch();
   const { productQuantity } = useSelector(state => state.Ecommerce);
@@ -68,12 +71,12 @@ export default function CartTable({ style }) {
     });
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser");
-    const siteMode=getSiteMode();
+    const siteMode = getSiteMode();
     let account = '';
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
 
     if (typeof activeUser != 'undefined') { account = activeUser }
-    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode":siteMode };
+    const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode": siteMode };
     const requestOptions = {
       method: "POST",
       headers: {
@@ -105,7 +108,7 @@ export default function CartTable({ style }) {
                     quantity: product.quantity,
                     orderAmount: product.orderAmount,
                     isPartial: product.isPartial,
-                    totalM2:  product.totalM2
+                    totalM2: product.totalM2
                   });
                 });
               }
@@ -130,7 +133,7 @@ export default function CartTable({ style }) {
         Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
       }
     };
-    const siteMode=getSiteMode();
+    const siteMode = getSiteMode();
     const token = jwtDecode(localStorage.getItem("id_token"));
     const activeUser = localStorage.getItem("activeUser")
     let apiUrl = '';
@@ -161,6 +164,9 @@ export default function CartTable({ style }) {
         setSelectedAmount(parseInt(e.target.value)); setSelectedIsPartial(isPartial); setSelectedProductItem(item.itemCode);
       }
     }
+  }
+  function onCompletePopupRelation() {
+    setHide(false);
   }
   //Input Number return partial quantity value
   function inputNumberPartialQuantityValueNew(product, isPartial) {
@@ -290,6 +296,14 @@ export default function CartTable({ style }) {
                         {<IntlMessages id="product.plus" />}
                       </Button>
                     </Col>
+                    {hide === true ?
+                      <PopupProductRelation
+                        hide={hide}
+                        item={productDetail}
+                        dependentProducts={[]}
+                        relatedProducts={[]}
+                        onComplete={onCompletePopupRelation}
+                      /> : null}
                   </Row>
                 </td> : null}
               {productItem !== null ?
@@ -328,7 +342,7 @@ export default function CartTable({ style }) {
         } else {
           const itemCode = productItem.itemCode
           const quantity = parseInt(inputAmount);
-          const totalM2  = parseFloat(productItem.totalM2);
+          const totalM2 = parseFloat(productItem.totalM2);
           setQunatity = quantity;
           newProductQuantity.push({
             itemCode,
@@ -354,8 +368,39 @@ export default function CartTable({ style }) {
       postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.decreaseProduct + quantity);
     }
   };
+  //Get Product Detail
+  async function getProductDetail(itemCode) {
+    const siteMode = getSiteMode();
+    let productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser");
+    let uname = '';
+    if (typeof activeUser != 'undefined') { uname = activeUser }
+    if (!token.uname) { return 'Unauthorized' }
+    await fetch(`${siteConfig.api.products.getProductDetail}${itemCode}?siteMode=${siteMode}&includeDependentAndRelatedProductDetails=true`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        setProduct(data);
+      })
+      .catch();
+    return productInfo;
+  }
+  async function onAddBox(product, productItem) {
+    if (productItem.hasDependentOrRelatedProducts === true) {
+      await getProductDetail(productItem.itemCode);
 
-  function onAddBox(product, productItem) {
+      return setHide(true);
+    }
     const productIsPartialTitle = product.isPartial === true ? ' Parçalı' : ' Paletli';
     const quantity = product.quantity + 1;
     const amountControl = productAmountControl(productItem, product.isPartial, parseInt(quantity));

@@ -1,6 +1,5 @@
 //React
 import React, { useState, useEffect } from "react";
-import { Link, useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import Form from "@iso/components/uielements/form";
@@ -14,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import ecommerceActions from '@iso/redux/ecommerce/actions';
 
 //Fetch
-import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiProductList";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Configs
@@ -31,22 +29,16 @@ import _ from 'underscore';
 import logMessage from '@iso/config/logMessage';
 
 //Desing style
-import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
-import ContentHolder from '@iso/components/utility/contentHolder';
-import PageHeader from "@iso/components/utility/pageHeader";
-import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 import {
-  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined
+    InfoCircleOutlined
 } from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
 const PopupProductRelation = (props) => {
-    const { hide, item } = props;
-
+    const { hide, item, onComplete, checkOutPage } = props;
 
     const { rowStyle, colStyle, gutter } = basicStyle;
     const [partialAmount, setPartialAmount] = useState(0);
-    const [isModalVisible, setIsModalVisible] = useState();
     const [palletAmount, setPalletAmount] = useState(0);
     const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
     const [selectedAmout, setSelectedAmount] = useState(0);
@@ -56,17 +48,15 @@ const PopupProductRelation = (props) => {
     const [selectedItem, setSelectedItem] = useState();
     const [entryProductCodeIsPartial, setEntryProductCodeIsPartial] = useState();
     const [dependentProducts, setDependentProducts] = useState([]);
-  const [relatedProducts, setRelatedProducts] = useState([]);
-    // const {  } = props;
-    // const { rowStyle, colStyle, gutter } = basicStyle;
-    //Redux ürünler listeleme
+    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [warningQuantity, setWarningQuantity] = useState(0);
+    const [changeQuantity, setChangeQuantity] = useState(true);
     const { productQuantity } = useSelector(state => state.Ecommerce);
     const { addToCart, changeProductQuantity } = ecommerceActions;
     const dispatch = useDispatch();
     var jwtDecode = require('jwt-decode');
     const { Text } = Typography;
     let style = null;
-    let calculate=0;
     // if (position === 'top') {
     //     style = { marginBottom: '10px' };
     // } else if (position === 'bottom') {
@@ -79,52 +69,87 @@ const PopupProductRelation = (props) => {
     //     newView = 'TabView';
     // }
     useEffect(() => {
+        if (changeQuantity === true) {
+            const token = jwtDecode(localStorage.getItem("id_token"));
+            if ((token.urole === 'admin') || (token.dcode === 'B555888')) {
+                getCartList();
+            }
+        }
         getWarehouseList(item.itemCode);
-    }, []);
+    }, [changeQuantity]);
 
     const siteMode = getSiteMode();
-//Popup içerisinde girilen ana ürün ile bağıl ve ilgili ürünlerin miktar toplamları hesaplaması.
-function calculatePopupQuantity() {
+    //Popup içerisinde girilen ana ürün ile bağıl ve ilgili ürünlerin miktar toplamları hesaplaması.
+    async function calculatePopupQuantity(items) {
+        let control = 0;
 
-    let control = 0;
-    let reduxProductBox = localStorage.getItem('cartProductQuantity');
-    reduxProductBox = JSON.parse(reduxProductBox);
+        let bagilVeIlgiliUrunMiktari = 0;
+        const mainProduct = _.filter(items, function (x) {
+            if (item.itemCode === x.itemCode) {
+                return true;
+            }
+        });
+        const mainProductTotal = _.reduce(mainProduct, function (memo, x) { return memo + x.totalM2; }, 0);
 
-    let bagilVeIlgiliUrunMiktari = 0;
-    const mainProduct = _.filter(reduxProductBox, function (x) {
-      if (item.itemCode === x.itemCode) {
-        return true;
-      }
-    });
-    const mainProductTotal = _.reduce(mainProduct, function (memo, x) { return memo + x.totalM2; }, 0);
-
-    _.each(reduxProductBox, (redux) => {
-      if (item.itemCode !== redux.itemCode) {
-        var even = _.find(item.dependentProductCodes, function (x) { return x === redux.itemCode })
-        if (typeof even !== 'undefined') { bagilVeIlgiliUrunMiktari += parseFloat(redux.totalM2); }
-      }
-    });
-    if ((mainProductTotal === 0) || (bagilVeIlgiliUrunMiktari >= mainProductTotal)) {
-      control = 0;
-    }
-    else {
-        if (!isNaN(mainProductTotal)) {
-      control = mainProductTotal - bagilVeIlgiliUrunMiktari;
+        _.each(items, (redux) => {
+            if (item.itemCode !== redux.itemCode) {
+                var even = _.find(item.dependentProductCodes, function (x) { return x === redux.itemCode })
+                if (typeof even !== 'undefined') { bagilVeIlgiliUrunMiktari += parseFloat(redux.totalM2); }
+            }
+        });
+        if ((mainProductTotal === 0) || (bagilVeIlgiliUrunMiktari >= mainProductTotal)) {
+            control = 0;
+            setWarningQuantity(control);
         }
+        else {
+            if (!isNaN(mainProductTotal)) {
+                control = mainProductTotal - bagilVeIlgiliUrunMiktari;
+                setWarningQuantity(control);
+            }
+        }
+
+        setChangeQuantity(false);
+        return control;
     }
-    return control;
-  }
+    async function getCartList() {
+        let productInfo;
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            }
+        };
+        const siteMode = getSiteMode();
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        const activeUser = localStorage.getItem("activeUser")
+        let apiUrl = '';
+        if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&siteMode=${siteMode}`; }
+        else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&siteMode=${siteMode}` }
+        if (!token.uname) { return 'Unauthorized' }
+
+        await fetch(apiUrl, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response, true);
+                return status;
+            })
+            .then(data => {
+                calculatePopupQuantity(data.items);
+            })
+            .catch();
+        return productInfo;
+    }
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
-    function handleCancel(item) {
+    async function handleCancel(item) {
         const token = jwtDecode(localStorage.getItem("id_token"));
         if ((token.urole === 'admin') || (token.dcode === 'B555888')) {
-            const quantity = calculatePopupQuantity();
-            if ((typeof item.dependentProductCodes === 'undefined' || item.dependentProductCodes.length === 0) || (quantity <= 0)) {
+            if ((typeof item.dependentProductCodes === 'undefined' || item.dependentProductCodes.length === 0) || (warningQuantity <= 0)) {
                 setPartialQuantity(false);
                 setRelatedProducts([]);
                 setDependentProducts([]);
+                onComplete();
             }
-            else { message.warning(quantity <= 0 ? null : <span style={{ color: 'red' }}>{numberFormat(quantity)} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>); }
+            else { message.warning(warningQuantity <= 0 ? null : <span style={{ color: 'red' }}>{warningQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>); }
         }
         else {
             setPartialQuantity(false);
@@ -139,6 +164,7 @@ function calculatePopupQuantity() {
     }
     //Adding products to the cart
     function onAddProductCart(product, orderPartialAddTobox = false, isPartial = false, selectedQuantity = 0) {
+        setChangeQuantity(true);
         if (searchSiteMode === enumerations.SiteMode.DeliverysPoint) { isPartial = true; }
         const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
         //Kullanıcının rolüne göre ürün ekleyip çıkaramaması
@@ -148,37 +174,40 @@ function calculatePopupQuantity() {
             if ((token.urole === 'fieldmanager') || (token.urole === 'regionmanager') || (token.urole === 'support')) { return message.error('Ürünü sepete eklemek için bayi seçimi yapmanız gerekiyor.'); }
         }
         if (selectedQuantity === 0) { selectedQuantity = 1; }
-            if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
-                const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
-                if (amountControl === -1) {
-                    dispatch(addToCart(product, parseInt(selectedQuantity), isPartial));
-                    notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
-                    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
-                }
+        if (productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial) === undefined) {
+            const amountControl = productAmountControl(product, isPartial, parseInt(selectedQuantity));
+            if (amountControl === -1) {
+                dispatch(addToCart(product, parseInt(selectedQuantity), isPartial, parseInt(selectedQuantity)));
+                notification.info({ message: 'Sepet', description: 'Ürün ' + product.itemCode + ' Sepete Eklenmiştir', placement: 'bottomRight' });
+                postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Add, product.itemCode + productIsPartialTitle + logMessage.Carts.addProduct + selectedQuantity);
             }
-            else {
-                const selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
-                const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
-                if (amountControl === -1) {
-                    const newProductQuantity = [];
-                    let setQunatity;
-                    productQuantity.forEach(productItem => {
-                        if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
-                            newProductQuantity.push(productItem);
-                        } else {
-                            const itemCode = productItem.itemCode;
-                            const quantity = productItem.quantity + 1;
-                            setQunatity = quantity;
-                            newProductQuantity.push({
-                                itemCode,
-                                quantity,
-                                isPartial,
-                            });
-                        }
-                    });
-                    dispatch(changeProductQuantity(newProductQuantity));
-                    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.increaseProduct + setQunatity);
-                }
+        }
+        else {
+            const selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
+            const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
+            debugger
+            if (amountControl === -1) {
+                const newProductQuantity = [];
+                let setQunatity;
+                productQuantity.forEach(productItem => {
+                    if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+                        newProductQuantity.push(productItem);
+                    } else {
+                        const itemCode = productItem.itemCode;
+                        const quantity = productItem.quantity + 1;
+                        setQunatity = quantity;
+                        const orderAmount = checkOutPage === true ? parseInt(setQunatity) : 0;
+                        newProductQuantity.push({
+                            itemCode,
+                            quantity,
+                            isPartial,
+                            orderAmount,
+                        });
+                    }
+                });
+                dispatch(changeProductQuantity(newProductQuantity));
+                postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.increaseProduct + setQunatity);
+            }
         }
 
         setEntryProductCode(null);
@@ -196,7 +225,7 @@ function calculatePopupQuantity() {
 
     //Redux product quantity change event
     function onChangeQuantity(event, productData, isPartial = false) {
-        debugger
+        setChangeQuantity(true);
         let newQuantity = event.target.value;
         if (searchSiteMode === enumerations.SiteMode.DeliverysPoint) { isPartial = true; }
         const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
@@ -220,10 +249,12 @@ function calculatePopupQuantity() {
                     } else {
                         const itemCode = productItem.itemCode
                         const quantity = parseInt(newQuantity);
+                        const orderAmount = checkOutPage === true ? parseInt(newQuantity) : 0;
                         newProductQuantity.push({
                             itemCode,
                             quantity,
                             isPartial,
+                            orderAmount,
                         });
                     }
                 });
@@ -237,33 +268,36 @@ function calculatePopupQuantity() {
 
     //removing items from the cart
     function onRemoveProductCart(product, isPartial = false) {
+        setChangeQuantity(true);
         const productIsPartialTitle = isPartial === true ? ' Parçalı' : ' Paletli';
-            var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
-            if (typeof selectedProduct === 'undefined') { return; }
-            if (selectedProduct.quantity !== 0) {
-                const newProductQuantity = [];
-                let setQunatity;
-                productQuantity.forEach(productItem => {
-                    if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
-                        newProductQuantity.push(productItem);
-                    } else {
-                        const itemCode = productItem.itemCode;
-                        const quantity = productItem.quantity - 1;
-                        setQunatity = quantity;
-                        if (quantity === 0) { return postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + logMessage.Carts.removeProduct); }
-                        newProductQuantity.push({
-                            itemCode,
-                            quantity,
-                            isPartial,
-                        });
-                    }
-                });
-                dispatch(changeProductQuantity(newProductQuantity));
-                if (setQunatity > 0) {
-                    postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.decreaseProduct + setQunatity);
+        var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
+        if (typeof selectedProduct === 'undefined') { return; }
+        if (selectedProduct.quantity !== 0) {
+            const newProductQuantity = [];
+            let setQunatity;
+            productQuantity.forEach(productItem => {
+                if (productItem.itemCode !== selectedProduct.itemCode || productItem.isPartial !== isPartial) {
+                    newProductQuantity.push(productItem);
+                } else {
+                    const itemCode = productItem.itemCode;
+                    const quantity = productItem.quantity - 1;
+                    setQunatity = quantity;
+                    const orderAmount = checkOutPage === true ? parseInt(setQunatity) : 0;
+                    if (quantity === 0) { return postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Delete, product.itemCode + productIsPartialTitle + logMessage.Carts.removeProduct); }
+                    newProductQuantity.push({
+                        itemCode,
+                        quantity,
+                        isPartial,
+                        orderAmount,
+                    });
                 }
+            });
+            dispatch(changeProductQuantity(newProductQuantity));
+            if (setQunatity > 0) {
+                postSaveLog(enumerations.LogSource.Cart, enumerations.LogTypes.Update, product.itemCode + productIsPartialTitle + logMessage.Carts.decreaseProduct + setQunatity);
             }
-    };   
+        }
+    };
 
     //Input Number return pallet quantity value
     function palletQuantityEntry(product) {
@@ -326,38 +360,38 @@ function calculatePopupQuantity() {
     }
 
     //Get Warehouse Amount Data
-  async function getWarehouseList(itemCode) {
-    let productInfo;
-    const requestOptions = {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      }
-    };
-
-    await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
-      .then(response => {
-        const status = apiStatusManagement(response);
-        return status;
-      })
-      .then(data => {
-        let palletQuantity = 0;
-        let partialQuantity = 0;
-        if (data.balances.length > 0) {
-          _.each(data.balances, (item) => {
-            if (item.warehouseName === 'PALETLİ SATIŞ AMBARI') { palletQuantity += item.balance } else {
-              partialQuantity += item.balance;
+    async function getWarehouseList(itemCode) {
+        let productInfo;
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
             }
-          });
-          setPalletAmount(palletQuantity);
-          setPartialAmount(partialQuantity);
-          setSalableBalanceFriendlyText(data.salableBalanceFriendlyText);
-        }
-      })
-      .catch();
-    return productInfo;
-  }
+        };
+
+        await fetch(`${siteConfig.api.warehouse}${itemCode}`, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
+            .then(data => {
+                let palletQuantity = 0;
+                let partialQuantity = 0;
+                if (data.balances.length > 0) {
+                    _.each(data.balances, (item) => {
+                        if (item.warehouseName === 'PALETLİ SATIŞ AMBARI') { palletQuantity += item.balance } else {
+                            partialQuantity += item.balance;
+                        }
+                    });
+                    setPalletAmount(palletQuantity);
+                    setPartialAmount(partialQuantity);
+                    setSalableBalanceFriendlyText(data.salableBalanceFriendlyText);
+                }
+            })
+            .catch();
+        return productInfo;
+    }
 
     return (
         <React.Fragment>
@@ -374,19 +408,18 @@ function calculatePopupQuantity() {
                             Kapat
                               </Button>
                     ]}>
-                     {/* { Eklenmesi gereken ürün sayısı bilgisi } */}
-                              { <Col style={{ width: '100%' }} align="center">
-                                {calculatePopupQuantity() <= 0 ?null :<span style={{color:'red'}}>{numberFormat(calculatePopupQuantity())} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit==='M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>}
-                              </Col>  }
+                    {/* { Eklenmesi gereken ürün sayısı bilgisi } */}
+                    {<Col style={{ width: '100%' }} align="center">
+                        {warningQuantity <= 0 ? null : <span style={{ color: 'red' }}>{warningQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>}
+                    </Col>}
                     <Row style={rowStyle} gutter={gutter} justify="start">
                         <Col md={12} sm={12} xs={24} style={colStyle} >
-                            <span style={{ fontWeight: 'bold' }}>Seçilen Ana Ürün</span>
+                            <span style={{ fontWeight: 'bold', color: 'red' }}>Seçilen Ana Ürün</span>
                             <Box>
                                 <Card bodyStyle={{ textAlign: 'center' }}>
                                     {<Image
                                         key={`customnav-slider--key${item.imageUrl}`}
                                         src={item.imageMediumBaseUrl + item.imageMainFileName}
-                                        width='400px'
                                     />}
                                 </Card>
                                 <div>
@@ -477,10 +510,10 @@ function calculatePopupQuantity() {
 
                                                         </Col>
                                                         {partialAmount > 0 ? (<Col span={4}>
-                                                                <Tag color="blue">
-                                                                    Stok: {numberFormat(partialAmount)} {item.unit}
-                                                                </Tag>
-                                                            </Col>) : null}
+                                                            <Tag color="blue">
+                                                                Stok: {numberFormat(partialAmount)} {item.unit}
+                                                            </Tag>
+                                                        </Col>) : null}
                                                     </Space>
                                                 </Col>
                                             </Row>
@@ -494,7 +527,7 @@ function calculatePopupQuantity() {
                             <Col md={6} sm={6} xs={12} style={colStyle}>
                                 <span style={{ fontWeight: 'bold' }}>Bağlı Ürünler ( {(item.dependentProducts.length)} )</span>
                                 <Scrollbar style={{ height: 500 }}><Box>
-                                <Row gutter={[24, 8]}>
+                                    <Row gutter={[24, 8]}>
                                         {item.dependentProducts.map((item) => (
                                             <SingleCardWrapper style={style} xs={{ span: 24 }} sm={{ span: 24 }} lg={{ span: 24 }} >
                                                 <React.Fragment>
@@ -560,7 +593,7 @@ function calculatePopupQuantity() {
                                                                                 </Col>
                                                                                 <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
                                                                                     <Input
-                                                                                        id={'Paletli' + item.itemCode}                                                                                        
+                                                                                        id={'Paletli' + item.itemCode}
                                                                                         onClick={event => onSelectAll(event)}
                                                                                         onChange={event => onChange(event, item, false)}
                                                                                         onBlur={event => onChangeQuantity(event, item)}
@@ -568,7 +601,7 @@ function calculatePopupQuantity() {
                                                                                         maxLength={5}
                                                                                         defaultValue={0}
                                                                                         step={1}
-                                                                                        value={EntryInputQuantity(item, false)}                                                                                        
+                                                                                        value={EntryInputQuantity(item, false)}
                                                                                     />
                                                                                 </Col>
                                                                                 <Col span={4}>
@@ -582,11 +615,11 @@ function calculatePopupQuantity() {
                                                                                             1 Palet: {item.m2Pallet} {item.unit}
                                                                                         </Tag>
                                                                                     </Col>
-                                                                                    {palletAmount > 0 ? (<Col span={4}>
+                                                                                    {/* {palletAmount > 0 ? (<Col span={4}>
                                                                                         <Tag color="blue">
                                                                                             Stok: {salableBalanceFriendlyText}
                                                                                         </Tag>
-                                                                                    </Col>) : null}
+                                                                                    </Col>) : null} */}
                                                                                 </Col>
                                                                             </Row>
                                                                         </Form.Item>
@@ -596,8 +629,8 @@ function calculatePopupQuantity() {
                                                                         <Row align="middle">
                                                                             <Col span={4} align="right">
                                                                                 <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
-                                                                                        {<IntlMessages id="product.minus" />}
-                                                                                    </Button>
+                                                                                    {<IntlMessages id="product.minus" />}
+                                                                                </Button>
                                                                             </Col>
                                                                             <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
                                                                                 <Input
@@ -614,8 +647,8 @@ function calculatePopupQuantity() {
                                                                             </Col>
                                                                             <Col span={4} style={{ width: '100%' }}>
                                                                                 <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
-                                                                                        {<IntlMessages id="product.plus" />}
-                                                                                    </Button>
+                                                                                    {<IntlMessages id="product.plus" />}
+                                                                                </Button>
                                                                             </Col>
                                                                             <Col span={4} style={{ width: '100%' }}>
                                                                                 <Col span={4}>
@@ -624,11 +657,6 @@ function calculatePopupQuantity() {
                                                                                     </Tag> : null}
 
                                                                                 </Col>
-                                                                                {/* {partialAmount > 0 ? (<Col span={4}>
-                                                                                        <Tag color="blue">
-                                                                                            Stok: {numberFormat(partialAmount)} {item.unit}
-                                                                                        </Tag>
-                                                                                    </Col>) : null} */}
                                                                             </Col>
                                                                         </Row>
                                                                     </Form.Item>
@@ -639,27 +667,27 @@ function calculatePopupQuantity() {
                                                     <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                                                         <Col span={4} style={{ width: '100%' }} align="right">
                                                             <Button type="primary" onClick={event => onRemoveProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
-                                                                    {<IntlMessages id="product.minus" />}
-                                                                </Button>
+                                                                {<IntlMessages id="product.minus" />}
+                                                            </Button>
                                                         </Col>
                                                         <Col span={8} align="middle">
                                                             <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet' : item.unit !== 'TOR' ? 'Kutu' : 'Torba'}</span>
-                                                                <Input
-                                                                    id={'b' + item.itemCode}
-                                                                    onClick={event => onSelectAll(event)}
-                                                                    onChange={event => onChange(event, item, false)}
-                                                                    onBlur={event => onChangeQuantity(event, item)}
-                                                                    style={{ textAlign: "right", maxHeight: '32px' }}
-                                                                    maxLength={5}
-                                                                    defaultValue={0}
-                                                                    step={1}
-                                                                    value={EntryInputQuantity(item, false)}
-                                                                />
+                                                            <Input
+                                                                id={'b' + item.itemCode}
+                                                                onClick={event => onSelectAll(event)}
+                                                                onChange={event => onChange(event, item, false)}
+                                                                onBlur={event => onChangeQuantity(event, item)}
+                                                                style={{ textAlign: "right", maxHeight: '32px' }}
+                                                                maxLength={5}
+                                                                defaultValue={0}
+                                                                step={1}
+                                                                value={EntryInputQuantity(item, false)}
+                                                            />
                                                         </Col>
                                                         <Col span={4} style={{ width: '100%' }}>
                                                             <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
-                                                                    {<IntlMessages id="product.plus" />}
-                                                                </Button>
+                                                                {<IntlMessages id="product.plus" />}
+                                                            </Button>
                                                         </Col>
                                                     </Row>
                                                 )}
@@ -738,7 +766,7 @@ function calculatePopupQuantity() {
                                                                                 </Col>
                                                                                 <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
                                                                                     <Input
-                                                                                        id={'Paletli' + item.itemCode}                                                                                        
+                                                                                        id={'Paletli' + item.itemCode}
                                                                                         onClick={event => onSelectAll(event)}
                                                                                         onChange={event => onChange(event, item, false)}
                                                                                         onBlur={event => onChangeQuantity(event, item)}
@@ -746,7 +774,7 @@ function calculatePopupQuantity() {
                                                                                         maxLength={5}
                                                                                         defaultValue={0}
                                                                                         step={1}
-                                                                                        value={EntryInputQuantity(item, false)}                                                                                        
+                                                                                        value={EntryInputQuantity(item, false)}
                                                                                     />
                                                                                 </Col>
                                                                                 <Col span={4}>
@@ -760,11 +788,6 @@ function calculatePopupQuantity() {
                                                                                             1 Palet: {item.m2Pallet} {item.unit}
                                                                                         </Tag>
                                                                                     </Col>
-                                                                                    {palletAmount > 0 ? (<Col span={4}>
-                                                                                        <Tag color="blue">
-                                                                                            Stok: {salableBalanceFriendlyText}
-                                                                                        </Tag>
-                                                                                    </Col>) : null}
                                                                                 </Col>
                                                                             </Row>
                                                                         </Form.Item>
@@ -774,8 +797,8 @@ function calculatePopupQuantity() {
                                                                         <Row align="middle">
                                                                             <Col span={4} align="right">
                                                                                 <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
-                                                                                        {<IntlMessages id="product.minus" />}
-                                                                                    </Button>
+                                                                                    {<IntlMessages id="product.minus" />}
+                                                                                </Button>
                                                                             </Col>
                                                                             <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
                                                                                 <Input
@@ -792,8 +815,8 @@ function calculatePopupQuantity() {
                                                                             </Col>
                                                                             <Col span={4} style={{ width: '100%' }}>
                                                                                 <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
-                                                                                        {<IntlMessages id="product.plus" />}
-                                                                                    </Button>
+                                                                                    {<IntlMessages id="product.plus" />}
+                                                                                </Button>
                                                                             </Col>
                                                                             <Col span={4} style={{ width: '100%' }}>
                                                                                 <Col span={4}>
@@ -802,11 +825,6 @@ function calculatePopupQuantity() {
                                                                                     </Tag> : null}
 
                                                                                 </Col>
-                                                                                {/* {partialAmount > 0 ? (<Col span={4}>
-                                                                                        <Tag color="blue">
-                                                                                            Stok: {numberFormat(partialAmount)} {item.unit}
-                                                                                        </Tag>
-                                                                                    </Col>) : null} */}
                                                                             </Col>
                                                                         </Row>
                                                                     </Form.Item>
@@ -817,27 +835,27 @@ function calculatePopupQuantity() {
                                                     <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                                                         <Col span={4} style={{ width: '100%' }} align="right">
                                                             <Button type="primary" onClick={event => onRemoveProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
-                                                                    {<IntlMessages id="product.minus" />}
-                                                                </Button>
+                                                                {<IntlMessages id="product.minus" />}
+                                                            </Button>
                                                         </Col>
                                                         <Col span={8} align="middle">
                                                             <span style={{ fontWeight: 'normal', fontSize: '80%' }}>{searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet' : item.unit !== 'TOR' ? 'Kutu' : 'Torba'}</span>
-                                                                <Input
-                                                                    id={'b' + item.itemCode}
-                                                                    onClick={event => onSelectAll(event)}
-                                                                    onChange={event => onChange(event, item, false)}
-                                                                    onBlur={event => onChangeQuantity(event, item)}
-                                                                    style={{ textAlign: "right", maxHeight: '32px' }}
-                                                                    maxLength={5}
-                                                                    defaultValue={0}
-                                                                    step={1}
-                                                                    value={EntryInputQuantity(item, false)}
-                                                                />
+                                                            <Input
+                                                                id={'b' + item.itemCode}
+                                                                onClick={event => onSelectAll(event)}
+                                                                onChange={event => onChange(event, item, false)}
+                                                                onBlur={event => onChangeQuantity(event, item)}
+                                                                style={{ textAlign: "right", maxHeight: '32px' }}
+                                                                maxLength={5}
+                                                                defaultValue={0}
+                                                                step={1}
+                                                                value={EntryInputQuantity(item, false)}
+                                                            />
                                                         </Col>
                                                         <Col span={4} style={{ width: '100%' }}>
                                                             <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, item.canBeSoldPartially, item.canBeSoldPartially)}>
-                                                                    {<IntlMessages id="product.plus" />}
-                                                                </Button>
+                                                                {<IntlMessages id="product.plus" />}
+                                                            </Button>
                                                         </Col>
                                                     </Row>
                                                 )}
