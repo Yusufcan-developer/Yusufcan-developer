@@ -1386,7 +1386,7 @@ const SearchComponent = () => {
             <Box>
               <Spin spinning={loading}>
                 <Row gutter={[24, 16]}>
-                  {data.map((item) => (
+                  {data.map((item,i) => (
                     <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 12 }} >
                       {item.canBeSoldPartially === true && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                         <React.Fragment>
@@ -1415,7 +1415,7 @@ const SearchComponent = () => {
                                 </Link>{' '}
                               </div></Badge.Ribbon>}
                         </React.Fragment>)}
-                      {hide === true ?
+                      {hide === true && i===0 ?
                         <PopupProductRelation
                           hide={hide}
                           item={popupData}
