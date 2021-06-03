@@ -85,7 +85,7 @@ const DeliveriesReport = () => {
   //Burada ki useEffect'ler page index page size
   useEffect(() => {
     postSaveLog(enumerations.LogSource.ReportDeliveries, enumerations.LogTypes.Browse, logMessage.Reports.Deliveries.browse);
-    setCurrentPage(pageIndex);
+    // setCurrentPage(pageIndex);
     getVariablesFromUrl();
     const token = jwtDecode(localStorage.getItem("id_token"));
     if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
@@ -189,7 +189,6 @@ const DeliveriesReport = () => {
     params.delete('pgindex');
     params.delete('sortingField');
     params.delete('sortingOrder');
-    params.delete('smode');
 
     _.filter(selectedStatusType, function (item) {
       params.append('status', item); params.toString();
@@ -230,6 +229,7 @@ const DeliveriesReport = () => {
     let regionArrObj = [];
     let dealerArrObj = [];
     const params = new URLSearchParams(location.search);
+    params.delete('smode');
     params.delete('dec');
     params.delete('rec');
     params.delete('fic');
@@ -314,6 +314,7 @@ const DeliveriesReport = () => {
 
   //Sevkiyat Kalemleri Expand İşlemi
   function expandedRowRender(row, index) {
+    debugger
     let distributionDetailIndex;
     let partialUnitData;
     _.each(distributionDetailData, (item, i) => {
@@ -337,6 +338,7 @@ const DeliveriesReport = () => {
     });
 
     return (<React.Fragment>{r} </React.Fragment>);
+    
   };
   //Get adress
   async function getAdress(dealerCodes) {
@@ -413,17 +415,23 @@ const DeliveriesReport = () => {
     {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
-      key: "dealerCode"
+      key: "dealerCode",
+
+      width: 100,
     },
     {
       title: "Bayi Adı",
       dataIndex: "dealerName",
       key: "dealerName",
+
+      width: 100,
     },
     {
       title: "Durumu",
       dataIndex: "status",
       key: "status",
+
+      width: 100,
     },
     {
       title: "Dağıtım Kodu",
@@ -432,6 +440,8 @@ const DeliveriesReport = () => {
       sorter: (a, b) => '',
       sortOrder: tableOptions.sortedInfo.columnKey === 'distributionId' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
+
+      width: 100,
 
     },
     {
@@ -442,34 +452,45 @@ const DeliveriesReport = () => {
       sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
       sortDirections: ['descend', 'ascend'],
 
+      width: 100,
     },
 
     {
       title: "Bayi Alt Kodu",
       dataIndex: "dealerSubCode",
-      key: "dealerSubCode"
+      key: "dealerSubCode",
+
+      width: 100,
     },
     {
       title: "Bölge Kodu",
       dataIndex: "regionCode",
-      key: "regionCode"
+      key: "regionCode",
+
+      width: 100,
     },
 
     {
       title: "Bölge Yöneticisi",
       dataIndex: "regionManager",
-      key: "regionManager"
+      key: "regionManager",
+
+      width: 100,
     },
     {
       title: "Saha Kodu",
       dataIndex: "fieldCode",
-      key: "fieldCode"
+      key: "fieldCode",
+      width: 100,
+
     },
 
     {
       title: "Saha Yöneticisi",
       dataIndex: "fieldManager",
-      key: "fieldManager"
+      key: "fieldManager",
+      width: 100,
+
     },
   ];
 
@@ -477,20 +498,19 @@ const DeliveriesReport = () => {
     title: "Bayi Kodu",
     dataIndex: "dealerCode",
     key: "dealerCode",
-    width: 100
+    width: 20,
   },
   {
     title: "Bayi Adı",
     dataIndex: "dealerName",
     key: "dealerName",
-    width: 200,
-    ellipsis: true
+    width: 150,
   },
   {
     title: "Durum",
     dataIndex: "status",
     key: "status",
-    width: 120,
+    width: 50,
   },
   {
     title: "Dağıtım Kodu",
@@ -499,7 +519,7 @@ const DeliveriesReport = () => {
     sorter: (a, b) => (''),
     sortOrder: tableOptions.sortedInfo.columnKey === 'distributionNo' && tableOptions.sortedInfo.order,
     sortDirections: ['descend', 'ascend'],
-    width: 180,
+    width: 150,
   },
   {
     title: "Dağıtım Sipariş Tarihi",
@@ -510,20 +530,19 @@ const DeliveriesReport = () => {
     sorter: (a, b) => (''),
     sortOrder: tableOptions.sortedInfo.columnKey === 'distributionOrderDate' && tableOptions.sortedInfo.order,
     sortDirections: ['descend', 'ascend'],
-    width: 120,
+    width: 100,
   },
   {
     title: "Adres Kodu",
     dataIndex: "addressCode",
     key: "addressCode",
-    width: 120,
+    width: 100,
   },
   {
     title: "Adres Açıklama",
     dataIndex: "addressDescription",
     key: "addressDescription",
-    width: 200,
-    ellipsis: true
+    width: 150,
   },
   {
     title: "Sipariş No",
@@ -532,13 +551,13 @@ const DeliveriesReport = () => {
     sorter: (a, b) => (''),
     sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
     sortDirections: ['descend', 'ascend'],
-    width: 120,
+    width: 100,
   },
   {
     title: "Ürün Kodu",
     dataIndex: "itemCode",
     key: "itemCode",
-    width: 120,
+    width: 100,
     sorter: (a, b) => a.itemCode.length - b.itemCode.length,
     sortOrder:
       tableOptions.sortedInfo.columnKey === "itemCode" &&
@@ -548,20 +567,20 @@ const DeliveriesReport = () => {
     title: "Ürün Açıklaması",
     dataIndex: "itemDescription",
     key: "itemDescription",
-    width: 250,
+    width: 150,
   },
   {
     title: "Birim",
     dataIndex: "unit",
     key: "unit",
-    width: 80,
+    width: 50,
   },
   {
     title: "Birim Ağırlık",
     dataIndex: "unitWeight",
     key: "unitWeight",
     footerKey: 'Genel Toplam',
-    width: 80,
+    width: 50,
     render: (unitWeight) => numberFormat(unitWeight),
   },
   {
@@ -569,14 +588,14 @@ const DeliveriesReport = () => {
     dataIndex: "palletWeight",
     key: "palletWeight",
     footerKey: 'palletWeight',
-    width: 120,
+    width: 50,
     render: (palletWeight) => numberFormat(palletWeight),
   },
   {
     title: "Planlanan Miktar",
     dataIndex: "plannedAmount",
     key: "plannedAmount",
-    width: 120,
+    width: 50,
     render: (plannedAmount) => numberFormat(plannedAmount),
     sorter: (a, b) => a.plannedAmount - b.plannedAmount,
     align: "right",
@@ -599,7 +618,7 @@ const DeliveriesReport = () => {
     dataIndex: "remainingAmount",
     key: "remainingAmount",
     align: "right",
-    width: 120,
+    width: 50,
     render: (remainingAmount) => numberFormat(remainingAmount),
     sorter: (a, b) => (''),
     sortOrder: tableOptions.sortedInfo.columnKey === 'remainingAmount' && tableOptions.sortedInfo.order,
@@ -610,32 +629,32 @@ const DeliveriesReport = () => {
     title: "Bayi Alt Kodu",
     dataIndex: "dealerSubCode",
     key: "dealerSubCode",
-    width: 120,
+    width: 50,
   },
   {
     title: "Bölge Kodu",
     dataIndex: "regionCode",
     key: "regionCode",
-    width: 120,
+    width: 50,
   },
 
   {
     title: "Bölge Yöneticisi",
     dataIndex: "regionManager",
     key: "regionManager",
-    width: 120,
+    width: 50,
   },
   {
     title: "Saha Kodu",
     dataIndex: "fieldCode",
     key: "fieldCode",
-    width: 120,
+    width: 50,
   },
   {
     title: "Saha Yöneticisi",
     dataIndex: "fieldManager",
     key: "fieldManager",
-    width: 120,
+    width: 50,
   },
   ];
 
@@ -824,6 +843,7 @@ const DeliveriesReport = () => {
           position="top"
         />
         <Table
+          className="components-table-demo-nested"
           columns={columns}
           dataSource={data}
           onChange={handleChange}
