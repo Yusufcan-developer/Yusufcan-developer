@@ -155,6 +155,7 @@ const PopupProductRelation = (props) => {
             setPartialQuantity(false);
             setRelatedProducts([]);
             setDependentProducts([]);
+            onComplete();
         }
     }
 
