@@ -71,9 +71,7 @@ const PopupProductRelation = (props) => {
     useEffect(() => {
         if (changeQuantity === true) {
             const token = jwtDecode(localStorage.getItem("id_token"));
-            if ((token.urole === 'admin') || (token.dcode === 'B555888')) {
-                getCartList();
-            }
+            getCartList();
         }
         getWarehouseList(item.itemCode);
     }, [changeQuantity]);
@@ -142,21 +140,15 @@ const PopupProductRelation = (props) => {
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     async function handleCancel(item) {
         const token = jwtDecode(localStorage.getItem("id_token"));
-        if ((token.urole === 'admin') || (token.dcode === 'B555888')) {
             if ((typeof item.dependentProductCodes === 'undefined' || item.dependentProductCodes.length === 0) || (warningQuantity <= 0)) {
                 setPartialQuantity(false);
                 setRelatedProducts([]);
                 setDependentProducts([]);
                 onComplete();
             }
-            else { message.warning(warningQuantity <= 0 ? null : <span style={{ color: 'red' }}>{warningQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>); }
+            else { message.warning(warningQuantity <= 0 ? null : <span style={{ color: 'red' }}>{warningQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>); 
         }
-        else {
-            setPartialQuantity(false);
-            setRelatedProducts([]);
-            setDependentProducts([]);
-            onComplete();
-        }
+
     }
 
     //Miktar girilen text alanında tüm değerleri seçiyor

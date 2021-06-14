@@ -277,6 +277,8 @@ export default function () {
   function logSourceHandleChange(value) {
     let sourceObj = [];
     const params = new URLSearchParams(location.search);
+    params.delete('smode');
+
     params.delete('user');
     params.delete('source');
     params.delete('from');
@@ -300,6 +302,8 @@ export default function () {
   function logTypeHandleChange(value) {
     let typeObj = [];
     const params = new URLSearchParams(location.search);
+    params.delete('smode');
+
     params.delete('user')
     params.delete('type');
     params.delete('from');
