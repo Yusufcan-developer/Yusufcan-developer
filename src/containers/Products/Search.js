@@ -937,12 +937,10 @@ const SearchComponent = () => {
   }
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
-    debugger
     document.getElementById(id).select();
   }
 
   function onChange(e, item, isPartial, hasRealionProduct = false) {
-    debugger
     if (hasRealionProduct) { setEntryProductCode(item.itemCode); }
     setSelectedItem(item.itemCode);
     if (!isNaN(e.target.value)) {

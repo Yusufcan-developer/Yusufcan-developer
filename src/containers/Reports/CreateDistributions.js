@@ -451,7 +451,6 @@ export default function () {
     };
 
     const edit = (record) => {
-        debugger
         let distributions = localStorage.getItem('distributions');
         distributions = JSON.parse(distributions);
         const dealerCodeControl = _.find(distributions, function (i) { return i.dealerCode !== record.dealerCode && i.quantity > 0 });

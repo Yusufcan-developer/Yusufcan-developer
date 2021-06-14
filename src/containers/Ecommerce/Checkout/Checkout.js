@@ -116,9 +116,7 @@ export default function () {
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
       let quantityLess;     
       return productList.map(product => {
-        debugger
         if (productList.length > 0) {
-          debugger
           quantityLess = _.find(product.validationMessages, function(x){ return x.Key === "DependentProduct"; });
         }
         return (

@@ -314,7 +314,6 @@ const DeliveriesReport = () => {
 
   //Sevkiyat Kalemleri Expand İşlemi
   function expandedRowRender(row, index) {
-    debugger
     let distributionDetailIndex;
     let partialUnitData;
     _.each(distributionDetailData, (item, i) => {

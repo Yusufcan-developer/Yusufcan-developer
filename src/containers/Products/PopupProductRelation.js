@@ -178,7 +178,6 @@ const PopupProductRelation = (props) => {
         else {
             const selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode && item.isPartial === isPartial);
             const amountControl = productAmountControl(product, isPartial, parseInt(selectedProduct.quantity + 1));
-            debugger
             if (amountControl === -1) {
                 const newProductQuantity = [];
                 let setQunatity;
