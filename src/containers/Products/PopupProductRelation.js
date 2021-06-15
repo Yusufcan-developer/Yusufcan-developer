@@ -87,24 +87,26 @@ const PopupProductRelation = (props) => {
                 return true;
             }
         });
-        const mainProductTotal = _.reduce(mainProduct, function (memo, x) { return memo + x.totalM2; }, 0);
-
-        _.each(items, (redux) => {
-            if (item.itemCode !== redux.itemCode) {
-                var even = _.find(item.dependentProductCodes, function (x) { return x === redux.itemCode })
-                if (typeof even !== 'undefined') { bagilVeIlgiliUrunMiktari += parseFloat(redux.totalM2); }
-            }
-        });
-        if ((mainProductTotal === 0) || (bagilVeIlgiliUrunMiktari >= mainProductTotal)) {
-            control = 0;
-            setWarningQuantity(control);
-        }
-        else {
-            if (!isNaN(mainProductTotal)) {
-                control = mainProductTotal - bagilVeIlgiliUrunMiktari;
+        if (mainProduct.length > 0 && mainProduct[0].item.dependentProductCodes.length > 0) {
+            const mainProductTotal = _.reduce(mainProduct, function (memo, x) { return memo + x.totalM2; }, 0);
+            _.each(items, (redux) => {
+                if (item.itemCode !== redux.itemCode) {
+                    var even = _.find(item.dependentProductCodes, function (x) { return x === redux.itemCode })
+                    if (typeof even !== 'undefined') { bagilVeIlgiliUrunMiktari += parseFloat(redux.totalM2); }
+                }
+            });
+            if ((mainProductTotal === 0) || (bagilVeIlgiliUrunMiktari >= mainProductTotal)) {
+                control = 0;
                 setWarningQuantity(control);
             }
+            else {
+                if (!isNaN(mainProductTotal)) {
+                    control = mainProductTotal - bagilVeIlgiliUrunMiktari;
+                    setWarningQuantity(control);
+                }
+            }
         }
+        else { control = 0;setWarningQuantity(0); }
 
         setChangeQuantity(false);
         return control;
@@ -132,6 +134,7 @@ const PopupProductRelation = (props) => {
                 return status;
             })
             .then(data => {
+                debugger
                 calculatePopupQuantity(data.items);
             })
             .catch();
