@@ -1487,7 +1487,7 @@ export default function () {
 
                         <Row style={{ margin: '10px' }}>
                             <Col align="left" span={view !== 'MobileView' ? 12 : 0} >
-                                <Checkbox onChange={handleSubmitCheck}>Tarafınıza vermiş olduğumuz siparişlerden,listede bulunanları plakasını belirttiğimiz araca sarınız. Nakliye esnasında doğabilecek kaza, hırsızlık, cezalar, hasar vs. sorumluluk tarafımıza aittir.</Checkbox>
+                                <Checkbox onChange={handleSubmitCheck}>Tarafınıza vermiş olduğumuz siparişlerden, listede yer alan ürünlerin belirttiğimiz plakalı araca yüklenmesini rica ederiz. Karayollarının Yönetmeliğine uygun tonajda yapılan yükleme sonrası oluşabilecek kaza, hasar, hırsızlık ve tonaj ile ilgili cezai durumlarda sorumluluk tamamen tarafımıza ait olduğunu kabul ve beyan ederiz.</Checkbox>
                             </Col>
                             <Col align={'right'} span={view !== 'MobileView' ? 10 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                                 <Button key="back" type="primary" onClick={handleCancel}>
@@ -1501,7 +1501,9 @@ export default function () {
                               </Button>
                                 </Form.Item>
                             </Col>
-
+                            <Col>
+                            <p><strong>Not:</strong> Aracın kapasitesinden fazla tonaj (yaklaşık 3 ton) planlanmalıdır ve yükleme esnasında oluşabilecek tonaj fazlalığı için kalabilecek ürünler belirtilmelidir.</p>
+</Col>
                         </Row>
                     </Form>
                 </Modal>

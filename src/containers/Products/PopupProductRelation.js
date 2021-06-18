@@ -87,7 +87,7 @@ const PopupProductRelation = (props) => {
                 return true;
             }
         });
-        if (mainProduct.length > 0 && mainProduct[0].item.dependentProductCodes.length > 0) {
+        if (mainProduct.length > 0 && typeof mainProduct[0].item.dependentProductCodes !=='undefined' && mainProduct[0].item.dependentProductCodes.length > 0) {
             const mainProductTotal = _.reduce(mainProduct, function (memo, x) { return memo + x.totalM2; }, 0);
             _.each(items, (redux) => {
                 if (item.itemCode !== redux.itemCode) {
