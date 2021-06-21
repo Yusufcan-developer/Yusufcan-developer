@@ -584,7 +584,7 @@ async function getProductDetail(itemCode) {
           }
         }
       })
-      .catch();
+      .catch(message.warning('Sistemde bir hata oluştu lütfen sistem yöneticinizle irtibata geçiniz. '+newSaveOrderUrl));
     setConfirmLoading(false);
   }
 
