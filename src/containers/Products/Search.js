@@ -109,6 +109,7 @@ const SearchComponent = () => {
   const [colorFilterSearch, setColorFilterSearch] = useState();
   const [surfaceFilterSearch, setSurfaceFilterSearch] = useState();
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
+  const [qualityFilterSearch, setQualityFilterSearch]=useState();
 
   const { Search } = Input;
 
@@ -306,7 +307,7 @@ const SearchComponent = () => {
   const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Get Quality
-  // const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.getProductionQualities}?${category}`);
+  const [productionQualityData,loadingQualityFilter,setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.postProductionQualities}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode });
 
   //Style
   const listClass = `isoSingleCard card grid`;
@@ -362,14 +363,12 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   }
-
   //Keyword 'Enter' search
   const keyPress = e => {
     if (e.keyCode === 13) {
       keywordAddUrl();
     }
   }
-
   //Keyword Search Button
   const onSearch = e => {
     keywordAddUrl();
@@ -443,6 +442,7 @@ const SearchComponent = () => {
   const dimensionSearchTextFilterkeyPress = e => {
     filterTextSearchDimension(e.target.value);
   }
+
   //Serie
   function filterTextSearchSerie(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -553,6 +553,41 @@ const SearchComponent = () => {
   const surfaceSearchTextFilterkeyPress = e => {
     filterTextSearchSurface(e.target.value);
   }
+
+
+  //Quality
+  function filterTextSearchQuality(value) {
+    let searchString = value.toLocaleLowerCase('tr').split(' ')
+    let filterList = (dimensionData.filter(value => {
+      let containsAtLeastOneWord = false;
+      searchString.forEach(word => {
+        if (value.toLowerCase('tr').includes(word))
+          containsAtLeastOneWord = true;
+      })
+      if (containsAtLeastOneWord)
+        return value
+    }))
+    if (filterList.length > 0) {
+      _.each(quality, (cloneItem) => {
+        var selectedQuantity = filterList.find(item => item == cloneItem);
+        if (typeof selectedQuantity === 'undefined') {
+          filterList.push(cloneItem);
+        }
+      });
+
+      setQualityFilterSearch(filterList);
+      if (value.length === 0) { ; setQualityFilterSearch(''); }
+    }
+    else { setQualityFilterSearch(''); }
+  }
+    //Text Fields Search
+    const QualityOnSearch = value => {
+      filterTextSearchQuality(value);
+    }
+    //Keyword 'Enter' search
+    const qualitySearchTextFilterkeyPress = e => {
+      filterTextSearchQuality(e.target.value);
+    }
   //#endregion
 
 
@@ -638,24 +673,24 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   }
-  // //Quality Filter Event
-  // function onChangeQuality(checkedProductQualityValue) {
-  //   setQuality(checkedProductQualityValue);
+  //Quality Filter Event
+  function onChangeProductQuality(checkedProductQualityValue) {
+    setQuality(checkedProductQualityValue);
 
-  //   const params = new URLSearchParams(location.search);
-  //   params.delete('pq');
-  //   params.delete('pgindex');
-  //   params.append('pgindex', 1)
-  //   setPageIndex(1);
-  //   if (checkedProductQualityValue.length > 0) {
-  //     checkedProductQualityValue.forEach(item => {
-  //       params.append('pq', item);
-  //       params.toString();
-  //     });
-  //   }
-  //   history.push(`${location.pathname}?${params.toString()}`);
-  //   return setOnChange(true);
-  // };
+    const params = new URLSearchParams(location.search);
+    params.delete('pq');
+    params.delete('pgindex');
+    params.append('pgindex', 1)
+    setPageIndex(1);
+    if (checkedProductQualityValue.length > 0) {
+      checkedProductQualityValue.forEach(item => {
+        params.append('pq', item);
+        params.toString();
+      });
+    }
+    history.push(`${location.pathname}?${params.toString()}`);
+    return setOnChange(true);
+  };
 
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
@@ -841,6 +876,7 @@ const SearchComponent = () => {
     setKeyword();
     setCampaignCode(false);
     setStockStatus(enumerations.StockStatus.None);
+    setQuality([])
 
     if (typeof getProductGroupName !== 'undefined') {
       let productGroupName = getProductGroupName;
@@ -861,6 +897,7 @@ const SearchComponent = () => {
     params.delete('se');
     params.delete('clr');
     params.delete('sfc');
+    params.delete('pq');
     params.delete('pgindex');
     params.delete('campaign');
     params.append('pgindex', 1);
@@ -1248,22 +1285,30 @@ const SearchComponent = () => {
                 </RadioGroup>
               </Panel>
             </Collapse>
-
-            {/* <Collapse {...collapseProps}>
+            {(productionQualityData.length !== 0 && productionQualityData !== null) ? (
+            <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Kalite" />} key="2">
+              <Search
+                    id='typeInputSearch'
+                    placeholder="Kalite araması"
+                    allowClear
+                    onSearch={QualityOnSearch}
+                    onKeyUp={qualitySearchTextFilterkeyPress}
+                  />
                 <CheckboxGroup
-                  options={productionQualityData}
-                  value={productQuality}
+                  options={qualityFilterSearch && qualityFilterSearch.length > 0 ? qualityFilterSearch : productionQualityData}
+                  value={quality}
                   onChange={onChangeProductQuality}
                   style={{ display: 'flex', flexDirection: 'column' }}
                 />
               </Panel>
-            </Collapse> */}
+            </Collapse>
+            ) : (null)}
             {(productTypeData.length !== 0 && productTypeData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.productType" />} key="4">
                   <Search
-                    id='typeInputSearch'
+                     id='typeInputSearch'
                     placeholder="Ürün tipi araması"
                     allowClear
                     onSearch={productTypeOnSearch}
