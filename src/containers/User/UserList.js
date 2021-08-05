@@ -344,8 +344,8 @@ const UserList = () => {
         }
       }
       else if (selectedRoleName === 'fieldmanager') {
-        if (!fieldCodes) { return message.error('Saha kodu seçimi yapınız') }
-        else if (fieldCodes.length === 0) { return message.error('Saha kodu seçimi yapınız') }
+        if (!userInfoFieldCodes) { return message.error('Saha kodu seçimi yapınız') }
+        else if (userInfoFieldCodes.length === 0) { return message.error('Saha kodu seçimi yapınız') }
       }
     }
 
