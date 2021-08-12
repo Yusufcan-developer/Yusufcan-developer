@@ -9,9 +9,11 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, TreeSelect, Table, Select } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
+import ReportPagination from "../Reports/ReportPagination";
+import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 
 //Fetch
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiRuleProductList";
@@ -44,6 +46,9 @@ import {
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
+const FormItem = Form.Item;
+const { Option } = Select;
+
 const SearchComponent = () => {
   document.title = "Ürün Arama - Seramiksan B2B";
   const { rowStyle, colStyle, gutter } = basicStyle;
@@ -87,7 +92,7 @@ const SearchComponent = () => {
   const [stockStatus, setStockStatus] = useState(enumerations.StockStatus.None);
   const [campaign, setCampaignCode] = useState(false);
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
-
+  const [productCode, setProductCode] = useState();
   //Sorting states
   const [sortingField, setSortingField] = useState();
   const [sortingOrder, setSortingOrder] = useState();
@@ -103,12 +108,12 @@ const SearchComponent = () => {
   const [surfaceFilterSearch, setSurfaceFilterSearch] = useState();
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
-
+  const [searchKey, setSearchKey] = useState('');
+  const [productList, setProductList]=useState();
   const { Search } = Input;
 
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
-    //getVariablesFromUrl();
     setCurrentPage(pageIndex);
     if (typeof category === 'undefined') {
       setOnChangeFilter(true);
@@ -264,7 +269,6 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   }
-
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
@@ -972,7 +976,143 @@ const SearchComponent = () => {
       setCapacity(parseInt(e.target.value));
     }
   }
+//Order Columns
+let columns = [
+  {
+      title: "Bayi Kodu",
+      dataIndex: "dealerCode",
+      key: "dealerCode",
+      style: { font: { sz: "48", bold: true } },
+      width: 100
+  },
+  {
+      title: "Bayi Adı",
+      dataIndex: "dealerName",
+      key: "dealerName",
+      width: 200,
+      ellipsis: true
 
+  },
+  {
+      title: "Sipariş No",
+      dataIndex: "orderNo",
+      key: "orderNo",
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => a.orderNo - b.orderNo,
+      // sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+      width: 150
+  },
+  {
+      title: "Sipariş Tarihi",
+      dataIndex: "orderDate",
+      key: "orderDate",
+      type: "date",
+      width: 200,
+      sorter: (a, b) => (''),
+      // sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
+      sortDirections: ['descend', 'ascend'],
+  },
+  {
+      title: "Cari/DBS",
+      dataIndex: "dealerSubCode",
+      key: "C-DBS",
+      width: 100,
+  },
+  {
+      title: "Belge No",
+      dataIndex: "documentId",
+      key: "documentId",
+      width: 100,
+  },
+  {
+      title: "Ödeme",
+      dataIndex: "payment",
+      key: "payment",
+      width: 200,
+  },
+  {
+      title: "Adres Kodu",
+      dataIndex: "addressCode",
+      key: "addressCode",
+      width: 150,
+  },
+  {
+      title: "Teslimat Adresi",
+      dataIndex: "deliveryAddress",
+      key: "deliveryAddress",
+      footerKey: 'Genel Toplam',
+      width: 200
+  },
+  {
+      title: "Toplam",
+      dataIndex: "total",
+      key: "total",
+      align: "right",
+      width: 150,
+      footerKey: "total",
+  },
+  {
+      title: "Durum",
+      dataIndex: "status",
+      key: "status",
+      width: 150
+  },
+  {
+      title: "Açıklama 1",
+      dataIndex: "description1",
+      key: "description1",
+      width: 250
+  },
+  {
+      title: "Açıklama 2",
+      dataIndex: "description2",
+      key: "description2",
+      width: 250
+  },
+  {
+      title: "Açıklama 3",
+      dataIndex: "description3",
+      key: "description3",
+      width: 250
+  },
+  {
+      title: "Açıklama 4",
+      dataIndex: "description4",
+      key: "description4",
+      width: 250
+  },
+  {
+      title: "Bayi Alt Kodu",
+      dataIndex: "dealerSubCode",
+      key: "dealerSubCode",
+      width: 120
+  },
+  {
+      title: "Bölge Kodu",
+      dataIndex: "regionCode",
+      key: "regionCode",
+      width: 120
+  },
+  {
+      title: "Bölge Yöneticisi",
+      dataIndex: "regionManager",
+      key: "regionManager",
+      width: 150
+  },
+  {
+      title: "Saha Kodu",
+      dataIndex: "fieldCode",
+      key: "fieldCode",
+      width: 120
+  },
+  {
+      title: "Saha Yöneticisi",
+      dataIndex: "fieldManager",
+      key: "fieldManager",
+      width: 150
+  },
+];
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -1280,6 +1420,66 @@ const SearchComponent = () => {
 
         </TabPane>
         <TabPane tab="Kurallar" key={enumerations.ProductRelationTypestring.Related}>
+        <LayoutWrapper>
+        <Box>
+                <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
+                    <Panel header={<IntlMessages id="page.filtered" />} key="0">
+                        {view !== 'MobileView' ?
+                            <Row>                               
+                                <Col span={6} >
+                                    <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                                </Col>
+                            </Row>
+                            : null}
+                        <Row>
+                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                <Input size="small" placeholder="Ürün adı, Kural adı ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" >
+                                    {<IntlMessages id="forms.button.label_Search" />}
+                                </Button>
+                            </Col>
+                        </Row>
+                       
+                    </Panel>
+                </Collapse>
+            </Box>
+            <Box >
+               
+                <ReportPagination
+                    onShowSizeChange={onShowSizeChange}
+                    onChange={currentPageChange}
+                    pageSize={pageSize}
+                    total={totalDataCount}
+                    current={pageIndex}
+                    position="top"
+                />
+                <Table
+                    className="components-table-demo-nested"
+                    columns={columns}
+                    dataSource={data}
+                    // onChange={handleChange}
+                    loading={loading}
+                    // expandable={{ 'expandedRowRender': expandedRowRender }}
+                    pagination={false}
+                    scroll={{ x: 'max-content' }}
+                    bordered={false}
+                    // summary={() => {
+                    //     return renderFooter(columns, data, true, aggregatesOverall, true)
+                    // }}
+                />
+                <ReportPagination
+                    onShowSizeChange={onShowSizeChange}
+                    onChange={currentPageChange}
+                    pageSize={pageSize}
+                    total={totalDataCount}
+                    current={pageIndex}
+                    position="bottom"
+                />
+            </Box>
+            </LayoutWrapper>
         </TabPane>
       </Tabs>
       <Modal
