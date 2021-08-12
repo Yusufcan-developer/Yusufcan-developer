@@ -134,6 +134,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/Notification/Notification')),
   },
   {
+    path: 'admin/rule',
+    component: lazy(() => import('@iso/containers/Products/Rule')),
+  },
+  {
     path: 'dealer/users',
     component: lazy(() => import('@iso/containers/User/DealerUserList')),
   },

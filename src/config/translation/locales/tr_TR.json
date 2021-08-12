@@ -48,6 +48,7 @@
   "forms.button.generatePassword": "Parola Üret",
   "forms.button.label_Choose": "Sepete Git",
   "forms.button.exportExcel": "Excel",
+  "forms.button.createRule": "Kural Oluştur",
   "forms.button.createAddress": "Yeni Adres",
   "forms.button.createOrder": "Sipariş Oluştur",
   "forms.button.addUser": "Yeni Kullanıcı",
