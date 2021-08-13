@@ -1288,13 +1288,14 @@ const SearchComponent = () => {
             {(productionQualityData.length !== 0 && productionQualityData !== null) ? (
             <Collapse {...collapseProps}>
               <Panel header={<IntlMessages id="Kalite" />} key="2">
+              {productionQualityData.length > 5 ?
               <Search
                     id='typeInputSearch'
                     placeholder="Kalite araması"
                     allowClear
                     onSearch={QualityOnSearch}
                     onKeyUp={qualitySearchTextFilterkeyPress}
-                  />
+                  />:null}
                 <CheckboxGroup
                   options={qualityFilterSearch && qualityFilterSearch.length > 0 ? qualityFilterSearch : productionQualityData}
                   value={quality}
@@ -1307,13 +1308,14 @@ const SearchComponent = () => {
             {(productTypeData.length !== 0 && productTypeData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.productType" />} key="4">
+                {productTypeData.length > 5 ?
                   <Search
                      id='typeInputSearch'
                     placeholder="Ürün tipi araması"
                     allowClear
                     onSearch={productTypeOnSearch}
                     onKeyUp={searchTextFilterkeyPress}
-                  />
+                  />:null}
                   <CheckboxGroup
                     options={productTypeFilterSearch && productTypeFilterSearch.length > 0 ? productTypeFilterSearch : productTypeData}
                     value={type}
@@ -1327,12 +1329,13 @@ const SearchComponent = () => {
             {(dimensionData.length !== 0 && dimensionData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.dimension" />} key="5">
+                {dimensionData.length > 5 ?
                   <Search
                     placeholder="Ebat araması"
                     allowClear
                     onSearch={dimensionOnSearch}
                     onKeyUp={dimensionSearchTextFilterkeyPress}
-                  />
+                  />:null}
                   <CheckboxGroup
                     options={
                       dimensionFilterSearch && dimensionFilterSearch.length > 0 ? dimensionFilterSearch : dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)
@@ -1347,12 +1350,13 @@ const SearchComponent = () => {
             {(serieData.length !== 0 && serieData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.series" />} key="6">
+                {dimensionData.length > 5 ?
                   <Search
                     placeholder="Seri araması"
                     allowClear
                     onSearch={serieOnSearch}
                     onKeyUp={serieSearchTextFilterkeyPress}
-                  />
+                  />:null }
                   <CheckboxGroup
                     value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -1367,12 +1371,13 @@ const SearchComponent = () => {
             {(colorData.length !== 0 && colorData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.color" />} key="7">
+                {colorData.length > 5 ?
                   <Search
                     placeholder="Renk araması"
                     allowClear
                     onSearch={colorOnSearch}
                     onKeyUp={colorSearchTextFilterkeyPress}
-                  />
+                  />:null}
                   <CheckboxGroup
                     value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={
@@ -1386,12 +1391,13 @@ const SearchComponent = () => {
             {(surfaceData.length !== 0 && surfaceData !== null) ? (
               <Collapse {...collapseProps}>
                 <Panel header={<IntlMessages id="filter.surface" />} key="8">
+                {surfaceData.length > 5 ?
                   <Search
                     placeholder="Yüzey araması"
                     allowClear
                     onSearch={surfaceOnSearch}
                     onKeyUp={surfaceSearchTextFilterkeyPress}
-                  />
+                  /> : null}
                   <CheckboxGroup
                     value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                     options={

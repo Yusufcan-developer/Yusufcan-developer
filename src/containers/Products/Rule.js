@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, TreeSelect, Table, Select } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -48,6 +48,7 @@ const { Panel } = Collapse;
 const { TabPane } = Tabs;
 const FormItem = Form.Item;
 const { Option } = Select;
+const { TextArea } = Input;
 
 const SearchComponent = () => {
   document.title = "Ürün Arama - Seramiksan B2B";
@@ -76,6 +77,8 @@ const SearchComponent = () => {
   const [specification, setSpecification] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [capacity, setCapacity] = useState(1);
+  const [activeTabKey, setActiveTabKey] = useState('0');
+  const [selectedruleObject, setSelectedRuleObject] = useState();
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -93,6 +96,12 @@ const SearchComponent = () => {
   const [campaign, setCampaignCode] = useState(false);
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
   const [productCode, setProductCode] = useState();
+  const [ruleName, setRuleName] = useState();
+  const [ruleNo, setRuleNo] = useState();
+  const [description, setDescription] = useState('');
+  const [isLocked, setIsLocked] = useState();
+  const [orderOfPriority, setOrderOfPriority] = useState();
+  const [ruleEditing, setRuleEditing] = useState(false);
   //Sorting states
   const [sortingField, setSortingField] = useState();
   const [sortingOrder, setSortingOrder] = useState();
@@ -109,7 +118,7 @@ const SearchComponent = () => {
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
   const [searchKey, setSearchKey] = useState('');
-  const [productList, setProductList]=useState();
+  const [productList, setProductList] = useState();
   const { Search } = Input;
 
   useEffect(() => {
@@ -272,7 +281,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, category);
+    useProductData(`${siteConfig.api.products.postProducts}`, typeof selectedruleObject === 'undefined' ? { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -635,6 +644,7 @@ const SearchComponent = () => {
       });
     }
     // history.push(`${location.pathname}?${params.toString()}`);
+    setSelectedRuleObject();
     setOnChangeDimensionsFilter(true);
     setOnChangeSerieFilter(true);
     setOnChangeColorFilter(true);
@@ -700,6 +710,7 @@ const SearchComponent = () => {
       }
     })
     // history.push(`${location.pathname}?${params.toString()}`);
+    setSelectedRuleObject();
     setOnChangeFilter(true);
     setOnChangeSerieFilter(true);
     setOnChangeColorFilter(true);
@@ -731,6 +742,7 @@ const SearchComponent = () => {
       }
     });
     // history.push(`${location.pathname}?${params.toString()}`);
+    setSelectedRuleObject();
     setOnChangeFilter(true);
     setOnChangeDimensionsFilter(true);
     setOnChangeColorFilter(true);
@@ -760,6 +772,7 @@ const SearchComponent = () => {
       else { params.append('clr', item); }
     });
     // history.push(`${location.pathname}?${params.toString()}`);
+    setSelectedRuleObject();
     setOnChangeFilter(true);
     setOnChangeDimensionsFilter(true);
     setOnChangeSerieFilter(true);
@@ -790,6 +803,7 @@ const SearchComponent = () => {
       else { params.append('sfc', item); params.toString(); }
     });
     // history.push(`${location.pathname}?${params.toString()}`);
+    setSelectedRuleObject();
     setOnChangeFilter(true);
     setOnChangeDimensionsFilter(true);
     setOnChangeSerieFilter(true);
@@ -893,6 +907,7 @@ const SearchComponent = () => {
     setOnChangeSerieFilter(true);
     setOnChangeColorFilter(true);
     setOnChangeSurfaceFilter(true);
+    setSelectedRuleObject();
     return setOnChange(true);
   }
 
@@ -904,20 +919,27 @@ const SearchComponent = () => {
   //Ürünlerin kurallarını tanımlamak için girilmesi gereken kapasite degeri 
   function createRule() {
     setVisible(true);
+    if(ruleEditing && ruleEditing===true){
+      setRuleNo('12312312');
+    }
   }
 
   //Seçilenler Modal iptal işlemi
   function handleCancel() {
     setVisible(false);
+    setRuleNo();
+    setRuleName();
+    setDescription();
+    setCapacity(1);
   };
 
   //Kural ekleme işlemi
   async function handleOk() {
 
-    if ((typeof capacity !== 'undefined') && (!isNaN(capacity))) {
+    if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined') && (typeof ruleNo !== 'undefined')) {
       //Yeni bir kural objesi tanımlanıyor.
       const rule = {
-        "ruleName": 'Karo', "capacity": capacity, "critieria": {
+        "ruleName": ruleName, "ruleNo": ruleNo, "description": description, "active": isLocked, "orderOfPriority": orderOfPriority, "capacity": capacity, "critieria": {
           "keyword": keyword,
           "qualities": quality,
           "salesStatus": salesStatus,
@@ -932,7 +954,7 @@ const SearchComponent = () => {
         }
       }
     } else {
-      message.warning('Kapasite giriniz', 3);
+      message.warning('Bilgileri eksiksiz giriniz!!!', 3);
     }
     // if ((!driverName) || (!carPlate) || (!phone) || (!dates) || (!time)) {
     //     setValidation(false);
@@ -976,150 +998,175 @@ const SearchComponent = () => {
       setCapacity(parseInt(e.target.value));
     }
   }
-//Order Columns
-let columns = [
-  {
+
+  function onChangeOrderOfPriority(value) {
+    setOrderOfPriority(value);
+  }
+  function selectedRule(item) {
+    const rule = {
+      "qualities": [],
+      "salesStatus": "All",
+      "onlyHavingCampaigns": false,
+      "series": [],
+      "types": [
+        "AYDINLATMALI FONKSİYONLU AYNA",
+        "ÇEKMECELİ BOY DOLABI",
+        "DÜZ AYNA"
+      ],
+      "surfaces": [],
+      "colors": ["AYNA"],
+      "dimensions": [
+        "55 cm"
+      ],
+      "balanceLevel": "None",
+      "categories": [
+        "BANYO MOBİLYASI"
+      ],
+      "siteMode": "Normal"
+    }
+    if (rule && rule.categories) {
+      setCategory(rule.categories[0]);
+      setType(rule.types);
+      setQuality(rule.qualities);
+      setSalesStatus(rule.salesStatus);
+      setCampaignCode(rule.onlyHavingCampaigns);
+      setSeries(rule.series);
+      setSurface(rule.surfaces);
+      setColor(rule.colors);
+      setDimension(rule.dimensions);
+
+      setOnChangeDimensionsFilter(true);
+      setOnChangeSerieFilter(true);
+      setOnChangeColorFilter(true);
+      setOnChangeSurfaceFilter(true);
+      setOnChangeFilter(true);
+      setSelectedRuleObject();
+    }
+    setSelectedRuleObject(rule);
+    setActiveTabKey('1');
+    setRuleEditing(true);
+
+    setOnChange(true);
+
+  }
+  function callback(key) {
+    setActiveTabKey(key);
+    setRuleEditing(false);
+    // if (key === enumerations.ProductRelationTypestring.Dependent) { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Dependent, productTypeTitle: 'Bağlı Ürün' }); }
+    // else { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Related, productTypeTitle: 'İlgili Ürün' }); }
+    // this.formRef.current.resetFields();
+    // this.formRef.current.setFieldsValue({ product: this.state.productCode })
+  }
+  //Order Columns
+  let columns = [
+    {
       title: "Bayi Kodu",
       dataIndex: "dealerCode",
       key: "dealerCode",
       style: { font: { sz: "48", bold: true } },
       width: 100
-  },
-  {
-      title: "Bayi Adı",
-      dataIndex: "dealerName",
-      key: "dealerName",
+    },
+    {
+      title: "Ürün Kodu",
+      dataIndex: "itemCode",
+      key: "itemCode",
       width: 200,
-      ellipsis: true
+      ellipsis: true,
+    },
 
-  },
-  {
-      title: "Sipariş No",
-      dataIndex: "orderNo",
-      key: "orderNo",
-      defaultSortOrder: 'descend',
-      sorter: (a, b) => a.orderNo - b.orderNo,
-      // sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-      width: 150
-  },
-  {
-      title: "Sipariş Tarihi",
-      dataIndex: "orderDate",
-      key: "orderDate",
-      type: "date",
-      width: 200,
-      sorter: (a, b) => (''),
-      // sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
-      sortDirections: ['descend', 'ascend'],
-  },
-  {
-      title: "Cari/DBS",
-      dataIndex: "dealerSubCode",
-      key: "C-DBS",
-      width: 100,
-  },
-  {
-      title: "Belge No",
-      dataIndex: "documentId",
-      key: "documentId",
-      width: 100,
-  },
-  {
-      title: "Ödeme",
-      dataIndex: "payment",
-      key: "payment",
-      width: 200,
-  },
-  {
-      title: "Adres Kodu",
-      dataIndex: "addressCode",
-      key: "addressCode",
-      width: 150,
-  },
-  {
-      title: "Teslimat Adresi",
-      dataIndex: "deliveryAddress",
-      key: "deliveryAddress",
-      footerKey: 'Genel Toplam',
-      width: 200
-  },
-  {
-      title: "Toplam",
-      dataIndex: "total",
-      key: "total",
-      align: "right",
-      width: 150,
-      footerKey: "total",
-  },
-  {
-      title: "Durum",
-      dataIndex: "status",
-      key: "status",
-      width: 150
-  },
-  {
-      title: "Açıklama 1",
-      dataIndex: "description1",
-      key: "description1",
-      width: 250
-  },
-  {
-      title: "Açıklama 2",
-      dataIndex: "description2",
-      key: "description2",
-      width: 250
-  },
-  {
-      title: "Açıklama 3",
-      dataIndex: "description3",
-      key: "description3",
-      width: 250
-  },
-  {
-      title: "Açıklama 4",
-      dataIndex: "description4",
-      key: "description4",
-      width: 250
-  },
-  {
-      title: "Bayi Alt Kodu",
-      dataIndex: "dealerSubCode",
-      key: "dealerSubCode",
-      width: 120
-  },
-  {
-      title: "Bölge Kodu",
-      dataIndex: "regionCode",
-      key: "regionCode",
-      width: 120
-  },
-  {
-      title: "Bölge Yöneticisi",
-      dataIndex: "regionManager",
-      key: "regionManager",
-      width: 150
-  },
-  {
-      title: "Saha Kodu",
-      dataIndex: "fieldCode",
-      key: "fieldCode",
-      width: 120
-  },
-  {
-      title: "Saha Yöneticisi",
-      dataIndex: "fieldManager",
-      key: "fieldManager",
-      width: 150
-  },
-];
+  ];
+
+  //Kural adı değiştirme
+  const handleChangeRuleName = e => {
+    setRuleName(e.target.value);
+  }
+
+  //Kural no değiştirme
+  const handleChangeRuleNo = e => {
+    setRuleNo(e.target.value);
+  }
+
+  //Kural açıklaması değiştirme
+  function handleDescription(e) {
+    setDescription(e.target.value);
+  }
+
+  //Select Component Aktiflik durumu değiştirme 
+  function isLockedChange(value) {
+    setIsLocked(!value);
+  }
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
     <React.Fragment>
-      <Tabs defaultActiveKey="dependentProducts" >
-        <TabPane tab="Ürün Arama" key={enumerations.ProductRelationTypestring.Dependent}>
+      <Tabs activeKey={activeTabKey} onChange={event => callback()} >
+        <TabPane tab="Kural Listesi" key="0" >
+          <LayoutWrapper>
+            <Box>
+              <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
+                <Panel header={<IntlMessages id="page.filtered" />} key="0">
+                  {view !== 'MobileView' ?
+                    <Row>
+                      <Col span={6} >
+                        <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                      </Col>
+                    </Row>
+                    : null}
+                  <Row>
+                    <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                      <Input size="small" placeholder="Ürün adı, Kural adı ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
 
+                    </Col>
+                    <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                      <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" >
+                        {<IntlMessages id="forms.button.label_Search" />}
+                      </Button>
+                    </Col>
+                  </Row>
+
+                </Panel>
+              </Collapse>
+            </Box>
+            <Box >
+
+              <ReportPagination
+                onShowSizeChange={onShowSizeChange}
+                onChange={currentPageChange}
+                pageSize={pageSize}
+                total={totalDataCount}
+                current={pageIndex}
+                position="top"
+              />
+              <Table
+                className="components-table-demo-nested"
+                columns={columns}
+                dataSource={data}
+                // onChange={handleChange}
+                loading={loading}
+                // expandable={{ 'expandedRowRender': expandedRowRender }}
+                pagination={false}
+                scroll={{ x: 'max-content' }}
+                bordered={false}
+                onRow={(record) => ({
+                  onClick: () => (selectedRule(record))
+                })}
+              // summary={() => {
+              //     return renderFooter(columns, data, true, aggregatesOverall, true)
+              // }}
+              />
+              <ReportPagination
+                onShowSizeChange={onShowSizeChange}
+                onChange={currentPageChange}
+                pageSize={pageSize}
+                total={totalDataCount}
+                current={pageIndex}
+                position="bottom"
+              />
+            </Box>
+          </LayoutWrapper>
+
+        </TabPane>
+        <TabPane tab="Kural Detayı" key="1">
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1164,7 +1211,7 @@ let columns = [
                 </Collapse>
                 {!!category ? null :
                   <div style={{ color: 'red', fontSize: '90%' }}>*: Detaylı filtreleme için kategori seçiniz</div>}
-                <Collapse {...collapseProps}>
+                {/* <Collapse {...collapseProps}>
                   <Panel header={<IntlMessages id="filter.campaing" />} key="2">
                     <RadioGroup onChange={onChangeCampaing} value={campaign} defaultValue={campaign}>
                       <Radio style={radioStyle} value={false}>
@@ -1175,9 +1222,9 @@ let columns = [
                       </Radio>
                     </RadioGroup>
                   </Panel>
-                </Collapse>
+                </Collapse> */}
                 {/* Yeni Filtre Alanı Stok Durumu*/}
-                <Collapse {...collapseProps}>
+                {/* <Collapse {...collapseProps}>
                   <Panel header={<IntlMessages id="filter.status" />} key="3">
                     <RadioGroup onChange={onChangeStockStatus} value={stockStatus} defaultValue={stockStatus}>
                       <Radio style={radioStyle} value={enumerations.StockStatus.None}>
@@ -1195,17 +1242,18 @@ let columns = [
                         </Radio></React.Fragment>) : (null)}
                     </RadioGroup>
                   </Panel>
-                </Collapse>
+                </Collapse> */}
                 {(productionQualityData.length !== 0 && productionQualityData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="Kalite" />} key="2">
-                      <Search
-                        id='typeInputSearch'
-                        placeholder="Kalite araması"
-                        allowClear
-                        onSearch={QualityOnSearch}
-                        onKeyUp={qualitySearchTextFilterkeyPress}
-                      />
+                      {productionQualityData.length > 5 ?
+                        <Search
+                          id='typeInputSearch'
+                          placeholder="Kalite araması"
+                          allowClear
+                          onSearch={QualityOnSearch}
+                          onKeyUp={qualitySearchTextFilterkeyPress}
+                        /> : null}
                       <CheckboxGroup
                         options={qualityFilterSearch && qualityFilterSearch.length > 0 ? qualityFilterSearch : productionQualityData}
                         value={quality}
@@ -1218,13 +1266,14 @@ let columns = [
                 {(productTypeData.length !== 0 && productTypeData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="filter.productType" />} key="4">
-                      <Search
-                        id='typeInputSearch'
-                        placeholder="Ürün tipi araması"
-                        allowClear
-                        onSearch={productTypeOnSearch}
-                        onKeyUp={searchTextFilterkeyPress}
-                      />
+                      {productTypeData.length > 5 ?
+                        <Search
+                          id='typeInputSearch'
+                          placeholder="Ürün tipi araması"
+                          allowClear
+                          onSearch={productTypeOnSearch}
+                          onKeyUp={searchTextFilterkeyPress}
+                        /> : null}
                       <CheckboxGroup
                         options={productTypeFilterSearch && productTypeFilterSearch.length > 0 ? productTypeFilterSearch : productTypeData}
                         value={type}
@@ -1238,12 +1287,13 @@ let columns = [
                 {(dimensionData.length !== 0 && dimensionData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="filter.dimension" />} key="5">
-                      <Search
-                        placeholder="Ebat araması"
-                        allowClear
-                        onSearch={dimensionOnSearch}
-                        onKeyUp={dimensionSearchTextFilterkeyPress}
-                      />
+                      {dimensionData.length > 5 ?
+                        <Search
+                          placeholder="Ebat araması"
+                          allowClear
+                          onSearch={dimensionOnSearch}
+                          onKeyUp={dimensionSearchTextFilterkeyPress}
+                        /> : null}
                       <CheckboxGroup
                         options={
                           dimensionFilterSearch && dimensionFilterSearch.length > 0 ? dimensionFilterSearch : dimensionData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)
@@ -1258,12 +1308,13 @@ let columns = [
                 {(serieData.length !== 0 && serieData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="filter.series" />} key="6">
-                      <Search
-                        placeholder="Seri araması"
-                        allowClear
-                        onSearch={serieOnSearch}
-                        onKeyUp={serieSearchTextFilterkeyPress}
-                      />
+                      {serieData.length > 5 ?
+                        <Search
+                          placeholder="Seri araması"
+                          allowClear
+                          onSearch={serieOnSearch}
+                          onKeyUp={serieSearchTextFilterkeyPress}
+                        /> : null}
                       <CheckboxGroup
                         value={series.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                         options={
@@ -1278,12 +1329,13 @@ let columns = [
                 {(colorData.length !== 0 && colorData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="filter.color" />} key="7">
-                      <Search
-                        placeholder="Renk araması"
-                        allowClear
-                        onSearch={colorOnSearch}
-                        onKeyUp={colorSearchTextFilterkeyPress}
-                      />
+                      {colorData.length > 5 ?
+                        <Search
+                          placeholder="Renk araması"
+                          allowClear
+                          onSearch={colorOnSearch}
+                          onKeyUp={colorSearchTextFilterkeyPress}
+                        /> : null}
                       <CheckboxGroup
                         value={color.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                         options={
@@ -1297,12 +1349,13 @@ let columns = [
                 {(surfaceData.length !== 0 && surfaceData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="filter.surface" />} key="8">
-                      <Search
-                        placeholder="Yüzey araması"
-                        allowClear
-                        onSearch={surfaceOnSearch}
-                        onKeyUp={surfaceSearchTextFilterkeyPress}
-                      />
+                      {surfaceData.length > 5 ?
+                        <Search
+                          placeholder="Yüzey araması"
+                          allowClear
+                          onSearch={surfaceOnSearch}
+                          onKeyUp={surfaceSearchTextFilterkeyPress}
+                        /> : null}
                       <CheckboxGroup
                         value={surface.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                         options={
@@ -1326,7 +1379,8 @@ let columns = [
                 <Col span={8} offset={16} align="right" >
                   <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule()}
                     icon={<FormOutlined />} >
-                    {<IntlMessages id="forms.button.createRule" />}
+                    {ruleEditing && ruleEditing === true ?
+                      < IntlMessages id= "forms.button.editingRule" /> :< IntlMessages id= "forms.button.createRule" />}
                   </Button>
                 </Col>
                 <Row style={{ marginBottom: '10px' }}>
@@ -1417,73 +1471,10 @@ let columns = [
               </ContentHolder>
             </div>
           </AlgoliaSearchPageWrapper>
-
-        </TabPane>
-        <TabPane tab="Kurallar" key={enumerations.ProductRelationTypestring.Related}>
-        <LayoutWrapper>
-        <Box>
-                <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
-                    <Panel header={<IntlMessages id="page.filtered" />} key="0">
-                        {view !== 'MobileView' ?
-                            <Row>                               
-                                <Col span={6} >
-                                    <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-                                </Col>
-                            </Row>
-                            : null}
-                        <Row>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Input size="small" placeholder="Ürün adı, Kural adı ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
-
-                            </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" >
-                                    {<IntlMessages id="forms.button.label_Search" />}
-                                </Button>
-                            </Col>
-                        </Row>
-                       
-                    </Panel>
-                </Collapse>
-            </Box>
-            <Box >
-               
-                <ReportPagination
-                    onShowSizeChange={onShowSizeChange}
-                    onChange={currentPageChange}
-                    pageSize={pageSize}
-                    total={totalDataCount}
-                    current={pageIndex}
-                    position="top"
-                />
-                <Table
-                    className="components-table-demo-nested"
-                    columns={columns}
-                    dataSource={data}
-                    // onChange={handleChange}
-                    loading={loading}
-                    // expandable={{ 'expandedRowRender': expandedRowRender }}
-                    pagination={false}
-                    scroll={{ x: 'max-content' }}
-                    bordered={false}
-                    // summary={() => {
-                    //     return renderFooter(columns, data, true, aggregatesOverall, true)
-                    // }}
-                />
-                <ReportPagination
-                    onShowSizeChange={onShowSizeChange}
-                    onChange={currentPageChange}
-                    pageSize={pageSize}
-                    total={totalDataCount}
-                    current={pageIndex}
-                    position="bottom"
-                />
-            </Box>
-            </LayoutWrapper>
         </TabPane>
       </Tabs>
       <Modal
-        width={500}
+        width={800}
         visible={visible}
         title={"Kapasite Onaylama"}
         cancelText="İptal"
@@ -1516,6 +1507,38 @@ let columns = [
           <Box >
             <Row>
               <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Form.Item name="ruleName"
+                  rules={[{ required: true, message: 'Kural adı giriniz!' }]}
+                >
+                  <label style={{
+                    fontSize: '14px', fontWeight: '500'
+                  }}>
+                    Kural Adı *
+                    <Input
+                      label="Kural Adı"
+                      type='ruleName'
+                      placeholder="Zorunlu alan giriniz"
+                      value={ruleName}
+                      onChange={handleChangeRuleName}
+                    /></label></Form.Item>
+              </Col>
+              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Form.Item name="ruleNo"
+                  rules={[{ required: true, message: 'Kural no giriniz!' }]}
+                >
+                  <label style={{
+                    fontSize: '14px', fontWeight: '500'
+                  }}>
+                    Kural No *
+                    <Input
+                      label="Kural No"
+                      type='ruleNo'
+                      placeholder="Zorunlu alan giriniz"
+                      value={ruleNo}
+                      onChange={handleChangeRuleNo}
+                    /></label></Form.Item>
+              </Col>
+              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Form.Item name="capacity"
                   rules={[{ required: true, message: 'Kapasite giriniz!' }]}
                 >
@@ -1527,7 +1550,7 @@ let columns = [
                       id={'capacity'}
                       onClick={event => onSelectAll('capacity')}
                       onChange={event => onChangeCapaciy(event)}
-                      style={{ textAlign: "right", maxHeight: '32px', width: '100px' }}
+                      // style={{ textAlign: "right", maxHeight: '32px', width: '100px' }}
                       maxLength={25}
                       defaultValue={1}
                       step={1}
@@ -1537,7 +1560,57 @@ let columns = [
                   </label>
                 </Form.Item>
               </Col>
+              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Form.Item name="orderOfPriority"
+                  rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
+                >
+                  <label style={{
+                    fontSize: '14px', fontWeight: '500'
+                  }}>
+                    Öncelik Sırası
+                    <Select
+                      showSearch
+                      optionFilterProp="children"
+                      onChange={event => onChangeOrderOfPriority(event)}
+                      value={orderOfPriority}
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                    >
+                      <Option value="1">1</Option>
+                      <Option value="2">2</Option>
+                      <Option value="3">3</Option>
+                    </Select>
+
+                  </label>
+                </Form.Item>
+              </Col>
+              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                <Form.Item name="isLocked"
+                  rules={[{ required: true, message: 'Aktiflik durumunu giriniz!' }]}
+                >
+                  <label style={{
+                    fontSize: '14px', fontWeight: '500'
+                  }}>
+                    Aktif / Pasif *
+                    <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
+
+                  </label>
+                </Form.Item>
+              </Col>              
             </Row>
+            <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+              {<label style={{
+                fontSize: '14px', fontWeight: '500'
+              }}>
+                Açıklama
+                {
+
+                }
+              </label>}
+            </Col>
+            <TextArea onChange={handleDescription} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '830px' : '100%' }}
+            />
           </Box>
         </Form>
       </Modal>
