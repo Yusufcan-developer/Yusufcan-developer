@@ -19,8 +19,8 @@ import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
 import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { InputBoxWrapper } from './Checkout.styles';
-import PopupProductRelation from '../../../../src/containers/Products/PopupProductRelation'
-
+import PopupProductRelation from '../../../../src/containers/Products/PopupProductRelation';
+import CreateDemand from '../../../../src/containers/Demand/CreateDemand'
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
@@ -60,7 +60,7 @@ export default function () {
   const [cities, setCities] = useState();
   const [towns, setTowns] = useState();
   const [optionsCities, setOptions] = useState();
-  const [lookupCities,setLookupCities]=useState();
+  const [lookupCities, setLookupCities] = useState();
   const [cityAndTown, setCityAndTow] = useState();
   const [visible, setVisible] = useState();
   const [createOrderQuestionVisible, setCreateOrderQuestionVisible] = useState();
@@ -80,11 +80,12 @@ export default function () {
   const [address2, setAddress2] = useState();
   const [includeTransportation, setIncludeTransportation] = useState(false);
   const [itemsWaitingManufacturing, setItemsWaitingManufacturing] = useState();
-  const [transportation,setTransportation] = useState('');
+  const [transportation, setTransportation] = useState('');
   const [days, setDays] = useState([]);
   const [userId, setUserId] = useState();
-  const [hide,setHide]=useState(false);
-  const [productDetail,setProduct]= useState();
+  const [hide, setHide] = useState(false);
+  const [demandHide, setDemandHide] = useState(false);
+  const [productDetail, setProduct] = useState();
 
   const history = useHistory();
   const location = useLocation();
@@ -100,7 +101,7 @@ export default function () {
   const siteMode = getSiteMode();
 
   let searchUrl = queryString.parse(location.search);
-  const [data, setOnChange] = useGetCartCheckOut(addressCode, searchUrl,includeTransportation);
+  const [data, setOnChange] = useGetCartCheckOut(addressCode, searchUrl, includeTransportation);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -114,10 +115,10 @@ export default function () {
   function renderProducts() {
     if (typeof data !== 'undefined') {
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
-      let quantityLess;     
+      let quantityLess;
       return productList.map(product => {
         if (productList.length > 0) {
-          quantityLess = _.find(product.validationMessages, function(x){ return x.Key === "DependentProduct"; });
+          quantityLess = _.find(product.validationMessages, function (x) { return x.Key === "DependentProduct"; });
         }
         return (
           <SingleOrderInfo
@@ -137,39 +138,54 @@ export default function () {
 
       return setHide(true);
     }
+    //TODO
+    //Buraya item gelecek bu item amacı talep oluşturulması gerekiyormu kontrolü ve sevk adresi kontrolü eklecek. Sevk adresi seçilmediyse seçilecek
+    else{
+      await getProductDetail(productItem.itemCode);
+      return setDemandHide(true);
+    }
   }
 
+  //Bağlı ürün popup işlemleri sonucu
   function onCompletePopupRelation() {
     setHide(false);
     window.location.reload(false);
   }
-//Get Product Detail
-async function getProductDetail(itemCode) {
-  const siteMode=getSiteMode();
-  let productInfo;
-  const requestOptions = {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-    }
-  };
-  const token = jwtDecode(localStorage.getItem("id_token"));
-  const activeUser = localStorage.getItem("activeUser");
-  let uname = '';
-  if (typeof activeUser != 'undefined') { uname = activeUser }
-  if (!token.uname) { return 'Unauthorized' }
-  await fetch(`${siteConfig.api.products.getProductDetail}${itemCode}?siteMode=${siteMode}&includeDependentAndRelatedProductDetails=true`, requestOptions)
-    .then(response => {
-      const status = apiStatusManagement(response);
-      return status;
-    })
-    .then(data => {
-      setProduct(data);  
-    })
-    .catch();
-  return productInfo;
-}
+
+  //Talep oluşturma popup işlemleri sonucu
+  function onCompletePopupDemand(createDemand = false, item, amount) {
+    setHide(false);
+    setDemandHide(false);
+    if (createDemand === true) { window.location.reload(false); }
+  }
+
+  //Get Product Detail
+  async function getProductDetail(itemCode) {
+    const siteMode = getSiteMode();
+    let productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser");
+    let uname = '';
+    if (typeof activeUser != 'undefined') { uname = activeUser }
+    if (!token.uname) { return 'Unauthorized' }
+    await fetch(`${siteConfig.api.products.getProductDetail}${itemCode}?siteMode=${siteMode}&includeDependentAndRelatedProductDetails=true`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        setProduct(data);
+      })
+      .catch();
+    return productInfo;
+  }
   //Change First Name 
   function saveOrderQuestionModal() {
     if (adressItem) {
@@ -584,7 +600,7 @@ async function getProductDetail(itemCode) {
           }
         }
       })
-      .catch(message.warning('Sistemde bir hata oluştu lütfen sistem yöneticinizle irtibata geçiniz. '+newSaveOrderUrl));
+      .catch(message.warning('Sistemde bir hata oluştu lütfen sistem yöneticinizle irtibata geçiniz. ' + newSaveOrderUrl));
     setConfirmLoading(false);
   }
 
@@ -734,7 +750,7 @@ async function getProductDetail(itemCode) {
   }
   //Change Status Type
   function onChangeHandleCity(value) {
-    townChildren=[];
+    townChildren = [];
     setCities(value);
     var townList;
     if (value !== '') {
@@ -750,7 +766,7 @@ async function getProductDetail(itemCode) {
     }
   }
   function onChangeHandleTown(value) {
-    setTowns(value);  
+    setTowns(value);
   };
 
   const view = viewType('Reports');
@@ -803,8 +819,9 @@ async function getProductDetail(itemCode) {
                       dataSource={addressFilterData == null || addressFilterData == '' ? adress : addressFilterData}
                       onRow={(record, rowIndex) => {
                         return {
-                          onClick: event => { setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCities(record.city);setTowns(record.town); setAddress1(record.address1); setAddress2(record.address2); setVisible(false); 
-                          //getInitData(userId, record.city, record.town, true);
+                          onClick: event => {
+                            setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCities(record.city); setTowns(record.town); setAddress1(record.address1); setAddress2(record.address2); setVisible(false);
+                            //getInitData(userId, record.city, record.town, true);
                           },
                         };
                       }}
@@ -866,25 +883,25 @@ async function getProductDetail(itemCode) {
                       </Select>
                     </InputBoxWrapper>
                     <Fieldset>
-                    <InputBoxWrapper className="isoInputBox">
-                      <label style={{marginTop:'15px'}}>
-                        {'İlçe'}
-                        {<span className="asterisk">*</span>}
-                      </label>
-                      <Select
-                        mode={"single"}
-                        style={{ width: '100%' }}
-                        placeholder="İlçe Seçiniz"
-                        value={towns}
-                        showSearch
-                        onChange={onChangeHandleTown}
-                        filterOption={(input, option) =>
-                          option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
-                        }
-                      >
-                        {townChildren}
-                      </Select>
-                    </InputBoxWrapper>
+                      <InputBoxWrapper className="isoInputBox">
+                        <label style={{ marginTop: '15px' }}>
+                          {'İlçe'}
+                          {<span className="asterisk">*</span>}
+                        </label>
+                        <Select
+                          mode={"single"}
+                          style={{ width: '100%' }}
+                          placeholder="İlçe Seçiniz"
+                          value={towns}
+                          showSearch
+                          onChange={onChangeHandleTown}
+                          filterOption={(input, option) =>
+                            option.children.toString().toLocaleLowerCase('tr').indexOf(input.toLocaleLowerCase('tr')) >= 0
+                          }
+                        >
+                          {townChildren}
+                        </Select>
+                      </InputBoxWrapper>
                     </Fieldset>
                     <Fieldset>
                       <InputBox
@@ -963,20 +980,20 @@ async function getProductDetail(itemCode) {
 
                 </div>
                 {typeof adressItem === 'undefined' ? null : <React.Fragment>
-                  {siteMode === enumerations.SiteMode.DeliverysPoint ? 
+                  {siteMode === enumerations.SiteMode.DeliverysPoint ?
                     <React.Fragment> <label>{<IntlMessages id="page.shippingType" />}  {<span className="asterisk">*</span>}</label>
-                <div className="isoInputFieldset">
-                  <Select
-                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '750px' : '100%' }}
-                    placeholder={'Nakliye tipi seçiniz!'}
-                    onChange={shippingMethodHandleChange}
-                    optionFilterProp="children"
-                  >
-                    <Option value="IncludingShipping">Nakliye Dahil İstiyorum</Option>:
-                    <Option value="dontWantShipping">Nakliye İstemiyorum</Option>
-                  </Select>
-                </div></React.Fragment>
-                    : null} 
+                      <div className="isoInputFieldset">
+                        <Select
+                          style={{ marginBottom: '8px', width: view !== 'MobileView' ? '750px' : '100%' }}
+                          placeholder={'Nakliye tipi seçiniz!'}
+                          onChange={shippingMethodHandleChange}
+                          optionFilterProp="children"
+                        >
+                          <Option value="IncludingShipping">Nakliye Dahil İstiyorum</Option>:
+                          <Option value="dontWantShipping">Nakliye İstemiyorum</Option>
+                        </Select>
+                      </div></React.Fragment>
+                    : null}
                   <div className="isoInputFieldset">
                     <InputBox label={<IntlMessages id="checkout.billingform.address1" />}
                       onChange={onChangeAddress1}
@@ -1014,13 +1031,13 @@ async function getProductDetail(itemCode) {
                       onChange={event => onChangeAddressTown(event)}
                       value={towns}
                       disabled
-                    />                  
+                    />
                     {/* <InputBox label={<IntlMessages id="checkout.billingform.km" />}
                       onChange={event => onChangeKm(event)}
                       value={km}
                       disabled
                     /> */}
-                  </div>                
+                  </div>
                   {siteMode === enumerations.SiteMode.DeliverysPoint ?
                     <Table title={() => 'Sevkiyat Günleri'} columns={dayColumns} dataSource={days} pagination={false}
                       scroll={{ x: 'max-content' }}
@@ -1053,7 +1070,7 @@ async function getProductDetail(itemCode) {
                   <Space size={50}>
                     <Button disabled={saveOrderPermissions()} type="primary" loading={confirmLoading} className="isoOrderBtn" onClick={() => saveOrderQuestionModal()} >
                       Sipariş Oluştur
-        </Button>
+                    </Button>
                     {/* <Button disabled={!hasOrderSavePermission} type="primary" loading={loadingButton} onClick={clearOrder} className="isoOrderBtn" >
                       Sipariş Temizle
         </Button> */}
@@ -1063,8 +1080,17 @@ async function getProductDetail(itemCode) {
               </OrderTable>
             </div>
           </div>
-          {hide === true ?
-            <PopupProductRelation
+          {demandHide === true ?
+            <CreateDemand
+              hide={demandHide}
+              item={productDetail}
+              dependentProducts={[]}
+              relatedProducts={[]}
+              checkOutPage={true}
+              demandAmount={36}
+              onComplete={onCompletePopupDemand}
+            /> : null}
+            {hide === true ?<PopupProductRelation
               hide={hide}
               item={productDetail}
               dependentProducts={[]}

@@ -299,7 +299,7 @@ const PopupProductRelation = (props) => {
         var selectedProduct = productQuantity.find(item => item.itemCode === product.itemCode);
         if (typeof selectedProduct === 'undefined') {
             if (partialQuantity) { return 0 }
-            return 1
+            return 0
         }
         else {
             if (entryProductCode !== null) {

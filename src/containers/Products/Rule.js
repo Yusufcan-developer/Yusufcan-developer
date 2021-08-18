@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select,Comment, Tooltip, Avatar } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -41,7 +41,7 @@ import { SingleCardWrapper } from './Shuffle.styles';
 import { FormOutlined } from '@ant-design/icons';
 
 import {
-  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined
+  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined, ExclamationOutlined
 } from '@ant-design/icons';
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
@@ -1045,6 +1045,7 @@ const SearchComponent = () => {
     setSelectedRuleObject(rule);
     setActiveTabKey('1');
     setRuleEditing(true);
+    setRuleNo('12345789');
 
     setOnChange(true);
 
@@ -1102,6 +1103,7 @@ const SearchComponent = () => {
       <Tabs activeKey={activeTabKey} onChange={event => callback()} >
         <TabPane tab="Kural Listesi" key="0" >
           <LayoutWrapper>
+          
             <Box>
               <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                 <Panel header={<IntlMessages id="page.filtered" />} key="0">
@@ -1126,9 +1128,8 @@ const SearchComponent = () => {
 
                 </Panel>
               </Collapse>
-            </Box>
+            </Box>            
             <Box >
-
               <ReportPagination
                 onShowSizeChange={onShowSizeChange}
                 onChange={currentPageChange}
@@ -1167,6 +1168,7 @@ const SearchComponent = () => {
 
         </TabPane>
         <TabPane tab="Kural Detayı" key="1">
+        
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1188,7 +1190,7 @@ const SearchComponent = () => {
               </Col></React.Fragment> : null}
 
             <div className="isoAlgoliaMainWrapper">
-              <SidebarWrapper className="isoAlgoliaSidebar">
+              <SidebarWrapper className="isoAlgoliaRuleSidebar">
                 {newView === 'MobileView' ?
                   <Col>
                     <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
@@ -1376,13 +1378,28 @@ const SearchComponent = () => {
               </SidebarWrapper>
 
               <ContentHolder>
-                <Col span={8} offset={16} align="right" >
+              <Row style={{ marginBottom: '10px' }}>
+        {typeof ruleNo !=='undefined' ? <React.Fragment><Col span={16}>  <Comment
+      author={<a>{ruleNo}</a>}
+      avatar={
+        <Avatar
+          icon={<ExclamationOutlined />}
+          alt="Han Solo"
+          style={{backgroundColor:'green'}}
+        />
+      }
+      content={
+        <p>
+         Karolar03 adlı kural seçimi gerçekleştirdiniz.
+        </p>
+      }
+    /> </Col></React.Fragment>: null}   <Col span={typeof ruleNo !=='undefined' ? 8: 24} align="right" >
                   <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule()}
                     icon={<FormOutlined />} >
                     {ruleEditing && ruleEditing === true ?
                       < IntlMessages id= "forms.button.editingRule" /> :< IntlMessages id= "forms.button.createRule" />}
                   </Button>
-                </Col>
+                </Col> </Row>             
                 <Row style={{ marginBottom: '10px' }}>
                   {newView === 'MobileView' ?
                     null : <Col span={16}>
