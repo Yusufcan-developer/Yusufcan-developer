@@ -522,7 +522,7 @@ export default function () {
       width: 150,
     },
     {
-      title: "Kalan miktar",
+      title: "Kalan Miktar",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
       align: "right",
@@ -531,7 +531,16 @@ export default function () {
       width: 100,
     },
     {
-      title: "Birim fiyat",
+      title: "Kalan TL Tutar",
+      dataIndex: "remainingCost",
+      key: "remainingCost",
+      align: "right",
+      render: (remainingCost) => numberFormat(remainingCost),
+      footerKey: "remainingCost",
+      width: 150,
+    },
+    {
+      title: "Birim Fiyat",
       dataIndex: "unitPrice",
       key: "unitPrice",
       align: "right",
