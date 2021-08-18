@@ -138,6 +138,10 @@ const routes = [
     component: lazy(() => import('@iso/containers/Products/Rule')),
   },
   {
+    path: 'reports/demands',
+    component: lazy(() => import('@iso/containers/Reports/Demands')),
+  },
+  {
     path: 'dealer/users',
     component: lazy(() => import('@iso/containers/User/DealerUserList')),
   },

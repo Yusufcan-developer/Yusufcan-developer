@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select,Comment, Tooltip, Avatar } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select, Comment, Tooltip, Avatar } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -919,7 +919,7 @@ const SearchComponent = () => {
   //Ürünlerin kurallarını tanımlamak için girilmesi gereken kapasite degeri 
   function createRule() {
     setVisible(true);
-    if(ruleEditing && ruleEditing===true){
+    if (ruleEditing && ruleEditing === true) {
       setRuleNo('12312312');
     }
   }
@@ -994,8 +994,10 @@ const SearchComponent = () => {
   }
 
   function onChangeCapaciy(e) {
-    if (!isNaN(e.target.value)) {
-      setCapacity(parseInt(e.target.value));
+    const { value } = e.target;
+    const reg = /^-?\d*(\.\d*)?$/;
+    if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
+      setCapacity(value);
     }
   }
 
@@ -1103,7 +1105,7 @@ const SearchComponent = () => {
       <Tabs activeKey={activeTabKey} onChange={event => callback()} >
         <TabPane tab="Kural Listesi" key="0" >
           <LayoutWrapper>
-          
+
             <Box>
               <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                 <Panel header={<IntlMessages id="page.filtered" />} key="0">
@@ -1128,7 +1130,7 @@ const SearchComponent = () => {
 
                 </Panel>
               </Collapse>
-            </Box>            
+            </Box>
             <Box >
               <ReportPagination
                 onShowSizeChange={onShowSizeChange}
@@ -1168,7 +1170,7 @@ const SearchComponent = () => {
 
         </TabPane>
         <TabPane tab="Kural Detayı" key="1">
-        
+
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1378,28 +1380,28 @@ const SearchComponent = () => {
               </SidebarWrapper>
 
               <ContentHolder>
-              <Row style={{ marginBottom: '10px' }}>
-        {typeof ruleNo !=='undefined' ? <React.Fragment><Col span={16}>  <Comment
-      author={<a>{ruleNo}</a>}
-      avatar={
-        <Avatar
-          icon={<ExclamationOutlined />}
-          alt="Han Solo"
-          style={{backgroundColor:'green'}}
-        />
-      }
-      content={
-        <p>
-         Karolar03 adlı kural seçimi gerçekleştirdiniz.
-        </p>
-      }
-    /> </Col></React.Fragment>: null}   <Col span={typeof ruleNo !=='undefined' ? 8: 24} align="right" >
-                  <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule()}
-                    icon={<FormOutlined />} >
-                    {ruleEditing && ruleEditing === true ?
-                      < IntlMessages id= "forms.button.editingRule" /> :< IntlMessages id= "forms.button.createRule" />}
-                  </Button>
-                </Col> </Row>             
+                <Row style={{ marginBottom: '10px' }}>
+                  {typeof ruleNo !== 'undefined' ? <React.Fragment><Col span={16}>  <Comment
+                    author={<a>{ruleNo}</a>}
+                    avatar={
+                      <Avatar
+                        icon={<ExclamationOutlined />}
+                        alt="Han Solo"
+                        style={{ backgroundColor: 'green' }}
+                      />
+                    }
+                    content={
+                      <p>
+                        Karolar03 adlı kural seçimi gerçekleştirdiniz.
+                      </p>
+                    }
+                  /> </Col></React.Fragment> : null}   <Col span={typeof ruleNo !== 'undefined' ? 8 : 24} align="right" >
+                    <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule()}
+                      icon={<FormOutlined />} >
+                      {ruleEditing && ruleEditing === true ?
+                        < IntlMessages id="forms.button.editingRule" /> : < IntlMessages id="forms.button.createRule" />}
+                    </Button>
+                  </Col> </Row>
                 <Row style={{ marginBottom: '10px' }}>
                   {newView === 'MobileView' ?
                     null : <Col span={16}>
@@ -1614,7 +1616,7 @@ const SearchComponent = () => {
 
                   </label>
                 </Form.Item>
-              </Col>              
+              </Col>
             </Row>
             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {<label style={{
