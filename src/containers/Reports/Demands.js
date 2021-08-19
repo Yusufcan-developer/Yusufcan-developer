@@ -10,9 +10,9 @@ import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
-import Button from "@iso/components/uielements/button";
-import { Table, Row, Col, TreeSelect, Radio, Tag, Dropdown, Menu, Modal, Input, message } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, Tag, Dropdown, Menu, Modal, Input, message, Space, Layout, Button } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
+import Popconfirms from '@iso/components/Feedback/Popconfirm';
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
@@ -21,7 +21,7 @@ import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Style
-import { DownloadOutlined, SettingOutlined, DownOutlined } from '@ant-design/icons';
+import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -53,6 +53,7 @@ let sortingField;
 let sortingOrder;
 export default function () {
     document.title = "Talepler - Seramiksan B2B";
+    const { Content } = Layout;
 
     const Option = SelectOption;
     let selectedTotalCount = 0;
@@ -84,6 +85,8 @@ export default function () {
     const [hasSelected, setHasSelected] = useState(false);
     const [selectedDemand, setSelectedDemand] = useState();
     const [visible, setVisible] = useState(false);
+    const [acceptInfoVisible, setAcceptInfoVisible] = useState(false);
+    const [toolbarEditingButton, setToolbarEditingButton] = useState(false);
     const [componentSize, setComponentSize] = useState('default');
     const [demandNo, setDemandNo] = useState();
     const [description, setDescription] = useState();
@@ -439,7 +442,7 @@ export default function () {
 
     function menuDisabled(item) {
         const token = jwtDecode(localStorage.getItem("id_token"));
-        if((item==='SEVK EDILEMEZ') && (token.urole === 'admin') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {return true}
+        if ((item === 'SEVK EDILEMEZ') && (token.urole === 'admin') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { return true }
         return false;
     }
     //Order Detail Columns
@@ -595,21 +598,45 @@ export default function () {
         postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
         // ExcelExport(columns, data, 'Sipariş Kalemleri');
     }
+
+    //Sipariş oluşturulması için izin verilenler
+    function permissionCheck(status) {
+        if ((status === 'SEVK EDILEBILIR') || (status === '')) { return false; }
+        return true;
+    }
+
     // rowSelection object indicates the need for row selection
     const rowSelection = {
         onSelect: (record, selected, selectedRows) => {
-                let selectedIds = []
-                if (selectedRows.length > 0) {
-                    _.each(selectedRows, (orderNo) => {
-                        if (typeof item !== 'undefined') {
-                            selectedIds.push(orderNo);
-                        }
-                    });
-                    setSelectedItemsId(selectedIds);
-                    selectedTotalCount = selectedIds.length;
-                    setHasSelected(true);
-                }
-                else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }            
+            let selectedIds = []
+            debugger
+            //Geçici olarak eklendi api sonrası tek bir koşul değişecek.
+            if (selectedRows.length > 0) {
+                _.each(selectedRows, (orderNo) => {
+                    if (typeof item !== 'undefined') {
+                        selectedIds.push(orderNo);
+                    }
+                });
+                setSelectedItemsId(selectedIds);
+                selectedTotalCount = selectedIds.length;
+                setHasSelected(true);
+            }
+            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+
+
+            //Olması gereken şekil api düzenlemesinden sonra değiştirilecek.
+
+            // if (selectedRows.length > 0) {
+            //     _.each(selectedRows, (orderNo) => {
+            //         if (typeof item !== 'undefined') {
+            //             selectedIds.push(orderNo);
+            //         }
+            //     });
+            //     setSelectedItemsId(selectedIds);
+            //     selectedTotalCount = selectedIds.length;
+            //     setHasSelected(true);
+            // }
+            // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
         },
         onSelectAll: (record, selected, selectedRows) => {
             let selectedIds = []
@@ -626,15 +653,15 @@ export default function () {
             else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
         },
         getCheckboxProps: (record) => ({
-            disabled: record.status !== 'SEVK EDILEBILIR', // Column configuration not to be checked
-          }),
-        
+            disabled: permissionCheck(record.status), // Column configuration not to be checked
+        }),
+
     };
     //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
-    const menu = (s) =>  (
+    const menu = (s) => (
         <Menu onClick={handleMenuClick}>
             {(token.urole !== 'dealersv') || (token.urole !== 'dealerwhouse') || (token.urole !== 'dealerlimited') ? <Menu.Item key="1">Düzenle</Menu.Item> : null}
-            <Menu.Item disabled={s === 'SEVK EDILEBILIR' ? false : true } key="2">Sipariş Oluştur</Menu.Item>
+            <Menu.Item disabled={s === 'SEVK EDILEBILIR' ? false : true} key="2">Sipariş Oluştur</Menu.Item>
         </Menu>
     );
 
@@ -675,6 +702,8 @@ export default function () {
     function handleCancel() {
         setDemandNo();
         setVisible(false);
+        setAcceptInfoVisible(false);
+        setToolbarEditingButton(false);
     };
 
     //Talebin Düzenleme kayıt işlemi
@@ -728,10 +757,11 @@ export default function () {
 
     //Seçilenleri sipariş oluşturma işlemi
     async function multiplePostNotificationIsRead() {
+        setAcceptInfoVisible(true);
         _.each(selectedItemsId, (item) => {
-        //   postNotificationIsread(item, true);
+            //   postNotificationIsread(item, true);
         });
-      }
+    }
     function demandStatusChangeModal(value) {
         setStatusModal(value);
     }
@@ -750,6 +780,50 @@ export default function () {
         }
     };
 
+    function demandCancelOrRejection(params) {
+        setToolbarEditingButton(true);
+        setVisible(true);
+    }
+
+    function demandEditingModalPermissions(type) {
+        switch (type) {
+            case 'Accept':
+                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (toolbarEditingButton === true) && (selectedItemsId.length>0)){
+                    return false;
+                }
+                break;
+            case 'Cancel':
+
+                break;
+            case 'Rejection':
+                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+                    return false;
+                }
+                break;
+            case 'Amount':
+                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (toolbarEditingButton === true) && (selectedItemsId.length>0)){
+                    return false;
+                }
+            default:
+                break;
+        }
+        return true;
+    }
+     //Talep red durumları seçimi
+     const onChangeRadioRejectionsButton = e => {
+        // setSelectedDemand(e.target.value);
+        // switch (e.target.value) {
+        //     case 1:
+        //         break;
+        //     case 2:
+        //         break;
+        //     case 3:
+        //         setSelectedDemandAmount(demandAmount);
+        //         break;
+        //     default:
+        //         break;
+        // }
+    }
     const view = viewType('Reports');
     const filterView = viewType('Filter');
     return (
@@ -900,12 +974,31 @@ export default function () {
             </Box>
             {/* Data list volume */}
             <Box>
-                <Col span={8} offset={16} align="right" >
-                    <Button type="primary" size="small" style={{ marginBottom: '5px' }}
-                        icon={<DownloadOutlined />} onClick={exportExcelButton}>
-                        {<IntlMessages id="forms.button.exportExcel" />}
-                    </Button>
-                </Col>
+                {hasSelected ?
+                    <Col span={8} offset={16} align="right" >
+                        <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostNotificationIsRead())}>
+                            <CheckOutlined />
+                        </Button>
+                        <Popconfirms
+                        visible={acceptInfoVisible}
+                        title="Seçilen talepler arasında onaylanmayanlar var otomatik olarak onaylamak istiyor musunuz？"
+                        okText="Evet"
+                        cancelText="Hayır"
+                        placement="topRight"
+                        onCancel={handleCancel}
+
+                    // onConfirm={productItemOrder}
+                    >
+                        <a className="deleteBtn" >
+                            {/* <i className="ion-android-delete" onClick={() => edit(record, true)} /> */}
+                        </a>
+                    </Popconfirms>
+                        <Button onClick={event => demandCancelOrRejection(event)}>
+                            <CloseOutlined />
+                        </Button>
+                        {/* {selectedTotalCount} Öğe seçildi */}
+                    </Col> : ''
+                }
                 <ReportPagination
                     onShowSizeChange={onShowSizeChange}
                     onChange={currentPageChange}
@@ -914,14 +1007,6 @@ export default function () {
                     current={pageIndex}
                     position="top"
                 />
-                <div style={{ marginBottom: 16 }}>
-                    <Button type="primary" disabled={!hasSelected} loading={selectAllLoading} onClick={() => (multiplePostNotificationIsRead())}>
-                        Seçilenleri Sipariş Oluştur
-                    </Button>
-                    <span style={{ marginLeft: 8 }}>
-                        {hasSelected ? `${selectedTotalCount} Öğe seçildi` : ''}
-                    </span>
-                </div>
                 <Table
                     columns={columns}
                     dataSource={data}
@@ -998,17 +1083,30 @@ export default function () {
                             optionFilterProp="children"
                             value={statusModal}
                         >
-                            <Option value="Accept">Kabul</Option>
+                            {demandEditingModalPermissions('Accept') === true ?
+                                <Option value="Accept">Kabul</Option> : null}
                             <Option value="Cancel">İptal</Option>
-                            <Option value="Rejection">Red</Option>
+                            {demandEditingModalPermissions('Rejection') === true ?
+                                <Option value="Rejection">Red</Option> : null}
                         </Select>
                     </Form.Item>
-                    <Form.Item label="Miktar" >
-                        <Input id="amount" value={demandAmountModal} onClick={event => onSelectAll('amount')}
-                            onChange={event => onChangeAmount(event)} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} />
-                        <span style={{ paddingLeft: '5px' }}>{demandUnitModal}</span>
+                    {demandEditingModalPermissions('Amount') === true ?
+                        <Form.Item label="Miktar" >
+                            <Input id="amount" value={demandAmountModal} onClick={event => onSelectAll('amount')}
+                                onChange={event => onChangeAmount(event)} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} />
+                            <span style={{ paddingLeft: '5px' }}>{demandUnitModal}</span>
+                        </Form.Item> : null}
 
-                    </Form.Item>
+                        {statusModal==='Rejection' ? 
+                        <Form.Item label="Red Nedeni">                        
+                        <Radio.Group onChange={onChangeRadioRejectionsButton} value={selectedDemand} style={{  marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  >
+                                <Space direction="vertical">
+                                    <Radio  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={1}>Üretilmeyecek</Radio>
+                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  value={2}>Miktar fazlalılığ var</Radio>
+                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  value={3}>Bilmiyorum</Radio>                                   
+                                </Space>
+                            </Radio.Group></Form.Item> : null}
+
                     <Form.Item label="Açıklama" >
                         <TextArea onChange={event => handleDescription(event)} value={description} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '830px' : '100%' }} />
                     </Form.Item>

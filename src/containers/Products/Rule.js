@@ -79,6 +79,8 @@ const SearchComponent = () => {
   const [capacity, setCapacity] = useState(1);
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
+  const [componentSize, setComponentSize] = useState('default');
+
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -1098,6 +1100,11 @@ const SearchComponent = () => {
   function isLockedChange(value) {
     setIsLocked(!value);
   }
+
+  //Component Size
+  const onFormLayoutChange = ({ size }) => {
+    setComponentSize(size);
+  };
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -1517,15 +1524,21 @@ const SearchComponent = () => {
         ]}
       >
         <Form
-          form={form}
-          layout="vertical"
-          name="normal_login"
-          className="login-form"
-          initialValues={{ remember: true }}
+          labelCol={{
+            span: 4,
+          }}
+          wrapperCol={{
+            span: 14,
+          }}
+          layout="horizontal"
+          initialValues={{
+            size: componentSize,
+          }}
+          onValuesChange={onFormLayoutChange}
+          size={componentSize}
         >
           <Box >
             <Row>
-              <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Form.Item name="ruleName"
                   rules={[{ required: true, message: 'Kural adı giriniz!' }]}
                 >
@@ -1537,11 +1550,12 @@ const SearchComponent = () => {
                       label="Kural Adı"
                       type='ruleName'
                       placeholder="Zorunlu alan giriniz"
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+
                       value={ruleName}
                       onChange={handleChangeRuleName}
                     /></label></Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+           
                 <Form.Item name="ruleNo"
                   rules={[{ required: true, message: 'Kural no giriniz!' }]}
                 >
@@ -1553,12 +1567,12 @@ const SearchComponent = () => {
                       label="Kural No"
                       type='ruleNo'
                       placeholder="Zorunlu alan giriniz"
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+
                       value={ruleNo}
                       onChange={handleChangeRuleNo}
                     /></label></Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Form.Item name="capacity"
+                <Form.Item
                   rules={[{ required: true, message: 'Kapasite giriniz!' }]}
                 >
                   <label style={{
@@ -1566,20 +1580,14 @@ const SearchComponent = () => {
                   }}>
                     Kapasite *
                     <Input
-                      id={'capacity'}
-                      onClick={event => onSelectAll('capacity')}
+                      id="edit"
+                      onClick={event => onSelectAll("edit")}
                       onChange={event => onChangeCapaciy(event)}
-                      // style={{ textAlign: "right", maxHeight: '32px', width: '100px' }}
-                      maxLength={25}
-                      defaultValue={1}
-                      step={1}
-                      placeholder="Zorunlu alan giriniz"
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                       value={capacity}
                     />
                   </label>
                 </Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Form.Item name="orderOfPriority"
                   rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
                 >
@@ -1592,6 +1600,7 @@ const SearchComponent = () => {
                       optionFilterProp="children"
                       onChange={event => onChangeOrderOfPriority(event)}
                       value={orderOfPriority}
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                       filterOption={(input, option) =>
                         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
@@ -1603,20 +1612,17 @@ const SearchComponent = () => {
 
                   </label>
                 </Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Form.Item name="isLocked"
                   rules={[{ required: true, message: 'Aktiflik durumunu giriniz!' }]}
                 >
                   <label style={{
                     fontSize: '14px', fontWeight: '500'
                   }}>
-                    Aktif / Pasif *
+                    Aktif / Pasif
                     <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
 
                   </label>
                 </Form.Item>
-              </Col>
             </Row>
             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {<label style={{

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 
 //Components
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Badge, notification, Typography, Tooltip, Space, Image, Input, message, Radio } from "antd";
+import { Col, Card, Row, Button, Space, Image, Input, message, Radio } from "antd";
 import Scrollbar from '@iso/components/utility/customScrollBar';
 
 //Redux
@@ -24,11 +24,6 @@ import basicStyle from '@iso/assets/styles/constants';
 import _ from 'underscore';
 import logMessage from '@iso/config/logMessage';
 
-//Desing style
-import { SingleCardWrapper } from '../Products/Shuffle.styles';
-import {
-    InfoCircleOutlined
-} from '@ant-design/icons';
 import Modal from "antd/lib/modal/Modal";
 const CreateDemand = (props) => {
     const { hide, item, onComplete, checkOutPage, demandAmount } = props;
@@ -93,7 +88,6 @@ const CreateDemand = (props) => {
         else {
             message.warning(warningQuantity <= 0 ? null : <span style={{ color: 'red' }}>{warningQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>);
         }
-
     }
 
     //Talep oluşturma popup kaydetme işlemi seçimlere göre hareket ediyor.
@@ -227,8 +221,7 @@ const CreateDemand = (props) => {
                         </Col>
                         <Col md={12} sm={12} xs={24} style={colStyle} >
                             <span style={{ fontWeight: 'bold', color: 'red' }}>Seçilmiş olan ürün miktarı fabrika toplam üretim miktarından fazladır. Bu yüzden dolayı talep oluşturabilirsiniz.</span>
-                            <br /><br />
-                           
+                            <br /><br />                           
                             <Radio.Group onChange={onChangeRadioButton} value={selectedDemand} style={{paddingBottom:'25px'}} >
                                 <Space direction="vertical">
                                     <Radio value={1}>Talep Oluşturma</Radio>
