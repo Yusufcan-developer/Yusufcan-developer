@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select,Comment, Tooltip, Avatar } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select, Comment, Tooltip, Avatar } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -79,6 +79,8 @@ const SearchComponent = () => {
   const [capacity, setCapacity] = useState(1);
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
+  const [componentSize, setComponentSize] = useState('default');
+
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -919,7 +921,7 @@ const SearchComponent = () => {
   //Ürünlerin kurallarını tanımlamak için girilmesi gereken kapasite degeri 
   function createRule() {
     setVisible(true);
-    if(ruleEditing && ruleEditing===true){
+    if (ruleEditing && ruleEditing === true) {
       setRuleNo('12312312');
     }
   }
@@ -994,8 +996,10 @@ const SearchComponent = () => {
   }
 
   function onChangeCapaciy(e) {
-    if (!isNaN(e.target.value)) {
-      setCapacity(parseInt(e.target.value));
+    const { value } = e.target;
+    const reg = /^-?\d*(\.\d*)?$/;
+    if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
+      setCapacity(value);
     }
   }
 
@@ -1096,6 +1100,11 @@ const SearchComponent = () => {
   function isLockedChange(value) {
     setIsLocked(!value);
   }
+
+  //Component Size
+  const onFormLayoutChange = ({ size }) => {
+    setComponentSize(size);
+  };
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -1103,7 +1112,7 @@ const SearchComponent = () => {
       <Tabs activeKey={activeTabKey} onChange={event => callback()} >
         <TabPane tab="Kural Listesi" key="0" >
           <LayoutWrapper>
-          
+
             <Box>
               <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                 <Panel header={<IntlMessages id="page.filtered" />} key="0">
@@ -1128,7 +1137,7 @@ const SearchComponent = () => {
 
                 </Panel>
               </Collapse>
-            </Box>            
+            </Box>
             <Box >
               <ReportPagination
                 onShowSizeChange={onShowSizeChange}
@@ -1168,7 +1177,7 @@ const SearchComponent = () => {
 
         </TabPane>
         <TabPane tab="Kural Detayı" key="1">
-        
+
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1378,28 +1387,28 @@ const SearchComponent = () => {
               </SidebarWrapper>
 
               <ContentHolder>
-              <Row style={{ marginBottom: '10px' }}>
-        {typeof ruleNo !=='undefined' ? <React.Fragment><Col span={16}>  <Comment
-      author={<a>{ruleNo}</a>}
-      avatar={
-        <Avatar
-          icon={<ExclamationOutlined />}
-          alt="Han Solo"
-          style={{backgroundColor:'green'}}
-        />
-      }
-      content={
-        <p>
-         Karolar03 adlı kural seçimi gerçekleştirdiniz.
-        </p>
-      }
-    /> </Col></React.Fragment>: null}   <Col span={typeof ruleNo !=='undefined' ? 8: 24} align="right" >
-                  <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule()}
-                    icon={<FormOutlined />} >
-                    {ruleEditing && ruleEditing === true ?
-                      < IntlMessages id= "forms.button.editingRule" /> :< IntlMessages id= "forms.button.createRule" />}
-                  </Button>
-                </Col> </Row>             
+                <Row style={{ marginBottom: '10px' }}>
+                  {typeof ruleNo !== 'undefined' ? <React.Fragment><Col span={16}>  <Comment
+                    author={<a>{ruleNo}</a>}
+                    avatar={
+                      <Avatar
+                        icon={<ExclamationOutlined />}
+                        alt="Han Solo"
+                        style={{ backgroundColor: 'green' }}
+                      />
+                    }
+                    content={
+                      <p>
+                        Karolar03 adlı kural seçimi gerçekleştirdiniz.
+                      </p>
+                    }
+                  /> </Col></React.Fragment> : null}   <Col span={typeof ruleNo !== 'undefined' ? 8 : 24} align="right" >
+                    <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule()}
+                      icon={<FormOutlined />} >
+                      {ruleEditing && ruleEditing === true ?
+                        < IntlMessages id="forms.button.editingRule" /> : < IntlMessages id="forms.button.createRule" />}
+                    </Button>
+                  </Col> </Row>
                 <Row style={{ marginBottom: '10px' }}>
                   {newView === 'MobileView' ?
                     null : <Col span={16}>
@@ -1515,15 +1524,21 @@ const SearchComponent = () => {
         ]}
       >
         <Form
-          form={form}
-          layout="vertical"
-          name="normal_login"
-          className="login-form"
-          initialValues={{ remember: true }}
+          labelCol={{
+            span: 4,
+          }}
+          wrapperCol={{
+            span: 14,
+          }}
+          layout="horizontal"
+          initialValues={{
+            size: componentSize,
+          }}
+          onValuesChange={onFormLayoutChange}
+          size={componentSize}
         >
           <Box >
             <Row>
-              <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Form.Item name="ruleName"
                   rules={[{ required: true, message: 'Kural adı giriniz!' }]}
                 >
@@ -1535,11 +1550,12 @@ const SearchComponent = () => {
                       label="Kural Adı"
                       type='ruleName'
                       placeholder="Zorunlu alan giriniz"
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+
                       value={ruleName}
                       onChange={handleChangeRuleName}
                     /></label></Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+           
                 <Form.Item name="ruleNo"
                   rules={[{ required: true, message: 'Kural no giriniz!' }]}
                 >
@@ -1551,12 +1567,12 @@ const SearchComponent = () => {
                       label="Kural No"
                       type='ruleNo'
                       placeholder="Zorunlu alan giriniz"
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+
                       value={ruleNo}
                       onChange={handleChangeRuleNo}
                     /></label></Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                <Form.Item name="capacity"
+                <Form.Item
                   rules={[{ required: true, message: 'Kapasite giriniz!' }]}
                 >
                   <label style={{
@@ -1564,20 +1580,14 @@ const SearchComponent = () => {
                   }}>
                     Kapasite *
                     <Input
-                      id={'capacity'}
-                      onClick={event => onSelectAll('capacity')}
+                      id="edit"
+                      onClick={event => onSelectAll("edit")}
                       onChange={event => onChangeCapaciy(event)}
-                      // style={{ textAlign: "right", maxHeight: '32px', width: '100px' }}
-                      maxLength={25}
-                      defaultValue={1}
-                      step={1}
-                      placeholder="Zorunlu alan giriniz"
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                       value={capacity}
                     />
                   </label>
                 </Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Form.Item name="orderOfPriority"
                   rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
                 >
@@ -1590,6 +1600,7 @@ const SearchComponent = () => {
                       optionFilterProp="children"
                       onChange={event => onChangeOrderOfPriority(event)}
                       value={orderOfPriority}
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                       filterOption={(input, option) =>
                         option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                       }
@@ -1601,20 +1612,17 @@ const SearchComponent = () => {
 
                   </label>
                 </Form.Item>
-              </Col>
-              <Col offset={1} span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                 <Form.Item name="isLocked"
                   rules={[{ required: true, message: 'Aktiflik durumunu giriniz!' }]}
                 >
                   <label style={{
                     fontSize: '14px', fontWeight: '500'
                   }}>
-                    Aktif / Pasif *
+                    Aktif / Pasif
                     <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
 
                   </label>
                 </Form.Item>
-              </Col>              
             </Row>
             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {<label style={{

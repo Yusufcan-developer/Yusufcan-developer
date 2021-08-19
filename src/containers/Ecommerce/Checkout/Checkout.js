@@ -10,8 +10,6 @@ import Button from '@iso/components/uielements/button';
 import SingleOrderInfo from './SingleOrder';
 import { OrderTable } from './Checkout.styles';
 import InputBox from './InputBox';
-import CascaderBox from './CascaderBox';
-import SelectBox from './SelectBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
