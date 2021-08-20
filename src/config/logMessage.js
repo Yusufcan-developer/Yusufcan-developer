@@ -89,5 +89,10 @@ export default {
     {
         browse:'Adres listesi',
         saveAddress:' adres başarılı şekilde oluşturulmuştur.',
+    },
+    Demand:
+    {
+        browse:'Talep listesi',
+        save:'talep başarılı şekilde oluşturulmuştur.'
     }
 };
