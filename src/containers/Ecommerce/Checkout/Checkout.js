@@ -18,7 +18,8 @@ import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { InputBoxWrapper } from './Checkout.styles';
 import PopupProductRelation from '../../../../src/containers/Products/PopupProductRelation';
-import CreateDemand from '../../../../src/containers/Demand/CreateDemand'
+import CreateDemand from '../../../../src/containers/Demand/CreateDemand';
+
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
@@ -131,6 +132,11 @@ export default function () {
     }
   }
   async function popupShow(productItem) {
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    if ((token.uname === 'utku') || (token.uname === 'ugur')) {
+      await getProductDetail(productItem.itemCode);
+      return setDemandHide(true);
+    }
     if (productItem.hasDependentOrRelatedProducts === true) {
       await getProductDetail(productItem.itemCode);
 
@@ -155,6 +161,7 @@ export default function () {
     setHide(false);
     setDemandHide(false);
     if (createDemand === true) { window.location.reload(false); }
+    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Demand.save);
   }
 
   //Get Product Detail

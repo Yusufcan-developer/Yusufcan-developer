@@ -4,10 +4,6 @@ import React, { useState, useEffect } from "react";
 //Components
 import Box from "@iso/components/utility/box";
 import { Col, Card, Row, Button, Space, Image, Input, message, Radio } from "antd";
-import Scrollbar from '@iso/components/utility/customScrollBar';
-
-//Redux
-import { useDispatch, useSelector } from 'react-redux';
 
 //Fetch
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
@@ -29,24 +25,16 @@ const CreateDemand = (props) => {
     const { hide, item, onComplete, checkOutPage, demandAmount } = props;
 
     const { rowStyle, colStyle, gutter } = basicStyle;
-    const [partialAmount, setPartialAmount] = useState(0);
-    const [palletAmount, setPalletAmount] = useState(0);
     const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
-    const [partialQuantity, setPartialQuantity] = useState(false);
     const [searchSiteMode, setSearchSitemode] = useState();
-    const [warningQuantity, setWarningQuantity] = useState(0);
-    const [changeQuantity, setChangeQuantity] = useState(true);
-    const [selectedDemand, setSelectedDemand] = useState();
+    const [amountType, setAmountType] = useState();
+    
     const [inputDemandAmount, setSelectedDemandAmount] = useState(demandAmount);
     var jwtDecode = require('jwt-decode');
 
     useEffect(() => {
-        if (changeQuantity === true) {
-            const token = jwtDecode(localStorage.getItem("id_token"));
-            getCartList();
-        }
         getWarehouseList(item.itemCode);
-    }, [changeQuantity]);
+    }, []);
 
     const siteMode = getSiteMode();
 
@@ -80,19 +68,12 @@ const CreateDemand = (props) => {
 
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     async function handleCancel(item) {
-        const token = jwtDecode(localStorage.getItem("id_token"));
-        if ((typeof item.dependentProductCodes === 'undefined' || item.dependentProductCodes.length === 0) || (warningQuantity <= 0)) {
-            setPartialQuantity(false);
-            onComplete();
-        }
-        else {
-            message.warning(warningQuantity <= 0 ? null : <span style={{ color: 'red' }}>{warningQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>);
-        }
+        onComplete();
     }
 
     //Talep oluşturma popup kaydetme işlemi seçimlere göre hareket ediyor.
     async function handleSave(params) {
-        switch (selectedDemand) {
+        switch (amountType) {
             case 1:
                 onComplete(false)
                 break;
@@ -139,8 +120,6 @@ const CreateDemand = (props) => {
                             partialQuantity += item.balance;
                         }
                     });
-                    setPalletAmount(palletQuantity);
-                    setPartialAmount(partialQuantity);
                     setSalableBalanceFriendlyText(data.salableBalanceFriendlyText);
                 }
             })
@@ -149,8 +128,8 @@ const CreateDemand = (props) => {
     }
 
     //Talep oluşturma durumları seçimi
-    const onChangeRadioButton = e => {
-        setSelectedDemand(e.target.value);
+    const onChangeDemandAmountSelectionRadioButton = e => {
+        setAmountType(e.target.value);
         switch (e.target.value) {
             case 1:
                 break;
@@ -164,8 +143,9 @@ const CreateDemand = (props) => {
         }
     }
 
+
     //RadioButton değişiklikleri
-    function onChangeDemandAmount(e) {
+    function onChangeAmountEntered(e) {
         if (!isNaN(e.target.value)) {
             setSelectedDemandAmount(parseInt(e.target.value));
         }
@@ -192,10 +172,7 @@ const CreateDemand = (props) => {
                             Kaydet
                         </Button>
                     ]}>
-                    {/* { Eklenmesi gereken ürün sayısı bilgisi } */}
-                    {<Col style={{ width: '100%' }} align="center">
-                        {warningQuantity <= 0 ? null : <span style={{ color: 'red' }}>{warningQuantity} {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && item.unit === 'M2' ? 'M2' : item.unit !== 'TOR' ? 'Adet' : 'Torba'} Bağlı ürün eklemeniz gerekmektedir.</span>}
-                    </Col>}
+                    {/* { Eklenmesi gereken ürün sayısı bilgisi } */}                   
                     <Row style={rowStyle} gutter={gutter} justify="start">
                         <Col md={12} sm={12} xs={24} style={colStyle} >
                             <Box>
@@ -222,14 +199,14 @@ const CreateDemand = (props) => {
                         <Col md={12} sm={12} xs={24} style={colStyle} >
                             <span style={{ fontWeight: 'bold', color: 'red' }}>Seçilmiş olan ürün miktarı fabrika toplam üretim miktarından fazladır. Bu yüzden dolayı talep oluşturabilirsiniz.</span>
                             <br /><br />                           
-                            <Radio.Group onChange={onChangeRadioButton} value={selectedDemand} style={{paddingBottom:'25px'}} >
+                            <Radio.Group onChange={onChangeDemandAmountSelectionRadioButton} value={amountType} style={{paddingBottom:'25px'}} >
                                 <Space direction="vertical">
                                     <Radio value={1}>Talep Oluşturma</Radio>
                                     <Radio value={2}>Fazla Miktarı Kadar</Radio>
                                     <Radio value={3}>Tamamını Oluştur</Radio>
                                     <Radio value={4}>
                                         Kendim Girmek İstiyorum...
-                                        {selectedDemand === 4 ? <Input style={{ width: 100, marginLeft: 10 }} value={inputDemandAmount} onChange={event => onChangeDemandAmount(event)} onClick={event => onSelectAll(event)} /> : null}
+                                        {amountType === 4 ? <Input style={{ width: 100, marginLeft: 10 }} value={inputDemandAmount} onChange={event => onChangeAmountEntered(event)} onClick={event => onSelectAll(event)} /> : null}
                                     </Radio>
                                 </Space>
                             </Radio.Group>

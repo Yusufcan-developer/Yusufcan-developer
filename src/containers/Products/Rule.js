@@ -9,11 +9,12 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select, Comment, Tooltip, Avatar } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select, Comment, Tag, Avatar } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
+import numberFormat from "@iso/config/numberFormat";
 
 //Fetch
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiRuleProductList";
@@ -97,13 +98,14 @@ const SearchComponent = () => {
   const [stockStatus, setStockStatus] = useState(enumerations.StockStatus.None);
   const [campaign, setCampaignCode] = useState(false);
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
-  const [productCode, setProductCode] = useState();
   const [ruleName, setRuleName] = useState();
   const [ruleNo, setRuleNo] = useState();
   const [description, setDescription] = useState('');
   const [isLocked, setIsLocked] = useState();
   const [orderOfPriority, setOrderOfPriority] = useState();
   const [ruleEditing, setRuleEditing] = useState(false);
+  const [ruleText, setRuleText]= useState();
+
   //Sorting states
   const [sortingField, setSortingField] = useState();
   const [sortingOrder, setSortingOrder] = useState();
@@ -120,7 +122,6 @@ const SearchComponent = () => {
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
   const [searchKey, setSearchKey] = useState('');
-  const [productList, setProductList] = useState();
   const { Search } = Input;
 
   useEffect(() => {
@@ -923,6 +924,7 @@ const SearchComponent = () => {
     setVisible(true);
     if (ruleEditing && ruleEditing === true) {
       setRuleNo('12312312');
+      setRuleName('TestKural');
     }
   }
 
@@ -1062,23 +1064,57 @@ const SearchComponent = () => {
     // this.formRef.current.resetFields();
     // this.formRef.current.setFieldsValue({ product: this.state.productCode })
   }
-  //Order Columns
+
+  //Rule Columns
   let columns = [
     {
-      title: "Bayi Kodu",
+      title: "Kural Adı",
       dataIndex: "dealerCode",
       key: "dealerCode",
       style: { font: { sz: "48", bold: true } },
-      width: 100
+      width: 100,
+      render: (amount, record) => 'Test' + record.itemCode,
     },
     {
-      title: "Ürün Kodu",
+      title: "Kural Kodu",
       dataIndex: "itemCode",
       key: "itemCode",
-      width: 200,
+      width: 100,
       ellipsis: true,
     },
-
+    {
+      title: "Kapasite",
+      dataIndex: "total",
+      key: "total",
+      width: 100,
+      render: (total) => numberFormat(15000)
+    },
+    {
+      title: "Öncelik Sırası",
+      dataIndex: "total",
+      key: "total",
+      width: 50,
+      render: (total) => 1
+    },
+    {
+      title: "Açıklama",
+      dataIndex: "total",
+      key: "total",
+      width: 250,
+      render: (total) => 'Deneme amaçlı olarak oluşturulmuştur.'
+    },
+    {
+      title: "Durumu",
+      dataIndex: "isLocked",
+      key: "isLocked",
+      render: isLocked => (
+        <>
+          <Tag color={'green'} key={isLocked}>
+            {'Açık'}
+          </Tag>
+        </>
+      ),
+    },
   ];
 
   //Kural adı değiştirme
@@ -1399,7 +1435,7 @@ const SearchComponent = () => {
                     }
                     content={
                       <p>
-                        Karolar03 adlı kural seçimi gerçekleştirdiniz.
+                        BanyoMobilyası 3 adlı kural seçimi gerçekleştirdiniz.
                       </p>
                     }
                   /> </Col></React.Fragment> : null}   <Col span={typeof ruleNo !== 'undefined' ? 8 : 24} align="right" >
@@ -1539,90 +1575,90 @@ const SearchComponent = () => {
         >
           <Box >
             <Row>
-                <Form.Item name="ruleName"
-                  rules={[{ required: true, message: 'Kural adı giriniz!' }]}
-                >
-                  <label style={{
-                    fontSize: '14px', fontWeight: '500'
-                  }}>
-                    Kural Adı *
-                    <Input
-                      label="Kural Adı"
-                      type='ruleName'
-                      placeholder="Zorunlu alan giriniz"
-                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+              <Form.Item name="ruleName"
+                rules={[{ required: true, message: 'Kural adı giriniz!' }]}
+              >
+                <label style={{
+                  fontSize: '14px', fontWeight: '500'
+                }}>
+                  Kural Adı *
+                  <Input
+                    label="Kural Adı"
+                    type='ruleName'
+                    placeholder="Zorunlu alan giriniz"
+                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
 
-                      value={ruleName}
-                      onChange={handleChangeRuleName}
-                    /></label></Form.Item>
-           
-                <Form.Item name="ruleNo"
-                  rules={[{ required: true, message: 'Kural no giriniz!' }]}
-                >
-                  <label style={{
-                    fontSize: '14px', fontWeight: '500'
-                  }}>
-                    Kural No *
-                    <Input
-                      label="Kural No"
-                      type='ruleNo'
-                      placeholder="Zorunlu alan giriniz"
-                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                    value={ruleName}
+                    onChange={handleChangeRuleName}
+                  /></label></Form.Item>
 
-                      value={ruleNo}
-                      onChange={handleChangeRuleNo}
-                    /></label></Form.Item>
-                <Form.Item
-                  rules={[{ required: true, message: 'Kapasite giriniz!' }]}
-                >
-                  <label style={{
-                    fontSize: '14px', fontWeight: '500'
-                  }}>
-                    Kapasite *
-                    <Input
-                      id="edit"
-                      onClick={event => onSelectAll("edit")}
-                      onChange={event => onChangeCapaciy(event)}
-                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                      value={capacity}
-                    />
-                  </label>
-                </Form.Item>
-                <Form.Item name="orderOfPriority"
-                  rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
-                >
-                  <label style={{
-                    fontSize: '14px', fontWeight: '500'
-                  }}>
-                    Öncelik Sırası
-                    <Select
-                      showSearch
-                      optionFilterProp="children"
-                      onChange={event => onChangeOrderOfPriority(event)}
-                      value={orderOfPriority}
-                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      <Option value="1">1</Option>
-                      <Option value="2">2</Option>
-                      <Option value="3">3</Option>
-                    </Select>
+              <Form.Item name="ruleNo"
+                rules={[{ required: true, message: 'Kural no giriniz!' }]}
+              >
+                <label style={{
+                  fontSize: '14px', fontWeight: '500'
+                }}>
+                  Kural No *
+                  <Input
+                    label="Kural No"
+                    type='ruleNo'
+                    placeholder="Zorunlu alan giriniz"
+                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
 
-                  </label>
-                </Form.Item>
-                <Form.Item name="isLocked"
-                  rules={[{ required: true, message: 'Aktiflik durumunu giriniz!' }]}
-                >
-                  <label style={{
-                    fontSize: '14px', fontWeight: '500'
-                  }}>
-                    Aktif / Pasif
-                    <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
+                    value={ruleNo}
+                    onChange={handleChangeRuleNo}
+                  /></label></Form.Item>
+              <Form.Item
+                rules={[{ required: true, message: 'Kapasite giriniz!' }]}
+              >
+                <label style={{
+                  fontSize: '14px', fontWeight: '500'
+                }}>
+                  Kapasite *
+                  <Input
+                    id="edit"
+                    onClick={event => onSelectAll("edit")}
+                    onChange={event => onChangeCapaciy(event)}
+                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                    value={capacity}
+                  />
+                </label>
+              </Form.Item>
+              <Form.Item name="orderOfPriority"
+                rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
+              >
+                <label style={{
+                  fontSize: '14px', fontWeight: '500'
+                }}>
+                  Öncelik Sırası
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    onChange={event => onChangeOrderOfPriority(event)}
+                    value={orderOfPriority}
+                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    <Option value="1">1</Option>
+                    <Option value="2">2</Option>
+                    <Option value="3">3</Option>
+                  </Select>
 
-                  </label>
-                </Form.Item>
+                </label>
+              </Form.Item>
+              <Form.Item name="isLocked"
+                rules={[{ required: true, message: 'Aktiflik durumunu giriniz!' }]}
+              >
+                <label style={{
+                  fontSize: '14px', fontWeight: '500'
+                }}>
+                  Aktif / Pasif
+                  <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
+
+                </label>
+              </Form.Item>
             </Row>
             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {<label style={{

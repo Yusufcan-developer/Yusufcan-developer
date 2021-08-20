@@ -21,7 +21,7 @@ import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Style
-import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined } from '@ant-design/icons';
+import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined, EditOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -72,7 +72,6 @@ export default function () {
     const [fieldCodes, setFieldCodes] = useState();
     const [selectedDealerCode, setSelectedDealerCode] = useState();
     const [newUrlParams, setNewUrlParams] = useState('');
-    const [selectedTransactionType, setSelectedTransactionType] = useState();
     const [selectedRadioItem, setSelectedRadioItem] = useState(1);
     const [privateDate, setPrivateDate] = useState('Bugun');
     const [status, setSelectedStatus] = useState();
@@ -81,11 +80,11 @@ export default function () {
     const [orderLineItemStatus, setOrderLineItemStatus] = useState(enumerations.OrderLineItemStatus.None);
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [selectedItemsId, setSelectedItemsId] = useState([]);
-    const [selectAllLoading, setSelectedLoading] = useState(false);
     const [hasSelected, setHasSelected] = useState(false);
     const [selectedDemand, setSelectedDemand] = useState();
     const [visible, setVisible] = useState(false);
     const [acceptInfoVisible, setAcceptInfoVisible] = useState(false);
+    const [deleteDemand, setDeleteDemand] = useState(false);
     const [toolbarEditingButton, setToolbarEditingButton] = useState(false);
     const [componentSize, setComponentSize] = useState('default');
     const [demandNo, setDemandNo] = useState();
@@ -454,15 +453,18 @@ export default function () {
             width: 150,
             render: (status) => (
                 <>
-                    {status === 'SEVK EDILEBILIR' ? (
+                    <Tag color={'green'} key={status}>
+                        {'Onaylandı'}
+                    </Tag>
+                    {/* {status === 'Onaylandı' ? (
                         (<Tag color={'green'} key={status}>
-                            {status}
+                            {'Onaylandı'}
                         </Tag>)
 
                     ) : (
                         <Tag color={'geekblue'} key={status}>
                             {status}
-                        </Tag>)}
+                        </Tag>)} */}
                 </>
             ),
         },
@@ -482,13 +484,13 @@ export default function () {
 
         },
         {
-            title: "Teslimat Adresi",
+            title: "Sevk Adresi",
             dataIndex: "deliveryAddress",
             key: "deliveryAddress",
             width: 200
         },
         {
-            title: "Sipariş No",
+            title: "Talep No",
             dataIndex: "orderNo",
             key: "orderNo",
             defaultSortOrder: 'descend',
@@ -498,7 +500,7 @@ export default function () {
             width: 150
         },
         {
-            title: "Sipariş Tarihi",
+            title: "Talep Tarihi",
             dataIndex: "orderDate",
             key: "orderDate",
             type: "date",
@@ -527,20 +529,6 @@ export default function () {
             align: "right",
             render: (amount) => numberFormat(amount),
             width: 120,
-        },
-        {
-            title: "Birim",
-            dataIndex: "unit",
-            key: "unit",
-            width: 80,
-        },
-        {
-            title: "Kalan Miktar",
-            dataIndex: "remainingAmount",
-            key: "remainingAmount",
-            align: "right",
-            render: (remainingAmount) => numberFormat(remainingAmount),
-            width: 100,
         },
         {
             title: '',
@@ -662,6 +650,7 @@ export default function () {
         <Menu onClick={handleMenuClick}>
             {(token.urole !== 'dealersv') || (token.urole !== 'dealerwhouse') || (token.urole !== 'dealerlimited') ? <Menu.Item key="1">Düzenle</Menu.Item> : null}
             <Menu.Item disabled={s === 'SEVK EDILEBILIR' ? false : true} key="2">Sipariş Oluştur</Menu.Item>
+            <Menu.Item disabled={s === 'SEVK EDILEBILIR' ? false : true} key="3">Talep Sil</Menu.Item>
         </Menu>
     );
 
@@ -704,6 +693,7 @@ export default function () {
         setVisible(false);
         setAcceptInfoVisible(false);
         setToolbarEditingButton(false);
+        setDeleteDemand(false);
     };
 
     //Talebin Düzenleme kayıt işlemi
@@ -762,8 +752,16 @@ export default function () {
             //   postNotificationIsread(item, true);
         });
     }
+
     function demandStatusChangeModal(value) {
         setStatusModal(value);
+    }
+    //Seçilenleri talepleri işlemi
+    async function multipleDemandDelete() {
+        setDeleteDemand(true);
+        _.each(selectedItemsId, (item) => {
+            //   postNotificationIsread(item, true);
+        });
     }
 
     //Kural açıklaması değiştirme
@@ -788,7 +786,7 @@ export default function () {
     function demandEditingModalPermissions(type) {
         switch (type) {
             case 'Accept':
-                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (toolbarEditingButton === true) && (selectedItemsId.length>0)){
+                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (toolbarEditingButton === true) && (selectedItemsId.length > 0)) {
                     return false;
                 }
                 break;
@@ -801,7 +799,7 @@ export default function () {
                 }
                 break;
             case 'Amount':
-                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (toolbarEditingButton === true) && (selectedItemsId.length>0)){
+                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (toolbarEditingButton === true) && (selectedItemsId.length > 0)) {
                     return false;
                 }
             default:
@@ -809,8 +807,9 @@ export default function () {
         }
         return true;
     }
-     //Talep red durumları seçimi
-     const onChangeRadioRejectionsButton = e => {
+
+    //Talep red durumları seçimi
+    const onChangeRadioRejectionsButton = e => {
         // setSelectedDemand(e.target.value);
         // switch (e.target.value) {
         //     case 1:
@@ -824,6 +823,7 @@ export default function () {
         //         break;
         // }
     }
+
     const view = viewType('Reports');
     const filterView = viewType('Filter');
     return (
@@ -980,22 +980,39 @@ export default function () {
                             <CheckOutlined />
                         </Button>
                         <Popconfirms
-                        visible={acceptInfoVisible}
-                        title="Seçilen talepler arasında onaylanmayanlar var otomatik olarak onaylamak istiyor musunuz？"
-                        okText="Evet"
-                        cancelText="Hayır"
-                        placement="topRight"
-                        onCancel={handleCancel}
+                            visible={acceptInfoVisible}
+                            title="Seçilen talepler arasında onaylanmayanlar var otomatik olarak onaylamak istiyor musunuz？"
+                            okText="Evet"
+                            cancelText="Hayır"
+                            placement="topRight"
+                            onCancel={handleCancel}
 
-                    // onConfirm={productItemOrder}
-                    >
-                        <a className="deleteBtn" >
-                            {/* <i className="ion-android-delete" onClick={() => edit(record, true)} /> */}
-                        </a>
-                    </Popconfirms>
+                        // onConfirm={productItemOrder}
+                        >
+                            <a className="deleteBtn" >
+                                {/* <i className="ion-android-delete" onClick={() => edit(record, true)} /> */}
+                            </a>
+                        </Popconfirms>
                         <Button onClick={event => demandCancelOrRejection(event)}>
+                            <EditOutlined />
+                        </Button>
+                        <Button onClick={() => (multipleDemandDelete())}>
                             <CloseOutlined />
                         </Button>
+                        <Popconfirms
+                            visible={deleteDemand}
+                            title="Seçilen talepler silmek istiyor musunuz？"
+                            okText="Evet"
+                            cancelText="Hayır"
+                            placement="topRight"
+                            onCancel={handleCancel}
+
+                        // onConfirm={productItemOrder}
+                        >
+                            <a className="deleteBtn" >
+                                {/* <i className="ion-android-delete" onClick={() => edit(record, true)} /> */}
+                            </a>
+                        </Popconfirms>
                         {/* {selectedTotalCount} Öğe seçildi */}
                     </Col> : ''
                 }
@@ -1017,6 +1034,7 @@ export default function () {
                     scroll={{ x: 'max-content' }}
                     size="medium"
                     bordered={false}
+                    
                     summary={() => {
                         return renderFooter(columns, data, false, aggregatesOverall, true)
                     }}
@@ -1097,13 +1115,13 @@ export default function () {
                             <span style={{ paddingLeft: '5px' }}>{demandUnitModal}</span>
                         </Form.Item> : null}
 
-                        {statusModal==='Rejection' ? 
-                        <Form.Item label="Red Nedeni">                        
-                        <Radio.Group onChange={onChangeRadioRejectionsButton} value={selectedDemand} style={{  marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  >
+                    {statusModal === 'Rejection' ?
+                        <Form.Item label="Red Nedeni">
+                            <Radio.Group onChange={onChangeRadioRejectionsButton} value={selectedDemand} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  >
                                 <Space direction="vertical">
-                                    <Radio  style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={1}>Üretilmeyecek</Radio>
-                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  value={2}>Miktar fazlalılığ var</Radio>
-                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  value={3}>Bilmiyorum</Radio>                                   
+                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={1}>Üretilmeyecek</Radio>
+                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={2}>Miktar fazlalılığ var</Radio>
+                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={3}>Bilmiyorum</Radio>
                                 </Space>
                             </Radio.Group></Form.Item> : null}
 
