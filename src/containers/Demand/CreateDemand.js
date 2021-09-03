@@ -75,7 +75,7 @@ const CreateDemand = (props) => {
     async function handleSave(params) {
         switch (amountType) {
             case 1:
-                onComplete(false)
+                onComplete(false);
                 break;
             case 2:
                 onComplete(true,item,inputDemandAmount)

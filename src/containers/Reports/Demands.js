@@ -597,7 +597,6 @@ export default function () {
     const rowSelection = {
         onSelect: (record, selected, selectedRows) => {
             let selectedIds = []
-            debugger
             //Geçici olarak eklendi api sonrası tek bir koşul değişecek.
             if (selectedRows.length > 0) {
                 _.each(selectedRows, (orderNo) => {
@@ -874,7 +873,7 @@ export default function () {
                                 </Select>
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Input size="small" placeholder="Ürün Adı, Sipariş No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+                                <Input size="small" placeholder="Ürün Adı, Talep No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
 
                             </Col>
                         </Row>
