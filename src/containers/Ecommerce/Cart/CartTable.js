@@ -116,9 +116,6 @@ export default function CartTable({ style }) {
             }
           }
           history.push(`/checkout?smode=${siteMode}`);
-
-          window.location.reload(false);
-
         }
       })
       .catch();

@@ -5,7 +5,7 @@ import Popover from '@iso/components/uielements/popover';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import authAction from '@iso/redux/auth/actions';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
-import { Modal, message, Input } from "antd";
+import { Modal, message, Input, DatePicker } from "antd";
 
 //Fetch
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
@@ -17,8 +17,12 @@ import enumerations from "@iso/config/enumerations";
 import { func } from "prop-types";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import logMessage from '@iso/config/logMessage';
+import moment, { now } from 'moment';
+import 'moment/locale/tr'
+moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 const { logout } = authAction;
+const { RangePicker } = DatePicker;
 
 export default function TopbarUser(props) {
   const [visible, setVisibility] = React.useState(false);
@@ -29,7 +33,12 @@ export default function TopbarUser(props) {
   const [form] = Form.useForm();
   const { displayName } = props;
   const [forgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+  const [demandDatePeriod, setDemandDatePeriod] = useState(false);
   const [cacheRefreshVisible, setCacheRefreshVisible] = useState(false);
+  const [dates, setDate] = useState();
+  const [validation, setValidation] = useState(true);
+  const [dateValidation, setDateValidation] = useState(true);
+
   const dispatch = useDispatch();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   function handleVisibleChange() {
@@ -56,9 +65,12 @@ export default function TopbarUser(props) {
         <IntlMessages id="themeSwitcher.settings" />
       </a>
       {token.urole !== 'admin' ? null :
-        <div className="isoDropdownLink" style={{ color: 'red' }}  onClick={() => confirm()}>
+        <div className="isoDropdownLink" style={{ color: 'red' }} onClick={() => confirm()}>
           <IntlMessages id="topbar.cacheRefresh" />
         </div>}
+      <a className="isoDropdownLink" onClick={() => createPeriodModal()}>
+        <IntlMessages id="themeSwitcher.createPeriod" />
+      </a>
       <div className="isoDropdownLink" onClick={() => userLogOut()}>
         <IntlMessages id="topbar.logout" />
       </div>
@@ -77,8 +89,12 @@ export default function TopbarUser(props) {
   function handleCancel() {
     setForgotPasswordVisible(false);
     setCacheRefreshVisible(false);
+    setDemandDatePeriod(false);
   };
 
+  function createPeriodModal() {
+    setDemandDatePeriod(true);
+  }
   //Parola düzenleme fetch işlemi
   async function changePassword() {
     let userData;
@@ -126,6 +142,14 @@ export default function TopbarUser(props) {
     return cacheRefreshStatus;
   }
 
+  //Talep tarih periyodu oluşturma işlemi
+  async function handleCreatePeriod() {
+    if (!dates) {
+      setValidation(false);
+      if (!dates) { setDateValidation(false); }
+    }
+  }
+
   //Kullanıcı parola değiştirme
   async function handlePasswordOk() {
     const password = await changePassword();
@@ -156,10 +180,17 @@ export default function TopbarUser(props) {
       content: "Cache yenileme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz",
       okText: "tamam",
       onCancel: handleCancel,
-      onOk:handleCacheRefresh,
+      onOk: handleCacheRefresh,
       cancelText: "iptal"
     });
   }
+  function changeTimePicker(value, dateString) {
+    if (dateString === '') { setDateValidation(false); }
+    else {
+        setDateValidation(true);
+    }
+    setDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+}
   return (
     <React.Fragment>
       <Popover
@@ -175,7 +206,7 @@ export default function TopbarUser(props) {
           style={{ color: customizedTheme.textColor }}
         />
         {newView !== 'MobileView' ? <h5 style={{ display: 'inline', marginLeft: '10px' }}>{displayName}</h5> : null}
-      </Popover>     
+      </Popover>
       <Modal
         visible={forgotPasswordVisible}
         title="Parola Değiştirme"
@@ -253,6 +284,48 @@ export default function TopbarUser(props) {
             ]}
           >
             <Input.Password autoComplete={"off"} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        visible={demandDatePeriod}
+        title="Talep Oluşturma Dönemi Belirleme"
+        okText="Kaydet"
+        cancelText="İptal"
+        maskClosable={false}
+        onCancel={handleCancel}
+        onOk={() => {
+          form
+            .validateFields()
+            .then(values => {
+              form.resetFields();
+              handleCreatePeriod(values);
+            })
+            .catch(info => {
+              console.log('Validate Failed:', info);
+            });
+        }}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{
+            modifier: 'public',
+          }}
+        >
+          <Form.Item
+            label={dateValidation === true ? 'Tarih *' : 'Tarih Giriniz!'} style={{
+              color: dateValidation === true ? 'black' : 'red'
+            }}
+
+          >
+            <RangePicker
+              format={siteConfig.dateFormat}
+              onChange={changeTimePicker}
+            // style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+            // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
+            />
           </Form.Item>
         </Form>
       </Modal>

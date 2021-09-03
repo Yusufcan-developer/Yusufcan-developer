@@ -655,6 +655,7 @@
   "email.noMessage": "Please select a mail to read",
   "themeSwitcher.purchase": "PURCHASE NOW",
   "themeSwitcher.settings": "Parola Değiştir",
+  "themeSwitcher.createPeriod": "Dönemsel Tarih Belirle",
   "sidebar.selectbox": "Select",
   "sidebar.frappeChart": "Frappe Charts",
   "topbar.myprofile": "Profilim",

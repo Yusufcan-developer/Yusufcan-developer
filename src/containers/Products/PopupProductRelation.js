@@ -134,7 +134,6 @@ const PopupProductRelation = (props) => {
                 return status;
             })
             .then(data => {
-                debugger
                 calculatePopupQuantity(data.items);
             })
             .catch();

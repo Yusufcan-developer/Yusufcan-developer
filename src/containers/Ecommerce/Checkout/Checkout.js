@@ -1,6 +1,7 @@
 //React
 import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
@@ -8,6 +9,7 @@ import Box from '@iso/components/utility/box';
 import { CheckoutContents } from './Checkout.styles';
 import Button from '@iso/components/uielements/button';
 import SingleOrderInfo from './SingleOrder';
+import AllCartItemChangeOrderAmount from './CartItemToOrderAmount';
 import { OrderTable } from './Checkout.styles';
 import InputBox from './InputBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
@@ -19,6 +21,7 @@ import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { InputBoxWrapper } from './Checkout.styles';
 import PopupProductRelation from '../../../../src/containers/Products/PopupProductRelation';
 import CreateDemand from '../../../../src/containers/Demand/CreateDemand';
+import ecommerceAction from '@iso/redux/ecommerce/actions';
 
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
@@ -46,10 +49,17 @@ var jwtDecode = require('jwt-decode');
 let createOrderNo = 'xxxx';
 const cityChildren = [];
 let townChildren = [];
+let cartItem = null;
+const {
+  initData,
+  changeViewTopbarCart,
+  changeProductQuantity,
+} = ecommerceAction;
 export default function () {
   const queryString = require('query-string');
   let distrinctArray;
   document.title = "Sipariş Onayı - Seramiksan B2B";
+  const dispatch = useDispatch();
   const [phone, setPhone] = useState();
   const [country, setCountry] = useState();
   const [city, setCity] = useState('');
@@ -85,9 +95,13 @@ export default function () {
   const [hide, setHide] = useState(false);
   const [demandHide, setDemandHide] = useState(false);
   const [productDetail, setProduct] = useState();
-
+  const [quantity, setQuantity] = useState();
+  const [selectedItemPartial, setSelectedItemPartial] = useState();
   const history = useHistory();
   const location = useLocation();
+  const {
+    productQuantity,
+  } = useSelector(state => state.Ecommerce);
 
   // const [data, changeCart] = useGetCartCheckOut(city,town);
   const token = jwtDecode(localStorage.getItem("id_token"));
@@ -123,7 +137,7 @@ export default function () {
           <SingleOrderInfo
             key={product.objectID}
             productItem={product}
-            popupShow={e => popupShow(product.item)}
+            popupShow={e => popupShow(product)}
             onComplete={onCompletePopupRelation}
             quantityLess={quantityLess}
           />
@@ -132,9 +146,13 @@ export default function () {
     }
   }
   async function popupShow(productItem) {
+    if (productItem.itemCode === 'M99999900') { return; }
+    if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
+
     const token = jwtDecode(localStorage.getItem("id_token"));
-    if ((token.uname === 'utku') || (token.uname === 'ugur')) {
+    if ((token.uname === 'utku') || (token.uname === 'B555888')) {
       await getProductDetail(productItem.itemCode);
+      setSelectedItemPartial(productItem.isPartial);
       return setDemandHide(true);
     }
     if (productItem.hasDependentOrRelatedProducts === true) {
@@ -144,7 +162,7 @@ export default function () {
     }
     //TODO
     //Buraya item gelecek bu item amacı talep oluşturulması gerekiyormu kontrolü ve sevk adresi kontrolü eklecek. Sevk adresi seçilmediyse seçilecek
-    else{
+    else {
       await getProductDetail(productItem.itemCode);
       return setDemandHide(true);
     }
@@ -153,15 +171,69 @@ export default function () {
   //Bağlı ürün popup işlemleri sonucu
   function onCompletePopupRelation() {
     setHide(false);
-    window.location.reload(false);
+    setOnChange(true);
   }
 
   //Talep oluşturma popup işlemleri sonucu
-  function onCompletePopupDemand(createDemand = false, item, amount) {
+  async function onCompletePopupDemand(createDemand = false, item, amount) {
     setHide(false);
     setDemandHide(false);
-    if (createDemand === true) { window.location.reload(false); }
+    if (createDemand === true) {
+      //Talep başarılı bir şekilde oluşturulduysa sipariş sepetinden ilgili ürün silinecek.
+      const newProductQuantity = [];
+      _.each(productQuantity, (product, i) => {
+        if ((product.itemCode !== item.itemCode || product.isPartial !== selectedItemPartial)) {
+          newProductQuantity.push(product);
+        }
+      });
+      dispatch(changeProductQuantity(newProductQuantity));
+      await getCartList();
+      await AllCartItemChangeOrderAmount();
+      setOnChange(true);
+    }
     postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Demand.save);
+  }
+  //Get Cart
+  async function getCartList() {
+    let productInfo;
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    let apiUrl = '';
+    const siteMode = getSiteMode();
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const activeUser = localStorage.getItem("activeUser");
+    if (activeUser !== null) { apiUrl = `${siteConfig.api.carts.getGetByAccountNo}${activeUser}?includeUpdateDetails=true&siteMode=${siteMode}`; }
+    else { apiUrl = `${siteConfig.api.carts.cartGetDefault}?includeUpdateDetails=true&siteMode=${siteMode}` }
+    if (!token.uname) { return 'Unauthorized' }
+
+    await fetch(apiUrl, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response, true);
+        return status;
+      })
+      .then(data => {
+        if (data.isSuccessful === false) { return setQuantity(0) }
+        else {
+          cartItem = data.items;
+          setQuantity(cartItem.length);
+          getInitData();//Send Redux Data;        
+          //Redux Data refresh
+          if ((productQuantity === null) || (quantity !== productQuantity.length)) {
+            let productQuantity = localStorage.getItem('cartProductQuantity');
+            productQuantity = JSON.parse(productQuantity); dispatch(initData({ productQuantity }));
+          }
+          //Son redux datasının topbar veritabanı ile eşleştirilmesi
+          let reduxCart = localStorage.getItem('cartProductQuantity');
+          reduxCart = JSON.parse(reduxCart);
+        }
+      })
+      .catch();
+    return productInfo;
   }
 
   //Get Product Detail
@@ -775,7 +847,7 @@ export default function () {
   };
 
   const view = viewType('Reports');
-
+ 
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -1095,14 +1167,14 @@ export default function () {
               demandAmount={36}
               onComplete={onCompletePopupDemand}
             /> : null}
-            {hide === true ?<PopupProductRelation
-              hide={hide}
-              item={productDetail}
-              dependentProducts={[]}
-              relatedProducts={[]}
-              checkOutPage={true}
-              onComplete={onCompletePopupRelation}
-            /> : null}
+          {hide === true ?<PopupProductRelation
+            hide={hide}
+            item={productDetail}
+            dependentProducts={[]}
+            relatedProducts={[]}
+            checkOutPage={true}
+            onComplete={onCompletePopupRelation}
+          /> : null}
         </Box>
       </LayoutWrapper>
     </CheckoutContents>
