@@ -15,6 +15,7 @@ import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import numberFormat from "@iso/config/numberFormat";
+import Dragdrop from '../Reports/Dragdrop';
 
 //Fetch
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiRuleProductList";
@@ -104,7 +105,7 @@ const SearchComponent = () => {
   const [isLocked, setIsLocked] = useState();
   const [orderOfPriority, setOrderOfPriority] = useState();
   const [ruleEditing, setRuleEditing] = useState(false);
-  const [ruleText, setRuleText]= useState();
+  const [ruleText, setRuleText] = useState();
 
   //Sorting states
   const [sortingField, setSortingField] = useState();
@@ -1175,15 +1176,19 @@ const SearchComponent = () => {
               </Collapse>
             </Box>
             <Box >
-              <ReportPagination
+              {/* <ReportPagination
                 onShowSizeChange={onShowSizeChange}
                 onChange={currentPageChange}
                 pageSize={pageSize}
                 total={totalDataCount}
                 current={pageIndex}
                 position="top"
-              />
-              <Table
+              /> */}
+              <Dragdrop
+              test={'test'}
+              columns={columns}
+               />
+              {/* <Table
                 className="components-table-demo-nested"
                 columns={columns}
                 dataSource={data}
@@ -1199,15 +1204,15 @@ const SearchComponent = () => {
               // summary={() => {
               //     return renderFooter(columns, data, true, aggregatesOverall, true)
               // }}
-              />
-              <ReportPagination
+              /> */}
+              {/* <ReportPagination
                 onShowSizeChange={onShowSizeChange}
                 onChange={currentPageChange}
                 pageSize={pageSize}
                 total={totalDataCount}
                 current={pageIndex}
                 position="bottom"
-              />
+              /> */}
             </Box>
           </LayoutWrapper>
 
