@@ -77,7 +77,7 @@ export default function () {
     const [status, setSelectedStatus] = useState();
     const [address, setAddress] = useState();
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
-    const [orderLineItemStatus, setOrderLineItemStatus] = useState(enumerations.OrderLineItemStatus.None);
+    const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [selectedItemsId, setSelectedItemsId] = useState([]);
     const [hasSelected, setHasSelected] = useState(false);
@@ -92,6 +92,8 @@ export default function () {
     const [statusModal, setStatusModal] = useState();
     const [demandAmountModal, setDemandAmountModal] = useState();
     const [demandUnitModal, setDemandUnitModal] = useState();
+    const [demandConfirmLoading, setDemandConfirmLoading] = useState(false);
+
     const location = useLocation();
     const queryString = require('query-string');
     const history = useHistory();
@@ -110,8 +112,8 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-        useFetch(`${siteConfig.api.report.postOrderLineItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": status, "orderLineItemStatus": orderLineItemStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
-
+        // useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "status": demandStatus, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
@@ -137,7 +139,6 @@ export default function () {
         if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
         if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
         if (typeof parsed.keyword !== 'undefined') { setSearchKey(parsed.keyword); }
-        if (typeof parsed.orderLineStatus !== 'undefined') { setOrderLineItemStatus(parsed.orderLineStatus); }
         if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
         if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
         if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
@@ -254,7 +255,6 @@ export default function () {
         params.delete('sortingField');
         params.delete('sortingOrder');
         params.delete('status');
-        params.delete('orderLineStatus');
 
         if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
             params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -271,7 +271,6 @@ export default function () {
 
         if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
         if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
-        if (typeof orderLineItemStatus !== 'undefined') { params.append('orderLineStatus', orderLineItemStatus); }
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
@@ -413,16 +412,12 @@ export default function () {
         }
     }
 
-    function orderLineStatusHandleChange(value) {
-        setOrderLineItemStatus(value);
+    function statusHandleChange(value) {
+        setDemandStatus(value);
     }
     function onChangeRadioButton(e) {
         setSelectedRadioItem(e.target.value);
         setPrivateDate(null);
-    }
-    //Change Status Type
-    function statusHandleChange(value) {
-        setSelectedStatus(value);
     }
     //Select Component Rol değiştirme 
     function addressHandleChange(value) {
@@ -448,23 +443,20 @@ export default function () {
     let columns = [
         {
             title: "Durumu",
-            dataIndex: "status",
-            key: "status",
+            dataIndex: "statusText",
+            key: "statusText",
             width: 150,
-            render: (status) => (
+            render: (statusText) => (
                 <>
-                    <Tag color={'green'} key={status}>
-                        {'Onaylandı'}
-                    </Tag>
-                    {/* {status === 'Onaylandı' ? (
-                        (<Tag color={'green'} key={status}>
-                            {'Onaylandı'}
+                    {statusText === 'Beklemede' ? (
+                        (<Tag color={'red'} key={statusText}>
+                            {statusText}
                         </Tag>)
 
                     ) : (
-                        <Tag color={'geekblue'} key={status}>
-                            {status}
-                        </Tag>)} */}
+                        <Tag color={'geekblue'} key={statusText}>
+                            {statusText}
+                        </Tag>)}
                 </>
             ),
         },
@@ -485,35 +477,35 @@ export default function () {
         },
         {
             title: "Sevk Adresi",
-            dataIndex: "deliveryAddress",
-            key: "deliveryAddress",
+            dataIndex: "addressCode",
+            key: "addressCode",
             width: 200
         },
         {
             title: "Talep No",
-            dataIndex: "orderNo",
-            key: "orderNo",
+            dataIndex: "demandNo",
+            key: "demandNo",
             defaultSortOrder: 'descend',
             sorter: (a, b) => a.orderNo - b.orderNo,
-            sortOrder: tableOptions.sortedInfo.columnKey === 'orderNo' && tableOptions.sortedInfo.order,
+            sortOrder: tableOptions.sortedInfo.columnKey === 'demandNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
             width: 150
         },
         {
             title: "Talep Tarihi",
-            dataIndex: "orderDate",
-            key: "orderDate",
+            dataIndex: "date",
+            key: "date",
             type: "date",
             width: 200,
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            render: (orderDate, record) => moment(orderDate).format(siteConfig.dateFormat) + ' ' + record.orderTimeStr,
+            render: (date, record) => date,
         },
         {
             title: "Ürün Kodu",
-            dataIndex: "itemCode",
-            key: "itemCode",
+            dataIndex: "itemId",
+            key: "itemId",
             width: 150,
         },
         {
@@ -589,7 +581,7 @@ export default function () {
 
     //Sipariş oluşturulması için izin verilenler
     function permissionCheck(status) {
-        if ((status === 'SEVK EDILEBILIR') || (status === '')) { return false; }
+        if ((status === 'Pending') || (status === '')) { return false; }
         return true;
     }
 
@@ -597,11 +589,12 @@ export default function () {
     const rowSelection = {
         onSelect: (record, selected, selectedRows) => {
             let selectedIds = []
+            debugger
             //Geçici olarak eklendi api sonrası tek bir koşul değişecek.
             if (selectedRows.length > 0) {
-                _.each(selectedRows, (orderNo) => {
+                _.each(selectedRows, (item) => {
                     if (typeof item !== 'undefined') {
-                        selectedIds.push(orderNo);
+                        selectedIds.push(item.id);
                     }
                 });
                 setSelectedItemsId(selectedIds);
@@ -683,12 +676,50 @@ export default function () {
         setDemandNo(record.orderNo);
         setDemandAmountModal(record.amount);
         setDemandUnitModal(record.unit);
-        setStatusModal('Cancel');
+        setStatusModal(record.status);
     };
 
+    //Talep düzenleme işlemi
+    async function postSaveDemand(query) {
+        const siteMode = getSiteMode();
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        const dealerCode = token.dcode;
+        setDemandConfirmLoading(true);
+        const reqBody = query;
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            },
+            body: JSON.stringify(reqBody)
+        };
+        await fetch(siteConfig.api.report.postDemands, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
+            .then(data => {
+                debugger
+                if (typeof data !== 'undefined') {
+                    if (data.isSuccessful === false) {
+                        const getMessage = data.message;
+                        message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+                    } else {
+                        message.success({ content: 'başarıyla kaydedildi', duration: 2 });
+                    }
+                }
+            })
+            .catch();
+        setDemandConfirmLoading(false);
+        if (data.isSuccessful === false) { return false; }
+        else { return true; }
+    }
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     function handleCancel() {
         setDemandNo();
+        setDemandAmountModal();
+        setStatusModal();
         setVisible(false);
         setAcceptInfoVisible(false);
         setToolbarEditingButton(false);
@@ -700,7 +731,7 @@ export default function () {
         //Secilen talep durum tipine göre kaydetme kontrolü
         if (!statusModal) { return message.error('Talep Durum seçiniz'); }
         switch (statusModal) {
-            case 'Accept':
+            case 'Approved':
                 acceptDemand();
                 break;
             case 'Cancel':
@@ -709,36 +740,47 @@ export default function () {
             case 'Rejection':
                 rejectionDemand();
                 break;
+            case 'Pending':
+                pendingDemand();
+                break;
         }
     }
 
     //Kabul edilen talep işlemleri
     async function acceptDemand() {
         if (!demandAmountModal) { return message.error('Miktar giriniz'); }
-        //Talep için veriler mevcut sadece api'ye yerleştirilecek.
-        //Talep onaylama için api ye bilgileri gönderildikten sonra talep listeleme fetch sorgusu çalışacaktır.
-        //Talep listesi içerisinde ilgili ürün talebi KABUL şeklinde görünecektir.
+        if (selectedDemand) {
+            const amount = parseFloat(demandAmountModal);
+            postSaveDemand({ "id": selectedDemand.id, "amount": amount, "status": [statusModal] });
+        }
 
     }
 
     //İptal edilen talep işlemleri
     async function cancelDemand() {
-        //Talep için veriler mevcut api'ye yerleştirilecek.
-        //Talep iptal için api ye bilgileri gönderildikten sonra talep listeleme fetch sorgusu çalışacaktır.
-        //Talep listesi içerisinde ilgili ürün talebi İPTAL şeklinde görünecektir.
-
+        if (selectedDemand) {
+            const amount = parseFloat(demandAmountModal);
+            postSaveDemand({ "id": selectedDemand.id, "status": [statusModal] });
+        }
     }
 
     //Red edilen talep işlemleri
     async function rejectionDemand() {
         if (!description) { return message.error('İptal nedeni giriniz'); }
-        //Talep için veriler mevcut api'ye yerleştirilecek.
-        //Talep red için api ye bilgileri gönderdikten sonra talep listeleme fetch sorgusu çalışacaktır.
-        //Talep listesi içerisinde ilgili ürün talebi RED şeklinde görünecektir.
-        //Red durumunda bayi ilgili ürün talebiyle ilgili herhangi bir işlem gerçekleştiremeyecektir. Düzenleme veya sipariş yapamacaktır.
+        if (selectedDemand) {
+            const amount = parseFloat(demandAmountModal);
+            postSaveDemand({ "id": selectedDemand.id, "status": [statusModal] }); //İptal nedeni açıklama ekle Enum
+        }
 
     }
 
+    //Bekleme konumuna geri alma
+    async function pendingDemand() {
+        if (selectedDemand) {
+            const amount = parseFloat(demandAmountModal);
+            postSaveDemand({ "id": selectedDemand.id, "status": [statusModal] }); //İptal nedeni açıklama ekle Enum
+        }
+    }
     async function createOrder() {
         //Sipariş oluşturma işlemi
         //Sipariş başarılı bir şekilde oluşturulduysa popup pencerisini kapat
@@ -748,6 +790,7 @@ export default function () {
     async function multiplePostNotificationIsRead() {
         setAcceptInfoVisible(true);
         _.each(selectedItemsId, (item) => {
+            debugger
             //   postNotificationIsread(item, true);
         });
     }
@@ -784,15 +827,20 @@ export default function () {
 
     function demandEditingModalPermissions(type) {
         switch (type) {
-            case 'Accept':
+            case 'Approved':
                 if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (toolbarEditingButton === true) && (selectedItemsId.length > 0)) {
                     return false;
                 }
                 break;
-            case 'Cancel':
+            case 'Cancelled':
 
                 break;
-            case 'Rejection':
+            case 'Rejected':
+                if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+                    return false;
+                }
+                break;
+            case 'Pending':
                 if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
                     return false;
                 }
@@ -863,13 +911,16 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
-                                    mode="multiple"
+                                    placeholder="Sevk durumu seçiniz"
                                     style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    placeholder="Durum Seçiniz"
                                     onChange={statusHandleChange}
-                                    value={status}
+                                    optionFilterProp="children"
+                                    value={demandStatus}
                                 >
-                                    {statusChildren}
+                                    <Option value="Pending">Bekleyenler</Option>
+                                    <Option value="Approved">Onaylananlar</Option>
+                                    <Option value="Cancelled">İptal Edilenler</Option>
+                                    <Option value="Rejected">Red Edilenler</Option>
                                 </Select>
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -883,9 +934,6 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} >
                                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
-                            </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} >
-                                <FormItem label={<IntlMessages id="page.deliveryStatus" />}></FormItem>
                             </Col>
                         </Row>
                         <Row>
@@ -948,20 +996,7 @@ export default function () {
                                     </Row>
                                 </Radio.Group>
                             </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Select
-                                    placeholder="Sevk durumu seçiniz"
-                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    onChange={orderLineStatusHandleChange}
-                                    optionFilterProp="children"
-                                    value={orderLineItemStatus}
-                                >
-                                    <Option value="None">Hepsi</Option>
-                                    <Option value="Pending">Bekleyenler</Option>
-                                    <Option value="ReadyToDelivery">Sevke Hazırlar</Option>
-                                    <Option value="InDistribution">Dağıtımda bekleyen</Option>
-                                </Select>
-                            </Col>
+
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                                     {<IntlMessages id="forms.button.label_Search" />}
@@ -1033,7 +1068,7 @@ export default function () {
                     scroll={{ x: 'max-content' }}
                     size="medium"
                     bordered={false}
-                    
+
                     summary={() => {
                         return renderFooter(columns, data, false, aggregatesOverall, true)
                     }}
@@ -1100,11 +1135,13 @@ export default function () {
                             optionFilterProp="children"
                             value={statusModal}
                         >
-                            {demandEditingModalPermissions('Accept') === true ?
-                                <Option value="Accept">Kabul</Option> : null}
-                            <Option value="Cancel">İptal</Option>
-                            {demandEditingModalPermissions('Rejection') === true ?
-                                <Option value="Rejection">Red</Option> : null}
+                            {demandEditingModalPermissions('Approved') === true ?
+                                <Option value="Approved">Kabul</Option> : null}
+                            <Option value="Cancelled">İptal</Option>
+                            {demandEditingModalPermissions('Rejected') === true ?
+                                <Option value="Rejected">Red</Option> : null}
+                            {demandEditingModalPermissions(statusModal) === true ?
+                                <Option value="Pending">Beklemede</Option> : null}
                         </Select>
                     </Form.Item>
                     {demandEditingModalPermissions('Amount') === true ?
@@ -1114,7 +1151,7 @@ export default function () {
                             <span style={{ paddingLeft: '5px' }}>{demandUnitModal}</span>
                         </Form.Item> : null}
 
-                    {statusModal === 'Rejection' ?
+                    {statusModal === 'Rejected' ?
                         <Form.Item label="Red Nedeni">
                             <Radio.Group onChange={onChangeRadioRejectionsButton} value={selectedDemand} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  >
                                 <Space direction="vertical">

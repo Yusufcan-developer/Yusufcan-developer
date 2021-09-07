@@ -82,6 +82,7 @@ export default function () {
   const [addressFilterData, setAddressFilterData] = useState();
   const [loadingButton, setLoadingButton] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [demandConfirmLoading, setDemandConfirmLoading] = useState(false);
   const [createAddress, setCreateAddress] = useState(false);
   const [successOrderSave, setSuccessOrderSave] = useState(false);
   const [addressTitle, setAddressTitle] = useState();
@@ -97,6 +98,7 @@ export default function () {
   const [productDetail, setProduct] = useState();
   const [quantity, setQuantity] = useState();
   const [selectedItemPartial, setSelectedItemPartial] = useState();
+  const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
   const history = useHistory();
   const location = useLocation();
   const {
@@ -176,22 +178,35 @@ export default function () {
 
   //Talep oluşturma popup işlemleri sonucu
   async function onCompletePopupDemand(createDemand = false, item, amount) {
-    setHide(false);
-    setDemandHide(false);
+
+    //Talep Oluşturma işlemi seçildiyse
     if (createDemand === true) {
-      //Talep başarılı bir şekilde oluşturulduysa sipariş sepetinden ilgili ürün silinecek.
-      const newProductQuantity = [];
-      _.each(productQuantity, (product, i) => {
-        if ((product.itemCode !== item.itemCode || product.isPartial !== selectedItemPartial)) {
-          newProductQuantity.push(product);
-        }
-      });
-      dispatch(changeProductQuantity(newProductQuantity));
-      await getCartList();
-      await AllCartItemChangeOrderAmount();
-      setOnChange(true);
+      const saveDemand = await postSaveDemand(amount, item.itemCode);
+      if (saveDemand === true) {
+        setHide(false);
+        setDemandHide(false);
+
+        //Talep başarılı bir şekilde oluşturulduysa sipariş sepetinden ilgili ürün silinecek.
+        const newProductQuantity = [];
+        _.each(productQuantity, (product, i) => {
+          if ((product.itemCode !== item.itemCode || product.isPartial !== selectedItemPartial)) {
+            newProductQuantity.push(product);
+          }
+        });
+
+        dispatch(changeProductQuantity(newProductQuantity));
+        await getCartList();
+        await AllCartItemChangeOrderAmount();
+        setOnChange(true);
+      }
+      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Demand.save);
     }
-    postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Demand.save);
+    //Talep oluşturma iptal işleminde
+    else{
+      setHide(false);
+      setDemandHide(false);
+    }
+    
   }
   //Get Cart
   async function getCartList() {
@@ -681,6 +696,42 @@ export default function () {
     setConfirmLoading(false);
   }
 
+  //Save Demand
+  async function postSaveDemand(amount, itemCode) {
+    const siteMode = getSiteMode();
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    const dealerCode = token.dcode;
+    setDemandConfirmLoading(true);
+    const reqBody = { "status": demandStatus, "amount": amount, "itemId": itemCode, "addressCode": addressCode, "dealerCode": dealerCode }
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(siteConfig.api.report.postDemands, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        debugger
+        if (typeof data !== 'undefined') {
+          if (data.isSuccessful === false) {
+            const getMessage = data.message;
+            message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+          } else {
+            message.success({ content: 'başarıyla kaydedildi', duration: 2 });
+          }
+        }
+      })
+      .catch();
+      setDemandConfirmLoading(false);
+      if (data.isSuccessful === false) {return false;}
+      else{return true;}
+  }
   let columns = [
     {
       title: "Adres Kodu",
@@ -847,7 +898,7 @@ export default function () {
   };
 
   const view = viewType('Reports');
- 
+
   return (
     <CheckoutContents>
       <LayoutWrapper className="isoCheckoutPage">
@@ -1165,9 +1216,10 @@ export default function () {
               relatedProducts={[]}
               checkOutPage={true}
               demandAmount={36}
+              confirmLoading={demandConfirmLoading}
               onComplete={onCompletePopupDemand}
             /> : null}
-          {hide === true ?<PopupProductRelation
+          {hide === true ? <PopupProductRelation
             hide={hide}
             item={productDetail}
             dependentProducts={[]}

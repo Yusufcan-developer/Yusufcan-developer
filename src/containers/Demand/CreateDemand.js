@@ -22,7 +22,7 @@ import logMessage from '@iso/config/logMessage';
 
 import Modal from "antd/lib/modal/Modal";
 const CreateDemand = (props) => {
-    const { hide, item, onComplete, checkOutPage, demandAmount } = props;
+    const { hide, item, onComplete, checkOutPage, demandAmount, confirmLoading } = props;
 
     const { rowStyle, colStyle, gutter } = basicStyle;
     const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
@@ -68,7 +68,7 @@ const CreateDemand = (props) => {
 
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     async function handleCancel(item) {
-        onComplete();
+        onComplete(false)
     }
 
     //Talep oluşturma popup kaydetme işlemi seçimlere göre hareket ediyor.
@@ -160,6 +160,7 @@ const CreateDemand = (props) => {
                     width={750}
                     onCancel={event => handleCancel(item)}
                     maskClosable={false}
+                    confirmLoading={confirmLoading}
                     footer={[
                         <Button key="back" onClick={handleCancel}>
                             İptal
