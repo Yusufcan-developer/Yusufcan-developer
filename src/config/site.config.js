@@ -76,6 +76,10 @@ export default {
       postOrderLineItems: apiUrl + 'core/report/order-line-items',
       postSaveLineItems: apiUrl + 'core/report/distributions/plan/{accountNo}',
       getSalesTarget: apiUrl + 'core/report/sales-goals/{year}/{month}',
+      postDemands: apiUrl + 'core/demands',
+      postDemandItems: apiUrl + 'core/demands/search',
+      rules: apiUrl+'b2b/rules/search',
+      postRules:apiUrl + 'b2b/rules',
 
     },
     users: {

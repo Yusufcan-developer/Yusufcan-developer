@@ -9,13 +9,19 @@ export default {
     {
         Priority: 'Priority',
         NotUrgent: 'NotUrgent',
-    
+
     },
     ProductRelationTypestring:
-    {   
+    {
         None: 'None',
         Dependent: 'Dependent',
         Related: 'Related',
+    },
+    RuleStatus:
+    {
+        None: 'None',
+        Active: 'Active',
+        Archived: 'Archived',
     },
     SalesStatus:
     {
@@ -68,6 +74,13 @@ export default {
     {
         LetterOfGuarantee: 'LetterOfGuarantee',
         CartUpdate: 'CartUpdate',
+    },
+    DemandStatus:
+    {
+        Pending: 'Pending',
+        Approved: 'Approved',
+        Cancelled: 'Cancelled',
+        Rejected: 'Rejected',
     }
 
 };

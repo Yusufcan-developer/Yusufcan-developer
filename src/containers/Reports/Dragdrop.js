@@ -118,30 +118,11 @@ const columns = [
 ];
 
 class DragSortingTable extends React.Component {
-
   state = {
-    data: [
-      {
-        key: "1",
-        name: "John Brown",
-        age: 32,
-        address: "New York No. 1 Lake Park"
-      },
-      {
-        key: "2",
-        name: "Jim Green",
-        age: 42,
-        address: "London No. 1 Lake Park"
-      },
-      {
-        key: "3",
-        name: "Joe Black",
-        age: 32,
-        address: "Sidney No. 1 Lake Park"
-      }
+    data1: [
+      
     ]
   };
-
   components = {
     body: {
       row: BodyRow
@@ -149,12 +130,15 @@ class DragSortingTable extends React.Component {
   };
 
   moveRow = (dragIndex, hoverIndex) => {
-    const { data } = this.state;
+    debugger
+    const { data } = this.props;
+    const { data1 } = this.state;
+
     const dragRow = data[dragIndex];
 
     this.setState(
       update(this.state, {
-        data: {
+        data1: {
           $splice: [
             [dragIndex, 1],
             [hoverIndex, 0, dragRow]
@@ -165,17 +149,18 @@ class DragSortingTable extends React.Component {
   };
 
   render() {
-    const { columns } = this.props;
-    console.log('xxxx test', columns);
+    const { columns, data, onRow } = this.props;
     return (
       <Table
         columns={columns}
-        dataSource={this.state.data}
-        components={this.components}
-        onRow={(record, index) => ({
-          index,
-          moveRow: this.moveRow
-        })}
+        dataSource={data}
+        // components={this.components}
+        onRow={onRow}
+        // onRow={(record, index) => ({
+        //   index,
+        //   moveRow: this.moveRow
+        // })}
+
 
 
         className="components-table-demo-nested"

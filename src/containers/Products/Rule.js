@@ -9,13 +9,14 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Table, Select, Comment, Tag, Avatar } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Tooltip, Select, Comment, Avatar } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import numberFormat from "@iso/config/numberFormat";
 import Dragdrop from '../Reports/Dragdrop';
+import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 
 //Fetch
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiRuleProductList";
@@ -27,8 +28,6 @@ import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import siteConfig from "@iso/config/site.config";
 import enumerations from "@iso/config/enumerations";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
-import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
-import basicStyle from '@iso/assets/styles/constants';
 
 //Other Library
 import _ from 'underscore';
@@ -37,7 +36,6 @@ import logMessage from '@iso/config/logMessage';
 //Desing style
 import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
 import ContentHolder from '@iso/components/utility/contentHolder';
-import PageHeader from "@iso/components/utility/pageHeader";
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 import { FormOutlined } from '@ant-design/icons';
@@ -54,7 +52,6 @@ const { TextArea } = Input;
 
 const SearchComponent = () => {
   document.title = "Ürün Arama - Seramiksan B2B";
-  const { rowStyle, colStyle, gutter } = basicStyle;
   const [state, setState] = React.useState({
     collapsed: true,
   });
@@ -76,17 +73,19 @@ const SearchComponent = () => {
   const [popupData, setPopupData] = useState();
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
-  const [specification, setSpecification] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
   const [capacity, setCapacity] = useState(1);
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
+  const [selectedruleObjectText, setSelectedRuleObjectText] = useState();
+
+  const [selectedItem, setSelectedItem] = useState();
   const [componentSize, setComponentSize] = useState('default');
 
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [keyword, setKeyword] = useState();
+  const [ruleSearchKey, setRuleSearchKey] = useState();
 
   //Filter menu states
   const [category, setCategory] = useState('KARO');
@@ -103,10 +102,10 @@ const SearchComponent = () => {
   const [ruleNo, setRuleNo] = useState();
   const [description, setDescription] = useState('');
   const [isLocked, setIsLocked] = useState();
-  const [orderOfPriority, setOrderOfPriority] = useState();
+  const [ruleStatus, setRuleStatus] = useState(enumerations.RuleStatus.Active);
+  const [priority, setPriority] = useState();
   const [ruleEditing, setRuleEditing] = useState(false);
-  const [ruleText, setRuleText] = useState();
-
+  const [ruleSaveLoading, setRuleSaveLoading] = useState(false);
   //Sorting states
   const [sortingField, setSortingField] = useState();
   const [sortingOrder, setSortingOrder] = useState();
@@ -137,155 +136,14 @@ const SearchComponent = () => {
     }
   }, [pageIndex]);
 
-  //Url'i çözümleme işlemi
-  function getVariablesFromUrl() {
-    //Url değerini alıyoruz.
-    const parsed = queryString.parse(location.search);
-    const siteMode = getSiteMode();
-
-    //site mode paste url manuel.
-    if ((siteMode !== parsed.smode) && (typeof parsed.smode !== 'undefined')) {
-      setSiteMode(parsed.smode);
-      setSearchSitemode(parsed.smode);
-      window.location.reload(false);
-    }
-    if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
-    //Category get url data
-    if (typeof parsed.pg !== 'undefined') {
-      if (Array.isArray(parsed.pg)) {
-        setCategory(parsed.pg)
-      } else { setCategory(parsed.pg); }
-    }
-
-    if (typeof parsed.isPointAddress !== 'undefined') {
-      const isPoint = parsed.isPointAddress == "true" ? true : false
-      setIsPointAddress(isPoint);
-    }
-
-    //Type get url data
-    if (typeof parsed.ut !== 'undefined') {
-      if (Array.isArray(parsed.ut)) {
-        setType(parsed.ut)
-      } else { setType([parsed.ut]); }
-    }
-    //Dimension get url data
-    if (typeof parsed.dm !== 'undefined') {
-      let dimensionNewArray
-      if (parsed.dm)
-        if (Array.isArray(parsed.dm)) {
-          dimensionNewArray = _.map(parsed.dm.map(e => e === 'null' || e === '' ? null : e));
-        } else {
-          dimensionNewArray = _.map([parsed.dm].map(e => e === 'null' || e === '' ? null : e));
-        }
-      const nullOrBlankData = _.filter(dimensionNewArray, function (Item) {
-        if (Item === null || Item === '') {
-          return true;
-        }
-      });
-      if (nullOrBlankData.length > 0) { dimensionNewArray.push(''); }
-      setDimension(dimensionNewArray);
-    }
-
-    //Serie get url data
-    if (typeof parsed.se !== 'undefined') {
-      let seriesNewArray
-      if (parsed.se)
-        if (Array.isArray(parsed.se)) {
-          seriesNewArray = _.map(parsed.se.map(e => e === 'null' || e === '' ? null : e));
-        } else {
-          seriesNewArray = _.map([parsed.se].map(e => e === 'null' || e === '' ? null : e));
-        }
-      const nullOrBlankData = _.filter(seriesNewArray, function (Item) {
-        if (Item === null || Item === '') {
-          return true;
-        }
-      });
-      if (nullOrBlankData.length > 0) { seriesNewArray.push(''); }
-      setSeries(seriesNewArray);
-    }
-
-    //Color get url data
-    if (parsed.clr !== undefined) {
-      let colorNewArray
-      if (parsed.clr)
-        if (Array.isArray(parsed.clr)) {
-          colorNewArray = _.map(parsed.clr.map(e => e === 'null' || e === '' ? null : e));
-        } else {
-          colorNewArray = _.map([parsed.clr].map(e => e === 'null' || e === '' ? null : e));
-        }
-      const nullOrBlankData = _.filter(colorNewArray, function (Item) {
-        if (Item === null || Item === '') {
-          return true;
-        }
-      });
-      if (nullOrBlankData.length > 0) { colorNewArray.push(''); }
-      setColor(colorNewArray);
-    }
-
-    //Surface get url data
-    if (typeof parsed.sfc !== 'undefined') {
-      let surfaceNewArray
-      if (parsed.sfc)
-        if (Array.isArray(parsed.sfc)) {
-          surfaceNewArray = _.map(parsed.sfc.map(e => e === 'null' || e === '' ? null : e));
-        } else {
-          surfaceNewArray = _.map([parsed.sfc].map(e => e === 'null' || e === '' ? null : e));
-        }
-      const nullOrBlankData = _.filter(surfaceNewArray, function (Item) {
-        if (Item === null || Item === '') {
-          return true;
-        }
-      });
-      if (nullOrBlankData.length > 0) { surfaceNewArray.push(''); }
-      setSurface(surfaceNewArray);
-    }
-
-    //Sales Status get url data
-    if (typeof parsed.ss !== 'undefined') {
-      setSalesStatus(parsed.ss)
-    }
-
-    //Kampanya get url data
-    if (typeof parsed.campaign !== 'undefined') {
-      if (parsed.campaign === 'true')
-        setCampaignCode(true); else { setCampaignCode(false) }
-    }
-
-    //Stok Durumu get url data
-    if (typeof parsed.stockStatus !== 'undefined') {
-      setStockStatus(parsed.stockStatus);
-    }
-
-    //Product Quality get url data
-    if (typeof parsed.pq !== 'undefined') {
-      if (Array.isArray(parsed.pq)) {
-        setQuality(parsed.pq)
-      } else { setQuality([parsed.pq]); }
-    }
-
-    if (typeof parsed.pgsize !== 'undefined') { setPageSize(parseInt(parsed.pgsize)); }
-    if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
-    if (typeof parsed.keyword !== 'undefined') { setKeyword(parsed.keyword); }
-    if (typeof parsed.srto !== 'undefined') { setSortingOrder(parsed.srto); }
-    if (typeof parsed.srtf !== 'undefined') {
-      setSortingField(parsed.srtf); switch (parsed.srtf) {
-        case 'ItemRef':
-          return setItemRefButtonType('primary');
-        case 'ListPrice':
-          if (parsed.srto === 'ASC') { return setListPriceLowestButtonType('primary') }
-          else { return setListPriceHighestButtonType('primary') }
-        default:
-          return setItemRefButtonType('primary');
-      }
-    }
-    else { setItemRefButtonType('primary'); }
-
-    return setOnChange(true);
-  }
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
     useProductData(`${siteConfig.api.products.postProducts}`, typeof selectedruleObject === 'undefined' ? { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
+
+  //Kurallar Listesi
+  const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, truleotalDataCount, ruleSetOnChange] =
+    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -324,13 +182,7 @@ const SearchComponent = () => {
   function onShowSizeChange(current, pageSize) {
     setPageSize(pageSize);
     setPageIndex(current);
-    const params = new URLSearchParams(location.search);
-    params.delete('pgsize');
-    params.delete('pgindex');
 
-    params.append('pgsize', pageSize);
-    params.append('pgindex', current);
-    // history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
 
@@ -338,28 +190,11 @@ const SearchComponent = () => {
   function currentPageChange(current) {
     setPageIndex(current);
 
-    const params = new URLSearchParams(location.search);
-    params.delete('pgindex');
-    params.append('pgindex', current)
-    // history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
 
   //Keyword value set url
   function keywordAddUrl() {
-    const params = new URLSearchParams(location.search);
-    params.delete('keyword');
-    params.delete('pgindex');
-    if (typeof keyword !== 'undefined') {
-      if (keyword.length > 0) {
-        setPageIndex(1);
-        params.append('keyword', keyword);
-        params.append('pgindex', 1);
-        params.toString();
-      }
-    }
-    history.push(`${location.pathname}?${params.toString()}`);
-
     return setOnChange(true);
   }
   //Keyword 'Enter' search
@@ -372,7 +207,15 @@ const SearchComponent = () => {
   const onSearch = e => {
     keywordAddUrl();
   }
-
+  const ruleSearchButton = e => {
+    ruleSetOnChange(true);
+  }
+  //Keyword 'Enter' search
+  const ruleKeyPress = e => {
+    if (e.keyCode === 13) {
+      ruleSetOnChange(true);
+    }
+  }
   //Type
   function filterTextSearchType(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -616,37 +459,11 @@ const SearchComponent = () => {
     return setOnChange(true);
   }
 
-  //campaign Filter Event
-  function onChangeCampaing(event) {
-    setCampaignCode(event.target.value)
-    const params = new URLSearchParams(location.search);
-    params.delete('campaign');
-    params.append('campaign', event.target.value);
-    params.delete('pgindex');
-    params.append('pgindex', 1)
-    setPageIndex(1);
-    params.toString();
-
-    // history.push(`${location.pathname}?${params.toString()}`);
-
-    return setOnChange(true);
-  }
-
   //Type Filter Event
   function onChangeType(checkedProductTypeValue) {
     setType(checkedProductTypeValue);
 
-    const params = new URLSearchParams(location.search);
-    params.delete('ut');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
     setPageIndex(1);
-    if (checkedProductTypeValue.length > 0) {
-      checkedProductTypeValue.forEach(item => {
-        params.append('ut', item);
-        params.toString();
-      });
-    }
     // history.push(`${location.pathname}?${params.toString()}`);
     setSelectedRuleObject();
     setOnChangeDimensionsFilter(true);
@@ -657,37 +474,10 @@ const SearchComponent = () => {
     return setOnChange(true);
   };
 
-  //Stock Status Filter Event
-  function onChangeStockStatus(event) {
-    setStockStatus(event.target.value)
-    const params = new URLSearchParams(location.search);
-    params.delete('stockStatus');
-    params.append('stockStatus', event.target.value);
-    params.delete('pgindex');
-    params.append('pgindex', 1)
-    setPageIndex(1);
-    params.toString();
-
-    // history.push(`${location.pathname}?${params.toString()}`);
-
-    return setOnChange(true);
-  }
   //Quality Filter Event
   function onChangeProductQuality(checkedProductQualityValue) {
     setQuality(checkedProductQualityValue);
-
-    const params = new URLSearchParams(location.search);
-    params.delete('pq');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
     setPageIndex(1);
-    if (checkedProductQualityValue.length > 0) {
-      checkedProductQualityValue.forEach(item => {
-        params.append('pq', item);
-        params.toString();
-      });
-    }
-    // history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   };
 
@@ -700,19 +490,8 @@ const SearchComponent = () => {
       }
     });
     if ((nullOrBlankData.length > 0) && (dimensionNewArray.length > 0)) { dimensionNewArray.push(''); }
-    setDimension(dimensionNewArray)
-    const params = new URLSearchParams(location.search);
-    params.delete('dm');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
+    setDimension(dimensionNewArray);
     setPageIndex(1);
-    checkedDimensionValue.forEach(item => {
-      if (item === siteConfig.nullOrEmptySearchItem) { params.append('dm', null); }
-      else {
-        params.append('dm', item);
-        params.toString();
-      }
-    })
     // history.push(`${location.pathname}?${params.toString()}`);
     setSelectedRuleObject();
     setOnChangeFilter(true);
@@ -732,20 +511,7 @@ const SearchComponent = () => {
     });
     if ((nullOrBlankData.length > 0) && (serieNewArray.length > 0)) { serieNewArray.push(''); }
     setSeries(serieNewArray)
-
-    const params = new URLSearchParams(location.search);
-    params.delete('se');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
     setPageIndex(1);
-    checkedSerieValue.forEach(item => {
-      if (item === siteConfig.nullOrEmptySearchItem) { params.append('se', null) }
-      else {
-        params.append('se', item);
-        params.toString();
-      }
-    });
-    // history.push(`${location.pathname}?${params.toString()}`);
     setSelectedRuleObject();
     setOnChangeFilter(true);
     setOnChangeDimensionsFilter(true);
@@ -766,16 +532,8 @@ const SearchComponent = () => {
     if ((nullOrBlankData > 0) && (colorNewArray.length > 0)) { colorNewArray.push(''); }
 
     setColor(colorNewArray);
-    const params = new URLSearchParams(location.search);
-    params.delete('clr');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
     setPageIndex(1);
-    checkedColorValue.forEach(item => {
-      if (item === siteConfig.nullOrEmptySearchItem) { params.append('clr', null); }
-      else { params.append('clr', item); }
-    });
-    // history.push(`${location.pathname}?${params.toString()}`);
+
     setSelectedRuleObject();
     setOnChangeFilter(true);
     setOnChangeDimensionsFilter(true);
@@ -795,18 +553,9 @@ const SearchComponent = () => {
     });
     if ((nullOrBlankData > 0) && (surfaceNewArray.length > 0)) { surfaceNewArray.push(''); }
 
-    setSurface(surfaceNewArray)
+    setSurface(surfaceNewArray);
 
-    const params = new URLSearchParams(location.search);
-    params.delete('sfc');
-    params.delete('pgindex');
-    params.append('pgindex', 1)
     setPageIndex(1);
-    checkedSurfaceValue.forEach(item => {
-      if (item === siteConfig.nullOrEmptySearchItem) { params.append('sfc', null); }
-      else { params.append('sfc', item); params.toString(); }
-    });
-    // history.push(`${location.pathname}?${params.toString()}`);
     setSelectedRuleObject();
     setOnChangeFilter(true);
     setOnChangeDimensionsFilter(true);
@@ -819,50 +568,27 @@ const SearchComponent = () => {
   function itemRefSorting() {
     setSortingField('ItemRef');
     setSortingOrder('DESC');
-    const params = new URLSearchParams(location.search);
-    params.delete('srtf');
-    params.delete('srto');
-    params.append('srtf', 'ItemRef');
-    params.append('srto', 'DESC');
-    params.toString();
     setItemRefButtonType('primary');
     setListPriceHighestButtonType('dashed');
     setListPriceLowestButtonType('dashed');
-    // history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
   //List Price Lowest Sorting
   function listPriceLowestSorting() {
     setSortingField('ListPrice');
     setSortingOrder('ASC');
-
-    const params = new URLSearchParams(location.search);
-    params.delete('srtf');
-    params.delete('srto');
-    params.append('srtf', 'ListPrice');
-    params.append('srto', 'ASC');
-    params.toString();
     setListPriceLowestButtonType('primary');
     setItemRefButtonType('dashed');
     setListPriceHighestButtonType('dashed');
-    // history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
   //List Price Highest Sorting
   function listPriceHighestSorting() {
     setSortingField('ListPrice');
     setSortingOrder('DESC');
-
-    const params = new URLSearchParams(location.search);
-    params.delete('srtf');
-    params.delete('srto');
-    params.append('srtf', 'ListPrice');
-    params.append('srto', 'DESC');
-    params.toString();
     setListPriceHighestButtonType('primary');
     setListPriceLowestButtonType('dashed');
     setItemRefButtonType('dashed');
-    // history.push(`${location.pathname}?${params.toString()}`);
     return setOnChange(true);
   }
 
@@ -894,18 +620,6 @@ const SearchComponent = () => {
         }
       }
     }
-    params.delete('keyword');
-    params.delete('ut');
-    params.delete('dm');
-    params.delete('se');
-    params.delete('clr');
-    params.delete('sfc');
-    params.delete('pq');
-    params.delete('pgindex');
-    params.delete('campaign');
-    params.append('pgindex', 1);
-
-    // history.push(`${location.pathname}?${params.toString()}`);
     setOnChangeFilter(true);
     setOnChangeDimensionsFilter(true);
     setOnChangeSerieFilter(true);
@@ -921,78 +635,96 @@ const SearchComponent = () => {
   }
 
   //Ürünlerin kurallarını tanımlamak için girilmesi gereken kapasite degeri 
-  function createRule() {
+  function createRule(item) {
+    debugger
     setVisible(true);
     if (ruleEditing && ruleEditing === true) {
-      setRuleNo('12312312');
-      setRuleName('TestKural');
+      setRuleNo(item.ruleNo);
+      setRuleName(item.name);
+      setCapacity(item.capacity);
+      setPriority(item.priority)
     }
   }
 
   //Seçilenler Modal iptal işlemi
   function handleCancel() {
+    clearParams();
+  };
+
+  function clearParams() {
     setVisible(false);
     setRuleNo();
     setRuleName();
     setDescription();
     setCapacity(1);
+    setPriority();
   };
 
   //Kural ekleme işlemi
   async function handleOk() {
 
-    if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined') && (typeof ruleNo !== 'undefined')) {
+    if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined')) {
       //Yeni bir kural objesi tanımlanıyor.
-      const rule = {
-        "ruleName": ruleName, "ruleNo": ruleNo, "description": description, "active": isLocked, "orderOfPriority": orderOfPriority, "capacity": capacity, "critieria": {
-          "keyword": keyword,
-          "qualities": quality,
-          "salesStatus": salesStatus,
-          "onlyHavingCampaigns": campaign,
-          "series": series,
-          "types": type,
-          "surfaces": surface,
-          "colors": color,
-          "dimensions": dimension,
-          "balanceLevel": stockStatus,
-          "categories": category === undefined ? color : [category], "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode
-        }
+
+      const query = {
+        "keyword": keyword,
+        "qualities": quality,
+        "salesStatus": salesStatus,
+        "onlyHavingCampaigns": campaign,
+        "series": series,
+        "types": type,
+        "surfaces": surface,
+        "colors": color,
+        "dimensions": dimension,
+        "balanceLevel": stockStatus,
+        "categories": category === undefined ? color : [category], "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode
       }
+      const rule = {
+        "ruleNo": ruleNo,
+        "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
+        "query": JSON.stringify(query)
+      }
+      await postSaveRule(rule);
     } else {
       message.warning('Bilgileri eksiksiz giriniz!!!', 3);
     }
-    // if ((!driverName) || (!carPlate) || (!phone) || (!dates) || (!time)) {
-    //     setValidation(false);
-    //     message.warning('Lütfen bilgileri eksiksiz giriniz', 3);
-    //     if (!dates) { setDateValidation(false); }
-    //     if (!time) { setTimeValidation(false); }
-    // }
-    // else if (specification === false) {
-    //     message.warning('Lütfen sol alt köşede bulunan şartnameyi işaretleyiniz', 3);
-    // }
-    // else {
-    //     let items = [];
-    //     let selectedDealerCode;
-    //     let distributions = localStorage.getItem('distributions');
-    //     distributions = JSON.parse(distributions);
-    //     distributions = _.filter(distributions, function (i) { return i.quantity > 0 });         
-    //     _.each(distributions, (item) => {
-    //         selectedDealerCode = item.dealerCode;
-    //         items.push({
-    //             distributionLineId: item.distributionLineId,
-    //             amount: item.quantity,
-    //             status: item.status,
-    //         });
-    //     });
-    //     const NotUrgentCount = _.filter(distributions, function (item) { return item.status === enumerations.status.NotUrgent; });
-    //     if ((items.length > 1) && (NotUrgentCount.length === 0)) {
-    //         message.warning('En az 1 ürünün kalem durumunu kalabilir olarak seçmelisiniz.', 3);
-    //     }
-    //     else {
-    //         await sendDistributionItems(items, selectedDealerCode);
-    //     }
-    // }
   };
+
+  //Save Rule
+  async function postSaveRule(reqBody) {
+    setRuleSaveLoading(true);
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      },
+      body: JSON.stringify(reqBody)
+    };
+    await fetch(siteConfig.api.report.postRules, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        if (typeof data !== 'undefined') {
+          if (data.isSuccessful === false) {
+            message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+          } else if (data.status === 400) {
+            message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+          }
+          else {
+            message.success({ content: 'başarıyla kaydedildi', duration: 2 });
+            clearParams();
+            ruleSetOnChange(true);
+            setActiveTabKey('0');
+          }
+        }
+      })
+      .catch();
+    setRuleSaveLoading(false);
+  }
+
   //Miktar girilen text alanında tüm değerleri seçiyor
   function onSelectAll(id) {
     document.getElementById(id).select();
@@ -1006,31 +738,11 @@ const SearchComponent = () => {
     }
   }
 
-  function onChangeOrderOfPriority(value) {
-    setOrderOfPriority(value);
+  function onChangePriority(value) {
+    setPriority(value);
   }
   function selectedRule(item) {
-    const rule = {
-      "qualities": [],
-      "salesStatus": "All",
-      "onlyHavingCampaigns": false,
-      "series": [],
-      "types": [
-        "AYDINLATMALI FONKSİYONLU AYNA",
-        "ÇEKMECELİ BOY DOLABI",
-        "DÜZ AYNA"
-      ],
-      "surfaces": [],
-      "colors": ["AYNA"],
-      "dimensions": [
-        "55 cm"
-      ],
-      "balanceLevel": "None",
-      "categories": [
-        "BANYO MOBİLYASI"
-      ],
-      "siteMode": "Normal"
-    }
+    const rule = JSON.parse(item.query);
     if (rule && rule.categories) {
       setCategory(rule.categories[0]);
       setType(rule.types);
@@ -1050,16 +762,27 @@ const SearchComponent = () => {
       setSelectedRuleObject();
     }
     setSelectedRuleObject(rule);
+    var newObj = {};
+
+    Object.keys(rule).forEach(function (key) {
+      if (rule[key].length !== 0)
+        newObj[key] = rule[key];
+    });
+    setSelectedRuleObjectText(newObj);
     setActiveTabKey('1');
     setRuleEditing(true);
-    setRuleNo('12345789');
-
+    setRuleNo(item.ruleNo);
+    setRuleName(item.name);
+    setSelectedItem(item);
     setOnChange(true);
 
   }
   function callback(key) {
+    if(key!=='1'){setSelectedRuleObject();}
     setActiveTabKey(key);
     setRuleEditing(false);
+    setRuleName();
+    setRuleNo();
     // if (key === enumerations.ProductRelationTypestring.Dependent) { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Dependent, productTypeTitle: 'Bağlı Ürün' }); }
     // else { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Related, productTypeTitle: 'İlgili Ürün' }); }
     // this.formRef.current.resetFields();
@@ -1070,62 +793,53 @@ const SearchComponent = () => {
   let columns = [
     {
       title: "Kural Adı",
-      dataIndex: "dealerCode",
-      key: "dealerCode",
+      dataIndex: "name",
+      key: "name",
       style: { font: { sz: "48", bold: true } },
       width: 100,
-      render: (amount, record) => 'Test' + record.itemCode,
     },
     {
       title: "Kural Kodu",
-      dataIndex: "itemCode",
-      key: "itemCode",
+      dataIndex: "ruleNo",
+      key: "ruleNo",
       width: 100,
       ellipsis: true,
     },
     {
       title: "Kapasite",
-      dataIndex: "total",
-      key: "total",
+      dataIndex: "capacity",
+      key: "capacity",
       width: 100,
-      render: (total) => numberFormat(15000)
+      render: (capacity) => numberFormat(capacity)
     },
     {
       title: "Öncelik Sırası",
-      dataIndex: "total",
-      key: "total",
-      width: 50,
-      render: (total) => 1
+      dataIndex: "priority",
+      key: "priority",
+      width: 150,
     },
     {
       title: "Açıklama",
-      dataIndex: "total",
-      key: "total",
-      width: 250,
-      render: (total) => 'Deneme amaçlı olarak oluşturulmuştur.'
+      dataIndex: "description",
+      key: "description",
+      width: 200,
     },
     {
       title: "Durumu",
-      dataIndex: "isLocked",
-      key: "isLocked",
-      render: isLocked => (
-        <>
-          <Tag color={'green'} key={isLocked}>
-            {'Açık'}
-          </Tag>
-        </>
-      ),
+      dataIndex: "statusText",
+      key: "statusText",
+      width: 50,
+    },
+    {
+      title: "query",
+      dataIndex: "query",
+      key: "query",
     },
   ];
 
   //Kural adı değiştirme
   const handleChangeRuleName = e => {
     setRuleName(e.target.value);
-  }
-
-  //Kural no değiştirme
-  const handleChangeRuleNo = e => {
-    setRuleNo(e.target.value);
   }
 
   //Kural açıklaması değiştirme
@@ -1135,6 +849,8 @@ const SearchComponent = () => {
 
   //Select Component Aktiflik durumu değiştirme 
   function isLockedChange(value) {
+    if (value === true) { setRuleStatus(enumerations.RuleStatus.Active) }
+    else { setRuleStatus(enumerations.RuleStatus.Archived) }
     setIsLocked(!value);
   }
 
@@ -1162,11 +878,11 @@ const SearchComponent = () => {
                     : null}
                   <Row>
                     <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                      <Input size="small" placeholder="Ürün adı, Kural adı ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+                      <Input size="small" placeholder="Ürün adı, Kural adı ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={ruleSearchKey} onKeyDown={ruleKeyPress} onChange={event => setRuleSearchKey(event.target.value)} />
 
                     </Col>
                     <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                      <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" >
+                      <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={ruleSearchButton} >
                         {<IntlMessages id="forms.button.label_Search" />}
                       </Button>
                     </Col>
@@ -1176,49 +892,17 @@ const SearchComponent = () => {
               </Collapse>
             </Box>
             <Box >
-              {/* <ReportPagination
-                onShowSizeChange={onShowSizeChange}
-                onChange={currentPageChange}
-                pageSize={pageSize}
-                total={totalDataCount}
-                current={pageIndex}
-                position="top"
-              /> */}
               <Dragdrop
-              test={'test'}
-              columns={columns}
-               />
-              {/* <Table
-                className="components-table-demo-nested"
                 columns={columns}
-                dataSource={data}
-                // onChange={handleChange}
-                loading={loading}
-                // expandable={{ 'expandedRowRender': expandedRowRender }}
-                pagination={false}
-                scroll={{ x: 'max-content' }}
-                bordered={false}
+                data={ruleData}
                 onRow={(record) => ({
                   onClick: () => (selectedRule(record))
                 })}
-              // summary={() => {
-              //     return renderFooter(columns, data, true, aggregatesOverall, true)
-              // }}
-              /> */}
-              {/* <ReportPagination
-                onShowSizeChange={onShowSizeChange}
-                onChange={currentPageChange}
-                pageSize={pageSize}
-                total={totalDataCount}
-                current={pageIndex}
-                position="bottom"
-              /> */}
+              />
             </Box>
           </LayoutWrapper>
-
         </TabPane>
         <TabPane tab="Kural Detayı" key="1">
-
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1248,7 +932,6 @@ const SearchComponent = () => {
                     <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
                   </Col> : null
                 }
-
                 <InputSearch placeholder="Ürün kodu veya ürün adı ara"
                   onChange={onchangeInputSearch}
                   onSearch={onSearch}
@@ -1263,38 +946,6 @@ const SearchComponent = () => {
                 </Collapse>
                 {!!category ? null :
                   <div style={{ color: 'red', fontSize: '90%' }}>*: Detaylı filtreleme için kategori seçiniz</div>}
-                {/* <Collapse {...collapseProps}>
-                  <Panel header={<IntlMessages id="filter.campaing" />} key="2">
-                    <RadioGroup onChange={onChangeCampaing} value={campaign} defaultValue={campaign}>
-                      <Radio style={radioStyle} value={false}>
-                        Hepsi
-                      </Radio>
-                      <Radio style={radioStyle} value={true}>
-                        Kampanyalı
-                      </Radio>
-                    </RadioGroup>
-                  </Panel>
-                </Collapse> */}
-                {/* Yeni Filtre Alanı Stok Durumu*/}
-                {/* <Collapse {...collapseProps}>
-                  <Panel header={<IntlMessages id="filter.status" />} key="3">
-                    <RadioGroup onChange={onChangeStockStatus} value={stockStatus} defaultValue={stockStatus}>
-                      <Radio style={radioStyle} value={enumerations.StockStatus.None}>
-                        Hepsi
-                      </Radio>
-                      <Radio style={radioStyle} value={enumerations.StockStatus.GeneralInStock}>
-                        Stok Var
-                      </Radio>
-                      <Radio style={radioStyle} value={(category === 'KARO') ? enumerations.StockStatus.TileNotInStock : enumerations.StockStatus.GeneralNotInStock}>
-                        Stok Yok
-                      </Radio>
-                      {(category === 'KARO') ? (<React.Fragment>
-                        <Radio style={radioStyle} value={enumerations.StockStatus.Tile10000AndMore}>
-                          10.000+  M2
-                        </Radio></React.Fragment>) : (null)}
-                    </RadioGroup>
-                  </Panel>
-                </Collapse> */}
                 {(productionQualityData.length !== 0 && productionQualityData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="Kalite" />} key="2">
@@ -1432,19 +1083,20 @@ const SearchComponent = () => {
                   {typeof ruleNo !== 'undefined' ? <React.Fragment><Col span={16}>  <Comment
                     author={<a>{ruleNo}</a>}
                     avatar={
+                      <Tooltip title={JSON.stringify(selectedruleObjectText)} placement="top">
                       <Avatar
                         icon={<ExclamationOutlined />}
                         alt="Han Solo"
                         style={{ backgroundColor: 'green' }}
-                      />
+                      /></Tooltip>
                     }
                     content={
                       <p>
-                        BanyoMobilyası 3 adlı kural seçimi gerçekleştirdiniz.
+                        {ruleName} adlı kural seçimi gerçekleştirdiniz.
                       </p>
                     }
                   /> </Col></React.Fragment> : null}   <Col span={typeof ruleNo !== 'undefined' ? 8 : 24} align="right" >
-                    <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule()}
+                    <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule(selectedItem)}
                       icon={<FormOutlined />} >
                       {ruleEditing && ruleEditing === true ?
                         < IntlMessages id="forms.button.editingRule" /> : < IntlMessages id="forms.button.createRule" />}
@@ -1543,13 +1195,12 @@ const SearchComponent = () => {
       <Modal
         width={800}
         visible={visible}
-        title={"Kapasite Onaylama"}
+        title={ruleNo ? ruleName + ' Kuralı düzenlemektesiniz' : 'Kural Oluştur'}
         cancelText="İptal"
         okText='Onayla'
         maskClosable={false}
         onCancel={handleCancel}
         onOk={handleOk}
-        // okButtonProps={{ disabled: specification }}
         footer={[
           <Button key="back" onClick={handleCancel}>
             İptal
@@ -1596,23 +1247,6 @@ const SearchComponent = () => {
                     value={ruleName}
                     onChange={handleChangeRuleName}
                   /></label></Form.Item>
-
-              <Form.Item name="ruleNo"
-                rules={[{ required: true, message: 'Kural no giriniz!' }]}
-              >
-                <label style={{
-                  fontSize: '14px', fontWeight: '500'
-                }}>
-                  Kural No *
-                  <Input
-                    label="Kural No"
-                    type='ruleNo'
-                    placeholder="Zorunlu alan giriniz"
-                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-
-                    value={ruleNo}
-                    onChange={handleChangeRuleNo}
-                  /></label></Form.Item>
               <Form.Item
                 rules={[{ required: true, message: 'Kapasite giriniz!' }]}
               >
@@ -1629,7 +1263,7 @@ const SearchComponent = () => {
                   />
                 </label>
               </Form.Item>
-              <Form.Item name="orderOfPriority"
+              <Form.Item name="priority"
                 rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
               >
                 <label style={{
@@ -1639,8 +1273,8 @@ const SearchComponent = () => {
                   <Select
                     showSearch
                     optionFilterProp="children"
-                    onChange={event => onChangeOrderOfPriority(event)}
-                    value={orderOfPriority}
+                    onChange={event => onChangePriority(event)}
+                    value={priority}
                     style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                     filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
