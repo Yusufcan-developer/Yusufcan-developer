@@ -11,6 +11,12 @@ export default {
         NotUrgent: 'NotUrgent',
 
     },
+    cancelReason:
+    {
+        None:'None',
+        InsufficientTotalDemand:'InsufficientTotalDemand',
+        DealerRequest:'DealerRequest',
+    },
     ProductRelationTypestring:
     {
         None: 'None',

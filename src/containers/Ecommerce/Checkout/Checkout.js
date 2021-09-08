@@ -717,7 +717,6 @@ export default function () {
         return status;
       })
       .then(data => {
-        debugger
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
             const getMessage = data.message;

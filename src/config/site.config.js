@@ -80,6 +80,7 @@ export default {
       postDemandItems: apiUrl + 'core/demands/search',
       rules: apiUrl+'b2b/rules/search',
       postRules:apiUrl + 'b2b/rules',
+      postDemandUpdate:apiUrl + 'core/demands/update-status/{demandId}',
 
     },
     users: {
