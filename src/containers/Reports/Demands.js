@@ -81,6 +81,8 @@ export default function () {
     const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [selectedItemsId, setSelectedItemsId] = useState([]);
+    const [selectedItems, setSelectedItems] = useState([]);
+
     const [hasSelected, setHasSelected] = useState(false);
     const [selectedDemand, setSelectedDemand] = useState();
     const [cancelReason, setCancelReason] = useState();
@@ -93,6 +95,9 @@ export default function () {
     const [demandNo, setDemandNo] = useState();
     const [description, setDescription] = useState();
     const [statusModal, setStatusModal] = useState();
+    const [selectedToolbarStatus, setSelectedToolbarStatus] = useState();
+    const [eventType, setEventType] = useState();
+
     const [demandAmountModal, setDemandAmountModal] = useState();
     const [demandUnitModal, setDemandUnitModal] = useState();
     const [demandConfirmLoading, setDemandConfirmLoading] = useState(false);
@@ -437,6 +442,9 @@ export default function () {
     }
 
     function transactionsItemDisabled(item, transactionKey) {
+        //Kullanıcı 1 den fazla değer check işlemi yaptığı zaman oluşuyor.
+        if(selectedItems.length>1){return true;}
+        //İşlem türü gönderilmediği default olarak menü seçenekleri açık oluyor.
         if(typeof transactionKey==='undefined'){return false;}
         if (item !== null) {
             const token = jwtDecode(localStorage.getItem("id_token"));
@@ -446,8 +454,102 @@ export default function () {
 
             if (token.urole === 'admin') { return false; }
             else if (token.urole === 'fieldmanager') {
+                if (item.status === 'Pending') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return false;
+                        case 'SiparisOlustur':
+                            return true;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Cancelled') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return false;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Approved') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return false;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
             }
             else if (token.urole === 'regionmanager') {
+                if (item.status === 'Pending') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return false;
+                        case 'SiparisOlustur':
+                            return true;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Cancelled') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return false;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Approved') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return false;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+            }
+            else if (token.urole === 'support') {
+                if (item.status === 'Pending') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return false;
+                        case 'SiparisOlustur':
+                            return true;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Cancelled') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return false;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Approved') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return false;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+            }
+            else if (token.urole === 'director') {
 
             }
             else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
@@ -458,7 +560,7 @@ export default function () {
                         case 'SiparisOlustur':
                             return true;
                         case 'TalepSil':
-                            return false;
+                            return true;
                     }
                 }
                 else if(item.status==='Cancelled'){
@@ -480,8 +582,7 @@ export default function () {
                         case 'TalepSil':
                             return true;
                     }
-                }
-              
+                }             
 
             }
         }
@@ -635,27 +736,29 @@ export default function () {
 
     //Sipariş oluşturulması için izin verilenler
     function permissionCheck(status) {
-        if ((status === 'Pending') || (status === '')) { return false; }
-        return true;
+        if ((status === 'Cancelled')) { return true; }
+        return false;
     }
 
     // rowSelection object indicates the need for row selection
     const rowSelection = {
         onSelect: (record, selected, selectedRows) => {
-            let selectedIds = []
-            debugger
+            let selectedIds = [];
+            let selectedItems=[]
             //Geçici olarak eklendi api sonrası tek bir koşul değişecek.
             if (selectedRows.length > 0) {
                 _.each(selectedRows, (item) => {
                     if (typeof item !== 'undefined') {
                         selectedIds.push(item.id);
+                        selectedItems.push(item);
                     }
                 });
                 setSelectedItemsId(selectedIds);
+                setSelectedItems(selectedItems);
                 selectedTotalCount = selectedIds.length;
                 setHasSelected(true);
             }
-            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]);setSelectedItems([]) }
 
 
             //Olması gereken şekil api düzenlemesinden sonra değiştirilecek.
@@ -801,6 +904,7 @@ export default function () {
                         setVisible(false);
                         setOnChange(true);
                         setSelectedDemand();
+                        setSelectedItemsId();
                     }
                 }
             })
@@ -899,22 +1003,29 @@ export default function () {
         }
     };
 
-    function demandCancelOrRejection(params) {
-        setToolbarEditingButton(true);
-        setVisible(true);
+    function demandCancelOrRejection() {
+        debugger
+        let control=false;
+        let status;
+        _.each(selectedItems, (item) => {
+            if(item.status==='Approved'){return control=true;}
+            else{status=item.status;}
+        });
+        if (control === true) { return message.warning('Onaylananlar düzenleme işlemi yapılamaz.') }
+        else { setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status);setEventType('Toolbar') }
     }
 
-    function demandEditingModalPermissions(item, type) {
-        if ((type !== null) && (typeof item !== 'undefined')) {
-            const token = jwtDecode(localStorage.getItem("id_token"));
+    function demandEditingModalPermissions(item, type, eventType) {
+
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        if (eventType === 'Toolbar') {
             if (token.urole === 'admin') { return false; }
             else if (token.urole === 'fieldmanager') {
             }
             else if (token.urole === 'regionmanager') {
-
             }
             else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-                if (item.status === 'Pending') {
+                if (selectedToolbarStatus === 'Pending') {
                     switch (type) {
                         case 'Approved':
                             return true;
@@ -924,25 +1035,159 @@ export default function () {
                             return false;
                     }
                 }
-                else if(item.status==='Cancelled'){
+                else if (selectedToolbarStatus === 'Cancelled') {
                     switch (type) {
-                        case 'Duzenle':
+                        case 'Approved':
                             return true;
-                        case 'SiparisOlustur':
-                            return true;
-                        case 'TalepSil':
+                        case 'Cancelled':
+                            return false;
+                        case 'Pending':
                             return true;
                     }
                 }
-                else if(item.status==='Approved'){
-                  return true;
+                else if (selectedToolbarStatus === 'Approved') {
+                    switch (type) {
+                        case 'Approved':
+                            return true;
+                        case 'Cancelled':
+                            return false;
+                        case 'Pending':
+                            return false;
+                    }
                 }
-              
+            }
+        }
+        else {
+            if ((type !== null) && (typeof item !== 'undefined')) {
+                if (token.urole === 'admin') { return false; }
+                else if (token.urole === 'fieldmanager') {
+                }
+                else if (token.urole === 'regionmanager') {
+                }
+                else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+                    if (item.status === 'Pending') {
+                        switch (type) {
+                            case 'Approved':
+                                return true;
+                            case 'Cancelled':
+                                return false;
+                            case 'Pending':
+                                return false;
+                        }
+                    }
+                    else if (item.status === 'Cancelled') {
+                        switch (type) {
+                            case 'Approved':
+                                return true;
+                            case 'Cancelled':
+                                return false;
+                            case 'Pending':
+                                return true;
+                        }
+                    }
+                    else if (item.status === 'Approved') {
+                        switch (type) {
+                            case 'Approved':
+                                return true;
+                            case 'Cancelled':
+                                return false;
+                            case 'Pending':
+                                return false;
+                        }
+                    }
 
+
+                }
             }
         }
     }
+    
+    function toolbarPermissions(item, type, eventType) {
 
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        if (eventType === 'Toolbar') {
+            if (token.urole === 'admin') { return false; }
+            else if (token.urole === 'fieldmanager') {
+            }
+            else if (token.urole === 'regionmanager') {
+            }
+            else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+                if (selectedToolbarStatus === 'Pending') {
+                    switch (type) {
+                        case 'Approved':
+                            return true;
+                        case 'Cancelled':
+                            return false;
+                        case 'Pending':
+                            return false;
+                    }
+                }
+                else if (selectedToolbarStatus === 'Cancelled') {
+                    switch (type) {
+                        case 'Approved':
+                            return true;
+                        case 'Cancelled':
+                            return false;
+                        case 'Pending':
+                            return true;
+                    }
+                }
+                else if (selectedToolbarStatus === 'Approved') {
+                    switch (type) {
+                        case 'Approved':
+                            return true;
+                        case 'Cancelled':
+                            return false;
+                        case 'Pending':
+                            return false;
+                    }
+                }
+            }
+        }
+        else {
+            if ((type !== null) && (typeof item !== 'undefined')) {
+                if (token.urole === 'admin') { return false; }
+                else if (token.urole === 'fieldmanager') {
+                }
+                else if (token.urole === 'regionmanager') {
+                }
+                else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+                    if (item.status === 'Pending') {
+                        switch (type) {
+                            case 'Approved':
+                                return true;
+                            case 'Cancelled':
+                                return false;
+                            case 'Pending':
+                                return false;
+                        }
+                    }
+                    else if (item.status === 'Cancelled') {
+                        switch (type) {
+                            case 'Approved':
+                                return true;
+                            case 'Cancelled':
+                                return false;
+                            case 'Pending':
+                                return true;
+                        }
+                    }
+                    else if (item.status === 'Approved') {
+                        switch (type) {
+                            case 'Approved':
+                                return true;
+                            case 'Cancelled':
+                                return false;
+                            case 'Pending':
+                                return false;
+                        }
+                    }
+
+
+                }
+            }
+        }
+    }
     //Talep cancel durumları seçimi
     const onChangeRadioCancelButton = e => {
         setCancelReason(e.target.value);
@@ -1112,7 +1357,7 @@ export default function () {
                         <Button onClick={event => demandCancelOrRejection(event)}>
                             <EditOutlined />
                         </Button>
-                        <Button onClick={() => (multipleDemandDelete())}>
+                        <Button disabled={true} onClick={() => (multipleDemandDelete())}>
                             <CloseOutlined />
                         </Button>
                         <Popconfirms
@@ -1217,9 +1462,9 @@ export default function () {
                             optionFilterProp="children"
                             value={statusModal}
                         >
-                            {demandEditingModalPermissions(selectedDemand,'Approved')===false ? <Option value="Approved">Kabul</Option> :null}
-                            {demandEditingModalPermissions(selectedDemand,'Cancelled')===false ? <Option value="Cancelled">İptal</Option> : null}
-                            {demandEditingModalPermissions(selectedDemand,'Pending')===false ?<Option value="Pending">Beklemede</Option>: null }
+                            {demandEditingModalPermissions(selectedDemand,'Approved',eventType)===false ? <Option value="Approved">Kabul</Option> :null}
+                            {demandEditingModalPermissions(selectedDemand,'Cancelled',eventType)===false ? <Option value="Cancelled">İptal</Option> : null}
+                            {demandEditingModalPermissions(selectedDemand,'Pending',eventType)===false ?<Option value="Pending">Beklemede</Option>: null }
                         </Select>
                     </Form.Item>
                     {demandEditingModalPermissions('Amount') === true ?

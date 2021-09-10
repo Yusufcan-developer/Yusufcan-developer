@@ -152,7 +152,8 @@ export default function () {
     if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
 
     const token = jwtDecode(localStorage.getItem("id_token"));
-    if ((token.uname === 'utku') || (token.uname === 'B555888')) {
+    debugger
+    if ((token.urole === 'admin') || (token.urole === 'B5552888')) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       return setDemandHide(true);
@@ -166,7 +167,7 @@ export default function () {
     //Buraya item gelecek bu item amacı talep oluşturulması gerekiyormu kontrolü ve sevk adresi kontrolü eklecek. Sevk adresi seçilmediyse seçilecek
     else {
       await getProductDetail(productItem.itemCode);
-      return setDemandHide(true);
+      return setHide(true);
     }
   }
 

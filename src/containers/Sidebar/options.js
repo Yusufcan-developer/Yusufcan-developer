@@ -38,6 +38,12 @@ export default {
             leftIcon: "ion-android-mail"
           },
           {
+            key: "reports/demands/",
+            label: "sidebar.demands",
+            leftIcon: "ion-android-mail"
+          },
+          
+          {
             key: "reports/cheques/",
             label: "sidebar.checkingReports",
             leftIcon: "ion-android-mail"
@@ -97,6 +103,11 @@ export default {
           {
             key: 'admin/logs',
             label: 'sidebar.logs',
+          },
+          {
+            key: "admin/rule/",
+            label: "sidebar.rules",
+            leftIcon: "ion-android-mail"
           },
           // {
           //   key: 'admin/gauges',
