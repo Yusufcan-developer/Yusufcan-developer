@@ -106,6 +106,7 @@ export default function () {
     const queryString = require('query-string');
     const history = useHistory();
     const statusChildren = [];
+    const warningDemandId = [];
 
     //Burada ki useEffect'ler page index page size
     useEffect(() => {
@@ -120,7 +121,7 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, selectedDemand && selectedDemand.id ? selectedDemand.id : searchUrl);
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, selectedDemand && selectedDemand.id ?  (typeof selectedItems.length<1 ?-1:selectedDemand.id) : searchUrl);
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
@@ -588,7 +589,7 @@ export default function () {
         }
         return false;
     }
-    //Order Detail Columns
+    //Demand Columns
     let columns = [
         {
             title: "Durumu",
@@ -655,7 +656,7 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            render: (date, record) => date,
+            render: (date, record) => moment(date).format(siteConfig.dateFormatAddTime),
         },
         {
             title: "Ürün Kodu",
@@ -676,6 +677,32 @@ export default function () {
             align: "right",
             render: (amount) => numberFormat(amount),
             width: 120,
+        },
+        {
+            title: "Onaylanan Miktar",
+            dataIndex: "approvedAmount",
+            key: "approvedAmount",
+            align: "right",
+            render: (approvedAmount) =>typeof approvedAmount!=='undefined' ? numberFormat(approvedAmount): '-',
+            width: 200,
+        },
+        {
+            title: "Onaylanma Tarih",
+            dataIndex: "approveDate",
+            key: "approveDate",
+            type: "approveDate",
+            width: 200,
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            render: (approveDate, record) => moment(approveDate).format(siteConfig.dateFormatAddTime),
+        },
+        {
+            title: "İptal Nedeni",
+            dataIndex: "cancelReasonText",
+            key: "cancelReasonText",
+            type: "cancelReasonText",
+            width: 100,
         },
         {
             title: '',
@@ -831,7 +858,7 @@ export default function () {
     //Kullanıcı düznleme modalına verileri gönderme işlemi Burada veriler state atılıyor ve modal aktif hale getirliyor.
     async function setModalEditingDemand(record) {
         setDemandNo(record.orderNo);
-        setDemandAmountModal(record.amount);
+        setDemandAmountModal(typeof record.approvedAmount !=='undefined' ? record.approvedAmount : record.amount);
         setDemandUnitModal(record.unit);
         setStatusModal(record.status);
     };
@@ -896,15 +923,21 @@ export default function () {
                 if (typeof data !== 'undefined') {
                     if (data.isSuccessful === false) {
                         message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
+                        warningDemandId.push(demandId);
                     } else if (data.status === 400) {
                         message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
+                        warningDemandId.push(demandId);
                     }
                     else {
-                        message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
-                        setVisible(false);
-                        setOnChange(true);
-                        setSelectedDemand();
-                        setSelectedItemsId();
+                        debugger
+                        //Tekli aktarımlar için
+                        if (selectedItems.length < 1) {
+                            message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
+                            setVisible(false);
+                            setOnChange(true);
+                            setSelectedDemand();
+                            setSelectedItemsId();
+                        }
                     }
                 }
             })
@@ -922,6 +955,7 @@ export default function () {
         setAcceptInfoVisible(false);
         setToolbarEditingButton(false);
         setDeleteDemand(false);
+        setEventType();
     };
 
     //Talebin Düzenleme kayıt işlemi
@@ -943,12 +977,37 @@ export default function () {
 
     //Kabul edilen talep işlemleri
     async function acceptDemand() {
-        if (!demandAmountModal) { return message.error('Miktar giriniz'); }
-        if (selectedDemand) {
-            const amount = parseFloat(demandAmountModal);
-            postEditingDemand(selectedDemand.id, { "approvedAmount": amount, "newStatus": statusModal }, 'Onaylama');
-        }
+        console.log('xxxx selectedItems', selectedItems);
+        if ((!demandAmountModal) && (selectedItems.length < 1)) { return message.error('Miktar giriniz'); }
 
+        //Çoklu Onaylama
+        if (selectedItems.length > 0) {
+            _.each(selectedItems, (item) => {
+                postEditingDemand(item.id, { "approvedAmount": item.amount, "newStatus": statusModal }, 'Onaylama');
+            });
+            debugger
+            if(warningDemandId.length<1){
+                message.success('Talepler başarıyla onaylandı. ');
+                setOnChange(true);
+                setVisible(false);
+                setSelectedDemand();
+                setSelectedItemsId();
+            }
+            else{
+                //Başarısız kayıtlar vardır
+                //message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
+
+            }
+         }
+
+        //Tekli Onaylama
+        else {
+            if (selectedDemand)
+                if (selectedDemand) {
+                    const amount = parseFloat(demandAmountModal);
+                    postEditingDemand(selectedDemand.id, { "approvedAmount": amount, "newStatus": statusModal }, 'Onaylama');
+                }
+        }
     }
 
     //İptal edilen talep işlemleri
@@ -1015,6 +1074,21 @@ export default function () {
         else { setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status);setEventType('Toolbar') }
     }
 
+    function demandEditingQuantityPermission() {
+        //Bu kodu incele gereksinim olabilir
+        //if(selectedItems.length>1){return true;}
+        if(typeof eventType!=='undefined'){return false;}
+        if ((token.urole === 'admin') && (statusModal==='Approved')) { return true; }
+        else if ((token.urole === 'fieldmanager') && (statusModal==='Approved')){
+            return true;
+        }
+        else if ((token.urole === 'regionmanager')&& (statusModal==='Approved')) {
+            return true;
+        }
+        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+            return false;
+        }
+    }
     function demandEditingModalPermissions(item, type, eventType) {
 
         const token = jwtDecode(localStorage.getItem("id_token"));
@@ -1467,7 +1541,7 @@ export default function () {
                             {demandEditingModalPermissions(selectedDemand,'Pending',eventType)===false ?<Option value="Pending">Beklemede</Option>: null }
                         </Select>
                     </Form.Item>
-                    {demandEditingModalPermissions('Amount') === true ?
+                    {demandEditingQuantityPermission(eventType) ?
                         <Form.Item label="Miktar" >
                             <Input id="amount" value={demandAmountModal} onClick={event => onSelectAll('amount')}
                                 onChange={event => onChangeAmount(event)} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} />
