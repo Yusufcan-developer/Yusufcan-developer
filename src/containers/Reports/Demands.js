@@ -49,6 +49,7 @@ const { Panel } = Collapse;
 const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
+let getSelectedKey = [];
 
 let sortingField;
 let sortingOrder;
@@ -102,6 +103,7 @@ export default function () {
     const [demandUnitModal, setDemandUnitModal] = useState();
     const [demandConfirmLoading, setDemandConfirmLoading] = useState(false);
     const [clearTableChecked, setClearTableChecked] = useState(false);
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
     const location = useLocation();
     const queryString = require('query-string');
@@ -130,7 +132,7 @@ export default function () {
     //Status
     const [statusType] = useFilterData(`${siteConfig.api.lookup.getDemandStatus}`, searchUrl);
     for (let i = 0; i < statusType.length; i++) {
-        statusChildren.push(<Option key={statusType[i].Key}>{statusType[i].Value}</Option>);
+        statusChildren.push(<Option disabled={demandEditingModalPermissions(statusType[i].Key)} key={statusType[i].Key}>{statusType[i].Value}</Option>);
     }
     //İptal Nedenleri
     const [cancelReasonType] = useFilterData(`${siteConfig.api.lookup.cancelReason}`, searchUrl);
@@ -782,9 +784,62 @@ export default function () {
             return selectedItemsId;
         }
     }
+
+    function getSelected() {
+        if (selectedRowKeys.length > 0) {
+            return selectedRowKeys
+        }
+        return getSelectedKey;
+    }
+
+    //Tek tek işaretlenen checklerin temizlenmesi
+    function clearItemChecked(record, selected) {
+        let newKeyArr = [];
+        _.each(selectedRowKeys, (index) => {
+            if (index === record.key && selected === false) { }
+            else {
+                newKeyArr.push(index);
+            }
+        });
+        _.each(getSelectedKey, (i) => {
+            newKeyArr.push(i);
+        });
+        getSelectedKey = [];
+        if ((selected === true) || (typeof selected === 'undefined')) {
+            newKeyArr.push(record.key);
+        }
+        else {
+            newKeyArr = _.without(newKeyArr, record.key);
+        }
+        setSelectedRowKeys(newKeyArr);
+    }
+
+    function clearItemsChecked(record, selectedRows) {
+        //Seçilen veya miktar girilen alanların checklenmesi veya kaldırılması.
+        let newKeyArr = [];
+        let getSelectedKey = selectedRowKeys;
+
+        _.each(selectedRows, (index) => {
+            if ((record === true) || (typeof record === 'undefined')) {
+                newKeyArr.push(index.key);
+            }
+            else {
+                getSelectedKey = _.without(getSelectedKey, index.key);
+            }
+        });
+        _.each(getSelectedKey, (index) => {
+            newKeyArr.push(index);
+        });
+
+        if (record === false) { setSelectedRowKeys(getSelectedKey); }
+        else {
+            setSelectedRowKeys(newKeyArr);
+        }
+    }
+
     // rowSelection object indicates the need for row selection
     const rowSelection = {
-
+        selectedRowKeys: getSelected(),
         onSelect: (record, selected, selectedRows) => {
             let selectedIds = [];
             let selectedItems = []
@@ -796,11 +851,14 @@ export default function () {
                         selectedItems.push(item);
                     }
                 });
+
+                clearItemChecked(record, selected);
                 setSelectedItemsId(selectedIds);
                 setSelectedItems(selectedItems);
                 selectedTotalCount = selectedIds.length;
                 setSelectedDemand(selectedRows[0]);
                 setHasSelected(true);
+
             }
             else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) }
 
@@ -808,6 +866,7 @@ export default function () {
         onSelectAll: (record, selected, selectedRows) => {
             let selectedItems = []
             let selectedIds = []
+
             if (record) {
                 _.each(selectedRows, (item) => {
                     selectedIds.push(item.id);
@@ -815,14 +874,14 @@ export default function () {
 
                 });
                 setSelectedDemand(selectedRows[0]);
-
+                clearItemsChecked(record, selectedRows);
                 if (selectedRows.length > 0) {
                     setSelectedItemsId(selectedIds);
                     setSelectedItems(selectedItems);
                     selectedTotalCount = selectedIds.length;
                     setHasSelected(true);
                 }
-                
+
             }
             else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) }
         },
@@ -989,15 +1048,16 @@ export default function () {
                 }
             })
             .catch();
-            debugger
+        debugger
         if ((warningDemandId.length < 1) && (resultMultipleCount.length === selectedItems.length)) {
-            message.success('Talepler başarıyla onaylandı. ');
+            message.success('Talepler başarıyla ' + messageText);
             setOnChange(true);
             setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([])
             setVisible(false);
             setSelectedDemand();
             setSelectedItemsId();
             setDemandConfirmLoading(false);
+            setSelectedRowKeys([])
         }
         else {
             //Başarısız kayıtlar vardır
@@ -1107,13 +1167,13 @@ export default function () {
             setClearTableChecked(true);
             setDemandConfirmLoading(true);
             _.each(selectedItems, (item) => {
-                postEditingMultipleDemand(item.id, { "newStatus": statusModal},'Bekleme İşlemi');
+                postEditingMultipleDemand(item.id, { "newStatus": statusModal }, 'Bekleme İşlemi');
             });
         }
 
         //Tekli Onaylama
         else {
-            postEditingDemand(selectedDemand.id, { "newStatus": statusModal},'Bekleme İşlemi');
+            postEditingDemand(selectedDemand.id, { "newStatus": statusModal }, 'Bekleme İşlemi');
 
         }
     }
@@ -1162,7 +1222,7 @@ export default function () {
             if (item.status === 'Approved') { return control = true; }
             else { status = item.status; }
         });
-        setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar') 
+        setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar')
         // if (control === true) { return message.warning('Onaylananlar düzenleme işlemi yapılamaz.') }
         // else { setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar') }
     }
@@ -1182,101 +1242,20 @@ export default function () {
             return false;
         }
     }
-    function demandEditingModalPermissions(item, type, eventType) {
+    function demandEditingModalPermissions(type) {
 
         const token = jwtDecode(localStorage.getItem("id_token"));
-        if (eventType === 'Toolbar') {
-            if (token.urole === 'admin') { return false; }
-            else if (token.urole === 'fieldmanager') {
-            }
-            else if (token.urole === 'regionmanager') {
-            }
-            else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-                if (selectedToolbarStatus === 'Pending') {
-                    switch (type) {
-                        case 'Approved':
-                            return true;
-                        case 'Cancelled':
-                            return false;
-                        case 'Pending':
-                            return false;
-                        case 'Rejected':
-                            return true;
-                    }
-                }
-                else if (selectedToolbarStatus === 'Cancelled') {
-                    switch (type) {
-                        case 'Approved':
-                            return true;
-                        case 'Cancelled':
-                            return false;
-                        case 'Pending':
-                            return true;
-                        case 'Rejected':
-                            return true;
-                    }
-                }
-                else if (selectedToolbarStatus === 'Approved') {
-                    switch (type) {
-                        case 'Approved':
-                            return true;
-                        case 'Cancelled':
-                            return false;
-                        case 'Pending':
-                            return false;
-                        case 'Rejected':
-                            return true;
-                    }
-                }
-            }
-        }
-        else {
-            if ((type !== null) && (typeof item !== 'undefined')) {
-                if (token.urole === 'admin') { return false; }
-                else if (token.urole === 'fieldmanager') {
-                }
-                else if (token.urole === 'regionmanager') {
-                }
-                else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-                    if (item.status === 'Pending') {
-                        switch (type) {
-                            case 'Approved':
-                                return true;
-                            case 'Cancelled':
-                                return false;
-                            case 'Pending':
-                                return false;
-                            case 'Rejected':
-                                return true;
-                        }
-                    }
-                    else if (item.status === 'Cancelled') {
-                        switch (type) {
-                            case 'Approved':
-                                return true;
-                            case 'Cancelled':
-                                return false;
-                            case 'Pending':
-                                return true;
-                            case 'Rejected':
-                                return true;
-                        }
-                    }
-                    else if (item.status === 'Approved') {
-                        switch (type) {
-                            case 'Approved':
-                                return true;
-                            case 'Cancelled':
-                                return false;
-                            case 'Pending':
-                                return false;
-                            case 'Rejected':
-                                return true;
-                        }
-                    }
 
-
-                }
+        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+            switch (type) {
+                case 'Approved':
+                    return true;
+                case 'Cancelled':
+                    return false;
+                case 'Pending':
+                    return false;
+                case 'Rejected':
+                    return true;
             }
         }
     }
@@ -1368,7 +1347,7 @@ export default function () {
         }
     }
     //Talep cancel durumları seçimi
-    function onChangeCancelReasonButton (value) {
+    function onChangeCancelReasonButton(value) {
         setCancelReason(value);
     }
 
@@ -1516,7 +1495,7 @@ export default function () {
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
                         <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostNotificationIsRead())}>
-                            Sipariş Oluştur    <CheckOutlined />
+                            Onayla ve sipariş Oluştur    <CheckOutlined />
                         </Button>
                         <Popconfirms
                             visible={acceptInfoVisible}
@@ -1640,10 +1619,6 @@ export default function () {
                             optionFilterProp="children"
                             value={statusModal}
                         >
-                            {/* {demandEditingModalPermissions(selectedDemand, 'Approved', eventType) === false ? <Option value="Approved">Kabul</Option> : null}
-                            {demandEditingModalPermissions(selectedDemand, 'Cancelled', eventType) === false ? <Option value="Cancelled">İptal</Option> : null}
-                            {demandEditingModalPermissions(selectedDemand, 'Pending', eventType) === false ? <Option value="Pending">Beklemede</Option> : null}
-                            {demandEditingModalPermissions(selectedDemand, 'Rejected', eventType) === false ? <Option value="Pending">Red</Option> : null} */}
                             {statusChildren}
                         </Select>
                     </Form.Item>
@@ -1654,17 +1629,17 @@ export default function () {
                             <span style={{ paddingLeft: '5px' }}>{demandUnitModal}</span>
                         </Form.Item> : null}
 
-                    {statusModal === 'Cancelled' || statusModal==='Rejected' ?
+                    {statusModal === 'Cancelled' || statusModal === 'Rejected' ?
                         <Form.Item label="İptal Nedeni">
                             <Select
-                            placeholder="İptal seçiniz"
-                            style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                            onChange={onChangeCancelReasonButton}
-                            optionFilterProp="children"
-                            value={cancelReason}
-                        >
-                            {cancelReasonChildren}
-                        </Select></Form.Item> : null}
+                                placeholder="İptal seçiniz"
+                                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                onChange={onChangeCancelReasonButton}
+                                optionFilterProp="children"
+                                value={cancelReason}
+                            >
+                                {cancelReasonChildren}
+                            </Select></Form.Item> : null}
 
                     <Form.Item label="Açıklama" >
                         <TextArea onChange={event => handleDescription(event)} value={description} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '830px' : '100%' }} />

@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Tooltip, Select, Comment, Avatar } from "antd";
+import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Tooltip, Select, Comment, Avatar, DatePicker } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -74,9 +74,11 @@ const SearchComponent = () => {
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
   const [capacity, setCapacity] = useState(1);
+  const [customerLimit, setCustomerLimit] = useState(1);
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
   const [selectedruleObjectText, setSelectedRuleObjectText] = useState();
+  const { RangePicker } = DatePicker;
 
   const [selectedItem, setSelectedItem] = useState();
   const [componentSize, setComponentSize] = useState('default');
@@ -682,7 +684,7 @@ const SearchComponent = () => {
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
-        "query": JSON.stringify(query)
+        "query": query
       }
       await postSaveRule(rule);
     } else {
@@ -735,6 +737,14 @@ const SearchComponent = () => {
     const reg = /^-?\d*(\.\d*)?$/;
     if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
       setCapacity(value);
+    }
+  }
+
+  function onChangeCustomerLimit(e) {
+    const { value } = e.target;
+    const reg = /^-?\d*(\.\d*)?$/;
+    if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
+      setCustomerLimit(value);
     }
   }
 
@@ -1264,13 +1274,29 @@ const SearchComponent = () => {
                   />
                 </label>
               </Form.Item>
+              <Form.Item
+                rules={[{ required: true, message: 'Cari birim limiti giriniz!' }]}
+              >
+                <label style={{
+                  fontSize: '14px', fontWeight: '500'
+                }}>
+                  Cari Limiti *
+                  <Input
+                    id="customerLimit"
+                    onClick={event => onSelectAll("customerLimit")}
+                    onChange={event => onChangeCustomerLimit(event)}
+                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                    value={customerLimit}
+                  />
+                </label>
+              </Form.Item>
               <Form.Item name="priority"
                 rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
               >
                 <label style={{
                   fontSize: '14px', fontWeight: '500'
                 }}>
-                  Öncelik Sırası
+                Öncelik Sırası
                   <Select
                     showSearch
                     optionFilterProp="children"
@@ -1285,7 +1311,22 @@ const SearchComponent = () => {
                     <Option value="2">2</Option>
                     <Option value="3">3</Option>
                   </Select>
-
+                </label>
+              </Form.Item>
+              <Form.Item name="priority"
+                rules={[{ required: true, message: 'Tarih seçiniz!' }]}
+              >
+                <label style={{
+                  fontSize: '14px', fontWeight: '500'
+                }}>
+                  Tarih
+                  <RangePicker
+                    // disabled={selectedRadioItem === 2 ? false : true}
+                    // format={siteConfig.dateFormat}
+                    // onChange={changeTimePicker}
+                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                    // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
+                  />
                 </label>
               </Form.Item>
               <Form.Item name="isLocked"
