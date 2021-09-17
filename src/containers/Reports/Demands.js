@@ -109,6 +109,7 @@ export default function () {
     const queryString = require('query-string');
     const history = useHistory();
     const statusChildren = [];
+    const searchStatusChildren = [];
     const cancelReasonChildren = [];
     const warningDemandId = [];
     const resultMultipleCount = [];
@@ -134,6 +135,12 @@ export default function () {
     for (let i = 0; i < statusType.length; i++) {
         statusChildren.push(<Option disabled={demandEditingModalPermissions(statusType[i].Key)} key={statusType[i].Key}>{statusType[i].Value}</Option>);
     }
+    //Search status items
+    const [searchStatusType] = useFilterData(`${siteConfig.api.lookup.getDemandStatus}`, searchUrl);
+    for (let i = 0; i < searchStatusType.length; i++) {
+        searchStatusChildren.push(<Option key={searchStatusType[i].Key}>{searchStatusType[i].Value}</Option>);
+    }
+
     //İptal Nedenleri
     const [cancelReasonType] = useFilterData(`${siteConfig.api.lookup.cancelReason}`, searchUrl);
     for (let i = 0; i < cancelReasonType.length; i++) {
@@ -1398,13 +1405,13 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
-                                    placeholder="Sevk durumu seçiniz"
+                                    placeholder="Talep durumu seçiniz"
                                     style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                     onChange={statusHandleChange}
                                     optionFilterProp="children"
                                     value={demandStatus}
                                 >
-                                    {statusChildren}
+                                    {searchStatusChildren}
                                 </Select>
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
