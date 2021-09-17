@@ -101,13 +101,15 @@ export default function () {
     const [demandAmountModal, setDemandAmountModal] = useState();
     const [demandUnitModal, setDemandUnitModal] = useState();
     const [demandConfirmLoading, setDemandConfirmLoading] = useState(false);
+    const [clearTableChecked, setClearTableChecked] = useState(false);
 
     const location = useLocation();
     const queryString = require('query-string');
     const history = useHistory();
     const statusChildren = [];
+    const cancelReasonChildren = [];
     const warningDemandId = [];
-
+    const resultMultipleCount = [];
     //Burada ki useEffect'ler page index page size
     useEffect(() => {
         setCurrentPage(pageIndex);
@@ -121,14 +123,19 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, selectedDemand && selectedDemand.id ?  (typeof selectedItems.length<1 ?-1:selectedDemand.id) : searchUrl);
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, selectedDemand && selectedDemand.id ? selectedDemand.id : searchUrl);
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
     //Status
-    const [statusType] = useFilterData(`${siteConfig.api.lookup.getOrderStatus}`, searchUrl);
+    const [statusType] = useFilterData(`${siteConfig.api.lookup.getDemandStatus}`, searchUrl);
     for (let i = 0; i < statusType.length; i++) {
-        statusChildren.push(<Option key={statusType[i]}>{statusType[i]}</Option>);
+        statusChildren.push(<Option key={statusType[i].Key}>{statusType[i].Value}</Option>);
+    }
+    //İptal Nedenleri
+    const [cancelReasonType] = useFilterData(`${siteConfig.api.lookup.cancelReason}`, searchUrl);
+    for (let i = 0; i < cancelReasonType.length; i++) {
+        cancelReasonChildren.push(<Option key={cancelReasonType[i].Key}>{cancelReasonType[i].Value}</Option>);
     }
 
     //Url'i çözümleme işlemi
@@ -444,9 +451,9 @@ export default function () {
 
     function transactionsItemDisabled(item, transactionKey) {
         //Kullanıcı 1 den fazla değer check işlemi yaptığı zaman oluşuyor.
-        if(selectedItems.length>1){return true;}
+        if (selectedItems.length > 0) { return true; }
         //İşlem türü gönderilmediği default olarak menü seçenekleri açık oluyor.
-        if(typeof transactionKey==='undefined'){return false;}
+        if (typeof transactionKey === 'undefined') { return false; }
         if (item !== null) {
             const token = jwtDecode(localStorage.getItem("id_token"));
             const period = item.period;
@@ -564,7 +571,7 @@ export default function () {
                             return true;
                     }
                 }
-                else if(item.status==='Cancelled'){
+                else if (item.status === 'Cancelled') {
                     switch (transactionKey) {
                         case 'Duzenle':
                             return true;
@@ -574,7 +581,7 @@ export default function () {
                             return true;
                     }
                 }
-                else if(item.status==='Approved'){
+                else if (item.status === 'Approved') {
                     switch (transactionKey) {
                         case 'Duzenle':
                             return true;
@@ -583,7 +590,7 @@ export default function () {
                         case 'TalepSil':
                             return true;
                     }
-                }             
+                }
 
             }
         }
@@ -683,7 +690,7 @@ export default function () {
             dataIndex: "approvedAmount",
             key: "approvedAmount",
             align: "right",
-            render: (approvedAmount) =>typeof approvedAmount!=='undefined' ? numberFormat(approvedAmount): '-',
+            render: (approvedAmount) => typeof approvedAmount !== 'undefined' ? numberFormat(approvedAmount) : '-',
             width: 200,
         },
         {
@@ -767,11 +774,20 @@ export default function () {
         return false;
     }
 
+    function clearTable() {
+        if (clearTableChecked === true) {
+            return [];
+        }
+        else {
+            return selectedItemsId;
+        }
+    }
     // rowSelection object indicates the need for row selection
     const rowSelection = {
+
         onSelect: (record, selected, selectedRows) => {
             let selectedIds = [];
-            let selectedItems=[]
+            let selectedItems = []
             //Geçici olarak eklendi api sonrası tek bir koşul değişecek.
             if (selectedRows.length > 0) {
                 _.each(selectedRows, (item) => {
@@ -783,38 +799,32 @@ export default function () {
                 setSelectedItemsId(selectedIds);
                 setSelectedItems(selectedItems);
                 selectedTotalCount = selectedIds.length;
+                setSelectedDemand(selectedRows[0]);
                 setHasSelected(true);
             }
-            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]);setSelectedItems([]) }
+            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) }
 
-
-            //Olması gereken şekil api düzenlemesinden sonra değiştirilecek.
-
-            // if (selectedRows.length > 0) {
-            //     _.each(selectedRows, (orderNo) => {
-            //         if (typeof item !== 'undefined') {
-            //             selectedIds.push(orderNo);
-            //         }
-            //     });
-            //     setSelectedItemsId(selectedIds);
-            //     selectedTotalCount = selectedIds.length;
-            //     setHasSelected(true);
-            // }
-            // else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
         },
         onSelectAll: (record, selected, selectedRows) => {
+            let selectedItems = []
             let selectedIds = []
             if (record) {
                 _.each(selectedRows, (item) => {
                     selectedIds.push(item.id);
+                    selectedItems.push(item);
+
                 });
+                setSelectedDemand(selectedRows[0]);
+
                 if (selectedRows.length > 0) {
                     setSelectedItemsId(selectedIds);
+                    setSelectedItems(selectedItems);
                     selectedTotalCount = selectedIds.length;
                     setHasSelected(true);
                 }
+                
             }
-            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); }
+            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) }
         },
         getCheckboxProps: (record) => ({
             disabled: permissionCheck(record.status), // Column configuration not to be checked
@@ -824,9 +834,9 @@ export default function () {
     //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
     const menu = (item) => (
         <Menu onClick={handleMenuClick}>
-            {transactionsItemDisabled(item, "Duzenle") === false ?  <Menu.Item key="Duzenle">Düzenle</Menu.Item> : null}
-            {transactionsItemDisabled(item, "SiparisOlustur") === false ?  <Menu.Item key="SiparisOlustur">Sipariş Oluştur</Menu.Item> : null}
-            {transactionsItemDisabled(item, "TalepSil") === false ?  <Menu.Item key="TalepSil">Talep Sil</Menu.Item> : null }
+            {transactionsItemDisabled(item, "Duzenle") === false ? <Menu.Item key="Duzenle">Düzenle</Menu.Item> : null}
+            {transactionsItemDisabled(item, "SiparisOlustur") === false ? <Menu.Item key="SiparisOlustur">Sipariş Oluştur</Menu.Item> : null}
+            {transactionsItemDisabled(item, "TalepSil") === false ? <Menu.Item key="TalepSil">Talep Sil</Menu.Item> : null}
         </Menu>
     );
 
@@ -858,7 +868,7 @@ export default function () {
     //Kullanıcı düznleme modalına verileri gönderme işlemi Burada veriler state atılıyor ve modal aktif hale getirliyor.
     async function setModalEditingDemand(record) {
         setDemandNo(record.orderNo);
-        setDemandAmountModal(typeof record.approvedAmount !=='undefined' ? record.approvedAmount : record.amount);
+        setDemandAmountModal(typeof record.approvedAmount !== 'undefined' ? record.approvedAmount : record.amount);
         setDemandUnitModal(record.unit);
         setStatusModal(record.status);
     };
@@ -923,13 +933,10 @@ export default function () {
                 if (typeof data !== 'undefined') {
                     if (data.isSuccessful === false) {
                         message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
-                        warningDemandId.push(demandId);
                     } else if (data.status === 400) {
                         message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
-                        warningDemandId.push(demandId);
                     }
                     else {
-                        debugger
                         //Tekli aktarımlar için
                         if (selectedItems.length < 1) {
                             message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
@@ -945,6 +952,58 @@ export default function () {
         setDemandConfirmLoading(false);
         if (data.isSuccessful === false) { return false; }
         else { return true; }
+    }
+
+    //Talep düzenleme çoklu işlem
+    async function postEditingMultipleDemand(demandId, reqBody, messageText) {
+        const token = jwtDecode(localStorage.getItem("id_token"));
+
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            },
+            body: JSON.stringify(reqBody)
+        };
+        let newSaveOrderUrl = siteConfig.api.report.postDemandUpdate.replace('{demandId}', demandId);
+        await fetch(`${newSaveOrderUrl}`, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
+            .then(data => {
+                resultMultipleCount.push(demandId);
+                if (typeof data !== 'undefined') {
+                    if (data.isSuccessful === false) {
+                        message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
+                        warningDemandId.push(demandId);
+                    } else if (data.status === 400) {
+                        message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
+                        warningDemandId.push(demandId);
+                    }
+                    else {
+                        //islem başarılıdır
+
+                    }
+                }
+            })
+            .catch();
+            debugger
+        if ((warningDemandId.length < 1) && (resultMultipleCount.length === selectedItems.length)) {
+            message.success('Talepler başarıyla onaylandı. ');
+            setOnChange(true);
+            setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([])
+            setVisible(false);
+            setSelectedDemand();
+            setSelectedItemsId();
+            setDemandConfirmLoading(false);
+        }
+        else {
+            //Başarısız kayıtlar vardır
+            //message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
+
+        }
     }
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     function handleCancel() {
@@ -972,33 +1031,24 @@ export default function () {
             case 'Pending':
                 pendingDemand();
                 break;
+            case 'Rejected':
+                rejectedDemand();
+                break;
         }
     }
 
     //Kabul edilen talep işlemleri
     async function acceptDemand() {
-        console.log('xxxx selectedItems', selectedItems);
         if ((!demandAmountModal) && (selectedItems.length < 1)) { return message.error('Miktar giriniz'); }
 
         //Çoklu Onaylama
         if (selectedItems.length > 0) {
+            setClearTableChecked(true);
+            setDemandConfirmLoading(true);
             _.each(selectedItems, (item) => {
-                postEditingDemand(item.id, { "approvedAmount": item.amount, "newStatus": statusModal }, 'Onaylama');
+                postEditingMultipleDemand(item.id, { "approvedAmount": item.amount, "newStatus": statusModal }, 'Onaylama');
             });
-            debugger
-            if(warningDemandId.length<1){
-                message.success('Talepler başarıyla onaylandı. ');
-                setOnChange(true);
-                setVisible(false);
-                setSelectedDemand();
-                setSelectedItemsId();
-            }
-            else{
-                //Başarısız kayıtlar vardır
-                //message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
-
-            }
-         }
+        }
 
         //Tekli Onaylama
         else {
@@ -1013,14 +1063,58 @@ export default function () {
     //İptal edilen talep işlemleri
     async function cancelDemand() {
         if ((!selectedDemand) || (!cancelReason)) { return message.error('İptal durumu seçiniz'); }
-        postEditingDemand(selectedDemand.id, { "newStatus": statusModal, "cancelReason": cancelReason, "cancelReasonDescription": cancelReasonText }, 'İptal işlemi');
+
+        //Çoklu Onaylama
+        if (selectedItems.length > 0) {
+            setClearTableChecked(true);
+            setDemandConfirmLoading(true);
+            _.each(selectedItems, (item) => {
+                postEditingMultipleDemand(item.id, { "newStatus": statusModal, "cancelReason": cancelReason, "cancelReasonDescription": cancelReasonText }, 'İptal işlemi');
+            });
+        }
+
+        //Tekli Onaylama
+        else {
+            postEditingDemand(selectedDemand.id, { "newStatus": statusModal, "cancelReason": cancelReason, "cancelReasonDescription": cancelReasonText }, 'İptal işlemi');
+
+        }
+    }
+
+    //Red edilen talep işlemleri
+    async function rejectedDemand() {
+        //Çoklu Onaylama
+        if (selectedItems.length > 0) {
+            setClearTableChecked(true);
+            setDemandConfirmLoading(true);
+            _.each(selectedItems, (item) => {
+                postEditingMultipleDemand(item.id, { "newStatus": statusModal, "cancelReason": cancelReason, "cancelReasonDescription": cancelReasonText }, 'Red işlemi');
+            });
+        }
+
+        //Tekli Onaylama
+        else {
+            postEditingDemand(selectedDemand.id, { "newStatus": statusModal, "cancelReason": cancelReason, "cancelReasonDescription": cancelReasonText }, 'Red işlemi');
+
+        }
     }
 
     //Bekleme konumuna geri alma
     async function pendingDemand() {
-        if (selectedDemand) {
-            const amount = parseFloat(demandAmountModal);
-            postEditingDemand(selectedDemand.id, { "newStatus": statusModal }, 'Bekleme'); //Bekleme durumuna almak
+        if ((!demandAmountModal) && (selectedItems.length < 1)) { return message.error('Miktar giriniz'); }
+
+        //Çoklu Onaylama
+        if (selectedItems.length > 0) {
+            setClearTableChecked(true);
+            setDemandConfirmLoading(true);
+            _.each(selectedItems, (item) => {
+                postEditingMultipleDemand(item.id, { "newStatus": statusModal},'Bekleme İşlemi');
+            });
+        }
+
+        //Tekli Onaylama
+        else {
+            postEditingDemand(selectedDemand.id, { "newStatus": statusModal},'Bekleme İşlemi');
+
         }
     }
     async function createOrder() {
@@ -1032,7 +1126,6 @@ export default function () {
     async function multiplePostNotificationIsRead() {
         setAcceptInfoVisible(true);
         _.each(selectedItemsId, (item) => {
-            debugger
             //   postNotificationIsread(item, true);
         });
     }
@@ -1063,26 +1156,26 @@ export default function () {
     };
 
     function demandCancelOrRejection() {
-        debugger
-        let control=false;
+        let control = false;
         let status;
         _.each(selectedItems, (item) => {
-            if(item.status==='Approved'){return control=true;}
-            else{status=item.status;}
+            if (item.status === 'Approved') { return control = true; }
+            else { status = item.status; }
         });
-        if (control === true) { return message.warning('Onaylananlar düzenleme işlemi yapılamaz.') }
-        else { setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status);setEventType('Toolbar') }
+        setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar') 
+        // if (control === true) { return message.warning('Onaylananlar düzenleme işlemi yapılamaz.') }
+        // else { setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar') }
     }
 
     function demandEditingQuantityPermission() {
         //Bu kodu incele gereksinim olabilir
         //if(selectedItems.length>1){return true;}
-        if(typeof eventType!=='undefined'){return false;}
-        if ((token.urole === 'admin') && (statusModal==='Approved')) { return true; }
-        else if ((token.urole === 'fieldmanager') && (statusModal==='Approved')){
+        if (typeof eventType !== 'undefined') { return false; }
+        if ((token.urole === 'admin') && (statusModal === 'Approved')) { return true; }
+        else if ((token.urole === 'fieldmanager') && (statusModal === 'Approved')) {
             return true;
         }
-        else if ((token.urole === 'regionmanager')&& (statusModal==='Approved')) {
+        else if ((token.urole === 'regionmanager') && (statusModal === 'Approved')) {
             return true;
         }
         else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
@@ -1107,6 +1200,8 @@ export default function () {
                             return false;
                         case 'Pending':
                             return false;
+                        case 'Rejected':
+                            return true;
                     }
                 }
                 else if (selectedToolbarStatus === 'Cancelled') {
@@ -1116,6 +1211,8 @@ export default function () {
                         case 'Cancelled':
                             return false;
                         case 'Pending':
+                            return true;
+                        case 'Rejected':
                             return true;
                     }
                 }
@@ -1127,6 +1224,8 @@ export default function () {
                             return false;
                         case 'Pending':
                             return false;
+                        case 'Rejected':
+                            return true;
                     }
                 }
             }
@@ -1147,6 +1246,8 @@ export default function () {
                                 return false;
                             case 'Pending':
                                 return false;
+                            case 'Rejected':
+                                return true;
                         }
                     }
                     else if (item.status === 'Cancelled') {
@@ -1156,6 +1257,8 @@ export default function () {
                             case 'Cancelled':
                                 return false;
                             case 'Pending':
+                                return true;
+                            case 'Rejected':
                                 return true;
                         }
                     }
@@ -1167,6 +1270,8 @@ export default function () {
                                 return false;
                             case 'Pending':
                                 return false;
+                            case 'Rejected':
+                                return true;
                         }
                     }
 
@@ -1175,7 +1280,7 @@ export default function () {
             }
         }
     }
-    
+
     function toolbarPermissions(item, type, eventType) {
 
         const token = jwtDecode(localStorage.getItem("id_token"));
@@ -1263,9 +1368,10 @@ export default function () {
         }
     }
     //Talep cancel durumları seçimi
-    const onChangeRadioCancelButton = e => {
-        setCancelReason(e.target.value);
+    function onChangeCancelReasonButton (value) {
+        setCancelReason(value);
     }
+
     //
     function deadlineControl(item) {
         let disabled = false;
@@ -1319,9 +1425,7 @@ export default function () {
                                     optionFilterProp="children"
                                     value={demandStatus}
                                 >
-                                    <Option value="Pending">Bekleyenler</Option>
-                                    <Option value="Approved">Onaylananlar</Option>
-                                    <Option value="Cancelled">İptal Edilenler</Option>
+                                    {statusChildren}
                                 </Select>
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -1412,7 +1516,7 @@ export default function () {
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
                         <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostNotificationIsRead())}>
-                            <CheckOutlined />
+                            Sipariş Oluştur    <CheckOutlined />
                         </Button>
                         <Popconfirms
                             visible={acceptInfoVisible}
@@ -1429,10 +1533,10 @@ export default function () {
                             </a>
                         </Popconfirms>
                         <Button onClick={event => demandCancelOrRejection(event)}>
-                            <EditOutlined />
+                            Düzenle    <EditOutlined />
                         </Button>
                         <Button disabled={true} onClick={() => (multipleDemandDelete())}>
-                            <CloseOutlined />
+                            Talebi Sil    <CloseOutlined />
                         </Button>
                         <Popconfirms
                             visible={deleteDemand}
@@ -1536,9 +1640,11 @@ export default function () {
                             optionFilterProp="children"
                             value={statusModal}
                         >
-                            {demandEditingModalPermissions(selectedDemand,'Approved',eventType)===false ? <Option value="Approved">Kabul</Option> :null}
-                            {demandEditingModalPermissions(selectedDemand,'Cancelled',eventType)===false ? <Option value="Cancelled">İptal</Option> : null}
-                            {demandEditingModalPermissions(selectedDemand,'Pending',eventType)===false ?<Option value="Pending">Beklemede</Option>: null }
+                            {/* {demandEditingModalPermissions(selectedDemand, 'Approved', eventType) === false ? <Option value="Approved">Kabul</Option> : null}
+                            {demandEditingModalPermissions(selectedDemand, 'Cancelled', eventType) === false ? <Option value="Cancelled">İptal</Option> : null}
+                            {demandEditingModalPermissions(selectedDemand, 'Pending', eventType) === false ? <Option value="Pending">Beklemede</Option> : null}
+                            {demandEditingModalPermissions(selectedDemand, 'Rejected', eventType) === false ? <Option value="Pending">Red</Option> : null} */}
+                            {statusChildren}
                         </Select>
                     </Form.Item>
                     {demandEditingQuantityPermission(eventType) ?
@@ -1548,15 +1654,17 @@ export default function () {
                             <span style={{ paddingLeft: '5px' }}>{demandUnitModal}</span>
                         </Form.Item> : null}
 
-                    {statusModal === 'Cancelled' ?
+                    {statusModal === 'Cancelled' || statusModal==='Rejected' ?
                         <Form.Item label="İptal Nedeni">
-                            <Radio.Group onChange={onChangeRadioCancelButton} value={cancelReason} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}  >
-                                <Space direction="vertical">
-                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={enumerations.cancelReason.InsufficientTotalDemand}>Yetersiz toplam talep</Radio>
-                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={enumerations.cancelReason.DealerRequest}>Bayi isteği</Radio>
-                                    <Radio style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={enumerations.cancelReason.None}>Hiçbiri</Radio>
-                                </Space>
-                            </Radio.Group></Form.Item> : null}
+                            <Select
+                            placeholder="İptal seçiniz"
+                            style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                            onChange={onChangeCancelReasonButton}
+                            optionFilterProp="children"
+                            value={cancelReason}
+                        >
+                            {cancelReasonChildren}
+                        </Select></Form.Item> : null}
 
                     <Form.Item label="Açıklama" >
                         <TextArea onChange={event => handleDescription(event)} value={description} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '830px' : '100%' }} />

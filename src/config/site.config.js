@@ -44,6 +44,10 @@ export default {
       postDimensions: apiUrl + 'b2b/lookup/product-dimensions',
       postProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
 
+      getDemandStatus: apiUrl + 'core/demands/lookup/status',
+      cancelReason: apiUrl + 'core/demands/lookup/cancel-reasons',
+
+
     },
 
     carts: {

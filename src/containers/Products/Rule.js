@@ -742,7 +742,7 @@ const SearchComponent = () => {
     setPriority(value);
   }
   function selectedRule(item) {
-    const rule = JSON.parse(item.query);
+    const rule = (item.query);
     if (rule && rule.categories) {
       setCategory(rule.categories[0]);
       setType(rule.types);
@@ -834,6 +834,7 @@ const SearchComponent = () => {
       title: "query",
       dataIndex: "query",
       key: "query",
+      render: (query) => JSON.stringify(query)
     },
   ];
 
