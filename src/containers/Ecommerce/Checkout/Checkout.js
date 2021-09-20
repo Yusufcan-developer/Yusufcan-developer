@@ -693,7 +693,7 @@ export default function () {
           }
         }
       })
-      .catch(message.warning('Sistemde bir hata oluştu lütfen sistem yöneticinizle irtibata geçiniz. ' + newSaveOrderUrl));
+      .catch();
     setConfirmLoading(false);
   }
 
