@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Tooltip, Select, Comment, Avatar, DatePicker } from "antd";
+import { Form, Col, Row, Table, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Tooltip, Select, Comment, Avatar, DatePicker, Tag } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -17,6 +17,7 @@ import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import numberFormat from "@iso/config/numberFormat";
 import Dragdrop from '../Reports/Dragdrop';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
+import ReactJson from 'react-json-view'
 
 //Fetch
 import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiRuleProductList";
@@ -38,10 +39,9 @@ import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
 import ContentHolder from '@iso/components/utility/contentHolder';
 import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
-import { FormOutlined } from '@ant-design/icons';
 
 import {
-  SortAscendingOutlined, ClearOutlined, InfoCircleOutlined, CloseOutlined, ExclamationOutlined
+  SortAscendingOutlined, ClearOutlined, FormOutlined, CloseOutlined, ExclamationOutlined, UnorderedListOutlined, EyeOutlined
 } from '@ant-design/icons';
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
@@ -78,6 +78,9 @@ const SearchComponent = () => {
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
   const [selectedruleObjectText, setSelectedRuleObjectText] = useState();
+  const [queryText, setQueryText] = useState();
+  const [queryPreview, setQueryPreview] = useState(false);
+  const [createRuleTabDisabled, setCreateRuleTabDisable] = useState(true);
   const { RangePicker } = DatePicker;
 
   const [selectedItem, setSelectedItem] = useState();
@@ -144,8 +147,8 @@ const SearchComponent = () => {
     useProductData(`${siteConfig.api.products.postProducts}`, typeof selectedruleObject === 'undefined' ? { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
 
   //Kurallar Listesi
-  const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, truleotalDataCount, ruleSetOnChange] =
-    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
+  const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
+    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "status": [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -662,9 +665,13 @@ const SearchComponent = () => {
     setPriority();
   };
 
+  //Query Modal popup
+  function queryPreviewModalCancel() {
+    setQueryPreview(false);
+  }
+
   //Kural ekleme işlemi
   async function handleOk() {
-
     if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined')) {
       //Yeni bir kural objesi tanımlanıyor.
 
@@ -711,15 +718,16 @@ const SearchComponent = () => {
       .then(data => {
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
-            message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+            message.warning({ content: 'Kural kaydetme işlemi başarısızdır. ', duration: 2 });
           } else if (data.status === 400) {
-            message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+            message.warning({ content: 'Kural kaydetme işlemi başarısızdır. ', duration: 2 });
           }
           else {
-            message.success({ content: 'başarıyla kaydedildi', duration: 2 });
+            message.success({ content: 'Kural başarılı bir şekilde kayıt edilmiştir ', duration: 2 });
             clearParams();
             ruleSetOnChange(true);
             setActiveTabKey('0');
+            setCreateRuleTabDisable(true);
           }
         }
       })
@@ -788,7 +796,8 @@ const SearchComponent = () => {
 
   }
   function callback(key) {
-    if(key!=='1'){setSelectedRuleObject();}
+    debugger
+    if (key !== '1') { setSelectedRuleObject(); setCreateRuleTabDisable(true);}
     setActiveTabKey(key);
     setRuleEditing(false);
     setRuleName();
@@ -799,17 +808,32 @@ const SearchComponent = () => {
     // this.formRef.current.setFieldsValue({ product: this.state.productCode })
   }
 
+  //Kriter Görüntüleme işlemleri
+  function queryShowText(text) {
+    setQueryPreview(true);
+    setQueryText(text);
+  }
+
   //Rule Columns
   let columns = [
+
     {
-      title: "Kural Adı",
+      title: "Öncelik Sırası",
+      dataIndex: "priority",
+      key: "priority",
+      width: 125,
+      render: (text) => '#' + text
+
+    },
+    {
+      title: "Adı",
       dataIndex: "name",
       key: "name",
       style: { font: { sz: "48", bold: true } },
-      width: 100,
+      width: 150,
     },
     {
-      title: "Kural Kodu",
+      title: "Kodu",
       dataIndex: "ruleNo",
       key: "ruleNo",
       width: 100,
@@ -823,12 +847,6 @@ const SearchComponent = () => {
       render: (capacity) => numberFormat(capacity)
     },
     {
-      title: "Öncelik Sırası",
-      dataIndex: "priority",
-      key: "priority",
-      width: 150,
-    },
-    {
       title: "Açıklama",
       dataIndex: "description",
       key: "description",
@@ -839,12 +857,49 @@ const SearchComponent = () => {
       dataIndex: "statusText",
       key: "statusText",
       width: 50,
+      render: (statusText) => (
+        <>
+          {
+            statusText === 'Aktif' ? (
+              (<Tag color={'green'} key={statusText}>
+                {statusText}
+              </Tag>)
+
+            ) : (
+              <Tag color={'red'} key={statusText}>
+                {statusText}
+              </Tag>)}
+        </>
+      ),
     },
     {
-      title: "query",
+      title: "Kriter",
       dataIndex: "query",
       key: "query",
-      render: (query) => JSON.stringify(query)
+      width: 50,
+      render: (text, record) => (
+        <React.Fragment>
+          <Button onClick={() => {
+            queryShowText(text);
+
+          }}>
+            {'Göster'}  <EyeOutlined />
+          </Button></React.Fragment>
+      ),
+      // render: (query) => JSON.stringify(query)
+    },
+    {
+      dataIndex: 'operation',
+      render: (_, record, rowIndex) => {
+        return (
+          <React.Fragment>
+
+            <a onClick={() => selectedRule(record)}>
+              <i className="ion-android-create" />
+            </a>
+          </React.Fragment>
+        )
+      },
     },
   ];
 
@@ -869,14 +924,34 @@ const SearchComponent = () => {
   const onFormLayoutChange = ({ size }) => {
     setComponentSize(size);
   };
+
+  const TabTitle = ({ name, value }) => {
+    return (
+
+      value === '0' ? <span><UnorderedListOutlined />
+        {name}
+      </span> : <span><FormOutlined />
+        {name}
+      </span>)
+  }
+
+  function createRuleTab() {
+    setActiveTabKey('1'); setCreateRuleTabDisable(false)
+  }
+
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
     <React.Fragment>
       <Tabs activeKey={activeTabKey} onChange={event => callback()} >
-        <TabPane tab="Kural Listesi" key="0" >
+        <TabPane tab={<TabTitle name="Kural Listesi" value="0" />} key="0" >
           <LayoutWrapper>
-
+          <Col span={typeof ruleNo !== 'undefined' ? 24 : 24} align="right" >
+                  <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRuleTab()}
+                    icon={<FormOutlined />} >
+                    {< IntlMessages id="forms.button.createRule" />}
+                  </Button>
+                </Col>
             <Box>
               <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                 <Panel header={<IntlMessages id="page.filtered" />} key="0">
@@ -903,17 +978,36 @@ const SearchComponent = () => {
               </Collapse>
             </Box>
             <Box >
-              <Dragdrop
+              <ReportPagination
+                onShowSizeChange={onShowSizeChange}
+                onChange={currentPageChange}
+                pageSize={pageSize}
+                total={ruleTotalDataCount}
+                current={pageIndex}
+                position="top"
+              />
+              <Table
                 columns={columns}
-                data={ruleData}
-                onRow={(record) => ({
-                  onClick: () => (selectedRule(record))
-                })}
+                dataSource={ruleData}
+                className="components-table-demo-nested"
+                scroll={{ x: 'max-content' }}
+                pagination={false}
+              // onRow={(record) => ({
+              //   onClick: () => (selectedRule(record))
+              // })}
+              />
+              <ReportPagination
+                onShowSizeChange={onShowSizeChange}
+                onChange={currentPageChange}
+                pageSize={pageSize}
+                total={ruleTotalDataCount}
+                current={pageIndex}
+                position="bottom"
               />
             </Box>
           </LayoutWrapper>
         </TabPane>
-        <TabPane tab="Kural Detayı" key="1">
+        <TabPane disabled={createRuleTabDisabled}  tab={<TabTitle name="Kural Detayı" value="1" />} key="1">
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1090,29 +1184,13 @@ const SearchComponent = () => {
               </SidebarWrapper>
 
               <ContentHolder>
-                <Row style={{ marginBottom: '10px' }}>
-                  {typeof ruleNo !== 'undefined' ? <React.Fragment><Col span={16}>  <Comment
-                    author={<a>{ruleNo}</a>}
-                    avatar={
-                      <Tooltip title={JSON.stringify(selectedruleObjectText)} placement="top">
-                      <Avatar
-                        icon={<ExclamationOutlined />}
-                        alt="Han Solo"
-                        style={{ backgroundColor: 'green' }}
-                      /></Tooltip>
-                    }
-                    content={
-                      <p>
-                        {ruleName} adlı kural seçimi gerçekleştirdiniz.
-                      </p>
-                    }
-                  /> </Col></React.Fragment> : null}   <Col span={typeof ruleNo !== 'undefined' ? 8 : 24} align="right" >
-                    <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule(selectedItem)}
-                      icon={<FormOutlined />} >
-                      {ruleEditing && ruleEditing === true ?
-                        < IntlMessages id="forms.button.editingRule" /> : < IntlMessages id="forms.button.createRule" />}
-                    </Button>
-                  </Col> </Row>
+                <Col span={typeof ruleNo !== 'undefined' ? 24 : 24} align="right" >
+                  <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule(selectedItem)}
+                    icon={<FormOutlined />} >
+                    {ruleEditing && ruleEditing === true ?
+                      < IntlMessages id="forms.button.editingRule" /> : < IntlMessages id="forms.button.createRule" />}
+                  </Button>
+                </Col>
                 <Row style={{ marginBottom: '10px' }}>
                   {newView === 'MobileView' ?
                     null : <Col span={16}>
@@ -1206,7 +1284,7 @@ const SearchComponent = () => {
       <Modal
         width={800}
         visible={visible}
-        title={ruleNo ? ruleName + ' Kuralı düzenlemektesiniz' : 'Kural Oluştur'}
+        title={ruleNo ? ruleNo +'-'+ ruleName : 'Kural Oluştur'}
         cancelText="İptal"
         okText='Onayla'
         maskClosable={false}
@@ -1226,6 +1304,7 @@ const SearchComponent = () => {
           </Button>
         ]}
       >
+
         <Form
           labelCol={{
             span: 4,
@@ -1241,106 +1320,68 @@ const SearchComponent = () => {
           size={componentSize}
         >
           <Box >
-            <Row>
-              <Form.Item name="ruleName"
-                rules={[{ required: true, message: 'Kural adı giriniz!' }]}
-              >
-                <label style={{
-                  fontSize: '14px', fontWeight: '500'
-                }}>
-                  Kural Adı *
-                  <Input
-                    label="Kural Adı"
-                    type='ruleName'
-                    placeholder="Zorunlu alan giriniz"
-                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+            <Form.Item label="Kod">
+              <Input value={ruleNo} disabled={true} />
+            </Form.Item>
+            <Form.Item label="Adı">
+              <Input
+                type='ruleName'
+                placeholder="Zorunlu alan giriniz"
+                // style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
 
-                    value={ruleName}
-                    onChange={handleChangeRuleName}
-                  /></label></Form.Item>
-              <Form.Item
-                rules={[{ required: true, message: 'Kapasite giriniz!' }]}
-              >
-                <label style={{
-                  fontSize: '14px', fontWeight: '500'
-                }}>
-                  Kapasite *
-                  <Input
-                    id="edit"
-                    onClick={event => onSelectAll("edit")}
-                    onChange={event => onChangeCapaciy(event)}
-                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                    value={capacity}
-                  />
-                </label>
-              </Form.Item>
-              <Form.Item
-                rules={[{ required: true, message: 'Cari birim limiti giriniz!' }]}
-              >
-                <label style={{
-                  fontSize: '14px', fontWeight: '500'
-                }}>
-                  Cari Limiti *
-                  <Input
-                    id="customerLimit"
-                    onClick={event => onSelectAll("customerLimit")}
-                    onChange={event => onChangeCustomerLimit(event)}
-                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                    value={customerLimit}
-                  />
-                </label>
-              </Form.Item>
-              <Form.Item name="priority"
-                rules={[{ required: true, message: 'Öncelik sırası seçiniz!' }]}
-              >
-                <label style={{
-                  fontSize: '14px', fontWeight: '500'
-                }}>
-                Öncelik Sırası
-                  <Select
-                    showSearch
-                    optionFilterProp="children"
-                    onChange={event => onChangePriority(event)}
-                    value={priority}
-                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                  >
-                    <Option value="1">1</Option>
-                    <Option value="2">2</Option>
-                    <Option value="3">3</Option>
-                  </Select>
-                </label>
-              </Form.Item>
-              <Form.Item name="priority"
-                rules={[{ required: true, message: 'Tarih seçiniz!' }]}
-              >
-                <label style={{
-                  fontSize: '14px', fontWeight: '500'
-                }}>
-                  Tarih
-                  <RangePicker
-                    // disabled={selectedRadioItem === 2 ? false : true}
-                    // format={siteConfig.dateFormat}
-                    // onChange={changeTimePicker}
-                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                    // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
-                  />
-                </label>
-              </Form.Item>
-              <Form.Item name="isLocked"
-                rules={[{ required: true, message: 'Aktiflik durumunu giriniz!' }]}
-              >
-                <label style={{
-                  fontSize: '14px', fontWeight: '500'
-                }}>
-                  Aktif / Pasif
-                  <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
+                value={ruleName}
+                onChange={handleChangeRuleName}
+              />
+            </Form.Item>
 
-                </label>
-              </Form.Item>
-            </Row>
+            <Form.Item label="Kapasite">
+              <Input
+                id="edit"
+                onClick={event => onSelectAll("edit")}
+                onChange={event => onChangeCapaciy(event)}
+                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                value={capacity}
+              />
+            </Form.Item>
+            <Form.Item label="Cari Limiti">
+              <Input
+                id="customerLimit"
+                onClick={event => onSelectAll("customerLimit")}
+                onChange={event => onChangeCustomerLimit(event)}
+                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                value={customerLimit}
+              />
+            </Form.Item>
+
+            <Form.Item label="Öncelik Sırası">
+              <Select
+                showSearch
+                optionFilterProp="children"
+                onChange={event => onChangePriority(event)}
+                value={priority}
+                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                <Option value="1">1</Option>
+                <Option value="2">2</Option>
+                <Option value="3">3</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item label="Tarih">
+              <RangePicker
+                // disabled={selectedRadioItem === 2 ? false : true}
+                // format={siteConfig.dateFormat}
+                // onChange={changeTimePicker}
+                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+              // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
+              />
+            </Form.Item>
+            <Form.Item label="Aktif / Pasif">
+              <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
+            </Form.Item>
+
             <Col span={view !== 'MobileView' ? 4 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
               {<label style={{
                 fontSize: '14px', fontWeight: '500'
@@ -1355,6 +1396,19 @@ const SearchComponent = () => {
             />
           </Box>
         </Form>
+      </Modal>
+      <Modal title="Kriterler" visible={queryPreview} onCancel={queryPreviewModalCancel} size='150px' footer={[
+        <Button
+          key="submit"
+          type="primary"
+          loading={loading}
+          onClick={queryPreviewModalCancel}
+        >
+          Tamam
+        </Button>
+      ]}>
+        <ReactJson src={queryText} />
+
       </Modal>
     </React.Fragment>
   );
