@@ -777,10 +777,14 @@ export default function () {
         // ExcelExport(columns, data, 'Sipariş Kalemleri');
     }
 
-    //Sipariş oluşturulması için izin verilenler
+    //Kullanıcı yetkisine göre talep durumlarının seçme durumları
     function permissionCheck(status) {
-        if ((status === 'Cancelled')) { return true; }
-        return false;
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        if (token.urole === 'admin') { return false; }
+        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+            if ((status === 'Cancelled') || (status === 'Rejected')) { return true; }
+            return false;
+        }
     }
 
     function clearTable() {
@@ -890,7 +894,8 @@ export default function () {
                 }
 
             }
-            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) }
+            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) ; clearItemsChecked(record, selectedRows);
+            }
         },
         getCheckboxProps: (record) => ({
             disabled: permissionCheck(record.status), // Column configuration not to be checked
