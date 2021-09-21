@@ -33,7 +33,6 @@ export default {
       getLocations: apiUrl + 'core/lookup/locations-tree',
       getDistricts: apiUrl + 'core/lookup/locations/{city}/{town}/districts',
       getLocationDetail: apiUrl + 'core/lookup/locations/detail',
-
       postProductCategories: apiUrl + 'b2b/lookup/product-categories',
       postProductTypes: apiUrl + 'b2b/lookup/product-types',
       postSeries: apiUrl + 'b2b/lookup/product-series',
@@ -43,10 +42,9 @@ export default {
       postproductionStatusData: apiUrl + 'b2b/lookup/product-production-status',
       postDimensions: apiUrl + 'b2b/lookup/product-dimensions',
       postProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
-
       getDemandStatus: apiUrl + 'core/demands/lookup/status',
       cancelReason: apiUrl + 'core/demands/lookup/cancel-reasons',
-
+      ruleStatus:apiUrl +'b2b/rules/lookup/status',
 
     },
 

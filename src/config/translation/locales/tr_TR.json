@@ -506,6 +506,7 @@
   "page.isLocked": "Hesap Durumu",
   "page.chequesType": "Çek Türü",
   "page.keywordTitle": "Anahtar Kelime",
+  "page.ruleStatus": "Kural Durumu",
   "page.serialNumber": "Seri No",
   "page.transactionTypes": "Olay Tipi",
   "page.notificationTypes": "Bildirim Tipi",

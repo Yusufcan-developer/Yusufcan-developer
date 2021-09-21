@@ -24,6 +24,7 @@ import { useProductData } from "@iso/lib/hooks/fetchData/usePostApiRuleProductLi
 import { usePostFilter } from "@iso/lib/hooks/fetchData/usePostFilterData";
 import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterProductCategories";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -51,7 +52,7 @@ const { Option } = Select;
 const { TextArea } = Input;
 
 const SearchComponent = () => {
-  document.title = "Ürün Arama - Seramiksan B2B";
+  document.title = "Kurallar - Seramiksan B2B";
   const [state, setState] = React.useState({
     collapsed: true,
   });
@@ -108,6 +109,7 @@ const SearchComponent = () => {
   const [description, setDescription] = useState('');
   const [isLocked, setIsLocked] = useState();
   const [ruleStatus, setRuleStatus] = useState(enumerations.RuleStatus.Active);
+  const [filterStatus, setFilterStatus] = useState();
   const [priority, setPriority] = useState();
   const [ruleEditing, setRuleEditing] = useState(false);
   const [ruleSaveLoading, setRuleSaveLoading] = useState(false);
@@ -128,6 +130,7 @@ const SearchComponent = () => {
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
   const [searchKey, setSearchKey] = useState('');
   const { Search } = Input;
+  const statusChildren = [];
 
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
@@ -148,7 +151,14 @@ const SearchComponent = () => {
 
   //Kurallar Listesi
   const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
-    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "status": [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
+    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "status":filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
+
+  let searchUrl = queryString.parse(location.search);
+  //Status
+  const [statusType] = useFilterData(`${siteConfig.api.lookup.ruleStatus}`, searchUrl);
+  for (let i = 0; i < statusType.length; i++) {
+    statusChildren.push(<Option key={statusType[i].Key}>{statusType[i].Value}</Option>);
+  }
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -797,7 +807,7 @@ const SearchComponent = () => {
   }
   function callback(key) {
     debugger
-    if (key !== '1') { setSelectedRuleObject(); setCreateRuleTabDisable(true);}
+    if (key !== '1') { setSelectedRuleObject(); setCreateRuleTabDisable(true); }
     setActiveTabKey(key);
     setRuleEditing(false);
     setRuleName();
@@ -814,6 +824,10 @@ const SearchComponent = () => {
     setQueryText(text);
   }
 
+  //Change Status Type
+  function statusHandleChange(value) {
+    setFilterStatus(value);
+  }
   //Rule Columns
   let columns = [
 
@@ -946,12 +960,12 @@ const SearchComponent = () => {
       <Tabs activeKey={activeTabKey} onChange={event => callback()} >
         <TabPane tab={<TabTitle name="Kural Listesi" value="0" />} key="0" >
           <LayoutWrapper>
-          <Col span={typeof ruleNo !== 'undefined' ? 24 : 24} align="right" >
-                  <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRuleTab()}
-                    icon={<FormOutlined />} >
-                    {< IntlMessages id="forms.button.createRule" />}
-                  </Button>
-                </Col>
+            <Col span={typeof ruleNo !== 'undefined' ? 24 : 24} align="right" >
+              <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRuleTab()}
+                icon={<FormOutlined />} >
+                {< IntlMessages id="forms.button.createRule" />}
+              </Button>
+            </Col>
             <Box>
               <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                 <Panel header={<IntlMessages id="page.filtered" />} key="0">
@@ -960,12 +974,25 @@ const SearchComponent = () => {
                       <Col span={6} >
                         <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                       </Col>
+                      <Col span={6} >
+                        <FormItem label={<IntlMessages id="page.ruleStatus" />}></FormItem>
+                      </Col>
                     </Row>
                     : null}
                   <Row>
                     <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                       <Input size="small" placeholder="Ürün adı, Kural adı ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={ruleSearchKey} onKeyDown={ruleKeyPress} onChange={event => setRuleSearchKey(event.target.value)} />
-
+                    </Col>
+                    <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                      <Select
+                        mode="multiple"
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        placeholder="Durum Seçiniz"
+                        onChange={statusHandleChange}
+                        value={filterStatus}
+                      >
+                        {statusChildren}
+                      </Select>
                     </Col>
                     <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                       <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={ruleSearchButton} >
@@ -1007,7 +1034,7 @@ const SearchComponent = () => {
             </Box>
           </LayoutWrapper>
         </TabPane>
-        <TabPane disabled={createRuleTabDisabled}  tab={<TabTitle name="Kural Detayı" value="1" />} key="1">
+        <TabPane disabled={createRuleTabDisabled} tab={<TabTitle name="Kural Detayı" value="1" />} key="1">
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1284,7 +1311,7 @@ const SearchComponent = () => {
       <Modal
         width={800}
         visible={visible}
-        title={ruleNo ? ruleNo +'-'+ ruleName : 'Kural Oluştur'}
+        title={ruleNo ? ruleNo + '-' + ruleName : 'Kural Oluştur'}
         cancelText="İptal"
         okText='Onayla'
         maskClosable={false}
