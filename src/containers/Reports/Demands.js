@@ -79,7 +79,6 @@ export default function () {
     const [newUrlParams, setNewUrlParams] = useState('');
     const [selectedRadioItem, setSelectedRadioItem] = useState(1);
     const [privateDate, setPrivateDate] = useState('Bugun');
-    const [unit, setUnit] = useState('M2');
     const [status, setSelectedStatus] = useState();
     const [address, setAddress] = useState();
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
@@ -185,6 +184,13 @@ export default function () {
             setSearchSitemode(parsed.smode);
             window.location.reload(false);
         }
+        //Category get url data
+        if (typeof parsed.pg !== 'undefined') {
+            if (Array.isArray(parsed.pg)) {
+                setSelectedProductCategory(parsed.pg);
+                setOnChangeDimensionsFilter(true);setOnChangeSerieFilter(true); 
+            } else { setSelectedProductCategory(parsed.pg); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); }
+        }
         if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
         if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
         if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
@@ -213,6 +219,45 @@ export default function () {
             } else { getAddress.push(parsed.address); }
         }
         setAddress(getAddress);
+
+
+        //Dimension get url data
+        if (typeof parsed.dm !== 'undefined') {
+            let dimensionNewArray
+            if (parsed.dm)
+                if (Array.isArray(parsed.dm)) {
+                    dimensionNewArray = _.map(parsed.dm.map(e => e === 'null' || e === '' ? null : e));
+                } else {
+                    dimensionNewArray = _.map([parsed.dm].map(e => e === 'null' || e === '' ? null : e));
+                }
+            const nullOrBlankData = _.filter(dimensionNewArray, function (Item) {
+                if (Item === null || Item === '') {
+                    return true;
+                }
+            });
+            if (nullOrBlankData.length > 0) { dimensionNewArray.push(''); }
+
+            setSelectedDimensions(dimensionNewArray);
+        }
+
+        //Serie get url data
+        if (typeof parsed.se !== 'undefined') {
+            let seriesNewArray
+            if (parsed.se)
+                if (Array.isArray(parsed.se)) {
+                    seriesNewArray = _.map(parsed.se.map(e => e === 'null' || e === '' ? null : e));
+                } else {
+                    seriesNewArray = _.map([parsed.se].map(e => e === 'null' || e === '' ? null : e));
+                }
+            const nullOrBlankData = _.filter(seriesNewArray, function (Item) {
+                if (Item === null || Item === '') {
+                    return true;
+                }
+            });
+            if (nullOrBlankData.length > 0) { seriesNewArray.push(''); }
+            setSelectedProductSeries(seriesNewArray);
+        }
+
 
         let newDealarCode = []
         //Field url data
@@ -260,6 +305,8 @@ export default function () {
         });
         onChangeDealerCode(newDealarCode);
 
+
+
         return setOnChange(true);
     }
     //Get adress
@@ -305,11 +352,32 @@ export default function () {
         params.delete('sortingField');
         params.delete('sortingOrder');
         params.delete('status');
+        params.delete('pg');
+        params.delete('dm');
+        params.delete('se');
 
         if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
             params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
             params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
         }
+        if (selectedDimensions.length > 0) {
+        selectedDimensions.forEach(item => {
+            if (item === siteConfig.nullOrEmptySearchItem) { params.append('dm', null); }
+            else {
+                params.append('dm', item);
+                params.toString();
+            }
+        })
+    }
+        if (selectedProductSeries.length > 0) {
+        selectedProductSeries.forEach(item => {
+            if (item === siteConfig.nullOrEmptySearchItem) { params.append('se', null); }
+            else {
+                params.append('se', item);
+                params.toString();
+            }
+        })
+    }
 
         _.forEach(address, (item) => {
             params.append('address', item); params.toString();
@@ -319,6 +387,7 @@ export default function () {
             params.append('status', item); params.toString();
         });
 
+        if (typeof selectedProductCategory !== 'undefined') { params.append('pg', selectedProductCategory); }
         if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
         if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
@@ -472,9 +541,6 @@ export default function () {
         setSelectedProductCategory(value);
         setOnChangeSerieFilter(true);
         setOnChangeDimensionsFilter(true);
-    }
-    function unitHandleChange(value) {
-        setUnit(value);
     }
     function statusHandleChange(value) {
         setDemandStatus(value);
@@ -1472,6 +1538,7 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
+                                    allowClear
                                     showSearch
                                     placeholder="Ürün grubu seçiniz"
                                     style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
@@ -1588,19 +1655,7 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Input size="small" placeholder="Miktar giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={amount} onKeyDown={keyPress} onChange={event => setAmount(event.target.value)} />
-                                <Select
-                                    placeholder="Birim"
-                                    disabled={selectedRadioItem === 1 ? false : true}
-                                    onChange={unitHandleChange}
-                                    optionFilterProp="children"
-                                    value={unit}
-                                    style={{ marginLeft: '5px' }}
-                                >
-                                    <Option value="M2">M2</Option>
-                                    <Option value="ADET">ADET</Option>
-                                    <Option value="TORBA">TORBA</Option>
-                                </Select>
-
+                                
                                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                                     {<IntlMessages id="forms.button.label_Search" />}
                                 </Button>
