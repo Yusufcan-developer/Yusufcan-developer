@@ -10,6 +10,7 @@ function useFetch(url, reqBody, searchUrl) {
   const [currentPage, setCurrentPage] = useState();
   const [totalDataCount, setTotalDataCount] = useState();
   const [onChange, setOnChange] = useState(false);
+  const [onRefreshMode, setOnRefreshMode] = useState(false);
   const [code, setCode] = useState();
   const [name, setName] = useState();
   const [lastReqBody, setLastReqBody] = useState();
@@ -47,26 +48,31 @@ function useFetch(url, reqBody, searchUrl) {
           setLoading(false);
           setOnChange(false);
           setAggregatesOverall(aggregatesOverall);
+          setOnRefreshMode(false);
         } else {
           setLoading(false);
           setOnChange(false);
+          setOnRefreshMode(false);
         }
       })
       .catch();
   }
   useEffect(() => {
-    if ((reqBody.DealerCodes === undefined) & (reqBody.regionCodes === undefined) & (reqBody.fieldCodes === undefined)) {
-      setLoading(false);
-      setOnChange(false);
-    }
+    if (onRefreshMode === true) { setLoading(true); fetchUrl(); }
     else {
-      if (!_.isEqual(lastReqBody, searchUrl)) {
-        setLoading(true);
-        fetchUrl();
-      }else { setOnChange(false); }
+      if ((reqBody.DealerCodes === undefined) & (reqBody.regionCodes === undefined) & (reqBody.fieldCodes === undefined)) {
+        setLoading(false);
+        setOnChange(false);
+      }
+      else {
+        if (!_.isEqual(lastReqBody, searchUrl)) {
+          setLoading(true);
+          fetchUrl();
+        } else { setOnChange(false); }
+      }
     }
-  }, [currentPage, changePageSize, onChange]);
-  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregates, code, name];
+  }, [currentPage, changePageSize, onChange, onRefreshMode]);
+  return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregates, code, name, setOnRefreshMode];
 }
 
 export { useFetch };

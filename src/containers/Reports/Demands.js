@@ -125,8 +125,9 @@ export default function () {
 
     let searchUrl = queryString.parse(location.search);
     //Rapor
-    const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, selectedDemand && selectedDemand.id ? selectedDemand.id : searchUrl);
+    const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall,code,name,setOnRefreshMode] =
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
+
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
@@ -439,10 +440,12 @@ export default function () {
     function statusHandleChange(value) {
         setDemandStatus(value);
     }
+
     function onChangeRadioButton(e) {
         setSelectedRadioItem(e.target.value);
         setPrivateDate(null);
     }
+
     //Select Component Rol değiştirme 
     function addressHandleChange(value) {
         setAddress(value);
@@ -605,6 +608,7 @@ export default function () {
         }
         return false;
     }
+
     //Demand Columns
     let columns = [
         {
@@ -796,6 +800,7 @@ export default function () {
         }
     }
 
+    //checkleenen değerler
     function getSelected() {
         if (selectedRowKeys.length > 0) {
             return selectedRowKeys
@@ -871,7 +876,7 @@ export default function () {
                 setHasSelected(true);
 
             }
-            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) }
+            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]); setSelectedRowKeys([]) }
 
         },
         onSelectAll: (record, selected, selectedRows) => {
@@ -894,7 +899,8 @@ export default function () {
                 }
 
             }
-            else { setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]) ; clearItemsChecked(record, selectedRows);
+            else {
+                setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([]); clearItemsChecked(record, selectedRows);
             }
         },
         getCheckboxProps: (record) => ({
@@ -902,6 +908,7 @@ export default function () {
         }),
 
     };
+
     //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
     const menu = (item) => (
         <Menu onClick={handleMenuClick}>
@@ -1012,7 +1019,7 @@ export default function () {
                         if (selectedItems.length < 1) {
                             message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
                             setVisible(false);
-                            setOnChange(true);
+                            setOnRefreshMode(true);
                             setSelectedDemand();
                             setSelectedItemsId();
                         }
@@ -1060,10 +1067,9 @@ export default function () {
                 }
             })
             .catch();
-        debugger
         if ((warningDemandId.length < 1) && (resultMultipleCount.length === selectedItems.length)) {
             message.success('Talepler başarıyla ' + messageText);
-            setOnChange(true);
+            setOnRefreshMode(true);
             setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([])
             setVisible(false);
             setSelectedDemand();
@@ -1254,6 +1260,7 @@ export default function () {
             return false;
         }
     }
+
     function demandEditingModalPermissions(type) {
 
         const token = jwtDecode(localStorage.getItem("id_token"));
@@ -1358,6 +1365,7 @@ export default function () {
             }
         }
     }
+
     //Talep cancel durumları seçimi
     function onChangeCancelReasonButton(value) {
         setCancelReason(value);
