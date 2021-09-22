@@ -19,6 +19,8 @@ import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { useGetTreeData } from "@iso/lib/hooks/fetchData/useGetTreeData";
 import { useFilterData } from "@iso/lib/hooks/fetchData/useFilterData";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterProductCategories";
+import { usePostFilter } from "@iso/lib/hooks/fetchData/usePostFilterData";
 
 //Style
 import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined, EditOutlined } from '@ant-design/icons';
@@ -60,6 +62,7 @@ export default function () {
     const Option = SelectOption;
     let selectedTotalCount = 0;
     const [searchKey, setSearchKey] = useState('');
+    const [amount, setAmount] = useState();
     const [tableOptions, setState] = useState({
         sortedInfo: "",
         filteredInfo: ""
@@ -76,10 +79,14 @@ export default function () {
     const [newUrlParams, setNewUrlParams] = useState('');
     const [selectedRadioItem, setSelectedRadioItem] = useState(1);
     const [privateDate, setPrivateDate] = useState('Bugun');
+    const [unit, setUnit] = useState('M2');
     const [status, setSelectedStatus] = useState();
     const [address, setAddress] = useState();
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
     const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
+    const [selectedProductCategory, setSelectedProductCategory] = useState();
+    const [selectedProductSeries, setSelectedProductSeries] = useState();
+    const [selectedDimensions, setSelectedDimensions] = useState();
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [selectedItemsId, setSelectedItemsId] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]);
@@ -113,6 +120,9 @@ export default function () {
     const cancelReasonChildren = [];
     const warningDemandId = [];
     const resultMultipleCount = [];
+    const productCategory = [];
+    const productSeriesChildren = [];
+    const productDimensionsChildren = [];
     //Burada ki useEffect'ler page index page size
     useEffect(() => {
         setCurrentPage(pageIndex);
@@ -125,7 +135,7 @@ export default function () {
 
     let searchUrl = queryString.parse(location.search);
     //Rapor
-    const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall,code,name,setOnRefreshMode] =
+    const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
         useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
 
     //Bayi,Bölge ve Saha kodlarının getirilmesi
@@ -148,6 +158,21 @@ export default function () {
         cancelReasonChildren.push(<Option key={cancelReasonType[i].Key}>{cancelReasonType[i].Value}</Option>);
     }
 
+    //Get Category
+    const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
+    for (let i = 0; i < productCategories.length; i++) {
+        productCategory.push(<Option key={productCategories[i]}>{productCategories[i]}</Option>);
+    }
+    //Post Series
+    const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "categories": [selectedProductCategory], "siteMode": searchSiteMode });
+    for (let i = 0; i < serieData.length; i++) {
+        productSeriesChildren.push(<Option key={serieData[i]}>{serieData[i]}</Option>);
+    }
+    //Post Dimension
+    const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "categories": [selectedProductCategory], "siteMode": searchSiteMode });
+    for (let i = 0; i < dimensionData.length; i++) {
+        productDimensionsChildren.push(<Option key={dimensionData[i]}>{dimensionData[i]}</Option>);
+    }
     //Url'i çözümleme işlemi
     function getVariablesFromUrl() {
         //Url değerini alıyoruz.
@@ -437,6 +462,20 @@ export default function () {
         }
     }
 
+    function productDimensionsHandleChange(value) {
+        setSelectedDimensions(value);
+    }
+    function productSeriesHandleChange(value) {
+        setSelectedProductSeries(value);
+    }
+    function productGroupHandleChange(value) {
+        setSelectedProductCategory(value);
+        setOnChangeSerieFilter(true);
+        setOnChangeDimensionsFilter(true);
+    }
+    function unitHandleChange(value) {
+        setUnit(value);
+    }
     function statusHandleChange(value) {
         setDemandStatus(value);
     }
@@ -1083,6 +1122,7 @@ export default function () {
 
         }
     }
+
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     function handleCancel() {
         setDemandNo();
@@ -1397,7 +1437,10 @@ export default function () {
                                     <FormItem label={<IntlMessages id="page.status" />}></FormItem>
                                 </Col>
                                 <Col span={6} >
-                                    <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                                    <FormItem label={<IntlMessages id="page.productGroup" />}></FormItem>
+                                </Col>
+                                <Col span={view !== 'MobileView' ? 6 : 0} >
+                                    <FormItem label={<IntlMessages id="page.series" />}></FormItem>
                                 </Col>
                             </Row>
                             : null}
@@ -1428,8 +1471,28 @@ export default function () {
                                 </Select>
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Input size="small" placeholder="Ürün Adı, Talep No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
-
+                                <Select
+                                    showSearch
+                                    placeholder="Ürün grubu seçiniz"
+                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                    onChange={productGroupHandleChange}
+                                    optionFilterProp="children"
+                                    value={selectedProductCategory}
+                                >
+                                    {productCategory}
+                                </Select>
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>                            <Select
+                                showSearch
+                                mode="multiple"
+                                placeholder="Seri seçiniz"
+                                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                onChange={productSeriesHandleChange}
+                                optionFilterProp="children"
+                                value={selectedProductSeries}
+                            >
+                                {productSeriesChildren}
+                            </Select>
                             </Col>
                         </Row>
                         <Row>
@@ -1438,6 +1501,13 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} >
                                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 6 : 0} >
+
+                                <FormItem label={<IntlMessages id="page.dimensions" />}></FormItem>
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 6 : 0} >
+                                <FormItem label={<IntlMessages id="page.amount" />}></FormItem>
                             </Col>
                         </Row>
                         <Row>
@@ -1500,8 +1570,37 @@ export default function () {
                                     </Row>
                                 </Radio.Group>
                             </Col>
-
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                <Select
+                                    showSearch
+                                    mode="multiple"
+                                    placeholder="Ebat seçiniz"
+                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                    onChange={productDimensionsHandleChange}
+                                    optionFilterProp="children"
+                                    value={selectedDimensions}
+                                >
+                                    {productDimensionsChildren}
+                                </Select>
+                                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                                <Input size="small" placeholder="Ürün Adı, Talep No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                <Input size="small" placeholder="Miktar giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={amount} onKeyDown={keyPress} onChange={event => setAmount(event.target.value)} />
+                                <Select
+                                    placeholder="Birim"
+                                    disabled={selectedRadioItem === 1 ? false : true}
+                                    onChange={unitHandleChange}
+                                    optionFilterProp="children"
+                                    value={unit}
+                                    style={{ marginLeft: '5px' }}
+                                >
+                                    <Option value="M2">M2</Option>
+                                    <Option value="ADET">ADET</Option>
+                                    <Option value="TORBA">TORBA</Option>
+                                </Select>
+
                                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                                     {<IntlMessages id="forms.button.label_Search" />}
                                 </Button>
