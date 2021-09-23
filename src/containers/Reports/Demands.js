@@ -360,7 +360,7 @@ export default function () {
             params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
             params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
         }
-        if (selectedDimensions.length > 0) {
+        if (selectedDimensions && selectedDimensions.length > 0) {
         selectedDimensions.forEach(item => {
             if (item === siteConfig.nullOrEmptySearchItem) { params.append('dm', null); }
             else {
@@ -369,7 +369,7 @@ export default function () {
             }
         })
     }
-        if (selectedProductSeries.length > 0) {
+        if (selectedProductSeries && selectedProductSeries.length > 0) {
         selectedProductSeries.forEach(item => {
             if (item === siteConfig.nullOrEmptySearchItem) { params.append('se', null); }
             else {
@@ -1483,7 +1483,13 @@ export default function () {
         if (item && item.deadline < new Date()) { return disabled = true; }
         return disabled;
     }
-
+    function onChangeAmountEntered(e) {
+        const { value } = e.target;
+        const reg = /^-?\d*(\.\d*)?$/;
+        if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
+          setAmount(value);
+        }
+    }
     const view = viewType('Reports');
     const filterView = viewType('Filter');
     return (
@@ -1654,7 +1660,7 @@ export default function () {
 
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Input size="small" placeholder="Miktar giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={amount} onKeyDown={keyPress} onChange={event => setAmount(event.target.value)} />
+                                <Input  size="small" placeholder="Miktar giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={amount} onKeyDown={keyPress} onChange={event => onChangeAmountEntered(event)} />
                                 
                                 <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
                                     {<IntlMessages id="forms.button.label_Search" />}
