@@ -153,7 +153,7 @@ export default function () {
 
     const token = jwtDecode(localStorage.getItem("id_token"));
     debugger
-    if ((token.urole === 'admin') || (token.urole === 'B5552888')) {
+    if ((token.urole === 'admin') || (token.dcode === 'B555888')) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       return setDemandHide(true);
@@ -177,37 +177,41 @@ export default function () {
     setOnChange(true);
   }
 
-  //Talep oluşturma popup işlemleri sonucu
-  async function onCompletePopupDemand(createDemand = false, item, amount) {
-
-    //Talep Oluşturma işlemi seçildiyse
-    if (createDemand === true) {
-      const saveDemand = await postSaveDemand(amount, item.itemCode);
-      if (saveDemand === true) {
-        setHide(false);
-        setDemandHide(false);
-
-        //Talep başarılı bir şekilde oluşturulduysa sipariş sepetinden ilgili ürün silinecek.
-        const newProductQuantity = [];
-        _.each(productQuantity, (product, i) => {
-          if ((product.itemCode !== item.itemCode || product.isPartial !== selectedItemPartial)) {
-            newProductQuantity.push(product);
-          }
-        });
-
-        dispatch(changeProductQuantity(newProductQuantity));
-        await getCartList();
-        await AllCartItemChangeOrderAmount();
-        setOnChange(true);
-      }
-      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Demand.save);
-    }
-    //Talep oluşturma iptal işleminde
-    else{
+  async function demandSaveResult(result, itemCode, amount, errorMessage) {
+    if (result === true) {
       setHide(false);
       setDemandHide(false);
+
+      //Talep başarılı bir şekilde oluşturulduysa sipariş sepetinden ilgili ürün silinecek.
+      const newProductQuantity = [];
+      _.each(productQuantity, (product, i) => {
+        if ((itemCode !== itemCode || product.isPartial !== selectedItemPartial)) {
+          newProductQuantity.push(product);
+        }
+      });
+
+      dispatch(changeProductQuantity(newProductQuantity));
+      await getCartList();
+      await AllCartItemChangeOrderAmount();
+      setOnChange(true);
+      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, itemCode + ' Ürünün ' + logMessage.Demand.save + 'Miktar ' + amount);
+
     }
-    
+
+    //Talep oluşturma iptal işleminde
+    else {
+      setHide(false);
+      setDemandHide(false);
+      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, itemCode + ' Ürünün ' + logMessage.Demand.error + 'Sebebi ' + errorMessage);
+
+    }
+  }
+  //Talep oluşturma popup işlemleri sonucu
+  async function onCompletePopupDemand(createDemand = false, item, amount) {
+    //Talep Oluşturma işlemi seçildiyse
+    if (createDemand === true) {      
+      postSaveDemand(amount, item.itemCode);
+    }
   }
   //Get Cart
   async function getCartList() {
@@ -720,17 +724,16 @@ export default function () {
       .then(data => {
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
-            const getMessage = data.message;
-            message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+            message.warning({ content: 'kaydetme işlemi başarısızdır. ' + data.message, duration: 2 });
+            demandSaveResult(false,itemCode,amount,data.message);
           } else {
             message.success({ content: 'başarıyla kaydedildi', duration: 2 });
+            demandSaveResult(true,itemCode,amount);
           }
         }
       })
       .catch();
       setDemandConfirmLoading(false);
-      if (data.isSuccessful === false) {return false;}
-      else{return true;}
   }
   let columns = [
     {

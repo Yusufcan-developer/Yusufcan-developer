@@ -93,6 +93,7 @@ export default {
     Demand:
     {
         browse:'Talep listesi',
-        save:'talep başarılı şekilde oluşturulmuştur.'
+        save:'talebi başarılı şekilde oluşturulmuştur. ',
+        error:'talebi oluşturulamamıştır. '
     }
 };
