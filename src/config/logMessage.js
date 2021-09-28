@@ -94,6 +94,13 @@ export default {
     {
         browse:'Talep listesi',
         save:'talebi başarılı şekilde oluşturulmuştur. ',
-        error:'talebi oluşturulamamıştır. '
+        error:'talebi oluşturulamamıştır. ',
+        updateError:'talebin durum güncellemesi başarısızdır. ',
+        updateSuccess:'talebin durum güncellemesi başarılıdır. '
+    },
+    Rule:
+    {
+        save:'kural başarılı bir şekilde oluşturulmuştur. ',
+        error:'kural oluşturma işlemi başarısızdır. ',
     }
 };

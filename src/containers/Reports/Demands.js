@@ -10,7 +10,7 @@ import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
-import { Table, Row, Col, TreeSelect, Radio, Tag, Dropdown, Menu, Modal, Input, message, Space, Layout, Button } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, Tag, Dropdown, Menu, Modal, Input, message, Layout, Button } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 import Popconfirms from '@iso/components/Feedback/Popconfirm';
 
@@ -122,6 +122,7 @@ export default function () {
     const productCategory = [];
     const productSeriesChildren = [];
     const productDimensionsChildren = [];
+
     //Burada ki useEffect'ler page index page size
     useEffect(() => {
         setCurrentPage(pageIndex);
@@ -133,6 +134,7 @@ export default function () {
     }, [pageIndex]);
 
     let searchUrl = queryString.parse(location.search);
+
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
         useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
@@ -145,6 +147,7 @@ export default function () {
     for (let i = 0; i < statusType.length; i++) {
         statusChildren.push(<Option disabled={demandEditingModalPermissions(statusType[i].Key)} key={statusType[i].Key}>{statusType[i].Value}</Option>);
     }
+
     //Search status items
     const [searchStatusType] = useFilterData(`${siteConfig.api.lookup.getDemandStatus}`, searchUrl);
     for (let i = 0; i < searchStatusType.length; i++) {
@@ -162,16 +165,19 @@ export default function () {
     for (let i = 0; i < productCategories.length; i++) {
         productCategory.push(<Option key={productCategories[i]}>{productCategories[i]}</Option>);
     }
+
     //Post Series
     const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "categories": [selectedProductCategory], "siteMode": searchSiteMode });
     for (let i = 0; i < serieData.length; i++) {
         productSeriesChildren.push(<Option key={serieData[i]}>{serieData[i]}</Option>);
     }
+
     //Post Dimension
     const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "categories": [selectedProductCategory], "siteMode": searchSiteMode });
     for (let i = 0; i < dimensionData.length; i++) {
         productDimensionsChildren.push(<Option key={dimensionData[i]}>{dimensionData[i]}</Option>);
     }
+
     //Url'i çözümleme işlemi
     function getVariablesFromUrl() {
         //Url değerini alıyoruz.
@@ -309,6 +315,7 @@ export default function () {
 
         return setOnChange(true);
     }
+
     //Get adress
     async function getAdress(dealerCodes) {
         //Get User Info  
@@ -334,6 +341,7 @@ export default function () {
             .catch();
         return data;
     }
+
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
         const params = new URLSearchParams(location.search);
@@ -399,6 +407,7 @@ export default function () {
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
         history.push(`${location.pathname}?${createUrl}`);
         setSearchSitemode(siteMode);
+        setSelectedRowKeys([]);
 
         return setOnChange(true);
     }
@@ -469,6 +478,7 @@ export default function () {
         return false;
     }
 
+    //Table handle change
     const handleChange = (pagination, filters, sorter) => {
         setState({
             ...tableOptions,
@@ -499,6 +509,7 @@ export default function () {
         dataSearch(current, pageSize);
     }
 
+    //Dates handle change
     function privateDateHandleChange(value) {
         setPrivateDate(value);
 
@@ -531,21 +542,29 @@ export default function () {
         }
     }
 
+    //Product Dimension handle change
     function productDimensionsHandleChange(value) {
         setSelectedDimensions(value);
     }
+
+    //Product Series handle change
     function productSeriesHandleChange(value) {
         setSelectedProductSeries(value);
     }
+
+    //Product Group handle change
     function productGroupHandleChange(value) {
         setSelectedProductCategory(value);
         setOnChangeSerieFilter(true);
         setOnChangeDimensionsFilter(true);
     }
+
+    //Status handle change
     function statusHandleChange(value) {
         setDemandStatus(value);
     }
 
+    //Dates radio button handle change
     function onChangeRadioButton(e) {
         setSelectedRadioItem(e.target.value);
         setPrivateDate(null);
@@ -714,178 +733,6 @@ export default function () {
         return false;
     }
 
-    //Demand Columns
-    let columns = [
-        {
-            title: "Durumu",
-            dataIndex: "statusText",
-            key: "statusText",
-            width: 150,
-            render: (statusText) => (
-                <>
-                    {statusText === 'Beklemede' ? (
-                        (<Tag color={'blue'} key={statusText}>
-                            {statusText}
-                        </Tag>)
-
-                    ) : (
-                        statusText === 'Onaylandı' ? (
-                            (<Tag color={'green'} key={statusText}>
-                                {statusText}
-                            </Tag>)
-
-                        ) : (
-                            <Tag color={'red'} key={statusText}>
-                                {statusText}
-                            </Tag>))}
-                </>
-            ),
-        },
-        {
-            title: "Bayi Kodu",
-            dataIndex: "dealerCode",
-            key: "dealerCode",
-            style: { font: { sz: "48", bold: true } },
-            width: 100
-        },
-        {
-            title: "Bayi Adı",
-            dataIndex: "dealerName",
-            key: "dealerName",
-            width: 200,
-            ellipsis: true
-
-        },
-        {
-            title: "Sevk Adresi",
-            dataIndex: "addressCode",
-            key: "addressCode",
-            width: 200
-        },
-        {
-            title: "Talep No",
-            dataIndex: "demandNo",
-            key: "demandNo",
-            defaultSortOrder: 'descend',
-            sorter: (a, b) => a.orderNo - b.orderNo,
-            sortOrder: tableOptions.sortedInfo.columnKey === 'demandNo' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            width: 150
-        },
-        {
-            title: "Talep Tarihi",
-            dataIndex: "date",
-            key: "date",
-            type: "date",
-            width: 200,
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            render: (date, record) => moment(date).format(siteConfig.dateFormatAddTime),
-        },
-        {
-            title: "Ürün Kodu",
-            dataIndex: "itemId",
-            key: "itemId",
-            width: 150,
-        },
-        {
-            title: "Ürün Açıklaması",
-            dataIndex: "itemDescription",
-            key: "itemDescription",
-            width: 300,
-        },
-        {
-            title: "Miktar",
-            dataIndex: "amount",
-            key: "amount",
-            align: "right",
-            render: (amount) => numberFormat(amount),
-            width: 120,
-        },
-        {
-            title: "Onaylanan Miktar",
-            dataIndex: "approvedAmount",
-            key: "approvedAmount",
-            align: "right",
-            render: (approvedAmount) => typeof approvedAmount !== 'undefined' ? numberFormat(approvedAmount) : '-',
-            width: 200,
-        },
-        {
-            title: "Onaylanma Tarih",
-            dataIndex: "approveDate",
-            key: "approveDate",
-            type: "approveDate",
-            width: 200,
-            sorter: (a, b) => (''),
-            sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
-            sortDirections: ['descend', 'ascend'],
-            render: (approveDate, record) => moment(approveDate).format(siteConfig.dateFormatAddTime),
-        },
-        {
-            title: "İptal Nedeni",
-            dataIndex: "cancelReasonText",
-            key: "cancelReasonText",
-            type: "cancelReasonText",
-            width: 100,
-        },
-        {
-            title: '',
-            dataIndex: "title",
-            key: "title",
-            fixed: "right",
-            render: (text, record) => (
-                <Dropdown disabled={transactionsItemDisabled(record)} overlay={menu(record)} trigger={['hover']} onVisibleChange={event => { setSelectedDemand(record) }} >
-                    <Button >
-                        {view === 'MobileView' ? <SettingOutlined /> : 'İşlemler'}  <DownOutlined />
-                    </Button>
-                </Dropdown>
-            ),
-        }
-    ];
-
-    //Hide order table column
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    if (token.urole === 'admin') { }
-    else if (token.urole === 'fieldmanager') {
-        const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Field;
-        if (getHideColumns.length > 0) {
-            for (let index = 0; index < getHideColumns.length; index++) {
-                columns = _.without(columns, _.findWhere(columns, {
-                    dataIndex: getHideColumns[index].dataIndex
-                }
-                ))
-            }
-        }
-    }
-    else if (token.urole === 'regionmanager') {
-        const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Region;
-        if (getHideColumns.length > 0) {
-            for (let index = 0; index < getHideColumns.length; index++) {
-                columns = _.without(columns, _.findWhere(columns, {
-                    dataIndex: getHideColumns[index].dataIndex
-                }
-                ))
-            }
-        }
-    }
-    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-        const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer;
-        if (getHideColumns.length > 0) {
-            for (let index = 0; index < getHideColumns.length; index++) {
-                columns = _.without(columns, _.findWhere(columns, {
-                    dataIndex: getHideColumns[index].dataIndex
-                }
-                ))
-            }
-        }
-    }
-    //Excel Oluşturma
-    const exportExcelButton = () => {
-        postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
-        // ExcelExport(columns, data, 'Sipariş Kalemleri');
-    }
-
     //Kullanıcı yetkisine göre talep durumlarının seçme durumları
     function permissionCheck(status) {
         const token = jwtDecode(localStorage.getItem("id_token"));
@@ -909,6 +756,18 @@ export default function () {
     function getSelected() {
         if (selectedRowKeys.length > 0) {
             return selectedRowKeys
+        }
+        else {   
+            _.each(selectedItems, (item) => {
+                if(data[0].id!==data[0].id){
+                    getSelected=[];
+                    const index = _.findIndex(data, function (i) { return i.id === item.id });
+                    if (index > -1) {
+                        getSelectedKey.push(index);
+                    }
+                }
+               
+            });
         }
         return getSelectedKey;
     }
@@ -1114,15 +973,20 @@ export default function () {
             })
             .then(data => {
                 if (typeof data !== 'undefined') {
+                    
                     if (data.isSuccessful === false) {
-                        message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
+                        message.warning({ content: messageText + ' işlemi başarısızdır. '+ data.message, duration: 2 });
+                        postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip Talebin ' + logMessage.Demand.updateError + 'Sebebi ' + data.message);
+
                     } else if (data.status === 400) {
-                        message.warning({ content: messageText + ' işlemi başarısızdır. ', duration: 2 });
+                        message.warning({ content: messageText + ' işlemi başarısızdır. ' + data.message, duration: 2 });
+                        postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip Talebin ' + logMessage.Demand.updateError + 'Sebebi ' + data.message);
                     }
                     else {
                         //Tekli aktarımlar için
                         if (selectedItems.length < 1) {
                             message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
+                            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip '+logMessage.Demand.updateSuccess+'Yeni durumu '+messageText );
                             setVisible(false);
                             setOnRefreshMode(true);
                             setSelectedDemand();
@@ -1186,38 +1050,6 @@ export default function () {
             //Başarısız kayıtlar vardır
             //message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
 
-        }
-    }
-
-    //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
-    function handleCancel() {
-        setDemandNo();
-        setDemandAmountModal();
-        setStatusModal();
-        setVisible(false);
-        setAcceptInfoVisible(false);
-        setToolbarEditingButton(false);
-        setDeleteDemand(false);
-        setEventType();
-    };
-
-    //Talebin Düzenleme kayıt işlemi
-    async function handleOk() {
-        //Secilen talep durum tipine göre kaydetme kontrolü
-        if (!statusModal) { return message.error('Talep Durum seçiniz'); }
-        switch (statusModal) {
-            case 'Approved':
-                acceptDemand();
-                break;
-            case 'Cancelled':
-                cancelDemand();
-                break;
-            case 'Pending':
-                pendingDemand();
-                break;
-            case 'Rejected':
-                rejectedDemand();
-                break;
         }
     }
 
@@ -1301,6 +1133,8 @@ export default function () {
 
         }
     }
+
+    //Sipariş oluşturma
     async function createOrder() {
         //Sipariş oluşturma işlemi
         //Sipariş başarılı bir şekilde oluşturulduysa popup pencerisini kapat
@@ -1314,15 +1148,49 @@ export default function () {
         });
     }
 
-    function demandStatusChangeModal(value) {
-        setStatusModal(value);
-    }
     //Seçilenleri talepleri işlemi
     async function multipleDemandDelete() {
         setDeleteDemand(true);
         _.each(selectedItemsId, (item) => {
             //   postNotificationIsread(item, true);
         });
+    }
+
+    //Talebin Düzenleme kayıt işlemi
+    async function handleOk() {
+        //Secilen talep durum tipine göre kaydetme kontrolü
+        if (!statusModal) { return message.error('Talep Durum seçiniz'); }
+        switch (statusModal) {
+            case 'Approved':
+                acceptDemand();
+                break;
+            case 'Cancelled':
+                cancelDemand();
+                break;
+            case 'Pending':
+                pendingDemand();
+                break;
+            case 'Rejected':
+                rejectedDemand();
+                break;
+        }
+    }
+    
+    //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
+    function handleCancel() {
+        setDemandNo();
+        setDemandAmountModal();
+        setStatusModal();
+        setVisible(false);
+        setAcceptInfoVisible(false);
+        setToolbarEditingButton(false);
+        setDeleteDemand(false);
+        setEventType();
+    };
+
+    //Demand status modal change
+    function demandStatusChangeModal(value) {
+        setStatusModal(value);
     }
 
     //Kural açıklaması değiştirme
@@ -1490,6 +1358,180 @@ export default function () {
           setAmount(value);
         }
     }
+
+    //Demand Columns
+    let columns = [
+        {
+            title: "Durumu",
+            dataIndex: "statusText",
+            key: "statusText",
+            width: 150,
+            render: (statusText) => (
+                <>
+                    {statusText === 'Beklemede' ? (
+                        (<Tag color={'blue'} key={statusText}>
+                            {statusText}
+                        </Tag>)
+
+                    ) : (
+                        statusText === 'Onaylandı' ? (
+                            (<Tag color={'green'} key={statusText}>
+                                {statusText}
+                            </Tag>)
+
+                        ) : (
+                            <Tag color={'red'} key={statusText}>
+                                {statusText}
+                            </Tag>))}
+                </>
+            ),
+        },
+        {
+            title: "Bayi Kodu",
+            dataIndex: "dealerCode",
+            key: "dealerCode",
+            style: { font: { sz: "48", bold: true } },
+            width: 100
+        },
+        {
+            title: "Bayi Adı",
+            dataIndex: "dealerName",
+            key: "dealerName",
+            width: 200,
+            ellipsis: true
+
+        },
+        {
+            title: "Sevk Adresi",
+            dataIndex: "addressCode",
+            key: "addressCode",
+            width: 200
+        },
+        {
+            title: "Talep No",
+            dataIndex: "demandNo",
+            key: "demandNo",
+            defaultSortOrder: 'descend',
+            sorter: (a, b) => a.orderNo - b.orderNo,
+            sortOrder: tableOptions.sortedInfo.columnKey === 'demandNo' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            width: 150
+        },
+        {
+            title: "Talep Tarihi",
+            dataIndex: "date",
+            key: "date",
+            type: "date",
+            width: 200,
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            render: (date, record) => moment(date).format(siteConfig.dateFormatAddTime),
+        },
+        {
+            title: "Ürün Kodu",
+            dataIndex: "itemId",
+            key: "itemId",
+            width: 150,
+        },
+        {
+            title: "Ürün Açıklaması",
+            dataIndex: "itemDescription",
+            key: "itemDescription",
+            width: 300,
+        },
+        {
+            title: "Miktar",
+            dataIndex: "amount",
+            key: "amount",
+            align: "right",
+            render: (amount) => numberFormat(amount),
+            width: 120,
+        },
+        {
+            title: "Onaylanan Miktar",
+            dataIndex: "approvedAmount",
+            key: "approvedAmount",
+            align: "right",
+            render: (approvedAmount) => typeof approvedAmount !== 'undefined' ? numberFormat(approvedAmount) : '-',
+            width: 200,
+        },
+        {
+            title: "Onaylanma Tarih",
+            dataIndex: "approveDate",
+            key: "approveDate",
+            type: "approveDate",
+            width: 200,
+            sorter: (a, b) => (''),
+            sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
+            sortDirections: ['descend', 'ascend'],
+            render: (approveDate, record) => moment(approveDate).format(siteConfig.dateFormatAddTime),
+        },
+        {
+            title: "İptal Nedeni",
+            dataIndex: "cancelReasonText",
+            key: "cancelReasonText",
+            type: "cancelReasonText",
+            width: 100,
+        },
+        {
+            title: '',
+            dataIndex: "title",
+            key: "title",
+            fixed: "right",
+            render: (text, record) => (
+                <Dropdown disabled={transactionsItemDisabled(record)} overlay={menu(record)} trigger={['hover']} onVisibleChange={event => { setSelectedDemand(record) }} >
+                    <Button >
+                        {view === 'MobileView' ? <SettingOutlined /> : 'İşlemler'}  <DownOutlined />
+                    </Button>
+                </Dropdown>
+            ),
+        }
+    ];
+
+    //Hide order table column
+    const token = jwtDecode(localStorage.getItem("id_token"));
+    if (token.urole === 'admin') { }
+    else if (token.urole === 'fieldmanager') {
+        const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Field;
+        if (getHideColumns.length > 0) {
+            for (let index = 0; index < getHideColumns.length; index++) {
+                columns = _.without(columns, _.findWhere(columns, {
+                    dataIndex: getHideColumns[index].dataIndex
+                }
+                ))
+            }
+        }
+    }
+    else if (token.urole === 'regionmanager') {
+        const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Region;
+        if (getHideColumns.length > 0) {
+            for (let index = 0; index < getHideColumns.length; index++) {
+                columns = _.without(columns, _.findWhere(columns, {
+                    dataIndex: getHideColumns[index].dataIndex
+                }
+                ))
+            }
+        }
+    }
+    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+        const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer;
+        if (getHideColumns.length > 0) {
+            for (let index = 0; index < getHideColumns.length; index++) {
+                columns = _.without(columns, _.findWhere(columns, {
+                    dataIndex: getHideColumns[index].dataIndex
+                }
+                ))
+            }
+        }
+    }
+
+    //Excel Oluşturma
+    const exportExcelButton = () => {
+        postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
+        // ExcelExport(columns, data, 'Sipariş Kalemleri');
+    }
+
     const view = viewType('Reports');
     const filterView = viewType('Filter');
     return (

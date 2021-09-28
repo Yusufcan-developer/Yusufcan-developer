@@ -151,7 +151,7 @@ const SearchComponent = () => {
 
   //Kurallar Listesi
   const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
-    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "status":filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
+    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "status": filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
 
   let searchUrl = queryString.parse(location.search);
   //Status
@@ -729,11 +729,14 @@ const SearchComponent = () => {
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
             message.warning({ content: 'Kural kaydetme işlemi başarısızdır. ', duration: 2 });
+            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.error);
           } else if (data.status === 400) {
             message.warning({ content: 'Kural kaydetme işlemi başarısızdır. ', duration: 2 });
+            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.error);
           }
           else {
             message.success({ content: 'Kural başarılı bir şekilde kayıt edilmiştir ', duration: 2 });
+            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.save);
             clearParams();
             ruleSetOnChange(true);
             setActiveTabKey('0');
