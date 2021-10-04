@@ -4,6 +4,7 @@ export default {
     {
         Normal: 'Normal',
         DeliverysPoint: 'DeliveryToPoint',
+        Admin:'Admin',
     },
     status:
     {

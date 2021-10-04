@@ -130,7 +130,6 @@ class DragSortingTable extends React.Component {
   };
 
   moveRow = (dragIndex, hoverIndex) => {
-    debugger
     const { data } = this.props;
     const { data1 } = this.state;
 
