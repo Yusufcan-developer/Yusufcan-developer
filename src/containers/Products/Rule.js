@@ -75,7 +75,7 @@ const SearchComponent = () => {
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
   const [capacity, setCapacity] = useState(1);
-  const [customerLimit, setCustomerLimit] = useState(1);
+  const [dealerLimit, setDealerLimit] = useState(0);
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
   const [selectedruleObjectText, setSelectedRuleObjectText] = useState();
@@ -651,7 +651,6 @@ const SearchComponent = () => {
 
   //Ürünlerin kurallarını tanımlamak için girilmesi gereken kapasite degeri 
   function createRule(item) {
-    debugger
     setVisible(true);
     if (ruleEditing && ruleEditing === true) {
       setRuleNo(item.ruleNo);
@@ -701,7 +700,7 @@ const SearchComponent = () => {
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
-        "query": query
+        "dealerLimit": parseFloat(dealerLimit), "query": query
       }
       await postSaveRule(rule);
     } else {
@@ -765,7 +764,7 @@ const SearchComponent = () => {
     const { value } = e.target;
     const reg = /^-?\d*(\.\d*)?$/;
     if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
-      setCustomerLimit(value);
+      setDealerLimit(value);
     }
   }
 
@@ -809,7 +808,6 @@ const SearchComponent = () => {
 
   }
   function callback(key) {
-    debugger
     if (key !== '1') { setSelectedRuleObject(); setCreateRuleTabDisable(true); }
     setActiveTabKey(key);
     setRuleEditing(false);
@@ -862,6 +860,13 @@ const SearchComponent = () => {
       key: "capacity",
       width: 100,
       render: (capacity) => numberFormat(capacity)
+    },
+    {
+      title: "Cari Limiti",
+      dataIndex: "dealerLimit",
+      key: "dealerLimit",
+      width: 100,
+      render: (dealerLimit) => numberFormat(dealerLimit)
     },
     {
       title: "Açıklama",
@@ -1321,7 +1326,8 @@ const SearchComponent = () => {
         onCancel={handleCancel}
         onOk={handleOk}
         footer={[
-          <Button key="back" onClick={handleCancel}>
+          <Button key="back" onClick={handleCancel} disabled={ruleSaveLoading}
+          >
             İptal
           </Button>,
           <Button
@@ -1329,12 +1335,16 @@ const SearchComponent = () => {
             type="primary"
             loading={loading}
             onClick={handleOk}
+            disabled={ruleSaveLoading}
           >
             Kaydet
           </Button>
         ]}
       >
 
+<Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleSaveLoading}
+ >
+          </Spin>
         <Form
           labelCol={{
             span: 4,
@@ -1375,11 +1385,11 @@ const SearchComponent = () => {
             </Form.Item>
             <Form.Item label="Cari Limiti">
               <Input
-                id="customerLimit"
-                onClick={event => onSelectAll("customerLimit")}
+                id="dealerLimit"
+                onClick={event => onSelectAll("dealerLimit")}
                 onChange={event => onChangeCustomerLimit(event)}
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                value={customerLimit}
+                value={dealerLimit}
               />
             </Form.Item>
 
@@ -1399,7 +1409,7 @@ const SearchComponent = () => {
                 <Option value="3">3</Option>
               </Select>
             </Form.Item>
-            <Form.Item label="Tarih">
+            {/* <Form.Item label="Tarih">
               <RangePicker
                 // disabled={selectedRadioItem === 2 ? false : true}
                 // format={siteConfig.dateFormat}
@@ -1407,7 +1417,7 @@ const SearchComponent = () => {
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
               // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
               />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item label="Aktif / Pasif">
               <Switch id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={!isLocked} onChange={isLockedChange} />
             </Form.Item>
@@ -1440,6 +1450,7 @@ const SearchComponent = () => {
         <ReactJson src={queryText} />
 
       </Modal>
+     
     </React.Fragment>
   );
 };
