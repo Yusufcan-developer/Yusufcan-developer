@@ -656,7 +656,8 @@ const SearchComponent = () => {
       setRuleNo(item.ruleNo);
       setRuleName(item.name);
       setCapacity(item.capacity);
-      setPriority(item.priority)
+      setPriority(item.priority);
+      setDealerLimit(item.dealerLimit);
     }
   }
 
@@ -672,6 +673,7 @@ const SearchComponent = () => {
     setDescription();
     setCapacity(1);
     setPriority();
+    setDealerLimit(0);
   };
 
   //Query Modal popup
@@ -957,8 +959,24 @@ const SearchComponent = () => {
       </span>)
   }
 
+  //Tab change and clear data
   function createRuleTab() {
-    setActiveTabKey('1'); setCreateRuleTabDisable(false)
+    setActiveTabKey('1'); setCreateRuleTabDisable(false); setType([]);
+    setDimension([]);
+    setSeries([]);
+    setColor([]);
+    setSurface([]);
+    setKeyword();
+    setCampaignCode(false);
+    setStockStatus(enumerations.StockStatus.None);
+    setQuality([]);
+    setOnChangeFilter(true);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
+    setSelectedRuleObject();
+    return setOnChange(true);
   }
 
   const view = viewType('Reports');
