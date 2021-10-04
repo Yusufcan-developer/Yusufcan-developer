@@ -41,7 +41,7 @@ export default {
       postProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
       postproductionStatusData: apiUrl + 'b2b/lookup/product-production-status',
       postDimensions: apiUrl + 'b2b/lookup/product-dimensions',
-      postProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
+      // postProductionQualities: apiUrl + 'b2b/lookup/product-qualities',
       getDemandStatus: apiUrl + 'core/demands/lookup/status',
       cancelReason: apiUrl + 'core/demands/lookup/cancel-reasons',
       ruleStatus:apiUrl +'b2b/rules/lookup/status',

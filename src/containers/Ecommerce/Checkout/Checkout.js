@@ -152,7 +152,6 @@ export default function () {
     if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
 
     const token = jwtDecode(localStorage.getItem("id_token"));
-    debugger
     if ((token.urole === 'admin') || (token.dcode === 'B555888')) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);

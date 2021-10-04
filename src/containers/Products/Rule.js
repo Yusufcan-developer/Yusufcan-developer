@@ -534,8 +534,18 @@ const SearchComponent = () => {
 
   //Quality Filter Event
   function onChangeProductQuality(checkedProductQualityValue) {
-    setQuality(checkedProductQualityValue);
+    debugger
+
+    const qualityNewArray = _.map(checkedProductQualityValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
+    const nullOrBlankData = _.filter(qualityNewArray, function (Item) {
+      if (Item === null || Item === '') {
+        return true;
+      }
+    });
+    if ((nullOrBlankData.length > 0) && (qualityNewArray.length > 0)) { qualityNewArray.push(''); }
+    setQuality(qualityNewArray);    
     setPageIndex(1);
+    
     return setOnChange(true);
   };
   //Product Production Filter Event
@@ -1170,15 +1180,19 @@ const SearchComponent = () => {
                           onKeyUp={qualitySearchTextFilterkeyPress}
                         /> : null}
                       <CheckboxGroup
-                        options={qualityFilterSearch && qualityFilterSearch.length > 0 ? qualityFilterSearch : productionQualityData}
-                        value={quality}
+                        // options={qualityFilterSearch && qualityFilterSearch.length > 0 ? qualityFilterSearch : productionQualityData}
+                        // value={quality}
+                        value={quality.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
+                        options={
+                          qualityFilterSearch && qualityFilterSearch.length > 0 ? qualityFilterSearch : productionQualityData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)
+                        }
                         onChange={onChangeProductQuality}
                         style={{ display: 'flex', flexDirection: 'column' }}
                       />
                     </Panel>
                   </Collapse>
                 ) : (null)}
-                {/* üretim Durumu */}
+               
                 {(productProductionStatusData.length !== 0 && productProductionStatusData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="Üretim Durumu" />} key="6">
@@ -1187,7 +1201,7 @@ const SearchComponent = () => {
                           id='typeInputSearch'
                           placeholder="Üretim durumu araması"
                           allowClear
-                          onSearch={QualityOnSearch}
+                          onSearch={ProductProductionOnSearch}
                           onKeyUp={filterTextSearchProductProduction}
                         /> : null}
                       <CheckboxGroup
