@@ -148,6 +148,7 @@ export default function () {
     }
   }
   async function popupShow(productItem) {
+    debugger
     if (productItem.itemCode === 'M99999900') { return; }
     if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
 
@@ -184,7 +185,7 @@ export default function () {
       //Talep başarılı bir şekilde oluşturulduysa sipariş sepetinden ilgili ürün silinecek.
       const newProductQuantity = [];
       _.each(productQuantity, (product, i) => {
-        if ((itemCode !== itemCode || product.isPartial !== selectedItemPartial)) {
+        if (itemCode !== product.itemCode || product.isPartial !== selectedItemPartial) {
           newProductQuantity.push(product);
         }
       });
@@ -207,6 +208,7 @@ export default function () {
   }
   //Talep oluşturma popup işlemleri sonucu
   async function onCompletePopupDemand(createDemand = false, item, amount) {
+    debugger
     //Talep Oluşturma işlemi seçildiyse
     if (createDemand === true) {      
       postSaveDemand(amount, item.itemCode);
@@ -724,6 +726,7 @@ export default function () {
         return status;
       })
       .then(data => {
+        debugger
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
             message.warning({ content: 'Talep kaydetme işlemi başarısızdır. ' + data.message, duration: 2 });
