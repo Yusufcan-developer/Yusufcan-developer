@@ -211,6 +211,9 @@ export default function () {
     if (createDemand === true) {      
       postSaveDemand(amount, item.itemCode);
     }
+    else{
+      setDemandHide(false);
+    }
   }
   //Get Cart
   async function getCartList() {

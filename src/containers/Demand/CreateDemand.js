@@ -202,7 +202,6 @@ const CreateDemand = (props) => {
                             <br /><br />                           
                             <Radio.Group onChange={onChangeDemandAmountSelectionRadioButton} value={amountType} style={{paddingBottom:'25px'}} >
                                 <Space direction="vertical">
-                                    <Radio value={1}>Talep Oluşturma</Radio>
                                     <Radio value={2}>Fazla Miktarı Kadar</Radio>
                                     <Radio value={3}>Tamamını Oluştur</Radio>
                                     <Radio value={4}>

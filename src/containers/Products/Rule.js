@@ -34,7 +34,8 @@ import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 //Other Library
 import _ from 'underscore';
 import logMessage from '@iso/config/logMessage';
-
+import moment, { now } from 'moment';
+import 'moment/locale/tr'
 //Desing style
 import { SidebarWrapper } from '@iso/components/Algolia/AlgoliaComponent.style';
 import ContentHolder from '@iso/components/utility/contentHolder';
@@ -82,11 +83,12 @@ const SearchComponent = () => {
   const [queryText, setQueryText] = useState();
   const [queryPreview, setQueryPreview] = useState(false);
   const [createRuleTabDisabled, setCreateRuleTabDisable] = useState(true);
+  const [fromDate, setFromDate] = useState(moment(new Date()));
+  const [toDate, setToDate] = useState(moment(new Date()));
   const { RangePicker } = DatePicker;
 
   const [selectedItem, setSelectedItem] = useState();
   const [componentSize, setComponentSize] = useState('default');
-
   //Page Index,Page Size,Keywor states
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -536,7 +538,6 @@ const SearchComponent = () => {
 
   //Quality Filter Event
   function onChangeProductQuality(checkedProductQualityValue) {
-    debugger
 
     const qualityNewArray = _.map(checkedProductQualityValue.map(e => e === siteConfig.nullOrEmptySearchItem || e === '' ? null : e));
     const nullOrBlankData = _.filter(qualityNewArray, function (Item) {
@@ -749,6 +750,7 @@ const SearchComponent = () => {
     if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined')) {
       //Yeni bir kural objesi tanımlanıyor.
 
+
       const query = {
         "keyword": keyword,
         "productionStatus": productProduction,
@@ -766,7 +768,7 @@ const SearchComponent = () => {
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
-        "dealerLimit": parseFloat(dealerLimit), "query": query
+        "dealerLimit": parseFloat(dealerLimit), "from": fromDate.format('YYYY-MM-DD HH:mm'),"to": toDate.format('YYYY-MM-DD HH:mm'), "query": query
       }
       await postSaveRule(rule);
     } else {
@@ -840,7 +842,6 @@ const SearchComponent = () => {
 
   //Kural Silme işlemi
   function deleteRuleShowPopup(item) {
-    debugger
     setRuleName(item.name);
     setRuleNo(item.id)
     setDeleteRuleVisible(true);
@@ -1099,6 +1100,13 @@ const SearchComponent = () => {
     setCapacity(1);
     setRuleType(e.target.value);
   }
+
+  //Change from and To date
+  function onChangePicker(value, dateString) {
+    setFromDate(moment(dateString[0], null));
+    setToDate(moment(dateString[1], null));
+  }
+
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -1543,13 +1551,22 @@ const SearchComponent = () => {
                   <Radio value={1}>Eksi Bakiye Limiti
                     {ruleType === 1 ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
                   <Radio value={2}>Toplam Sipariş Miktarı
-                    {ruleType === 2 ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />   <RangePicker
+                    {ruleType === 2 ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />
+                      <RangePicker
+                        style={{ marginLeft: '2px' }}
+                        showTime={{ format: 'HH:mm' }}
+                        format="YYYY-MM-DD HH:mm"
+                        onChange={onChangePicker}
+                      // onOk={onOk}
+                      />
+                      {/* <RangePicker
                       // disabled={selectedRadioItem === 2 ? false : true}
                       // format={siteConfig.dateFormat}
                       // onChange={changeTimePicker}
                       style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                     // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
-                    /> </React.Fragment> : null}</Radio>
+                    />  */}
+                    </React.Fragment> : null}</Radio>
 
                 </Space>
               </Radio.Group>

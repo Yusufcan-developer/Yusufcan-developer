@@ -52,7 +52,7 @@ export default (props) => {
 
     }
     else if ((item === 'VITRIFIYE') && (value.isVisibleVitrifiye)) {
-        name = 'VİTFİFİYE';
+        name = 'VİTRİFİYE';
         actualTry = value.actualVitrifiyeTry;
         goalTry = value.goalVitrifiyeTry;
         calculatedRatio = value.calculatedRatioVitrifiye * 100;
