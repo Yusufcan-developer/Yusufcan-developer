@@ -864,9 +864,13 @@ const SearchComponent = () => {
         return status;
       })
       .then(data => {
-        debugger
-
-        productInfo = data;
+        if (data.isSuccessful === true) {
+          message.info('Kural Silme işlemi başarılıdır.'); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.successDelete); handleCancel(); ruleSetOnChange(true);
+          setActiveTabKey('0');
+          setCreateRuleTabDisable(true);
+        }
+        else if (data.isSuccessful === false) { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); }
+        else { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); }
       })
       .catch();
     return productInfo;
@@ -1029,7 +1033,7 @@ const SearchComponent = () => {
             <a onClick={() => selectedRule(record)}>
               <i className="ion-android-create" />
             </a>
-            <a onClick={() => deleteRuleShowPopup(record)} style={{marginLeft:'15px'}}>
+            <a onClick={() => deleteRuleShowPopup(record)} style={{ marginLeft: '15px' }}>
               <i className="ion-android-close" />
             </a>
           </React.Fragment>
@@ -1534,7 +1538,7 @@ const SearchComponent = () => {
             </Form.Item>
 
             <Form.Item label="Kapasite">
-            <Radio.Group onChange={onChangeRuleTypeRadioButton} value={ruleType} style={{ paddingBottom: '25px' }} >
+              <Radio.Group onChange={onChangeRuleTypeRadioButton} value={ruleType} style={{ paddingBottom: '25px' }} >
                 <Space direction="vertical">
                   <Radio value={1}>Eksi Bakiye Limiti
                     {ruleType === 1 ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
@@ -1558,7 +1562,7 @@ const SearchComponent = () => {
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 value={dealerLimit}
               />
-             
+
             </Form.Item>
 
             <Form.Item label="Öncelik Sırası">
@@ -1635,7 +1639,7 @@ const SearchComponent = () => {
         onCancel={handleCancel}
         onOk={deleteRule}
       >
-        <p>{ruleName+ ' ' + 'kuralını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
+        <p>{ruleName + ' ' + 'kuralını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
         <Form
           form={form}
           layout="vertical"

@@ -102,5 +102,7 @@ export default {
     {
         save:'kural başarılı bir şekilde oluşturulmuştur. ',
         error:'kural oluşturma işlemi başarısızdır. ',
+        delete:'kural silme işlemi başarısızdır. ',
+        successDelete:'kural silme işlemi başarılıdır. ',
     }
 };
