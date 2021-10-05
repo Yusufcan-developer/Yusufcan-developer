@@ -9,7 +9,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Table, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Tooltip, Select, Comment, Avatar, DatePicker, Tag } from "antd";
+import { Form, Col, Row, Table, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Space, Select, Comment, Avatar, DatePicker, Tag } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -114,6 +114,8 @@ const SearchComponent = () => {
   const [priority, setPriority] = useState();
   const [ruleEditing, setRuleEditing] = useState(false);
   const [ruleSaveLoading, setRuleSaveLoading] = useState(false);
+  const [deleteRuleVisible, setDeleteRuleVisible] = useState(false);
+
   //Sorting states
   const [sortingField, setSortingField] = useState();
   const [sortingOrder, setSortingOrder] = useState();
@@ -130,7 +132,7 @@ const SearchComponent = () => {
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode(enumerations.SiteMode.Admin));
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
   const [productProductionFilterSearch, setProductProductionFilterSearch] = useState();
-
+  const [ruleType, setRuleType] = useState();
   const [searchKey, setSearchKey] = useState('');
   const { Search } = Input;
   const statusChildren = [];
@@ -151,7 +153,7 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, typeof selectedruleObject === 'undefined' ? { "keyword": keyword, "qualities": quality,"productionStatus": productProduction, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' } : selectedruleObject, category);
+    useProductData(`${siteConfig.api.products.postProducts}`, typeof selectedruleObject === 'undefined' ? { "keyword": keyword, "qualities": quality, "productionStatus": productProduction, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' } : selectedruleObject, category);
 
   //Kurallar Listesi
   const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
@@ -168,25 +170,25 @@ const SearchComponent = () => {
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
 
   //Post Type
-  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  const [productTypeData, loadingFilter, setOnChangeFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Post Dimension
-  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Post Series
-  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Post Color
-  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  const [colorData, loadingColorFilter, setOnChangeColorFilter] = usePostFilter(`${siteConfig.api.lookup.postColors}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Post Surface
-  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  const [surfaceData, loadingSurfaceFilter, setOnChangeSurfaceFilter] = usePostFilter(`${siteConfig.api.lookup.postSurfaces}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Get Quality
-  const [productionQualityData, loadingQualityFilter, setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.postProductionQualities}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  const [productionQualityData, loadingQualityFilter, setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.postProductionQualities}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Pos Product Production Status
-  const [productProductionStatusData, loadingProductProductionFilter, setOnChangeProductProductionFilter] = usePostFilter(`${siteConfig.api.lookup.postproductionStatusData}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension,"productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  const [productProductionStatusData, loadingProductProductionFilter, setOnChangeProductProductionFilter] = usePostFilter(`${siteConfig.api.lookup.postproductionStatusData}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Style
   const listClass = `isoSingleCard card grid`;
@@ -543,9 +545,9 @@ const SearchComponent = () => {
       }
     });
     if ((nullOrBlankData.length > 0) && (qualityNewArray.length > 0)) { qualityNewArray.push(''); }
-    setQuality(qualityNewArray);    
+    setQuality(qualityNewArray);
     setPageIndex(1);
-    
+
     return setOnChange(true);
   };
   //Product Production Filter Event
@@ -728,6 +730,7 @@ const SearchComponent = () => {
 
   function clearParams() {
     setVisible(false);
+    setDeleteRuleVisible(false);
     setRuleNo();
     setRuleName();
     setDescription();
@@ -834,6 +837,40 @@ const SearchComponent = () => {
   function onChangePriority(value) {
     setPriority(value);
   }
+
+  //Kural Silme işlemi
+  function deleteRuleShowPopup(item) {
+    debugger
+    setRuleName(item.name);
+    setRuleNo(item.id)
+    setDeleteRuleVisible(true);
+  }
+
+  //Kural silme fetch işlemi
+  async function deleteRule() {
+    //Get User Info
+    let productInfo;
+    const requestOptions = {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+
+        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+      }
+    };
+    await fetch(`${siteConfig.api.report.deleteRule}${ruleNo}`, requestOptions)
+      .then(response => {
+        const status = apiStatusManagement(response);
+        return status;
+      })
+      .then(data => {
+        debugger
+
+        productInfo = data;
+      })
+      .catch();
+    return productInfo;
+  }
   function selectedRule(item) {
     const rule = (item.query);
     if (rule && rule.categories) {
@@ -894,6 +931,14 @@ const SearchComponent = () => {
   function statusHandleChange(value) {
     setFilterStatus(value);
   }
+
+  //RadioButton değişiklikleri
+  function onChangeAmountEntered(e) {
+    if (!isNaN(e.target.value)) {
+      setDealerLimit(parseInt(e.target.value));
+    }
+  }
+
   //Rule Columns
   let columns = [
 
@@ -984,6 +1029,9 @@ const SearchComponent = () => {
             <a onClick={() => selectedRule(record)}>
               <i className="ion-android-create" />
             </a>
+            <a onClick={() => deleteRuleShowPopup(record)} style={{marginLeft:'15px'}}>
+              <i className="ion-android-close" />
+            </a>
           </React.Fragment>
         )
       },
@@ -1042,7 +1090,11 @@ const SearchComponent = () => {
     setSelectedRuleObject();
     return setOnChange(true);
   }
-
+  //Talep oluşturma durumları seçimi
+  const onChangeRuleTypeRadioButton = e => {
+    setCapacity(1);
+    setRuleType(e.target.value);
+  }
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
@@ -1192,7 +1244,7 @@ const SearchComponent = () => {
                     </Panel>
                   </Collapse>
                 ) : (null)}
-               
+
                 {(productProductionStatusData.length !== 0 && productProductionStatusData !== null) ? (
                   <Collapse {...collapseProps}>
                     <Panel header={<IntlMessages id="Üretim Durumu" />} key="6">
@@ -1449,9 +1501,9 @@ const SearchComponent = () => {
         ]}
       >
 
-<Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleSaveLoading}
- >
-          </Spin>
+        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleSaveLoading}
+        >
+        </Spin>
         <Form
           labelCol={{
             span: 4,
@@ -1482,13 +1534,21 @@ const SearchComponent = () => {
             </Form.Item>
 
             <Form.Item label="Kapasite">
-              <Input
-                id="edit"
-                onClick={event => onSelectAll("edit")}
-                onChange={event => onChangeCapaciy(event)}
-                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                value={capacity}
-              />
+            <Radio.Group onChange={onChangeRuleTypeRadioButton} value={ruleType} style={{ paddingBottom: '25px' }} >
+                <Space direction="vertical">
+                  <Radio value={1}>Eksi Bakiye Limiti
+                    {ruleType === 1 ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
+                  <Radio value={2}>Toplam Sipariş Miktarı
+                    {ruleType === 2 ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />   <RangePicker
+                      // disabled={selectedRadioItem === 2 ? false : true}
+                      // format={siteConfig.dateFormat}
+                      // onChange={changeTimePicker}
+                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                    // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
+                    /> </React.Fragment> : null}</Radio>
+
+                </Space>
+              </Radio.Group>
             </Form.Item>
             <Form.Item label="Cari Limiti">
               <Input
@@ -1498,6 +1558,7 @@ const SearchComponent = () => {
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 value={dealerLimit}
               />
+             
             </Form.Item>
 
             <Form.Item label="Öncelik Sırası">
@@ -1511,9 +1572,17 @@ const SearchComponent = () => {
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
               >
-                <Option value="1">1</Option>
+                <Option value="1">1 - Yüksek Öncelikli</Option>
                 <Option value="2">2</Option>
                 <Option value="3">3</Option>
+                <Option value="4">4</Option>
+                <Option value="5">5</Option>
+                <Option value="6">6</Option>
+                <Option value="7">7</Option>
+                <Option value="8">8</Option>
+                <Option value="9">9</Option>
+                <Option value="10">10 - Düşük Öncelikli</Option>
+
               </Select>
             </Form.Item>
             {/* <Form.Item label="Tarih">
@@ -1557,7 +1626,26 @@ const SearchComponent = () => {
         <ReactJson src={queryText} />
 
       </Modal>
-     
+      <Modal
+        visible={deleteRuleVisible}
+        title={ruleName + " kuralı silinecektir"}
+        okText="Sil"
+        cancelText="İptal"
+        maskClosable={false}
+        onCancel={handleCancel}
+        onOk={deleteRule}
+      >
+        <p>{ruleName+ ' ' + 'kuralını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{
+            modifier: 'public',
+          }}
+        >
+        </Form>
+      </Modal>
     </React.Fragment>
   );
 };

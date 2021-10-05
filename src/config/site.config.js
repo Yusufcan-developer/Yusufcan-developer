@@ -81,6 +81,7 @@ export default {
       postDemands: apiUrl + 'core/demands',
       postDemandItems: apiUrl + 'core/demands/search',
       rules: apiUrl+'b2b/rules/search',
+      deleteRule: apiUrl + 'b2b/rules/',
       postRules:apiUrl + 'b2b/rules',
       postDemandUpdate:apiUrl + 'core/demands/update-status/{demandId}',
 
