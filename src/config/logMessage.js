@@ -93,7 +93,7 @@ export default {
     Demand:
     {
         browse:'Talep listesi',
-        save:'talebi başarılı şekilde oluşturulmuştur. ',
+        save:' talebi başarılı şekilde oluşturulmuştur. ',
         error:'talebi oluşturulamamıştır. ',
         updateError:'talebin durum güncellemesi başarısızdır. ',
         updateSuccess:'talebin durum güncellemesi başarılıdır. '

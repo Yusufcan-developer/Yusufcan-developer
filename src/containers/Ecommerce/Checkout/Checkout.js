@@ -176,7 +176,7 @@ export default function () {
     setOnChange(true);
   }
 
-  async function demandSaveResult(result, itemCode, amount, errorMessage) {
+  async function demandSaveResult(result, itemCode, amount, errorMessage, demandNo) {
     if (result === true) {
       setHide(false);
       setDemandHide(false);
@@ -193,7 +193,7 @@ export default function () {
       await getCartList();
       await AllCartItemChangeOrderAmount();
       setOnChange(true);
-      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, itemCode + ' Ürünün ' + logMessage.Demand.save + 'Miktar ' + amount);
+      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add,'Talep Numarası:'+demandNo+ ' Ürün:' +itemCode + logMessage.Demand.save + 'Miktar ' + amount);
 
     }
 
@@ -726,11 +726,11 @@ export default function () {
       .then(data => {
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
-            message.warning({ content: 'kaydetme işlemi başarısızdır. ' + data.message, duration: 2 });
+            message.warning({ content: 'Talep kaydetme işlemi başarısızdır. ' + data.message, duration: 2 });
             demandSaveResult(false,itemCode,amount,data.message);
           } else {
-            message.success({ content: 'başarıyla kaydedildi', duration: 2 });
-            demandSaveResult(true,itemCode,amount);
+            message.success({ content: data.demandNo+' talep numarasıyla başarıyla kaydedildi', duration: 5 });
+            demandSaveResult(true,itemCode,amount,'',data.demandNo);
           }
         }
       })
