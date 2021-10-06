@@ -707,7 +707,7 @@ const SearchComponent = () => {
     return setOnChange(true);
   }
 
-  const siteMode = getSiteMode();
+  const siteMode = 'Admin'//getSiteMode();
   function onCompletePopupRelation() {
     setHide(false);
   }
@@ -763,7 +763,7 @@ const SearchComponent = () => {
         "colors": color,
         "dimensions": dimension,
         "balanceLevel": stockStatus,
-        "categories": category === undefined ? color : [category], "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode
+        "categories": category === undefined ? color : [category], "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'admin'
       }
       const rule = {
         "ruleNo": ruleNo,
