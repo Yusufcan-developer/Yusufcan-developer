@@ -30,6 +30,11 @@ export default {
         Active: 'Active',
         Archived: 'Archived',
     },
+    RuleType:
+    {
+        SalableBalance:'SalableBalance',
+        PermittedOrder:'PermittedOrder',
+    },
     SalesStatus:
     {
         All: 'All',

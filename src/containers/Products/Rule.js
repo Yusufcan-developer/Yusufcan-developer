@@ -134,7 +134,7 @@ const SearchComponent = () => {
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode(enumerations.SiteMode.Admin));
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
   const [productProductionFilterSearch, setProductProductionFilterSearch] = useState();
-  const [ruleType, setRuleType] = useState();
+  const [ruleType, setRuleType] = useState(enumerations.RuleType.SalableBalance);
   const [searchKey, setSearchKey] = useState('');
   const { Search } = Input;
   const statusChildren = [];
@@ -716,12 +716,13 @@ const SearchComponent = () => {
   function createRule(item) {
     setVisible(true);
     if (ruleEditing && ruleEditing === true) {
+      debugger
       setRuleNo(item.ruleNo);
       setRuleName(item.name);
       setCapacity(item.capacity);
       setPriority(item.priority);
       setDealerLimit(item.dealerLimit);
-      setRuleType();
+      setRuleType(item.ruleType);
     }
   }
 
@@ -771,7 +772,7 @@ const SearchComponent = () => {
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
-        "dealerLimit": parseFloat(dealerLimit), "from": fromDate.format('YYYY-MM-DD HH:mm'),"to": toDate.format('YYYY-MM-DD HH:mm'), "query": query
+        "dealerLimit": parseFloat(dealerLimit), "ruleType": ruleType ,"from": fromDate.format('YYYY-MM-DD HH:mm'),"to": toDate.format('YYYY-MM-DD HH:mm'), "query": query
       }
       await postSaveRule(rule);
     } else {
@@ -1101,7 +1102,9 @@ const SearchComponent = () => {
   //Talep oluşturma durumları seçimi
   const onChangeRuleTypeRadioButton = e => {
     // setCapacity(0);
-    setRuleType(e.target.value);
+    // setRuleType(e.target.value);
+    setRuleType(enumerations.RuleType.SalableBalance);
+
   }
 
   //Change from and To date
@@ -1551,10 +1554,10 @@ const SearchComponent = () => {
             <Form.Item label="Kapasite">
               <Radio.Group onChange={onChangeRuleTypeRadioButton} value={ruleType} style={{ paddingBottom: '25px' }} >
                 <Space direction="vertical">
-                  <Radio value={1}>Eksi Bakiye Limiti
-                    {ruleType === 1 ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
-                  <Radio value={2}>Toplam Sipariş Miktarı
-                    {ruleType === 2 ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />
+                  <Radio value={ruleType}>Eksi Bakiye Limiti
+                    {ruleType === ruleType ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
+                  <Radio disabled={true} value={''}>Toplam Sipariş Miktarı
+                    {ruleType === enumerations.RuleType.PermittedOrder ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />
                       <RangePicker
                         style={{ marginLeft: '2px' }}
                         showTime={{ format: 'HH:mm' }}
