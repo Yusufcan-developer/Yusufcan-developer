@@ -500,11 +500,7 @@ export default {
               label: "sidebar.customerRecords",
               leftIcon: "ion-android-mail"
             },
-            {
-              key: "reports/demands/",
-              label: "sidebar.demands",
-              leftIcon: "ion-android-mail"
-            },
+            
             {
               key: "reports/cheques/",
               label: "sidebar.checkingReports",
