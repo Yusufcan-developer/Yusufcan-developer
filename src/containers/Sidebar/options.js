@@ -501,6 +501,11 @@ export default {
               leftIcon: "ion-android-mail"
             },
             {
+              key: "reports/demands/",
+              label: "sidebar.demands",
+              leftIcon: "ion-android-mail"
+            },
+            {
               key: "reports/cheques/",
               label: "sidebar.checkingReports",
               leftIcon: "ion-android-mail"
