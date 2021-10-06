@@ -75,7 +75,7 @@ const SearchComponent = () => {
   const [popupData, setPopupData] = useState();
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
-  const [capacity, setCapacity] = useState(1);
+  const [capacity, setCapacity] = useState(0);
   const [dealerLimit, setDealerLimit] = useState(0);
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
@@ -721,6 +721,7 @@ const SearchComponent = () => {
       setCapacity(item.capacity);
       setPriority(item.priority);
       setDealerLimit(item.dealerLimit);
+      setRuleType();
     }
   }
 
@@ -735,9 +736,11 @@ const SearchComponent = () => {
     setRuleNo();
     setRuleName();
     setDescription();
-    setCapacity(1);
+    setCapacity(0);
     setPriority();
     setDealerLimit(0);
+    setRuleType();
+
   };
 
   //Query Modal popup
@@ -1097,7 +1100,7 @@ const SearchComponent = () => {
   }
   //Talep oluşturma durumları seçimi
   const onChangeRuleTypeRadioButton = e => {
-    setCapacity(1);
+    // setCapacity(0);
     setRuleType(e.target.value);
   }
 
