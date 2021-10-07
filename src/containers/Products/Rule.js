@@ -716,7 +716,6 @@ const SearchComponent = () => {
   function createRule(item) {
     setVisible(true);
     if (ruleEditing && ruleEditing === true) {
-      debugger
       setRuleNo(item.ruleNo);
       setRuleName(item.name);
       setCapacity(item.capacity);

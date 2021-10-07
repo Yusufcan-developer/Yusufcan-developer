@@ -15,7 +15,7 @@ import InputBox from './InputBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
-import { Col, Modal, Table, Input, Space, message, Alert, Select } from "antd";
+import { Col, Modal, Table, Input, Space, message, Alert, Select, Popover } from "antd";
 import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { InputBoxWrapper } from './Checkout.styles';
@@ -99,6 +99,7 @@ export default function () {
   const [quantity, setQuantity] = useState();
   const [selectedItemPartial, setSelectedItemPartial] = useState();
   const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
+  const [demandAmount, setDemandAmount]=useState();
   const history = useHistory();
   const location = useLocation();
   const {
@@ -142,20 +143,22 @@ export default function () {
             popupShow={e => popupShow(product)}
             onComplete={onCompletePopupRelation}
             quantityLess={quantityLess}
+            // onCompleteGoBox={}
           />
+          
         );
       });
     }
   }
   async function popupShow(productItem) {
-    debugger
     if (productItem.itemCode === 'M99999900') { return; }
     if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
 
     const token = jwtDecode(localStorage.getItem("id_token"));
-    if ((token.urole === 'admin') || (token.dcode === 'B555888')) {
+    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (typeof productItem.totalVat2!=='undefined')) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
+      setDemandAmount(productItem.amount);
       return setDemandHide(true);
     }
     if (productItem.hasDependentOrRelatedProducts === true) {
@@ -208,7 +211,6 @@ export default function () {
   }
   //Talep oluşturma popup işlemleri sonucu
   async function onCompletePopupDemand(createDemand = false, item, amount) {
-    debugger
     //Talep Oluşturma işlemi seçildiyse
     if (createDemand === true) {      
       postSaveDemand(amount, item.itemCode);
@@ -726,7 +728,6 @@ export default function () {
         return status;
       })
       .then(data => {
-        debugger
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
             message.warning({ content: 'Talep kaydetme işlemi başarısızdır. ' + data.message, duration: 2 });
@@ -1223,7 +1224,7 @@ export default function () {
               dependentProducts={[]}
               relatedProducts={[]}
               checkOutPage={true}
-              demandAmount={36}
+              demandAmount={demandAmount}
               confirmLoading={demandConfirmLoading}
               onComplete={onCompletePopupDemand}
             /> : null}

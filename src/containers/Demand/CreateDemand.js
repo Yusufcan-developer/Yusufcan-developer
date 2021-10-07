@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 
 //Components
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Space, Image, Input, message, Radio } from "antd";
+import { Col, Card, Row, Button, Space, Image, Input } from "antd";
+import Form from "@iso/components/uielements/form";
 
 //Fetch
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
@@ -28,7 +29,8 @@ const CreateDemand = (props) => {
     const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
     const [searchSiteMode, setSearchSitemode] = useState();
     const [amountType, setAmountType] = useState();
-    
+    const [form] = Form.useForm();
+
     const [inputDemandAmount, setSelectedDemandAmount] = useState(demandAmount);
     var jwtDecode = require('jwt-decode');
 
@@ -72,24 +74,10 @@ const CreateDemand = (props) => {
     }
 
     //Talep oluşturma popup kaydetme işlemi seçimlere göre hareket ediyor.
-    async function handleSave(params) {
-        switch (amountType) {
-            case 1:
-                onComplete(false);
-                break;
-            case 2:
-                onComplete(true,item,inputDemandAmount)
-                break;
-            case 3:
-                onComplete(true,item,inputDemandAmount)
-                break;
-            case 4:
-                onComplete(true,item,inputDemandAmount)
-                break;
-            default:
-                break;
-        }
+    async function handleSave() {
+        onComplete(true, item, inputDemandAmount);
     }
+    
     //Miktar girilen text alanında tüm değerleri seçiyor
     function onSelectAll(event) {
         event.target.select();
@@ -127,31 +115,14 @@ const CreateDemand = (props) => {
         return productInfo;
     }
 
-    //Talep oluşturma durumları seçimi
-    const onChangeDemandAmountSelectionRadioButton = e => {
-        setAmountType(e.target.value);
-        switch (e.target.value) {
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                setSelectedDemandAmount(demandAmount);
-                break;
-            default:
-                break;
-        }
-    }
-
-
     //RadioButton değişiklikleri
     function onChangeAmountEntered(e) {
         if (!isNaN(e.target.value)) {
             setSelectedDemandAmount(parseInt(e.target.value));
         }
     }
-    
-        return (
+
+    return (
         <React.Fragment>
             <Box>
                 <Modal
@@ -173,7 +144,7 @@ const CreateDemand = (props) => {
                             Kaydet
                         </Button>
                     ]}>
-                    {/* { Eklenmesi gereken ürün sayısı bilgisi } */}                   
+                    {/* { Eklenmesi gereken ürün sayısı bilgisi } */}
                     <Row style={rowStyle} gutter={gutter} justify="start">
                         <Col md={12} sm={12} xs={24} style={colStyle} >
                             <Box>
@@ -199,24 +170,25 @@ const CreateDemand = (props) => {
                         </Col>
                         <Col md={12} sm={12} xs={24} style={colStyle} >
                             <span style={{ fontWeight: 'bold', color: 'red' }}>Seçilmiş olan ürün miktarı fabrika toplam üretim miktarından fazladır. Bu yüzden dolayı talep oluşturabilirsiniz.</span>
-                            <br /><br />                           
-                            <Radio.Group onChange={onChangeDemandAmountSelectionRadioButton} value={amountType} style={{paddingBottom:'25px'}} >
-                                <Space direction="vertical">
-                                    <Radio value={2}>Fazla Miktarı Kadar</Radio>
-                                    <Radio value={3}>Tamamını Oluştur</Radio>
-                                    <Radio value={4}>
-                                        Kendim Girmek İstiyorum...
-                                        {amountType === 4 ? <Input style={{ width: 100, marginLeft: 10 }} value={inputDemandAmount} onChange={event => onChangeAmountEntered(event)} onClick={event => onSelectAll(event)} /> : null}
-                                    </Radio>
-                                </Space>
-                            </Radio.Group>
+                            <br /><br />
+                            <Form
+                                form={form}
+                                layout="vertical"
+                                name="form_in_modal"
+                                initialValues={{
+                                    modifier: 'public',
+                                }}
+                            >
+                                <Form.Item
+                                    label="Talep Miktarı">
+                                    <Input style={{ width: 100, marginRight:'5px' }} value={inputDemandAmount} onChange={event => onChangeAmountEntered(event)} onClick={event => onSelectAll(event)} />
+                                   {(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Toplam Tutar: ' : '') + numberFormat(inputDemandAmount * item.listPrice) + " TL"}
+
+
+                                </Form.Item>
+                            </Form>
                             <div className="isoCardContent">
-                                <div className="isoCardTitle">{(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Talep Miktarı: ' : '') + inputDemandAmount} {item.unit}
-                                </div>
-                            </div>
-                            <div className="isoCardContent">
-                                <div className="isoCardTitle">{(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Toplam Tutar: ' : '') +numberFormat(inputDemandAmount * item.listPrice) + " TL" }
-                                </div>
+                               
                             </div>
                         </Col>
                     </Row>
