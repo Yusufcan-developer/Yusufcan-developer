@@ -132,10 +132,11 @@ export default function () {
   function renderProducts() {
     if (typeof data !== 'undefined') {
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
-      let quantityLess;
+      let quantityLess;let OverCapacity;
       return productList.map(product => {
         if (productList.length > 0) {
-          quantityLess = _.find(product.validationMessages, function (x) { return x.Key === "DependentProduct"; });
+          quantityLess = _.find(product.validationMessages, function (x) { return x.Key === "DependentProduct" ; });
+          OverCapacity= _.find(product.validationMessages, function (x) { return x.Key === "OverCapacity" ; });
         }
         return (
           <SingleOrderInfo
@@ -144,6 +145,7 @@ export default function () {
             popupShow={e => popupShow(product)}
             onComplete={onCompletePopupRelation}
             quantityLess={quantityLess}
+            OverCapacity={OverCapacity}
             // onCompleteGoBox={}
           />
           
@@ -156,7 +158,8 @@ export default function () {
     if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
 
     const token = jwtDecode(localStorage.getItem("id_token"));
-    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (typeof productItem.OverCapacity!=='undefined')) {
+ 
+    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity" ; }))) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       setDemandAmount(productItem.amount);

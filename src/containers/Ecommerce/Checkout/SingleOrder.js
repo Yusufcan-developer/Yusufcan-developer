@@ -5,7 +5,7 @@ import { Col, Button, Popover } from "antd";
 import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 
-export default function ({ productItem, popupShow, quantityLess, onCompleteGoBox }) {
+export default function ({ productItem, popupShow, quantityLess, onCompleteGoBo, OverCapacity }) {
   const [form] = Form.useForm();
   const [popoverShow, setPopoverShow] = useState(false);
   const trimName = productItem.item.description ? productItem.item.description.substring(0, 30) : '';
@@ -18,7 +18,7 @@ export default function ({ productItem, popupShow, quantityLess, onCompleteGoBox
   return (
     <div className="isoSingleOrderInfo">
       <p>
-        <a ><span onClick={() =>{typeof productItem.OverCapacity!=='undefined' ? setPopoverShow(true):popupShow();}} style={{ color: '#000000', cursor: 'pointer', textDecorationLine: typeof quantityLess !== 'undefined' ? 'underline' : null }}>{productItem.itemCode} </span></a>
+        <a ><span onClick={() =>{typeof productItem.OverCapacity!=='undefined' ? setPopoverShow(true):popupShow();}} style={{ color: '#000000', cursor: 'pointer', textDecorationLine: typeof quantityLess !== 'undefined' 	|| typeof OverCapacity !== 'undefined' ? 'underline' : null }}>{productItem.itemCode} </span></a>
         <span>
 
           <Popover               
