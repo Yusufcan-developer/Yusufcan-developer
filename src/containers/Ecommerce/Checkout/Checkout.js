@@ -15,7 +15,7 @@ import InputBox from './InputBox';
 import IntlMessages from '@iso/components/utility/intlMessages';
 import { BillingFormWrapper } from './Checkout.styles';
 import siteConfig from "@iso/config/site.config";
-import { Col, Modal, Table, Input, Space, message, Alert, Select, Popover } from "antd";
+import { Col, Modal, Table, Input, Space, message, Alert, Select, Spin } from "antd";
 import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { InputBoxWrapper } from './Checkout.styles';
@@ -100,6 +100,7 @@ export default function () {
   const [selectedItemPartial, setSelectedItemPartial] = useState();
   const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
   const [demandAmount, setDemandAmount]=useState();
+  const [loading,setLoading]=useState(true);
   const history = useHistory();
   const location = useLocation();
   const {
@@ -117,7 +118,7 @@ export default function () {
   const siteMode = getSiteMode();
 
   let searchUrl = queryString.parse(location.search);
-  const [data, setOnChange] = useGetCartCheckOut(addressCode, searchUrl, includeTransportation);
+  const [data, setOnChange, dataLoading] = useGetCartCheckOut(addressCode, searchUrl, includeTransportation);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -910,8 +911,12 @@ export default function () {
 
   return (
     <CheckoutContents>
-      <LayoutWrapper className="isoCheckoutPage">
+      <LayoutWrapper className="isoCheckoutPage">      
         <Box>
+        <div style={{textAlign:'center', borderRadius:'4px'}}>
+        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={dataLoading}
+        >
+        </Spin></div>
           <div className="isoBillingAddressWrapper">
             {hasOrderSavePermission !== true ? <Alert
               message="Uyarı"

@@ -1517,10 +1517,10 @@ const SearchComponent = () => {
           </Button>
         ]}
       >
-
+<div style={{textAlign:'center', borderRadius:'4px'}}>
         <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleSaveLoading}
         >
-        </Spin>
+        </Spin></div>
         <Form
           labelCol={{
             span: 4,
