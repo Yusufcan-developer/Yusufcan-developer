@@ -76,7 +76,8 @@ const SearchComponent = () => {
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
   const [capacity, setCapacity] = useState(0);
-  const [dealerLimit, setDealerLimit] = useState(0);
+  const [dealerDemandLimit, setDealerDemandLimit] = useState(0);
+  const [dealerOrderLimit, setDealerOrderLimit] = useState(0);
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
   const [selectedruleObjectText, setSelectedRuleObjectText] = useState();
@@ -134,7 +135,7 @@ const SearchComponent = () => {
   const [searchSiteMode, setSearchSitemode] = useState(getSiteMode(enumerations.SiteMode.Admin));
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
   const [productProductionFilterSearch, setProductProductionFilterSearch] = useState();
-  const [ruleType, setRuleType] = useState(enumerations.RuleType.SalableBalance);
+  const [ruleType, setRuleType] = useState();
   const [searchKey, setSearchKey] = useState('');
   const { Search } = Input;
   const statusChildren = [];
@@ -720,7 +721,8 @@ const SearchComponent = () => {
       setRuleName(item.name);
       setCapacity(item.capacity);
       setPriority(item.priority);
-      setDealerLimit(item.dealerLimit);
+      setDealerDemandLimit(item.dealerDemandLimit);
+      setDealerOrderLimit(item.dealerOrderLimit);
       setRuleType(item.ruleType);
     }
   }
@@ -738,7 +740,8 @@ const SearchComponent = () => {
     setDescription();
     setCapacity(0);
     setPriority();
-    setDealerLimit(0);
+    setDealerDemandLimit(0);
+    setDealerOrderLimit(0);
     setRuleType();
 
   };
@@ -771,7 +774,7 @@ const SearchComponent = () => {
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
-        "dealerLimit": parseFloat(dealerLimit), "ruleType": ruleType ,"from": fromDate.format('YYYY-MM-DD HH:mm'),"to": toDate.format('YYYY-MM-DD HH:mm'), "query": query
+        "dealerDemandLimit": parseFloat(dealerDemandLimit),"dealerOrderLimit": parseFloat(dealerOrderLimit), "ruleType": ruleType ,"orderFrom": fromDate.format('YYYY-MM-DD'),"orderTo": toDate.format('YYYY-MM-DD'), "query": query
       }
       await postSaveRule(rule);
     } else {
@@ -831,14 +834,21 @@ const SearchComponent = () => {
     }
   }
 
-  function onChangeCustomerLimit(e) {
+  function onChangeCustomerDemandLimit(e) {
     const { value } = e.target;
     const reg = /^-?\d*(\.\d*)?$/;
     if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
-      setDealerLimit(value);
+      setDealerDemandLimit(value);
     }
   }
 
+  function onChangeCustomerOrderLimit(e) {
+    const { value } = e.target;
+    const reg = /^-?\d*(\.\d*)?$/;
+    if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
+      setDealerOrderLimit(value);
+    }
+  }
   function onChangePriority(value) {
     setPriority(value);
   }
@@ -943,7 +953,7 @@ const SearchComponent = () => {
   //RadioButton değişiklikleri
   function onChangeAmountEntered(e) {
     if (!isNaN(e.target.value)) {
-      setDealerLimit(parseInt(e.target.value));
+      // setDealerLimit(parseInt(e.target.value));
     }
   }
 
@@ -980,11 +990,18 @@ const SearchComponent = () => {
       render: (capacity) => numberFormat(capacity)
     },
     {
-      title: "Cari Limiti",
-      dataIndex: "dealerLimit",
-      key: "dealerLimit",
+      title: "Cari Limiti (Talep)",
+      dataIndex: "dealerDemandLimit",
+      key: "dealerDemandLimit",
       width: 100,
-      render: (dealerLimit) => numberFormat(dealerLimit)
+      render: (dealerDemandLimit) => numberFormat(dealerDemandLimit)
+    },
+    {
+      title: "Cari Limiti (Sipariş)",
+      dataIndex: "dealerOrderLimit",
+      key: "dealerOrderLimit",
+      width: 100,
+      render: (dealerOrderLimit) => numberFormat(dealerOrderLimit)
     },
     {
       title: "Açıklama",
@@ -1101,9 +1118,7 @@ const SearchComponent = () => {
   //Talep oluşturma durumları seçimi
   const onChangeRuleTypeRadioButton = e => {
     // setCapacity(0);
-    // setRuleType(e.target.value);
-    setRuleType(enumerations.RuleType.SalableBalance);
-
+    setRuleType(e.target.value);
   }
 
   //Change from and To date
@@ -1116,6 +1131,7 @@ const SearchComponent = () => {
   const filterView = viewType('Filter');
   return (
     <React.Fragment>
+
       <Tabs activeKey={activeTabKey} onChange={event => callback()} >
         <TabPane tab={<TabTitle name="Kural Listesi" value="0" />} key="0" >
           <LayoutWrapper>
@@ -1194,6 +1210,9 @@ const SearchComponent = () => {
           </LayoutWrapper>
         </TabPane>
         <TabPane disabled={createRuleTabDisabled} tab={<TabTitle name="Kural Detayı" value="1" />} key="1">
+        {typeof ruleName!=='undefined'?   <h3 className="isoSectionTitle">{ruleNo+' '+ruleName}</h3> :'' }
+      
+
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1553,14 +1572,13 @@ const SearchComponent = () => {
             <Form.Item label="Kapasite">
               <Radio.Group onChange={onChangeRuleTypeRadioButton} value={ruleType} style={{ paddingBottom: '25px' }} >
                 <Space direction="vertical">
-                  <Radio value={ruleType}>Eksi Bakiye Limiti
-                    {ruleType === ruleType ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
-                  <Radio disabled={true} value={''}>Toplam Sipariş Miktarı
+                  <Radio value={enumerations.RuleType.SalableBalance}>Eksi Bakiye Limiti
+                    {ruleType === enumerations.RuleType.SalableBalance ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
+                  <Radio value={enumerations.RuleType.PermittedOrder}>Toplam Sipariş Miktarı
                     {ruleType === enumerations.RuleType.PermittedOrder ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />
                       <RangePicker
                         style={{ marginLeft: '2px' }}
-                        showTime={{ format: 'HH:mm' }}
-                        format="YYYY-MM-DD HH:mm"
+                        format="YYYY-MM-DD"
                         onChange={onChangePicker}
                       // onOk={onOk}
                       />
@@ -1576,15 +1594,23 @@ const SearchComponent = () => {
                 </Space>
               </Radio.Group>
             </Form.Item>
-            <Form.Item label="Cari Limiti">
+            <Form.Item label="Cari Limiti (Talep)">
               <Input
-                id="dealerLimit"
-                onClick={event => onSelectAll("dealerLimit")}
-                onChange={event => onChangeCustomerLimit(event)}
+                id="dealerDemandLimit"
+                onClick={event => onSelectAll("dealerDemandLimit")}
+                onChange={event => onChangeCustomerDemandLimit(event)}
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                value={dealerLimit}
+                value={dealerDemandLimit}
               />
-
+            </Form.Item>
+            <Form.Item label="Cari Limiti (Sipariş)">
+              <Input
+                id="dealerOrderLimit"
+                onClick={event => onSelectAll("dealerOrderLimit")}
+                onChange={event => onChangeCustomerOrderLimit(event)}
+                style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                value={dealerOrderLimit}
+              />
             </Form.Item>
 
             <Form.Item label="Öncelik Sırası">
