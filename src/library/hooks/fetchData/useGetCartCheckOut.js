@@ -9,6 +9,7 @@ var jwtDecode = require('jwt-decode');
 
 function useGetCartCheckOut(addressCode, searchUrl, includeTransportation) {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [onChangeFilter, setOnChangeFilter] = useState(false);
   const [lastReqBody, setLastReqBody] = useState();
   const [lastAddressCode, setLastAddressCode] = useState();
@@ -39,15 +40,18 @@ function useGetCartCheckOut(addressCode, searchUrl, includeTransportation) {
         setLastReqBody(searchUrl);
         setLastAddressCode(addressCode);
         setOnChangeFilter(false);
+        setLoading(false);
       })
       .catch();
   }
   useEffect(() => {
     if ((!_.isEqual(lastReqBody, searchUrl))||(!_.isEqual(lastReqBody, addressCode))){
+      setLoading(true);
       fetchUrl();
     }
-    else { setOnChangeFilter(false); }
+    else { setOnChangeFilter(false); setLoading(false);
+    }
   }, [onChangeFilter]);
-  return [data, setOnChangeFilter];
+  return [data, setOnChangeFilter, loading];
 }
 export { useGetCartCheckOut };
