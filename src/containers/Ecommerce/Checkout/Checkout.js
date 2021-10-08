@@ -155,7 +155,7 @@ export default function () {
     if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
 
     const token = jwtDecode(localStorage.getItem("id_token"));
-    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (typeof productItem.totalVat2!=='undefined')) {
+    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (typeof productItem.OverCapacity!=='undefined')) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       setDemandAmount(productItem.amount);

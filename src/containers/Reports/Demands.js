@@ -23,7 +23,7 @@ import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterPr
 import { usePostFilter } from "@iso/lib/hooks/fetchData/usePostFilterData";
 
 //Style
-import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined, EditOutlined } from '@ant-design/icons';
+import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -37,7 +37,7 @@ import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
-// import ExcelExport from "./ExcelExport";
+import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import logMessage from '@iso/config/logMessage';
@@ -138,7 +138,6 @@ export default function () {
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
         useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
-
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
@@ -1358,6 +1357,12 @@ export default function () {
           setAmount(value);
         }
     }
+    function getDescription(record) {
+        if (typeof record !== 'undefined') {
+            return record.itemDto.description;
+        }
+        else { return null; }
+    }
 
     //Demand Columns
     let columns = [
@@ -1439,6 +1444,8 @@ export default function () {
             dataIndex: "itemDescription",
             key: "itemDescription",
             width: 300,
+            render: (a,record) => getDescription(record),
+
         },
         {
             title: "Miktar",
@@ -1529,7 +1536,7 @@ export default function () {
     //Excel Oluşturma
     const exportExcelButton = () => {
         postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
-        // ExcelExport(columns, data, 'Sipariş Kalemleri');
+        ExcelExport(columns, data, 'Talepler');
     }
 
     const view = viewType('Reports');
@@ -1539,7 +1546,7 @@ export default function () {
             <PageHeader>
                 {<IntlMessages id="page.demands.header" />}
             </PageHeader>
-            <Box>
+            <Box>           
                 <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                     <Panel header={<IntlMessages id="page.filtered" />} key="0">
                         {view !== 'MobileView' ?
@@ -1713,7 +1720,7 @@ export default function () {
                 </Collapse>
             </Box>
             {/* Data list volume */}
-            <Box>
+            <Box>         
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
                         <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostNotificationIsRead())}>
@@ -1764,6 +1771,13 @@ export default function () {
                     current={pageIndex}
                     position="top"
                 />
+
+<Col span={8} offset={16} align="right" >
+                    <Button type="primary" size="small" style={{ marginBottom: '5px' }}
+                        icon={<DownloadOutlined />} onClick={exportExcelButton}>
+                        {<IntlMessages id="forms.button.exportExcel" />}
+                    </Button>
+                </Col>
                 <Table
                     columns={columns}
                     dataSource={data}
