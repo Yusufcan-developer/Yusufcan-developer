@@ -81,6 +81,7 @@ export default {
       getSalesTarget: apiUrl + 'core/report/sales-goals/{year}/{month}',
       postDemands: apiUrl + 'core/demands',
       postDemandItems: apiUrl + 'core/demands/search',
+      postPeriodItems: apiUrl + 'core/periods/search',
       rules: apiUrl+'b2b/rules/search',
       deleteRule: apiUrl + 'b2b/rules/',
       postRules:apiUrl + 'b2b/rules',

@@ -913,7 +913,6 @@ const SearchComponent = () => {
       setColor(rule.colors);
       setDimension(rule.dimensions);
       setProductProduction(rule.productionStatus);
-      debugger
       setToDate( moment(item.orderTo));
       setFromDate(moment(item.orderFrom));
 
@@ -978,7 +977,7 @@ const SearchComponent = () => {
   let columns = [
 
     {
-      title: "Öncelik Sırası",
+      title: "Öncelik",
       dataIndex: "priority",
       key: "priority",
       width: 125,
@@ -1003,6 +1002,7 @@ const SearchComponent = () => {
       title: "Kapasite",
       dataIndex: "capacity",
       key: "capacity",
+      align: "right",
       width: 100,
       render: (capacity) => numberFormat(capacity)
     },
@@ -1011,6 +1011,7 @@ const SearchComponent = () => {
       dataIndex: "dealerDemandLimit",
       key: "dealerDemandLimit",
       width: 100,
+      align: "right",
       render: (dealerDemandLimit) => numberFormat(dealerDemandLimit)
     },
     {
@@ -1018,10 +1019,11 @@ const SearchComponent = () => {
       dataIndex: "dealerOrderLimit",
       key: "dealerOrderLimit",
       width: 100,
+      align: "right",
       render: (dealerOrderLimit) => numberFormat(dealerOrderLimit)
     },
     {
-      title: "Sipariş Başlangıç Tarihi",
+      title: "Sipariş Bas.T",
       dataIndex: "orderFrom",
       key: "orderFrom",
       type: "date",
@@ -1031,7 +1033,7 @@ const SearchComponent = () => {
       render: (orderFrom, record) => moment(orderFrom).format(siteConfig.dateFormat),
   },
   {
-    title: "Sipariş Bitiş Tarihi",
+    title: "Sipariş Bit.T",
     dataIndex: "orderTo",
     key: "orderTo",
     type: "date",

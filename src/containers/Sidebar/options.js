@@ -109,6 +109,11 @@ export default {
             label: "sidebar.rules",
             leftIcon: "ion-android-mail"
           },
+          {
+            key: "admin/period/",
+            label: "sidebar.periods",
+            leftIcon: "ion-android-mail"
+          },
           // {
           //   key: 'admin/gauges',
           //   label: 'sidebar.logs',

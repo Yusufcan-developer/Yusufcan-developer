@@ -136,9 +136,9 @@ export default function () {
 
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, {"quota":parseFloat(amount), "productCategories": selectedProductCategory ,"productDimensions":selectedDimensions, "productSeries": selectedProductSeries , "DealerCodes": dealerCodes,"status": demandStatus,  "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
-    
-        //Bayi,Bölge ve Saha kodlarının getirilmesi
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "quota": parseFloat(amount), "productCategories": selectedProductCategory, "productDimensions": selectedDimensions, "productSeries": selectedProductSeries, "DealerCodes": dealerCodes, "status": demandStatus, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
+
+    //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
     //Status
@@ -193,7 +193,7 @@ export default function () {
         if (typeof parsed.pg !== 'undefined') {
             if (Array.isArray(parsed.pg)) {
                 setSelectedProductCategory([parsed.pg]);
-                setOnChangeDimensionsFilter(true);setOnChangeSerieFilter(true); 
+                setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true);
             } else { setSelectedProductCategory([parsed.pg]); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); }
         }
         if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
@@ -204,7 +204,7 @@ export default function () {
         if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
         if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
         if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
-        if (typeof parsed.amount!=='undefined'){setAmount(parsed.amount);}
+        if (typeof parsed.amount !== 'undefined') { setAmount(parsed.amount); }
         let getStatus = [];
         if (typeof parsed.status !== 'undefined') {
             if (Array.isArray(parsed.status)) {
@@ -373,14 +373,14 @@ export default function () {
             params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
         }
         if (selectedDimensions && selectedDimensions.length > 0) {
-        selectedDimensions.forEach(item => {
-            if (item === siteConfig.nullOrEmptySearchItem) { params.append('dm', null); }
-            else {
-                params.append('dm', item);
-                params.toString();
-            }
-        })
-    }
+            selectedDimensions.forEach(item => {
+                if (item === siteConfig.nullOrEmptySearchItem) { params.append('dm', null); }
+                else {
+                    params.append('dm', item);
+                    params.toString();
+                }
+            })
+        }
 
         _.forEach(address, (item) => {
             params.append('address', item); params.toString();
@@ -402,7 +402,7 @@ export default function () {
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-        if(amount> 0){ params.append('amount', amount); params.toString(); }
+        if (amount > 0) { params.append('amount', amount); params.toString(); }
         params.append('smode', siteMode); params.toString();
 
         let createUrl = null;
@@ -759,16 +759,16 @@ export default function () {
         if (selectedRowKeys.length > 0) {
             return selectedRowKeys
         }
-        else {   
+        else {
             _.each(selectedItems, (item) => {
-                if(data[0].id!==data[0].id){
-                    getSelected=[];
+                if (data[0].id !== data[0].id) {
+                    getSelected = [];
                     const index = _.findIndex(data, function (i) { return i.id === item.id });
                     if (index > -1) {
                         getSelectedKey.push(index);
                     }
                 }
-               
+
             });
         }
         return getSelectedKey;
@@ -975,9 +975,9 @@ export default function () {
             })
             .then(data => {
                 if (typeof data !== 'undefined') {
-                    
+
                     if (data.isSuccessful === false) {
-                        message.warning({ content: messageText + ' işlemi başarısızdır. '+ data.message, duration: 2 });
+                        message.warning({ content: messageText + ' işlemi başarısızdır. ' + data.message, duration: 2 });
                         postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip Talebin ' + logMessage.Demand.updateError + 'Sebebi ' + data.message);
 
                     } else if (data.status === 400) {
@@ -988,7 +988,7 @@ export default function () {
                         //Tekli aktarımlar için
                         if (selectedItems.length < 1) {
                             message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
-                            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip '+logMessage.Demand.updateSuccess+'Yeni durumu '+messageText );
+                            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip ' + logMessage.Demand.updateSuccess + 'Yeni durumu ' + messageText);
                             setVisible(false);
                             setOnRefreshMode(true);
                             setSelectedDemand();
@@ -1177,7 +1177,7 @@ export default function () {
                 break;
         }
     }
-    
+
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     function handleCancel() {
         setDemandNo();
@@ -1357,7 +1357,7 @@ export default function () {
         const { value } = e.target;
         const reg = /^-?\d*(\.\d*)?$/;
         if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
-          setAmount(value);
+            setAmount(value);
         }
     }
     function getDescription(record) {
@@ -1447,7 +1447,7 @@ export default function () {
             dataIndex: "itemDescription",
             key: "itemDescription",
             width: 300,
-            render: (a,record) => getDescription(record),
+            render: (a, record) => getDescription(record),
 
         },
         {
@@ -1549,7 +1549,7 @@ export default function () {
             <PageHeader>
                 {<IntlMessages id="page.demands.header" />}
             </PageHeader>
-            <Box>           
+            <Box>
                 <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                     <Panel header={<IntlMessages id="page.filtered" />} key="0">
                         {view !== 'MobileView' ?
@@ -1696,6 +1696,7 @@ export default function () {
                                     </Row>
                                 </Radio.Group>
                             </Col>
+                            
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     showSearch
@@ -1710,21 +1711,19 @@ export default function () {
                                 </Select>
                                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                                 <Input size="small" placeholder="Ürün Adı, Talep No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
-
-                            </Col>
+                                <Button style={{ marginLeft:'10px', marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                                {<IntlMessages id="forms.button.label_Search" />}
+                            </Button>
+                            </Col>                          
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Input  size="small" placeholder="Miktar giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={amount} onKeyDown={keyPress} onChange={event => onChangeAmountEntered(event)} />
-                                
-                                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
-                                    {<IntlMessages id="forms.button.label_Search" />}
-                                </Button>
-                            </Col>
+                                <Input size="small" placeholder="Miktar giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={amount} onKeyDown={keyPress} onChange={event => onChangeAmountEntered(event)} />
+                            </Col>                          
                         </Row>
                     </Panel>
                 </Collapse>
             </Box>
             {/* Data list volume */}
-            <Box>         
+            <Box>
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
                         <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostNotificationIsRead())}>
@@ -1777,7 +1776,7 @@ export default function () {
                         position="top"
                     />}
 
-<Col span={8} offset={16} align="right" >
+                <Col span={8} offset={16} align="right" >
                     <Button type="primary" size="small" style={{ marginBottom: '5px' }}
                         icon={<DownloadOutlined />} onClick={exportExcelButton}>
                         {<IntlMessages id="forms.button.exportExcel" />}
@@ -1850,10 +1849,6 @@ export default function () {
                     onValuesChange={onFormLayoutChange}
                     size={componentSize}
                 >
-                    {/* <Form.Item label="Kullanıcı adı"> */}
-                    {/* <Input value={username} onChange={event => setUsername(event.target.value)} /> */}
-                    {/* </Form.Item> */}
-
                     <Form.Item label="Talep Durumu" >
                         <Select
                             placeholder="Talep durumu seçiniz"
