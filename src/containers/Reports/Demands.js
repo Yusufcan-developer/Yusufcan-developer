@@ -62,7 +62,7 @@ export default function () {
     const Option = SelectOption;
     let selectedTotalCount = 0;
     const [searchKey, setSearchKey] = useState('');
-    const [amount, setAmount] = useState();
+    const [amount, setAmount] = useState(0);
     const [tableOptions, setState] = useState({
         sortedInfo: "",
         filteredInfo: ""
@@ -136,8 +136,9 @@ export default function () {
 
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes,"status": demandStatus,  "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
-    //Bayi,Bölge ve Saha kodlarının getirilmesi
+        useFetch(`${siteConfig.api.report.postDemandItems}`, {"quota":parseFloat(amount), "productCategories": selectedProductCategory ,"productDimensions":selectedDimensions, "productSeries": selectedProductSeries , "DealerCodes": dealerCodes,"status": demandStatus,  "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
+    
+        //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
     //Status
@@ -165,13 +166,13 @@ export default function () {
     }
 
     //Post Series
-    const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "categories": [selectedProductCategory], "siteMode": searchSiteMode });
+    const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "categories": selectedProductCategory, "siteMode": searchSiteMode });
     for (let i = 0; i < serieData.length; i++) {
         productSeriesChildren.push(<Option key={serieData[i]}>{serieData[i]}</Option>);
     }
 
     //Post Dimension
-    const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "categories": [selectedProductCategory], "siteMode": searchSiteMode });
+    const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "categories": selectedProductCategory, "siteMode": searchSiteMode });
     for (let i = 0; i < dimensionData.length; i++) {
         productDimensionsChildren.push(<Option key={dimensionData[i]}>{dimensionData[i]}</Option>);
     }
@@ -191,9 +192,9 @@ export default function () {
         //Category get url data
         if (typeof parsed.pg !== 'undefined') {
             if (Array.isArray(parsed.pg)) {
-                setSelectedProductCategory(parsed.pg);
+                setSelectedProductCategory([parsed.pg]);
                 setOnChangeDimensionsFilter(true);setOnChangeSerieFilter(true); 
-            } else { setSelectedProductCategory(parsed.pg); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); }
+            } else { setSelectedProductCategory([parsed.pg]); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); }
         }
         if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
         if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
@@ -203,6 +204,7 @@ export default function () {
         if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
         if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
         if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
+        if (typeof parsed.amount!=='undefined'){setAmount(parsed.amount);}
         let getStatus = [];
         if (typeof parsed.status !== 'undefined') {
             if (Array.isArray(parsed.status)) {
@@ -260,7 +262,6 @@ export default function () {
             if (nullOrBlankData.length > 0) { seriesNewArray.push(''); }
             setSelectedProductSeries(seriesNewArray);
         }
-
 
         let newDealarCode = []
         //Field url data
@@ -341,6 +342,10 @@ export default function () {
 
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
+        if ((amount > 0) && (demandStatus.length > 1) && (demandStatus[0] !== 'Pending')) {
+            message.warning('Lütfen durum alanını değiştiriniz. Miktar girişi yaptıysanız sadece durumu beklemede olarak seçiniz...');
+            return;
+        }
         const params = new URLSearchParams(location.search);
         const siteMode = getSiteMode();
 
@@ -360,7 +365,8 @@ export default function () {
         params.delete('pg');
         params.delete('dm');
         params.delete('se');
-        params.delete('status')
+        params.delete('status');
+        params.delete('amount');
 
         if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
             params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -375,15 +381,6 @@ export default function () {
             }
         })
     }
-        if (selectedProductSeries && selectedProductSeries.length > 0) {
-        selectedProductSeries.forEach(item => {
-            if (item === siteConfig.nullOrEmptySearchItem) { params.append('se', null); }
-            else {
-                params.append('se', item);
-                params.toString();
-            }
-        })
-    }
 
         _.forEach(address, (item) => {
             params.append('address', item); params.toString();
@@ -392,12 +389,20 @@ export default function () {
         _.filter(demandStatus, function (item) {
             params.append('status', item); params.toString();
         });
-        if (typeof selectedProductCategory !== 'undefined') { params.append('pg', selectedProductCategory); }
+
+        _.filter(selectedProductCategory, function (item) {
+            params.append('pg', item); params.toString();
+        });
+
+        _.filter(selectedProductSeries, function (item) {
+            params.append('se', item); params.toString();
+        });
         if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
         if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
+        if(amount> 0){ params.append('amount', amount); params.toString(); }
         params.append('smode', siteMode); params.toString();
 
         let createUrl = null;
@@ -551,7 +556,7 @@ export default function () {
 
     //Product Group handle change
     function productGroupHandleChange(value) {
-        setSelectedProductCategory(value);
+        if (typeof value !== 'undefined') { setSelectedProductCategory([value]); } else { setSelectedProductCategory(); }
         setOnChangeSerieFilter(true);
         setOnChangeDimensionsFilter(true);
     }
@@ -1762,14 +1767,15 @@ export default function () {
                         {/* {selectedTotalCount} Öğe seçildi */}
                     </Col> : ''
                 }
-                <ReportPagination
-                    onShowSizeChange={onShowSizeChange}
-                    onChange={currentPageChange}
-                    pageSize={pageSize}
-                    total={totalDataCount}
-                    current={pageIndex}
-                    position="top"
-                />
+                {amount > 0 ? null :
+                    <ReportPagination
+                        onShowSizeChange={onShowSizeChange}
+                        onChange={currentPageChange}
+                        pageSize={pageSize}
+                        total={totalDataCount}
+                        current={pageIndex}
+                        position="top"
+                    />}
 
 <Col span={8} offset={16} align="right" >
                     <Button type="primary" size="small" style={{ marginBottom: '5px' }}
@@ -1799,14 +1805,16 @@ export default function () {
                 //     onClick: () => (selectedNotification(record))
                 //   })}
                 />
-                <ReportPagination
-                    onShowSizeChange={onShowSizeChange}
-                    onChange={currentPageChange}
-                    pageSize={pageSize}
-                    total={totalDataCount}
-                    current={pageIndex}
-                    position="bottom"
-                />
+                {amount > 0 ? null :
+                    <ReportPagination
+                        onShowSizeChange={onShowSizeChange}
+                        onChange={currentPageChange}
+                        pageSize={pageSize}
+                        total={totalDataCount}
+                        current={pageIndex}
+                        position="bottom"
+                    />
+                }
             </Box>
             <Modal
                 visible={visible}

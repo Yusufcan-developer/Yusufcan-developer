@@ -1016,6 +1016,26 @@ const SearchComponent = () => {
       render: (dealerOrderLimit) => numberFormat(dealerOrderLimit)
     },
     {
+      title: "Sipariş Başlangıç Tarihi",
+      dataIndex: "orderFrom",
+      key: "orderFrom",
+      type: "date",
+      width: 200,
+      sorter: (a, b) => (''),
+      sortDirections: ['descend', 'ascend'],
+      render: (orderFrom, record) => moment(orderFrom).format(siteConfig.dateFormat),
+  },
+  {
+    title: "Sipariş Bitiş Tarihi",
+    dataIndex: "orderTo",
+    key: "orderTo",
+    type: "date",
+    width: 200,
+    sorter: (a, b) => (''),
+    sortDirections: ['descend', 'ascend'],
+    render: (orderTo, record) => moment(orderTo).format(siteConfig.dateFormat),
+},
+    {
       title: "Açıklama",
       dataIndex: "description",
       key: "description",
