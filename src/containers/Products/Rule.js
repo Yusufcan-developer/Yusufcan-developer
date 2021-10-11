@@ -199,8 +199,8 @@ const SearchComponent = () => {
   //Get Quality
   const [productionQualityData, loadingQualityFilter, setOnChangeQualityFilter] = usePostFilter(`${siteConfig.api.lookup.postProductionQualities}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
-  //Pos Product Production Status
-  const [productProductionStatusData, loadingProductProductionFilter, setOnChangeProductProductionFilter] = usePostFilter(`${siteConfig.api.lookup.postproductionStatusData}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "productionStatus": productProduction, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
+  //Post Product Production Status
+  const [productProductionStatusData, loadingProductProductionFilter, setOnChangeProductProductionFilter] = usePostFilter(`${siteConfig.api.lookup.postproductionStatusData}`, { "keyword": keyword, "qualities": quality, "salesStatus": salesStatus, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "categories": [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' });
 
   //Style
   const listClass = `isoSingleCard card grid`;
@@ -564,8 +564,17 @@ const SearchComponent = () => {
   //Product Production Filter Event
   function onChangeProductProduction(checkedProductProductionValue) {
     setProductProduction(checkedProductProductionValue);
+
     setPageIndex(1);
+    // history.push(`${location.pathname}?${params.toString()}`);
+    setSelectedRuleObject();
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
     return setOnChange(true);
+
+    
   };
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
@@ -584,6 +593,8 @@ const SearchComponent = () => {
     setOnChangeSerieFilter(true);
     setOnChangeColorFilter(true);
     setOnChangeSurfaceFilter(true);
+    setOnChangeProductProductionFilter(true);
+
     return setOnChange(true);
   };
 
@@ -603,6 +614,8 @@ const SearchComponent = () => {
     setOnChangeDimensionsFilter(true);
     setOnChangeColorFilter(true);
     setOnChangeSurfaceFilter(true);
+    setOnChangeProductProductionFilter(true);
+
     return setOnChange(true);
   };
 
@@ -625,6 +638,8 @@ const SearchComponent = () => {
     setOnChangeDimensionsFilter(true);
     setOnChangeSerieFilter(true);
     setOnChangeSurfaceFilter(true);
+    setOnChangeProductProductionFilter(true);
+
     return setOnChange(true);
   }
 
@@ -647,6 +662,8 @@ const SearchComponent = () => {
     setOnChangeDimensionsFilter(true);
     setOnChangeSerieFilter(true);
     setOnChangeColorFilter(true);
+    setOnChangeProductProductionFilter(true);
+
     return setOnChange(true);
   }
 
@@ -1148,6 +1165,7 @@ const SearchComponent = () => {
     setColor([]);
     setSurface([]);
     setKeyword();
+    setProductProduction([]);
     setCampaignCode(false);
     setStockStatus(enumerations.StockStatus.None);
     setQuality([]);
@@ -1352,7 +1370,7 @@ const SearchComponent = () => {
                           onKeyUp={filterTextSearchProductProduction}
                         /> : null}
                       <CheckboxGroup
-                        options={productProductionFilterSearch && productProductionFilterSearch.length > 0 ? productProductionFilterSearch : productProductionStatusData}
+                        options={productProductionFilterSearch && productProductionFilterSearch.length > 0 ? productProductionFilterSearch : productProductionStatusData.map(e => e === null ? siteConfig.nullOrEmptySearchItem : e)}
                         value={productProduction}
                         onChange={onChangeProductProduction}
                         style={{ display: 'flex', flexDirection: 'column' }}
