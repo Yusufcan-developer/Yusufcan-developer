@@ -114,6 +114,7 @@ const SearchComponent = () => {
   const [isLocked, setIsLocked] = useState();
   const [ruleStatus, setRuleStatus] = useState(enumerations.RuleStatus.Active);
   const [filterStatus, setFilterStatus] = useState();
+  const [filterType, setFilterType] = useState([]);
   const [priority, setPriority] = useState();
   const [ruleEditing, setRuleEditing] = useState(false);
   const [ruleSaveLoading, setRuleSaveLoading] = useState(false);
@@ -139,6 +140,7 @@ const SearchComponent = () => {
   const [searchKey, setSearchKey] = useState('');
   const { Search } = Input;
   const statusChildren = [];
+  const typeChildren = [];
 
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
@@ -160,14 +162,21 @@ const SearchComponent = () => {
 
   //Kurallar Listesi
   const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
-    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "status": filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
+    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey,"types": filterType ? filterType : [ruleType], "status": filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
 
   let searchUrl = queryString.parse(location.search);
+
   //Status
   const [statusType] = useFilterData(`${siteConfig.api.lookup.ruleStatus}`, searchUrl);
   for (let i = 0; i < statusType.length; i++) {
     statusChildren.push(<Option key={statusType[i].Key}>{statusType[i].Value}</Option>);
   }
+
+    //Types
+    const [ruleTypeData] = useFilterData(`${siteConfig.api.lookup.ruleTypes}`, searchUrl);
+    for (let x = 0; x < ruleTypeData.length; x++) {
+      typeChildren.push(<Option key={ruleTypeData[x].Key}>{ruleTypeData[x].Value}</Option>);
+    }
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -944,7 +953,10 @@ const SearchComponent = () => {
     setQueryPreview(true);
     setQueryText(text);
   }
-
+  //Change Type
+  function typeHandleChange(value) {
+    setFilterType(value);
+  }
   //Change Status Type
   function statusHandleChange(value) {
     setFilterStatus(value);
@@ -1007,6 +1019,12 @@ const SearchComponent = () => {
       title: "Açıklama",
       dataIndex: "description",
       key: "description",
+      width: 200,
+    },
+    {
+      title: "Tip",
+      dataIndex: "ruleTypeText",
+      key: "ruleTypeText",
       width: 200,
     },
     {
@@ -1152,6 +1170,9 @@ const SearchComponent = () => {
                       <Col span={6} >
                         <FormItem label={<IntlMessages id="page.ruleStatus" />}></FormItem>
                       </Col>
+                      <Col span={6} >
+                        <FormItem label={<IntlMessages id="page.ruleTypes" />}></FormItem>
+                      </Col>
                     </Row>
                     : null}
                   <Row>
@@ -1167,6 +1188,17 @@ const SearchComponent = () => {
                         value={filterStatus}
                       >
                         {statusChildren}
+                      </Select>
+                    </Col>
+                    <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                      <Select
+                        mode="multiple"
+                        style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                        placeholder="Tip Seçiniz"
+                        onChange={typeHandleChange}
+                        value={filterType}
+                      >
+                        {typeChildren}
                       </Select>
                     </Col>
                     <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>

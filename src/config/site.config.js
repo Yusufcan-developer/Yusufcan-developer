@@ -45,6 +45,7 @@ export default {
       getDemandStatus: apiUrl + 'core/demands/lookup/status',
       cancelReason: apiUrl + 'core/demands/lookup/cancel-reasons',
       ruleStatus:apiUrl +'b2b/rules/lookup/status',
+      ruleTypes:apiUrl +'b2b/rules/lookup/types',
 
     },
 
