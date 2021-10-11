@@ -752,6 +752,8 @@ const SearchComponent = () => {
     setDealerDemandLimit(0);
     setDealerOrderLimit(0);
     setRuleType();
+    setFromDate();
+    setToDate();
 
   };
 
@@ -911,6 +913,9 @@ const SearchComponent = () => {
       setColor(rule.colors);
       setDimension(rule.dimensions);
       setProductProduction(rule.productionStatus);
+      debugger
+      setToDate( moment(item.orderTo));
+      setFromDate(moment(item.orderFrom));
 
       setOnChangeDimensionsFilter(true);
       setOnChangeSerieFilter(true);
@@ -1632,6 +1637,7 @@ const SearchComponent = () => {
                         style={{ marginLeft: '2px' }}
                         format="YYYY-MM-DD"
                         onChange={onChangePicker}
+                        value={[moment(fromDate), moment(toDate)]}
                       // onOk={onOk}
                       />
                       {/* <RangePicker
