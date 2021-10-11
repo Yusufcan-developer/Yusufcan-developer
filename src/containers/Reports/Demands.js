@@ -79,7 +79,6 @@ export default function () {
     const [newUrlParams, setNewUrlParams] = useState('');
     const [selectedRadioItem, setSelectedRadioItem] = useState(1);
     const [privateDate, setPrivateDate] = useState('Bugun');
-    const [status, setSelectedStatus] = useState();
     const [address, setAddress] = useState();
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
     const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
@@ -137,7 +136,7 @@ export default function () {
 
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "DealerCodes": dealerCodes,"status": demandStatus,  "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
 
@@ -204,7 +203,6 @@ export default function () {
         if (typeof parsed.pgindex !== 'undefined') { setPageIndex(parseInt(parsed.pgindex)); }
         if (typeof parsed.sortingField !== 'undefined') { sortingField = parsed.sortingField; }
         if (typeof parsed.sortingOrder !== 'undefined') { sortingOrder = parsed.sortingOrder; }
-
         let getStatus = [];
         if (typeof parsed.status !== 'undefined') {
             if (Array.isArray(parsed.status)) {
@@ -213,7 +211,7 @@ export default function () {
                 });
             } else { getStatus.push(parsed.status); }
         }
-        setSelectedStatus(getStatus);
+        setDemandStatus(getStatus);
 
         let getAddress = [];
         if (typeof parsed.address !== 'undefined') {
@@ -362,6 +360,7 @@ export default function () {
         params.delete('pg');
         params.delete('dm');
         params.delete('se');
+        params.delete('status')
 
         if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
             params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -390,10 +389,9 @@ export default function () {
             params.append('address', item); params.toString();
         });
 
-        _.filter(status, function (item) {
+        _.filter(demandStatus, function (item) {
             params.append('status', item); params.toString();
         });
-
         if (typeof selectedProductCategory !== 'undefined') { params.append('pg', selectedProductCategory); }
         if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
         if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
@@ -1582,6 +1580,7 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
+                                    mode="multiple"
                                     placeholder="Talep durumu seçiniz"
                                     style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                     onChange={statusHandleChange}
