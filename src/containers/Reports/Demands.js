@@ -10,7 +10,7 @@ import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
-import { Table, Row, Col, TreeSelect, Radio, Tag, Dropdown, Menu, Modal, Input, message, Layout, Button } from "antd";
+import { Table, Row, Col, TreeSelect, Radio, Tag, Dropdown, Menu, Modal, Input, message, Layout, Button, Spin } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 import Popconfirms from '@iso/components/Feedback/Popconfirm';
 
@@ -1046,7 +1046,8 @@ export default function () {
             setSelectedDemand();
             setSelectedItemsId();
             setDemandConfirmLoading(false);
-            setSelectedRowKeys([])
+            setSelectedRowKeys([]);
+            handleCancel();
         }
         else {
             //Başarısız kayıtlar vardır
@@ -1835,6 +1836,10 @@ export default function () {
                     </Button>
                 ]}
             >
+            <div style={{textAlign:'center', borderRadius:'4px'}}>
+        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={demandConfirmLoading}
+        >
+        </Spin></div>
                 <Form
                     labelCol={{
                         span: 4,
