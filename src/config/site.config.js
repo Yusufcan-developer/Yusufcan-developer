@@ -82,6 +82,7 @@ export default {
       postDemands: apiUrl + 'core/demands',
       postDemandItems: apiUrl + 'core/demands/search',
       postPeriodItems: apiUrl + 'core/periods/search',
+      postPeriods: apiUrl + 'core/periods',
       rules: apiUrl+'b2b/rules/search',
       deleteRule: apiUrl + 'b2b/rules/',
       postRules:apiUrl + 'b2b/rules',

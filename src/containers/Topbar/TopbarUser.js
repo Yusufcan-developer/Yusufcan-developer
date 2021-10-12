@@ -323,8 +323,6 @@ export default function TopbarUser(props) {
             <RangePicker
               format={siteConfig.dateFormat}
               onChange={changeTimePicker}
-            // style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-            // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
             />
           </Form.Item>
         </Form>

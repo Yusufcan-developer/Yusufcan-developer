@@ -12,7 +12,6 @@ import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
 import { Table, Row, Col, Radio, Tag, Modal, Input, message, Layout, Button } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
-import Popconfirms from '@iso/components/Feedback/Popconfirm';
 
 //Fetch
 import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
@@ -54,9 +53,9 @@ let sortingOrder;
 export default function () {
     document.title = "Dönemler - Seramiksan B2B";
     const { Content } = Layout;
-
+    const [form] = Form.useForm();
+    const [validation, setValidation] = useState(true);
     const Option = SelectOption;
-    let selectedTotalCount = 0;
     const [searchKey, setSearchKey] = useState('');
     const [amount, setAmount] = useState(0);
     const [tableOptions, setState] = useState({
@@ -67,6 +66,7 @@ export default function () {
     const [pageSize, setPageSize] = useState(20);
     const [startingPageIndex, setStartingPageIndex] = useState(1);
     const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
+    const [deadlineDate, setDeadlineDate] = useState(null);
     const [toDate, setToDate] = useState(moment(new Date()));
     const [dealerCodes, setDealerCodes] = useState();
     const [regionCodes, setRegionCodes] = useState();
@@ -77,43 +77,24 @@ export default function () {
     const [privateDate, setPrivateDate] = useState('Bugun');
     const [address, setAddress] = useState();
     const [lookupAddressChildren, setLookupAddressChildren] = useState();
-    const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
-    const [selectedProductCategory, setSelectedProductCategory] = useState();
+    const [status, setStatus] = useState();
     const [selectedProductSeries, setSelectedProductSeries] = useState();
     const [selectedDimensions, setSelectedDimensions] = useState();
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [selectedItemsId, setSelectedItemsId] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]);
-
-    const [hasSelected, setHasSelected] = useState(false);
     const [selectedDemand, setSelectedDemand] = useState();
-    const [cancelReason, setCancelReason] = useState();
-    const [cancelReasonText, setCancelReasonText] = useState();
     const [visible, setVisible] = useState(false);
-    const [acceptInfoVisible, setAcceptInfoVisible] = useState(false);
-    const [deleteDemand, setDeleteDemand] = useState(false);
-    const [toolbarEditingButton, setToolbarEditingButton] = useState(false);
     const [componentSize, setComponentSize] = useState('default');
-    const [demandNo, setDemandNo] = useState();
-    const [description, setDescription] = useState();
-    const [statusModal, setStatusModal] = useState();
-    const [selectedToolbarStatus, setSelectedToolbarStatus] = useState();
-    const [eventType, setEventType] = useState();
-
-    const [demandAmountModal, setDemandAmountModal] = useState();
-    const [demandUnitModal, setDemandUnitModal] = useState();
-    const [demandConfirmLoading, setDemandConfirmLoading] = useState(false);
-    const [clearTableChecked, setClearTableChecked] = useState(false);
-    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const [demandDatePeriod, setDemandDatePeriod] = useState(false);    
+    const [selectedPeriodId, setSelectedPeriodId] = useState();
+    const [dates, setDate] = useState();
+    const [dateValidation, setDateValidation] = useState(true);
+    const [deletePeriodVisible, setDeletePeriodVisible] = useState(false);
 
     const location = useLocation();
     const queryString = require('query-string');
     const history = useHistory();
-    const statusChildren = [];
-    const searchStatusChildren = [];
-    const cancelReasonChildren = [];
-    const warningDemandId = [];
-    const resultMultipleCount = [];
 
     //Burada ki useEffect'ler page index page size
     useEffect(() => {
@@ -125,7 +106,7 @@ export default function () {
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
         useFetch(`${siteConfig.api.report.postPeriodItems}`, { "regionCodes": regionCodes, "fieldCodes": fieldCodes, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode }, searchUrl);
-    
+
     //Url'i çözümleme işlemi
     function getVariablesFromUrl() {
         //Url değerini alıyoruz.
@@ -155,7 +136,7 @@ export default function () {
                 });
             } else { getStatus.push(parsed.status); }
         }
-        setDemandStatus(getStatus);
+        setStatus(getStatus);
 
         let getAddress = [];
         if (typeof parsed.address !== 'undefined') {
@@ -259,74 +240,37 @@ export default function () {
 
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
-        if ((amount > 0) && (demandStatus.length > 1) && (demandStatus[0] !== 'Pending')) {
-            message.warning('Lütfen durum alanını değiştiriniz. Miktar girişi yaptıysanız sadece durumu beklemede olarak seçiniz...');
-            return;
-        }
         const params = new URLSearchParams(location.search);
         const siteMode = getSiteMode();
 
         params.delete('smode');
-        params.delete('dec');
-        params.delete('rec');
-        params.delete('fic');
-        params.delete('address');
-        params.delete('from')
-        params.delete('to');
         params.delete('keyword');
         params.delete('pgsize');
         params.delete('pgindex');
         params.delete('sortingField');
         params.delete('sortingOrder');
         params.delete('status');
-        params.delete('pg');
-        params.delete('dm');
-        params.delete('se');
-        params.delete('status');
-        params.delete('amount');
 
-        if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
-            params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-            params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-        }
-        if (selectedDimensions && selectedDimensions.length > 0) {
-            selectedDimensions.forEach(item => {
-                if (item === siteConfig.nullOrEmptySearchItem) { params.append('dm', null); }
-                else {
-                    params.append('dm', item);
-                    params.toString();
-                }
-            })
-        }
+        // if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
+        //     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+        //     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
+        // }
 
-        _.forEach(address, (item) => {
-            params.append('address', item); params.toString();
-        });
 
-        _.filter(demandStatus, function (item) {
+        _.filter(status, function (item) {
             params.append('status', item); params.toString();
-        });
-
-        _.filter(selectedProductCategory, function (item) {
-            params.append('pg', item); params.toString();
-        });
-
-        _.filter(selectedProductSeries, function (item) {
-            params.append('se', item); params.toString();
         });
         if (typeof sortingOrder !== 'undefined') { params.append('sortingOrder', sortingOrder); }
         if (typeof sortingField !== 'undefined') { params.append('sortingField', sortingField); }
         if (selectedPageSize) { params.append('pgsize', selectedPageSize); setPageSize(selectedPageSize) } else { params.append('pgsize', pageSize) }
         if (selectedPageIndex) { params.append('pgindex', selectedPageIndex) } else { setPageIndex(startingPageIndex); params.append('pgindex', startingPageIndex) }
         if (searchKey.length > 0) { params.append('keyword', searchKey); params.toString(); }
-        if (amount > 0) { params.append('amount', amount); params.toString(); }
         params.append('smode', siteMode); params.toString();
 
         let createUrl = null;
         if (newUrlParams.length > 0) { createUrl = newUrlParams + '&' + params; } else { createUrl = params }
         history.push(`${location.pathname}?${createUrl}`);
         setSearchSitemode(siteMode);
-        setSelectedRowKeys([]);
 
         return setOnChange(true);
     }
@@ -375,7 +319,7 @@ export default function () {
     };
 
     //Change from and To date
-    function changeTimePicker(value, dateString) {
+    function changeDatePickerFromAndTo(value, dateString) {
         if (value !== null) {
             setFromDate(moment(dateString[0] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
             setToDate(moment(dateString[1] + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
@@ -385,17 +329,16 @@ export default function () {
             setFromDate(null);
         }
     }
-
-    //Search DailerName Tree Select Component
-    function filterTreeNodeDealerCode(value, treeNode) {
-        if (value && treeNode && treeNode.title) {
-            const filterValue = value.toLocaleLowerCase('tr')
-            const treeNodeTitle = treeNode.title.toLocaleLowerCase('tr')
-            return treeNodeTitle.indexOf(filterValue) !== -1;
+    //Change deadline
+    function changeDatePicker(value, dateString) {
+        debugger
+        if (value !== null) {
+            setDeadlineDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
         }
-        return false;
+        else {
+            setDeadlineDate(null);
+        }
     }
-
     //Table handle change
     const handleChange = (pagination, filters, sorter) => {
         setState({
@@ -429,7 +372,7 @@ export default function () {
 
     //Status handle change
     function statusHandleChange(value) {
-        setDemandStatus(value);
+        setStatus(value);
     }
 
     //Dates radio button handle change
@@ -448,21 +391,14 @@ export default function () {
         setComponentSize(size);
     };
 
-    //Kullanıcı düznleme modalına verileri gönderme işlemi Burada veriler state atılıyor ve modal aktif hale getirliyor.
-    async function setModalEditingDemand(record) {
-        setDemandNo(record.orderNo);
-        setDemandAmountModal(typeof record.approvedAmount !== 'undefined' ? record.approvedAmount : record.amount);
-        setDemandUnitModal(record.unit);
-        setStatusModal(record.status);
-    };
-
     //Talep kaydetme işlemi
-    async function postSaveDemand(query) {
+    async function postSavePeriod() {
         const siteMode = getSiteMode();
         const token = jwtDecode(localStorage.getItem("id_token"));
         const dealerCode = token.dcode;
-        setDemandConfirmLoading(true);
-        const reqBody = query;
+        // setDemandConfirmLoading(true);
+        const reqBody = { "id": selectedPeriodId ,"startDate": fromDate.format('YYYY-MM-DD'), "endDate": toDate.format('YYYY-MM-DD'), "deadline": deadlineDate.format('YYYY-MM-DD') }
+        debugger
         const requestOptions = {
             method: "POST",
             headers: {
@@ -471,133 +407,56 @@ export default function () {
             },
             body: JSON.stringify(reqBody)
         };
-        await fetch(siteConfig.api.report.postDemands, requestOptions)
+        await fetch(siteConfig.api.report.postPeriods, requestOptions)
             .then(response => {
                 const status = apiStatusManagement(response);
                 return status;
             })
             .then(data => {
+                debugger
                 if (typeof data !== 'undefined') {
                     if (data.isSuccessful === false) {
                         const getMessage = data.message;
-                        message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
+                        message.warning({ content: 'kaydetme işlemi başarısızdır. ' + getMessage, duration: 2 });
                     } else {
                         message.success({ content: 'başarıyla kaydedildi', duration: 2 });
+                        setDemandDatePeriod(false);
+                        setFromDate(null);
+                        setToDate(null);
+                        setDeadlineDate(null);
+                        setSelectedPeriodId();
+                        setOnRefreshMode(true);
                     }
                 }
             })
             .catch();
-        setDemandConfirmLoading(false);
-        if (data.isSuccessful === false) { return false; }
-        else { return true; }
     }
 
-    //Talep düzenleme işlemi
-    async function postEditingDemand(demandId, reqBody, messageText) {
-        const siteMode = getSiteMode();
-        const token = jwtDecode(localStorage.getItem("id_token"));
-        const dealerCode = token.dcode;
-        setDemandConfirmLoading(true);
-        const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-            },
-            body: JSON.stringify(reqBody)
-        };
-        let newSaveOrderUrl = siteConfig.api.report.postDemandUpdate.replace('{demandId}', demandId);
-        await fetch(`${newSaveOrderUrl}`, requestOptions)
-            .then(response => {
-                const status = apiStatusManagement(response);
-                return status;
-            })
-            .then(data => {
-                if (typeof data !== 'undefined') {
-
-                    if (data.isSuccessful === false) {
-                        message.warning({ content: messageText + ' işlemi başarısızdır. ' + data.message, duration: 2 });
-                        postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip Talebin ' + logMessage.Demand.updateError + 'Sebebi ' + data.message);
-
-                    } else if (data.status === 400) {
-                        message.warning({ content: messageText + ' işlemi başarısızdır. ' + data.message, duration: 2 });
-                        postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip Talebin ' + logMessage.Demand.updateError + 'Sebebi ' + data.message);
-                    }
-                    else {
-                        //Tekli aktarımlar için
-                        if (selectedItems.length < 1) {
-                            message.success({ content: messageText + ' başarıyla güncellendi. ', duration: 2 });
-                            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Update, demandId + ' ID ye sahip ' + logMessage.Demand.updateSuccess + 'Yeni durumu ' + messageText);
-                            setVisible(false);
-                            setOnRefreshMode(true);
-                            setSelectedDemand();
-                            setSelectedItemsId();
-                        }
-                    }
-                }
-            })
-            .catch();
-        setDemandConfirmLoading(false);
-        if (data.isSuccessful === false) { return false; }
-        else { return true; }
-    }
-
-
-    //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
-    function handleCancel() {
-        setDemandNo();
-        setDemandAmountModal();
-        setStatusModal();
-        setVisible(false);
-        setAcceptInfoVisible(false);
-        setToolbarEditingButton(false);
-        setDeleteDemand(false);
-        setEventType();
-    };
-
-    //Demand status modal change
-    function demandStatusChangeModal(value) {
-        setStatusModal(value);
-    }
-
-    //Kural açıklaması değiştirme
-    function handleDescription(e) {
-        setDescription(e.target.value);
-    }
-
-    // '.' at the end or only '-' in the input box.   
-    function onChangeAmount(e) {
-        const { value } = e.target;
-        const reg = /^-?\d*(\.\d*)?$/;
-        if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
-            setDemandAmountModal(value);
+    //Periyod seçme ve düzenleme işlemi
+    function selectedPeriod(item) {
+        if (item) {
+            setToDate(moment(item.endDate));
+            setFromDate(moment(item.startDate));
+            setDeadlineDate(moment(item.deadline));
+            setSelectedPeriodId(item.id)
+            setDemandDatePeriod(true);
         }
-    };
-
-    function demandCancelOrRejection() {
-        let control = false;
-        let status;
-        _.each(selectedItems, (item) => {
-            if (item.status === 'Approved') { return control = true; }
-            else { status = item.status; }
-        });
-        setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar')
-        // if (control === true) { return message.warning('Onaylananlar düzenleme işlemi yapılamaz.') }
-        // else { setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar') }
     }
-
-    //Talep cancel durumları seçimi
-    function onChangeCancelReasonButton(value) {
-        setCancelReason(value);
+    //Periyod Silme işlemi
+    function deletePeriodShowPopup(item) {
+        debugger
+        setSelectedPeriodId(item.id);
+        setFromDate(moment(item.startDate+ 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+        setToDate(moment(item.endDate+ 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+        setDeletePeriodVisible(true);
     }
-
     //Period Columns
     let columns = [
         {
             title: "Durumu",
             dataIndex: "isActive",
             key: "isActive",
-            width: 150,
+            width: 100,
             render: (isActive) => (
                 <>
                     {isActive === true ? (
@@ -616,37 +475,51 @@ export default function () {
         },
         {
             title: "Başlangıç Tarihi",
-            dataIndex: "date",
+            dataIndex: "startDate",
             key: "startDate",
-            type: "startDate",
-            width: 200,
+            width: 100,
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'startDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            render: (startDate, record) => moment(startDate).format(siteConfig.dateFormatAddTime),
+            render: (startDate, record) => moment(startDate).format(siteConfig.dateFormat),
         },
         {
             title: "Bitiş Tarihi",
-            dataIndex: "date",
+            dataIndex: "endDate",
             key: "endDate",
-            type: "endDate",
-            width: 200,
+            width: 100,
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'endDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            render: (endDate, record) => moment(endDate).format(siteConfig.dateFormatAddTime),
+            render: (endDate, record) => moment(endDate).format(siteConfig.dateFormat),
         },
         {
             title: "Son Teslim Tarihi",
-            dataIndex: "date",
+            dataIndex: "deadline",
             key: "deadline",
-            type: "deadline",
-            width: 200,
+            width: 100,
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'deadline' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            render: (deadline, record) => moment(deadline).format(siteConfig.dateFormatAddTime),
-        },        
+            render: (deadline, record) => moment(deadline).format(siteConfig.dateFormat),
+        },
+        {
+            dataIndex: 'operation',
+            width: 100,
+            render: (_, record, rowIndex) => {
+                return (
+                    <React.Fragment>
+
+                        <a onClick={() => selectedPeriod(record)}>
+                            <i className="ion-android-create" />
+                        </a>
+                        <a onClick={() => deletePeriodShowPopup(record)} style={{ marginLeft: '15px' }}>
+                            <i className="ion-android-close" />
+                        </a>
+                    </React.Fragment>
+                )
+            },
+        },
     ];
 
     //Hide order table column
@@ -687,9 +560,33 @@ export default function () {
     }
 
     //Excel Oluşturma
+    const showCreatePeriodPopup = () => {
+        setDemandDatePeriod(true);
+    }
+    //Excel Oluşturma
     const exportExcelButton = () => {
         postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
         // ExcelExport(columns, data, 'Talepler');
+    }
+
+    //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
+    function handleCancel() {
+        setDemandDatePeriod(false);
+        setDeletePeriodVisible(false);
+        setDeadlineDate(null);
+        setFromDate(null);
+        setToDate(null);
+        setSelectedPeriodId();
+    };
+
+    //Talep tarih periyodu oluşturma işlemi
+    async function handleCreatePeriod() {
+        if ((fromDate === null) || (toDate === null) || (deadlineDate === null)) {
+            message.warning('Lütfen tarih giriniz...');
+        }
+        else {
+            postSavePeriod();
+        }
     }
 
     const view = viewType('Reports');
@@ -709,50 +606,46 @@ export default function () {
                                 </Col>
                             </Row>
                             : null}
-                        <Row>                           
+                        <Row>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     mode="multiple"
-                                    placeholder="Talep durumu seçiniz"
+                                    placeholder="Aktiflik durumu seçiniz"
                                     style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                                     onChange={statusHandleChange}
                                     optionFilterProp="children"
-                                    value={demandStatus}
+                                    value={status}
                                 >
-                                    {searchStatusChildren}
+                                    <Option value={true}>Aktif</Option>
+                                    <Option value={false}>Pasif</Option>
                                 </Select>
-                            </Col>                            
-                        </Row>
-                        <Row>
-                           
-                        </Row>
-                        <Row> 
-                           
+                            </Col>
+                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
+                                <Button style={{ marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                                    {<IntlMessages id="forms.button.label_Search" />}
+                                </Button>
+                            </Col>
                         </Row>
                     </Panel>
                 </Collapse>
             </Box>
             {/* Data list volume */}
             <Box>
-                {hasSelected ?
-                    <Col span={8} offset={16} align="right" >
-                        <Button style={{ paddingLeft: '10px' }} >
-                            Onayla ve sipariş Oluştur    <CheckOutlined />
-                        </Button>                      
-                     
-                    </Col> : ''
-                }
-                    <ReportPagination
-                        onShowSizeChange={onShowSizeChange}
-                        onChange={currentPageChange}
-                        pageSize={pageSize}
-                        total={totalDataCount}
-                        current={pageIndex}
-                        position="top"
-                    />
+                <ReportPagination
+                    onShowSizeChange={onShowSizeChange}
+                    onChange={currentPageChange}
+                    pageSize={pageSize}
+                    total={totalDataCount}
+                    current={pageIndex}
+                    position="top"
+                />
 
-                <Col span={8} offset={16} align="right" >
+                <Col span={8} offset={16} align="right"  >
                     <Button type="primary" size="small" style={{ marginBottom: '5px' }}
+                        icon={<EditOutlined />} onClick={showCreatePeriodPopup}>
+                        {<IntlMessages id="forms.button.createPeriod" />}
+                    </Button>
+                    <Button type="primary" size="small" style={{ marginBottom: '5px', margin: '2px' }}
                         icon={<DownloadOutlined />} onClick={exportExcelButton}>
                         {<IntlMessages id="forms.button.exportExcel" />}
                     </Button>
@@ -763,26 +656,95 @@ export default function () {
                     onChange={handleChange}
                     loading={loading}
                     pagination={false}
-                    // scroll={{ x: 'calc(700px + 50%)' }}
                     scroll={{ x: 'max-content' }}
                     size="medium"
                     bordered={false}
-
-                    summary={() => {
-                        return renderFooter(columns, data, false, aggregatesOverall, true)
-                    }}
                     rowClassName={(record, index) => (record.isRead === true ? 'table-background-color-notification-isUnRead' : "table-background-color-notification-isUnRead")}
 
                 />
-                    <ReportPagination
-                        onShowSizeChange={onShowSizeChange}
-                        onChange={currentPageChange}
-                        pageSize={pageSize}
-                        total={totalDataCount}
-                        current={pageIndex}
-                        position="bottom"
-                    />
+                <ReportPagination
+                    onShowSizeChange={onShowSizeChange}
+                    onChange={currentPageChange}
+                    pageSize={pageSize}
+                    total={totalDataCount}
+                    current={pageIndex}
+                    position="bottom"
+                />
             </Box>
+            <Modal
+                visible={demandDatePeriod}
+                title="Talep Oluşturma Dönemi Belirleme"
+                okText="Kaydet"
+                cancelText="İptal"
+                maskClosable={false}
+                onCancel={handleCancel}
+                onOk={() => {
+                    form
+                        .validateFields()
+                        .then(values => {
+                            form.resetFields();
+                            handleCreatePeriod(values);
+                        })
+                        .catch(info => {
+                            console.log('Validate Failed:', info);
+                        });
+                }}
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    name="form_in_modal"
+                    initialValues={{
+                        modifier: 'public',
+                    }}
+                >
+                    <Form.Item
+                        label={dateValidation === true ? 'Başlangıç - Bitiş Tarihi *' : 'Tarih Giriniz!'} style={{
+                            color: dateValidation === true ? 'black' : 'red'
+                        }}
+
+                    >
+                        <RangePicker
+                            format={siteConfig.dateFormat}
+                            onChange={changeDatePickerFromAndTo}
+                            value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        label={dateValidation === true ? 'Son Teslim Tarihi *' : 'Tarih Giriniz!'} style={{
+                            color: dateValidation === true ? 'black' : 'red'
+                        }}
+
+                    >
+                        <DatePicker
+                            format={siteConfig.dateFormat}
+                            onChange={changeDatePicker}
+                            value={deadlineDate}
+                        />
+                    </Form.Item>
+                </Form>
+            </Modal>
+            <Modal
+        visible={deletePeriodVisible}
+        title= {fromDate===null?null:  fromDate.format('DD-MM-YYYY')+ ' / '+   toDate.format('DD-MM-YYYY') +" tarih aralığını kapsayan periyod silinecektir"}
+        okText="Sil"
+        cancelText="İptal"
+        maskClosable={false}
+        onCancel={handleCancel}
+        // onOk={deleteRule}
+      >
+        <p>{ fromDate===null?null: fromDate.format('DD-MM-YYYY') + ' / '+ ( toDate.format('DD-MM-YYYY'))+' periyodu silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p> 
+
+        <Form
+          form={form}
+          layout="vertical"
+          name="form_in_modal"
+          initialValues={{
+            modifier: 'public',
+          }}
+        >
+        </Form>
+      </Modal>
         </LayoutWrapper>
     );
 }
