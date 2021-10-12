@@ -238,10 +238,13 @@ const SearchComponent = () => {
   const keyPress = e => {
     if (e.keyCode === 13) {
       keywordAddUrl();
+
     }
   }
   //Keyword Search Button
   const onSearch = e => {
+    debugger
+    setKeyword(e);
     keywordAddUrl();
   }
   const ruleSearchButton = e => {
@@ -1128,6 +1131,7 @@ const SearchComponent = () => {
     },
     {
       dataIndex: 'operation',
+      fixed: 'right',
       render: (_, record, rowIndex) => {
         return (
           <React.Fragment>
