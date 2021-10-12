@@ -971,13 +971,32 @@ const SearchComponent = () => {
   }
   function selectedRuleEditing(item) {    
     setVisible(true);
-      setRuleNo(item.ruleNo);
-      setRuleName(item.name);
-      setCapacity(item.capacity);
-      setPriority(item.priority);
-      setDealerDemandLimit(item.dealerDemandLimit);
-      setDealerOrderLimit(item.dealerOrderLimit);
-      setRuleType(item.ruleType);
+    const rule = (item.query);
+    if (rule && rule.categories) {
+      setCategory(rule.categories[0]);
+      setType(rule.types);
+      setQuality(rule.qualities);
+      setSalesStatus(rule.salesStatus);
+      setCampaignCode(rule.onlyHavingCampaigns);
+      setSeries(rule.series);
+      setSurface(rule.surfaces);
+      setColor(rule.colors);
+      setDimension(rule.dimensions);
+      setProductProduction(rule.productionStatus);
+      setToDate( moment(item.orderTo));
+      setFromDate(moment(item.orderFrom));
+      setKeyword(rule.keyword);
+
+      setSelectedRuleObject();
+    }
+    setRuleNo(item.ruleNo);
+    setRuleName(item.name);
+    setCapacity(item.capacity);
+    setPriority(item.priority);
+    setDealerDemandLimit(item.dealerDemandLimit);
+    setDealerOrderLimit(item.dealerOrderLimit);
+    setRuleType(item.ruleType);
+    
 
   }
   function callback(key) {
