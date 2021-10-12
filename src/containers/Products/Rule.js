@@ -916,6 +916,7 @@ const SearchComponent = () => {
           setCreateRuleTabDisable(true);
           setRuleDeleteLoading(false);
           ruleSetOnChange(true);
+          clearParams();
         }
         else if (data.isSuccessful === false) { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete);     setRuleDeleteLoading(false);
       }

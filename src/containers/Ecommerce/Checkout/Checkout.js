@@ -66,6 +66,7 @@ export default function () {
   const [town, setTown] = useState('');
   const [district, setDistrict] = useState('');
   const [km, setKm] = useState();
+  const [postCode, setPostCode] = useState();
   const [cities, setCities] = useState();
   const [towns, setTowns] = useState();
   const [optionsCities, setOptions] = useState();
@@ -99,8 +100,8 @@ export default function () {
   const [quantity, setQuantity] = useState();
   const [selectedItemPartial, setSelectedItemPartial] = useState();
   const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
-  const [demandAmount, setDemandAmount]=useState();
-  const [loading,setLoading]=useState(true);
+  const [demandAmount, setDemandAmount] = useState();
+  const [loading, setLoading] = useState(true);
   const history = useHistory();
   const location = useLocation();
   const {
@@ -132,11 +133,11 @@ export default function () {
   function renderProducts() {
     if (typeof data !== 'undefined') {
       const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
-      let quantityLess;let OverCapacity;
+      let quantityLess; let OverCapacity;
       return productList.map(product => {
         if (productList.length > 0) {
-          quantityLess = _.find(product.validationMessages, function (x) { return x.Key === "DependentProduct" ; });
-          OverCapacity= _.find(product.validationMessages, function (x) { return x.Key === "OverCapacity" ; });
+          quantityLess = _.find(product.validationMessages, function (x) { return x.Key === "DependentProduct"; });
+          OverCapacity = _.find(product.validationMessages, function (x) { return x.Key === "OverCapacity"; });
         }
         return (
           <SingleOrderInfo
@@ -146,9 +147,9 @@ export default function () {
             onComplete={onCompletePopupRelation}
             quantityLess={quantityLess}
             OverCapacity={OverCapacity}
-            // onCompleteGoBox={}
+          // onCompleteGoBox={}
           />
-          
+
         );
       });
     }
@@ -158,8 +159,8 @@ export default function () {
     if ((typeof addressCode === 'undefined') || (addressCode === '')) { return message.warning('Sevk adresi seçiniz!') }
 
     const token = jwtDecode(localStorage.getItem("id_token"));
- 
-    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity" ; }))) {
+
+    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity"; }))||(_.find(productItem.validationMessages, function (x) { return x.Key === "OverDealerOrderLimit"; }))) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       setDemandAmount(productItem.amount);
@@ -201,7 +202,7 @@ export default function () {
       await getCartList();
       await AllCartItemChangeOrderAmount();
       setOnChange(true);
-      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add,'Talep Numarası:'+demandNo+ ' Ürün:' +itemCode + logMessage.Demand.save + 'Miktar ' + amount);
+      postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, 'Talep Numarası:' + demandNo + ' Ürün:' + itemCode + logMessage.Demand.save + 'Miktar ' + amount);
 
     }
 
@@ -216,10 +217,10 @@ export default function () {
   //Talep oluşturma popup işlemleri sonucu
   async function onCompletePopupDemand(createDemand = false, item, amount) {
     //Talep Oluşturma işlemi seçildiyse
-    if (createDemand === true) {      
+    if (createDemand === true) {
       postSaveDemand(amount, item.itemCode);
     }
-    else{
+    else {
       setDemandHide(false);
     }
   }
@@ -348,7 +349,9 @@ export default function () {
   const onChangeAddress2 = e => {
     setAddress2(e.target.value);
   }
-
+  const onChangePostCodeModal = e => {
+    setPostCode(e.target.value);
+  }
   const onChangeAddressCity = e => {
     setCity(e.target.value);
   }
@@ -360,7 +363,9 @@ export default function () {
   const onChangeKm = e => {
     setKm(e.target.value);
   }
-
+  const onChangePostCode = e => {
+    setPostCode(e.target.value);
+  }
   function onCreateAddress() {
     setCity();
     setTown();
@@ -370,6 +375,7 @@ export default function () {
     setAddress1();
     setAddress2();
     setPhone();
+    setPostCode();
     setCreateAddress(true);
   }
 
@@ -735,15 +741,15 @@ export default function () {
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
             message.warning({ content: 'Talep kaydetme işlemi başarısızdır. ' + data.message, duration: 2 });
-            demandSaveResult(false,itemCode,amount,data.message);
+            demandSaveResult(false, itemCode, amount, data.message);
           } else {
-            message.success({ content: data.demandNo+' talep numarasıyla başarıyla kaydedildi', duration: 5 });
-            demandSaveResult(true,itemCode,amount,'',data.demandNo);
+            message.success({ content: data.demandNo + ' talep numarasıyla başarıyla kaydedildi', duration: 5 });
+            demandSaveResult(true, itemCode, amount, '', data.demandNo);
           }
         }
       })
       .catch();
-      setDemandConfirmLoading(false);
+    setDemandConfirmLoading(false);
   }
   let columns = [
     {
@@ -914,12 +920,12 @@ export default function () {
 
   return (
     <CheckoutContents>
-      <LayoutWrapper className="isoCheckoutPage">      
+      <LayoutWrapper className="isoCheckoutPage">
         <Box>
-        <div style={{textAlign:'center', borderRadius:'4px'}}>
-        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={dataLoading}
-        >
-        </Spin></div>
+          <div style={{ textAlign: 'center', borderRadius: '4px' }}>
+            <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={dataLoading}
+            >
+            </Spin></div>
           <div className="isoBillingAddressWrapper">
             {hasOrderSavePermission !== true ? <Alert
               message="Uyarı"
@@ -1065,6 +1071,15 @@ export default function () {
                         onChange={onChangePhone}
                       />
                     </Fieldset>
+                    <Fieldset>
+                      <InputBox
+                        label="Posta Kodu"
+                        placeholder="Posta Kodu"
+                        value={postCode}
+                        onChange={onChangePostCodeModal}
+                        important
+                      />
+                    </Fieldset>
                   </Form>
                 </Modal>
                 <Modal
@@ -1177,11 +1192,10 @@ export default function () {
                       value={towns}
                       disabled
                     />
-                    {/* <InputBox label={<IntlMessages id="checkout.billingform.km" />}
-                      onChange={event => onChangeKm(event)}
-                      value={km}
-                      disabled
-                    /> */}
+                    <InputBox label={<IntlMessages id="checkout.billingform.postCode" />}
+                      onChange={event => onChangePostCode(event)}
+                      value={postCode}
+                    />
                   </div>
                   {siteMode === enumerations.SiteMode.DeliverysPoint ?
                     <Table title={() => 'Sevkiyat Günleri'} columns={dayColumns} dataSource={days} pagination={false}
