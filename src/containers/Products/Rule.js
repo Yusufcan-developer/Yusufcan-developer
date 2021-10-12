@@ -119,6 +119,7 @@ const SearchComponent = () => {
   const [ruleEditing, setRuleEditing] = useState(false);
   const [ruleSaveLoading, setRuleSaveLoading] = useState(false);
   const [deleteRuleVisible, setDeleteRuleVisible] = useState(false);
+  const [ruleDeleteLoading, setRuleDeleteLoading] = useState(false);
 
   //Sorting states
   const [sortingField, setSortingField] = useState();
@@ -891,6 +892,7 @@ const SearchComponent = () => {
   //Kural silme fetch işlemi
   async function deleteRule() {
     //Get User Info
+    setRuleDeleteLoading(true);
     let productInfo;
     const requestOptions = {
       method: "DELETE",
@@ -907,16 +909,22 @@ const SearchComponent = () => {
       })
       .then(data => {
         if (data.isSuccessful === true) {
-          message.info('Kural Silme işlemi başarılıdır.'); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.successDelete); handleCancel(); ruleSetOnChange(true);
+          message.info('Kural Silme işlemi başarılıdır.'); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.successDelete); handleCancel(); setRuleDeleteLoading(false);
           setActiveTabKey('0');
           setCreateRuleTabDisable(true);
+          setRuleDeleteLoading(false);
+          ruleSetOnChange(true);
         }
-        else if (data.isSuccessful === false) { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); }
-        else { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); }
+        else if (data.isSuccessful === false) { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete);     setRuleDeleteLoading(false);
+      }
+        else { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete);     setRuleDeleteLoading(false);
+      }
       })
       .catch();
     return productInfo;
   }
+
+  //Kural seçmek
   function selectedRule(item) {
     const rule = (item.query);
     if (rule && rule.categories) {
@@ -955,6 +963,17 @@ const SearchComponent = () => {
     setRuleName(item.name);
     setSelectedItem(item);
     setOnChange(true);
+
+  }
+  function selectedRuleEditing(item) {    
+    setVisible(true);
+      setRuleNo(item.ruleNo);
+      setRuleName(item.name);
+      setCapacity(item.capacity);
+      setPriority(item.priority);
+      setDealerDemandLimit(item.dealerDemandLimit);
+      setDealerOrderLimit(item.dealerOrderLimit);
+      setRuleType(item.ruleType);
 
   }
   function callback(key) {
@@ -1113,8 +1132,11 @@ const SearchComponent = () => {
         return (
           <React.Fragment>
 
-            <a onClick={() => selectedRule(record)}>
+            <a onClick={() => selectedRuleEditing(record)}>
               <i className="ion-android-create" />
+            </a>
+            <a onClick={() => selectedRule(record)} style={{ marginLeft: '15px' }}>
+              <i className="ion-android-search" />
             </a>
             <a onClick={() => deleteRuleShowPopup(record)} style={{ marginLeft: '15px' }}>
               <i className="ion-android-close" />
@@ -1756,6 +1778,7 @@ const SearchComponent = () => {
         <ReactJson src={queryText} />
 
       </Modal>
+
       <Modal
         visible={deleteRuleVisible}
         title={ruleName + " kuralı silinecektir"}
@@ -1765,6 +1788,10 @@ const SearchComponent = () => {
         onCancel={handleCancel}
         onOk={deleteRule}
       >
+<div style={{textAlign:'center', borderRadius:'4px'}}>
+        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleDeleteLoading}
+        >
+        </Spin></div>
         <p>{ruleName + ' ' + 'kuralını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
         <Form
           form={form}

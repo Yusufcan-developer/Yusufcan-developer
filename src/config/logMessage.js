@@ -104,5 +104,12 @@ export default {
         error:'kural oluşturma işlemi başarısızdır. ',
         delete:' nolu kural silme işlemi başarısızdır. ',
         successDelete:' nolu kural silme işlemi başarılıdır. ',
+    },
+    Period:
+    {
+        save:'Dönem başarılı bir şekilde oluşturulmuştur. ',
+        error:'Dönem oluşturma işlemi başarısızdır. ',
+        delete:' nolu Dönem silme işlemi başarısızdır. ',
+        successDelete:' nolu Dönem silme işlemi başarılıdır. ',
     }
 };

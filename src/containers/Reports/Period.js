@@ -4,13 +4,12 @@ import { useHistory, useLocation } from 'react-router-dom';
 
 //Components
 import PageHeader from "@iso/components/utility/pageHeader";
-import Collapse from "@iso/components/uielements/collapse";
 import Form from "@iso/components/uielements/form";
 import Box from "@iso/components/utility/box";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import DatePicker from "@iso/components/uielements/datePicker";
-import { Table, Row, Col, Radio, Tag, Modal, Input, message, Layout, Button } from "antd";
+import { Table, Col, Tag, Modal, Input, message, Layout, Button } from "antd";
 import Select, { SelectOption } from '@iso/components/uielements/select';
 
 //Fetch
@@ -18,21 +17,19 @@ import { useFetch } from "@iso/lib/hooks/fetchData/usePostApi";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 
 //Style
-import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons';
+import { EditOutlined, DownloadOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
 import ColumnOptionsConfig from "../../config/ColumnOptions.config";
 import ReportPagination from "./ReportPagination";
-import numberFormat from "@iso/config/numberFormat";
-import renderFooter from "./ReportSummary";
 import viewType from '@iso/config/viewType';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import { setSiteMode } from '@iso/lib/helpers/setSiteMode';
 
 //Other Library
-// import ExcelExport from "./ExcelExport";
+import ExcelExport from "./ExcelExport";
 import _ from 'underscore';
 import moment from 'moment';
 import logMessage from '@iso/config/logMessage';
@@ -41,12 +38,8 @@ import 'moment/locale/tr'
 import Item from "antd/lib/list/Item";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
-
-const { Panel } = Collapse;
-const FormItem = Form.Item;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
-let getSelectedKey = [];
 
 let sortingField;
 let sortingOrder;
@@ -54,7 +47,6 @@ export default function () {
     document.title = "Dönemler - Seramiksan B2B";
     const { Content } = Layout;
     const [form] = Form.useForm();
-    const [validation, setValidation] = useState(true);
     const Option = SelectOption;
     const [searchKey, setSearchKey] = useState('');
     const [amount, setAmount] = useState(0);
@@ -68,27 +60,18 @@ export default function () {
     const [fromDate, setFromDate] = useState(moment(moment().subtract(0, 'days').toDate()));
     const [deadlineDate, setDeadlineDate] = useState(null);
     const [toDate, setToDate] = useState(moment(new Date()));
-    const [dealerCodes, setDealerCodes] = useState();
     const [regionCodes, setRegionCodes] = useState();
     const [fieldCodes, setFieldCodes] = useState();
-    const [selectedDealerCode, setSelectedDealerCode] = useState();
     const [newUrlParams, setNewUrlParams] = useState('');
     const [selectedRadioItem, setSelectedRadioItem] = useState(1);
     const [privateDate, setPrivateDate] = useState('Bugun');
     const [address, setAddress] = useState();
-    const [lookupAddressChildren, setLookupAddressChildren] = useState();
     const [status, setStatus] = useState();
-    const [selectedProductSeries, setSelectedProductSeries] = useState();
     const [selectedDimensions, setSelectedDimensions] = useState();
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
-    const [selectedItemsId, setSelectedItemsId] = useState([]);
-    const [selectedItems, setSelectedItems] = useState([]);
-    const [selectedDemand, setSelectedDemand] = useState();
-    const [visible, setVisible] = useState(false);
-    const [componentSize, setComponentSize] = useState('default');
-    const [demandDatePeriod, setDemandDatePeriod] = useState(false);    
+
+    const [demandDatePeriod, setDemandDatePeriod] = useState(false);
     const [selectedPeriodId, setSelectedPeriodId] = useState();
-    const [dates, setDate] = useState();
     const [dateValidation, setDateValidation] = useState(true);
     const [deletePeriodVisible, setDeletePeriodVisible] = useState(false);
 
@@ -167,76 +150,8 @@ export default function () {
 
             setSelectedDimensions(dimensionNewArray);
         }
-
-        //Serie get url data
-        if (typeof parsed.se !== 'undefined') {
-            let seriesNewArray
-            if (parsed.se)
-                if (Array.isArray(parsed.se)) {
-                    seriesNewArray = _.map(parsed.se.map(e => e === 'null' || e === '' ? null : e));
-                } else {
-                    seriesNewArray = _.map([parsed.se].map(e => e === 'null' || e === '' ? null : e));
-                }
-            const nullOrBlankData = _.filter(seriesNewArray, function (Item) {
-                if (Item === null || Item === '') {
-                    return true;
-                }
-            });
-            if (nullOrBlankData.length > 0) { seriesNewArray.push(''); }
-            setSelectedProductSeries(seriesNewArray);
-        }
-
-        let newDealarCode = []
-        //Field url data
-        if (typeof parsed.fic !== 'undefined') {
-            if (Array.isArray(parsed.fic)) {
-                _.each(parsed.fic, (item, i) => {
-                    newDealarCode.push(item);
-                });
-            } else { newDealarCode.push(parsed.fic) }
-        }
-
-        //RegionCode url data
-        if (typeof parsed.rec !== 'undefined') {
-            if (Array.isArray(parsed.rec)) {
-                _.each(parsed.rec, (item, i) => {
-                    newDealarCode.push(item);
-                });
-            } else { newDealarCode.push(parsed.rec) }
-        }
-
-        //Dealar url data
-        if (typeof parsed.dec !== 'undefined') {
-            if (Array.isArray(parsed.dec)) {
-                _.each(parsed.dec, (item, i) => {
-                    newDealarCode.push(item);
-                });
-            } else { newDealarCode.push(parsed.dec) }
-        }
-        setSelectedDealerCode(newDealarCode);
-
-        //Bayi kodlarının Tree select özelliğine göre düzenlenmesi.
-        let fieldArrObj = [];
-        let regionArrObj = [];
-        let dealerArrObj = [];
-
-        if (newDealarCode.length === 0) { return setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj) }
-        _.filter(newDealarCode, function (item) {
-            if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); }
-            else if (item.split("|").length === 2) {
-                regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj);
-            }
-            else {
-                dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj);
-            }
-        });
-        onChangeDealerCode(newDealarCode);
-
-
-
         return setOnChange(true);
     }
-
 
     //Get Search Data
     function dataSearch(selectedPageIndex, selectedPageSize) {
@@ -250,12 +165,6 @@ export default function () {
         params.delete('sortingField');
         params.delete('sortingOrder');
         params.delete('status');
-
-        // if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
-        //     params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-        //     params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
-        // }
-
 
         _.filter(status, function (item) {
             params.append('status', item); params.toString();
@@ -280,44 +189,6 @@ export default function () {
         dataSearch();
     };
 
-    //Change DealerCode
-    async function onChangeDealerCode(value) {
-        let fieldArrObj = [];
-        let regionArrObj = [];
-        let dealerArrObj = [];
-        setDealerCodes([]);
-        setFieldCodes([]);
-        setRegionCodes([]);
-        const params = new URLSearchParams(location.search);
-        params.delete('smode');
-        params.delete('dec');
-        params.delete('rec');
-        params.delete('fic');
-        params.delete('from')
-        params.delete('to');
-        params.delete('keyword');
-        params.delete('pgsize');
-        params.delete('pgindex');
-        params.delete('address');
-        params.delete('status');
-
-        setLookupAddressChildren([]);
-        if (value.length === 0) { setNewUrlParams(''); params.delete('fic'); params.delete('rec'); params.delete('dec'); setFieldCodes(fieldArrObj); setRegionCodes(regionArrObj); setDealerCodes(dealerArrObj); setSelectedDealerCode([]) }
-        else {
-            _.filter(value, function (item) {
-                if (item.split("|").length === 1) { fieldArrObj.push(item); setFieldCodes(fieldArrObj); params.append('fic', item); params.toString(); }
-                else if (item.split("|").length === 2) {
-                    regionArrObj.push(item.split("|")[1]); setRegionCodes(regionArrObj); params.append('rec', item); params.toString();
-                }
-                else {
-                    dealerArrObj.push(item.split("|")[2]); setDealerCodes(dealerArrObj); params.append('dec', item); params.toString();
-                }
-                setSelectedDealerCode(value)
-                setNewUrlParams(params.toString());
-            });
-        }
-    };
-
     //Change from and To date
     function changeDatePickerFromAndTo(value, dateString) {
         if (value !== null) {
@@ -331,7 +202,6 @@ export default function () {
     }
     //Change deadline
     function changeDatePicker(value, dateString) {
-        debugger
         if (value !== null) {
             setDeadlineDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
         }
@@ -370,35 +240,13 @@ export default function () {
         dataSearch(current, pageSize);
     }
 
-    //Status handle change
-    function statusHandleChange(value) {
-        setStatus(value);
-    }
-
-    //Dates radio button handle change
-    function onChangeRadioButton(e) {
-        setSelectedRadioItem(e.target.value);
-        setPrivateDate(null);
-    }
-
-    //Miktar girilen text alanında tüm değerleri seçiyor
-    function onSelectAll(id) {
-        document.getElementById(id).select();
-    }
-
-    //Component Size
-    const onFormLayoutChange = ({ size }) => {
-        setComponentSize(size);
-    };
-
     //Talep kaydetme işlemi
     async function postSavePeriod() {
         const siteMode = getSiteMode();
         const token = jwtDecode(localStorage.getItem("id_token"));
         const dealerCode = token.dcode;
         // setDemandConfirmLoading(true);
-        const reqBody = { "id": selectedPeriodId ,"startDate": fromDate.format('YYYY-MM-DD'), "endDate": toDate.format('YYYY-MM-DD'), "deadline": deadlineDate.format('YYYY-MM-DD') }
-        debugger
+        const reqBody = { "id": selectedPeriodId, "startDate": fromDate.format('YYYY-MM-DD'), "endDate": toDate.format('YYYY-MM-DD'), "deadline": deadlineDate.format('YYYY-MM-DD') }
         const requestOptions = {
             method: "POST",
             headers: {
@@ -413,7 +261,6 @@ export default function () {
                 return status;
             })
             .then(data => {
-                debugger
                 if (typeof data !== 'undefined') {
                     if (data.isSuccessful === false) {
                         const getMessage = data.message;
@@ -444,10 +291,9 @@ export default function () {
     }
     //Periyod Silme işlemi
     function deletePeriodShowPopup(item) {
-        debugger
         setSelectedPeriodId(item.id);
-        setFromDate(moment(item.startDate+ 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-        setToDate(moment(item.endDate+ 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+        setFromDate(moment(item.startDate + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
+        setToDate(moment(item.endDate + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
         setDeletePeriodVisible(true);
     }
     //Period Columns
@@ -456,7 +302,7 @@ export default function () {
             title: "Durumu",
             dataIndex: "isActive",
             key: "isActive",
-            width: 100,
+            width: 50,
             render: (isActive) => (
                 <>
                     {isActive === true ? (
@@ -566,7 +412,7 @@ export default function () {
     //Excel Oluşturma
     const exportExcelButton = () => {
         postSaveLog(enumerations.LogSource.ReportAccountTransactions, enumerations.LogTypes.Export, logMessage.Reports.TransactionAccount.exportExcel);
-        // ExcelExport(columns, data, 'Talepler');
+        ExcelExport(columns, data, 'Dönemler');
     }
 
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
@@ -589,6 +435,34 @@ export default function () {
         }
     }
 
+    //Kural silme fetch işlemi
+    async function deletePeriod() {
+        //Get User Info
+        let productInfo;
+        const requestOptions = {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            }
+        };
+        await fetch(`${siteConfig.api.report.deletePeriods}${selectedPeriodId}`, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
+            .then(data => {
+                if (data.isSuccessful === true) {
+                    message.info('Dönem Silme işlemi başarılıdır.'); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, selectedPeriodId + logMessage.Period.successDelete); handleCancel(); setOnRefreshMode(true);
+
+                }
+                else if (data.isSuccessful === false) { message.error('Dönem Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, selectedPeriodId + logMessage.Period.delete); }
+                else { message.error('Dönem Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, selectedPeriodId + logMessage.Period.delete); }
+            })
+            .catch();
+        return productInfo;
+    }
     const view = viewType('Reports');
     const filterView = viewType('Filter');
     return (
@@ -596,7 +470,7 @@ export default function () {
             <PageHeader>
                 {<IntlMessages id="page.period.header" />}
             </PageHeader>
-            <Box>
+            {/* <Box>
                 <Collapse accordion defaultActiveKey={filterView !== 'MobileView' ? ['0'] : null}>
                     <Panel header={<IntlMessages id="page.filtered" />} key="0">
                         {view !== 'MobileView' ?
@@ -628,7 +502,7 @@ export default function () {
                         </Row>
                     </Panel>
                 </Collapse>
-            </Box>
+            </Box> */}
             {/* Data list volume */}
             <Box>
                 <ReportPagination
@@ -725,26 +599,26 @@ export default function () {
                 </Form>
             </Modal>
             <Modal
-        visible={deletePeriodVisible}
-        title= {fromDate===null?null:  fromDate.format('DD-MM-YYYY')+ ' / '+   toDate.format('DD-MM-YYYY') +" tarih aralığını kapsayan periyod silinecektir"}
-        okText="Sil"
-        cancelText="İptal"
-        maskClosable={false}
-        onCancel={handleCancel}
-        // onOk={deleteRule}
-      >
-        <p>{ fromDate===null?null: fromDate.format('DD-MM-YYYY') + ' / '+ ( toDate.format('DD-MM-YYYY'))+' periyodu silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p> 
+                visible={deletePeriodVisible}
+                title={fromDate === null ? null : fromDate.format('DD-MM-YYYY') + ' / ' + toDate.format('DD-MM-YYYY') + " tarih aralığını kapsayan periyod silinecektir"}
+                okText="Sil"
+                cancelText="İptal"
+                maskClosable={false}
+                onCancel={handleCancel}
+                onOk={deletePeriod}
+            >
+                <p>{fromDate === null ? null : fromDate.format('DD-MM-YYYY') + ' / ' + (toDate.format('DD-MM-YYYY')) + ' periyodu silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
 
-        <Form
-          form={form}
-          layout="vertical"
-          name="form_in_modal"
-          initialValues={{
-            modifier: 'public',
-          }}
-        >
-        </Form>
-      </Modal>
+                <Form
+                    form={form}
+                    layout="vertical"
+                    name="form_in_modal"
+                    initialValues={{
+                        modifier: 'public',
+                    }}
+                >
+                </Form>
+            </Modal>
         </LayoutWrapper>
     );
 }

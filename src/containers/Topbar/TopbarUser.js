@@ -36,8 +36,6 @@ export default function TopbarUser(props) {
   const [demandDatePeriod, setDemandDatePeriod] = useState(false);
   const [cacheRefreshVisible, setCacheRefreshVisible] = useState(false);
   const [dates, setDate] = useState();
-  const [validation, setValidation] = useState(true);
-  const [dateValidation, setDateValidation] = useState(true);
 
   const dispatch = useDispatch();
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
@@ -142,14 +140,6 @@ export default function TopbarUser(props) {
     return cacheRefreshStatus;
   }
 
-  //Talep tarih periyodu oluşturma işlemi
-  async function handleCreatePeriod() {
-    if (!dates) {
-      setValidation(false);
-      if (!dates) { setDateValidation(false); }
-    }
-  }
-
   //Kullanıcı parola değiştirme
   async function handlePasswordOk() {
     const password = await changePassword();
@@ -184,13 +174,6 @@ export default function TopbarUser(props) {
       cancelText: "iptal"
     });
   }
-  function changeTimePicker(value, dateString) {
-    if (dateString === '') { setDateValidation(false); }
-    else {
-        setDateValidation(true);
-    }
-    setDate(moment(dateString + 'T00:00:00-00:00', 'DD-MM-YYYY' + 'THH:mm:ss', null));
-}
   return (
     <React.Fragment>
       <Popover
@@ -284,46 +267,6 @@ export default function TopbarUser(props) {
             ]}
           >
             <Input.Password autoComplete={"off"} value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} />
-          </Form.Item>
-        </Form>
-      </Modal>
-      <Modal
-        visible={demandDatePeriod}
-        title="Talep Oluşturma Dönemi Belirleme"
-        okText="Kaydet"
-        cancelText="İptal"
-        maskClosable={false}
-        onCancel={handleCancel}
-        onOk={() => {
-          form
-            .validateFields()
-            .then(values => {
-              form.resetFields();
-              handleCreatePeriod(values);
-            })
-            .catch(info => {
-              console.log('Validate Failed:', info);
-            });
-        }}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          name="form_in_modal"
-          initialValues={{
-            modifier: 'public',
-          }}
-        >
-          <Form.Item
-            label={dateValidation === true ? 'Tarih *' : 'Tarih Giriniz!'} style={{
-              color: dateValidation === true ? 'black' : 'red'
-            }}
-
-          >
-            <RangePicker
-              format={siteConfig.dateFormat}
-              onChange={changeTimePicker}
-            />
           </Form.Item>
         </Form>
       </Modal>

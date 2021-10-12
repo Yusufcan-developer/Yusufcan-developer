@@ -1475,7 +1475,7 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            render: (approveDate, record) => moment(approveDate).format(siteConfig.dateFormatAddTime),
+            render: (approveDate, record) =>typeof approveDate!=='undefined'? moment(approveDate).format(siteConfig.dateFormatAddTime):'-',
         },
         {
             title: "İptal Nedeni",
