@@ -243,7 +243,6 @@ const SearchComponent = () => {
   }
   //Keyword Search Button
   const onSearch = e => {
-    debugger
     setKeyword(e);
     keywordAddUrl();
   }
@@ -943,6 +942,7 @@ const SearchComponent = () => {
       setProductProduction(rule.productionStatus);
       setToDate( moment(item.orderTo));
       setFromDate(moment(item.orderFrom));
+      setKeyword(rule.keyword);
 
       setOnChangeDimensionsFilter(true);
       setOnChangeSerieFilter(true);
