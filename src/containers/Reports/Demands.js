@@ -1361,12 +1361,6 @@ export default function () {
             setAmount(value);
         }
     }
-    function getDescription(record) {
-        if (typeof record !== 'undefined') {
-            return record.itemDto.description;
-        }
-        else { return null; }
-    }
 
     //Demand Columns
     let columns = [
@@ -1448,8 +1442,6 @@ export default function () {
             dataIndex: "itemDescription",
             key: "itemDescription",
             width: 300,
-            render: (a, record) => getDescription(record),
-
         },
         {
             title: "Miktar",
@@ -1468,7 +1460,7 @@ export default function () {
             width: 200,
         },
         {
-            title: "Onaylanma Tarih",
+            title: "Onaylanma Tarihi",
             dataIndex: "approveDate",
             key: "approveDate",
             type: "approveDate",
