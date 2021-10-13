@@ -18,7 +18,7 @@ export default function ({ productItem, popupShow, quantityLess, onCompleteGoBo,
   return (
     <div className="isoSingleOrderInfo">
       <p>
-        <a ><span onClick={() =>{typeof productItem.OverCapacity!=='undefined' ? setPopoverShow(true):popupShow();}} style={{ color: '#000000', cursor: 'pointer', textDecorationLine: typeof quantityLess !== 'undefined' 	|| typeof OverCapacity !== 'undefined' ? 'underline' : null }}>{productItem.itemCode} </span></a>
+        <a ><span onClick={() =>{typeof productItem.OverCapacity!=='undefined' 	||  typeof productItem.OverDealerOrderLimit!=='undefined' ? setPopoverShow(true):popupShow();}} style={{ color: '#000000', cursor: 'pointer', textDecorationLine: typeof quantityLess !== 'undefined' 	|| typeof OverCapacity !== 'undefined' ? 'underline' : null }}>{productItem.itemCode} </span></a>
         <span>
 
           <Popover               

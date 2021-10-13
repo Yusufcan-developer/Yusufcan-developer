@@ -138,6 +138,9 @@ export default function () {
         if (productList.length > 0) {
           quantityLess = _.find(product.validationMessages, function (x) { return x.Key === "DependentProduct"; });
           OverCapacity = _.find(product.validationMessages, function (x) { return x.Key === "OverCapacity"; });
+          if (typeof OverCapacity === 'undefined') {
+            OverCapacity = _.find(product.validationMessages, function (x) { return x.Key === "OverDealerOrderLimit"; });
+          }
         }
         return (
           <SingleOrderInfo
@@ -163,7 +166,7 @@ export default function () {
     if ((token.urole === 'admin') || (token.dcode === 'B555888') && (_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity"; }))||(_.find(productItem.validationMessages, function (x) { return x.Key === "OverDealerOrderLimit"; }))) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
-      setDemandAmount(productItem.amount);
+      setDemandAmount(productItem.orderM2);
       return setDemandHide(true);
     }
     if (productItem.hasDependentOrRelatedProducts === true) {
