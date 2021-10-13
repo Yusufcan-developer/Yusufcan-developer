@@ -23,7 +23,7 @@ import logMessage from '@iso/config/logMessage';
 
 import Modal from "antd/lib/modal/Modal";
 const CreateDemand = (props) => {
-    const { hide, item, onComplete, checkOutPage, demandAmount, confirmLoading } = props;
+    const { hide, item, onComplete, checkOutPage, demandAmount, confirmLoading, unit } = props;
 
     const { rowStyle, colStyle, gutter } = basicStyle;
     const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
@@ -182,6 +182,8 @@ const CreateDemand = (props) => {
                                 <Form.Item
                                     label="Talep Miktarı">
                                     <Input style={{ width: 100, marginRight:'5px' }} value={inputDemandAmount} onChange={event => onChangeAmountEntered(event)} onClick={event => onSelectAll(event)} />
+                                    {unit+ " - "}
+
                                    {(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Toplam Tutar: ' : '') + numberFormat(inputDemandAmount * item.listPrice) + " TL"}
 
 

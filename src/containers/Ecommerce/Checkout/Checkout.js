@@ -101,6 +101,7 @@ export default function () {
   const [selectedItemPartial, setSelectedItemPartial] = useState();
   const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
   const [demandAmount, setDemandAmount] = useState();
+  const [unit, setUnit]=useState();
   const [loading, setLoading] = useState(true);
   const history = useHistory();
   const location = useLocation();
@@ -167,6 +168,8 @@ export default function () {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       setDemandAmount(productItem.orderM2);
+      setUnit(productItem.item.unit);
+
       return setDemandHide(true);
     }
     if (productItem.hasDependentOrRelatedProducts === true) {
@@ -1252,6 +1255,7 @@ export default function () {
               demandAmount={demandAmount}
               confirmLoading={demandConfirmLoading}
               onComplete={onCompletePopupDemand}
+              unit={unit}
             /> : null}
           {hide === true ? <PopupProductRelation
             hide={hide}
