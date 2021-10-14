@@ -164,7 +164,7 @@ export default function () {
 
     const token = jwtDecode(localStorage.getItem("id_token"));
 
-    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity"; })) || (_.find(productItem.validationMessages, function (x) { return x.Key === "OverDealerOrderLimit"; }))) {
+    if ((_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity"; })) || (_.find(productItem.validationMessages, function (x) { return x.Key === "OverDealerOrderLimit"; }))) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       setDemandAmount(productItem.orderM2);
