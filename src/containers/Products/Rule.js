@@ -221,8 +221,10 @@ const SearchComponent = () => {
 
   //Pagination : Seçili sayfanın saklandığı state'i değiştirir
   function currentPageChange(current) {
+    if(typeof selectedruleObject!=='undefined'){
+      selectedruleObject.pageIndex=current-1;
+    }
     setPageIndex(current);
-
     return setOnChange(true);
   }
 
@@ -1001,6 +1003,8 @@ const SearchComponent = () => {
     setRuleEditing(false);
     setRuleName();
     setRuleNo();
+    setPageIndex(1);
+
     // if (key === enumerations.ProductRelationTypestring.Dependent) { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Dependent, productTypeTitle: 'Bağlı Ürün' }); }
     // else { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Related, productTypeTitle: 'İlgili Ürün' }); }
     // this.formRef.current.resetFields();
