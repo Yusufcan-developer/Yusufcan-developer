@@ -645,7 +645,7 @@
   "checkout.billingform.addressoptional": "Apartment   suite   unit etc. (optional",
   "checkout.billingform.checkbox": "Create an account?",
   "checkout.billingform.km": "Km",
-  "checkout.billingform.postCode": "Posta Kodu",
+  "checkout.billingform.zipCode": "Posta Kodu",
   "antTable.title.image": "Image",
   "antTable.title.firstName": "First Name",
   "antTable.title.lastName": "Last Name",

@@ -83,6 +83,7 @@ export default function () {
     useEffect(() => {
         setCurrentPage(pageIndex);
         getVariablesFromUrl();
+        setOnRefreshMode(true);
     }, [pageIndex]);
 
     let searchUrl = queryString.parse(location.search);

@@ -34,7 +34,7 @@ import {
 } from '../../FirestoreCRUD/Article/Article.styles';
 
 //Other Library
-import _ from 'underscore';
+import _, { zip } from 'underscore';
 import numberFormat from "@iso/config/numberFormat";
 import 'moment/locale/tr'
 import moment from 'moment';
@@ -66,7 +66,7 @@ export default function () {
   const [town, setTown] = useState('');
   const [district, setDistrict] = useState('');
   const [km, setKm] = useState();
-  const [postCode, setPostCode] = useState();
+  const [zipCode, setZipCode] = useState();
   const [cities, setCities] = useState();
   const [towns, setTowns] = useState();
   const [optionsCities, setOptions] = useState();
@@ -101,7 +101,7 @@ export default function () {
   const [selectedItemPartial, setSelectedItemPartial] = useState();
   const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
   const [demandAmount, setDemandAmount] = useState();
-  const [unit, setUnit]=useState();
+  const [unit, setUnit] = useState();
   const [loading, setLoading] = useState(true);
   const history = useHistory();
   const location = useLocation();
@@ -164,7 +164,7 @@ export default function () {
 
     const token = jwtDecode(localStorage.getItem("id_token"));
 
-    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity"; }))||(_.find(productItem.validationMessages, function (x) { return x.Key === "OverDealerOrderLimit"; }))) {
+    if ((token.urole === 'admin') || (token.dcode === 'B555888') && (_.find(productItem.validationMessages, function (x) { return x.Key === "OverCapacity"; })) || (_.find(productItem.validationMessages, function (x) { return x.Key === "OverDealerOrderLimit"; }))) {
       await getProductDetail(productItem.itemCode);
       setSelectedItemPartial(productItem.isPartial);
       setDemandAmount(productItem.orderM2);
@@ -356,7 +356,11 @@ export default function () {
     setAddress2(e.target.value);
   }
   const onChangePostCodeModal = e => {
-    setPostCode(e.target.value);
+    const { value } = e.target;
+    const reg = /^-?\d*(\.\d*)?$/;
+    if ((!isNaN(value) && reg.test(value)) || value === '' || value === '-') {
+      setZipCode(e.target.value);
+    }
   }
   const onChangeAddressCity = e => {
     setCity(e.target.value);
@@ -370,7 +374,7 @@ export default function () {
     setKm(e.target.value);
   }
   const onChangePostCode = e => {
-    setPostCode(e.target.value);
+    setZipCode(e.target.value);
   }
   function onCreateAddress() {
     setCity();
@@ -381,7 +385,7 @@ export default function () {
     setAddress1();
     setAddress2();
     setPhone();
-    setPostCode();
+    setZipCode();
     setCreateAddress(true);
   }
 
@@ -654,35 +658,40 @@ export default function () {
 
   //post address
   async function postSaveAddress() {
-    const token = jwtDecode(localStorage.getItem("id_token"));
-    const dealerCodes = token.dcode;
-    if ((typeof addressTitle === 'undefined') || (typeof address1 === 'undefined') || (typeof cities === 'undefined') || (typeof towns === 'undefined') || (typeof address2 === 'undefined')) { return message.error('Lütfen zorunlu alanları giriniz.'); }
-    setConfirmLoading(true);
-    const reqBody = { "id": 0, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": cities, "town": towns, "district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
-    const requestOptions = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-      },
-      body: JSON.stringify(reqBody)
-    };
-    await fetch(siteConfig.api.carts.postSaveAddress, requestOptions)
-      .then(response => {
-        const status = apiStatusManagement(response);
-        return status;
-      })
-      .then(data => {
-        setAdressItem(data.addressTitle); setPhone(data.phone); setCities(data.city); setAddressCode(data.addressCode); setTowns(data.town);
-        setVisible(false);
-        setCreateAddress(false);
-        message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
-        getAdress();
-        // getInitData(userId,data.city,data.town,true);
-        postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + logMessage.Address.saveAddress);
-      })
-      .catch(setConfirmLoading(false));
-    setConfirmLoading(false);
+    if (zipCode && zipCode.length === 5) {
+      const token = jwtDecode(localStorage.getItem("id_token"));
+      const dealerCodes = token.dcode;
+      if ((typeof addressTitle === 'undefined') || (typeof address1 === 'undefined') || (typeof cities === 'undefined') || (typeof towns === 'undefined') || (typeof address2 === 'undefined')) { return message.error('Lütfen zorunlu alanları giriniz.'); }
+      setConfirmLoading(true);
+      const reqBody = { "id": 0, "zipCode": zipCode, "addressCode": '', "dealerId": 0, "dealerCode": dealerCodes, "addressTitle": addressTitle, "address1": address1, "city": cities, "town": towns, "district": district, "countryCode": 'TR', "countryName": 'Türkiye', 'phone': phone }
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+        },
+        body: JSON.stringify(reqBody)
+      };
+      await fetch(siteConfig.api.carts.postSaveAddress, requestOptions)
+        .then(response => {
+          const status = apiStatusManagement(response);
+          return status;
+        })
+        .then(data => {
+          setAdressItem(data.addressTitle); setPhone(data.phone); setCities(data.city); setAddressCode(data.addressCode); setTowns(data.town);setZipCode(data.zipCode);
+          setVisible(false);
+          setCreateAddress(false);
+          message.success('Adres bilgisi başarılı bir şekilde kayıt edilmiştir.');
+          getAdress();
+          // getInitData(userId,data.city,data.town,true);
+          postSaveLog(enumerations.LogSource.Address, enumerations.LogTypes.Add, data.addressTitle + logMessage.Address.saveAddress);
+        })
+        .catch(setConfirmLoading(false));
+      setConfirmLoading(false);
+    }
+    else {
+      message.warning('Lütfen posta kodunu kontrol ediniz.')
+    }
   }
 
   //Save Order
@@ -921,7 +930,11 @@ export default function () {
   function onChangeHandleTown(value) {
     setTowns(value);
   };
-
+  //Keyword 'Enter' search
+  const keyPress = e => {
+    if (e.keyCode === 13) {
+    }
+}
   const view = viewType('Reports');
 
   return (
@@ -977,7 +990,7 @@ export default function () {
                       onRow={(record, rowIndex) => {
                         return {
                           onClick: event => {
-                            setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCities(record.city); setTowns(record.town); setAddress1(record.address1); setAddress2(record.address2); setVisible(false);
+                            setAddressCode(record.addressCode); setCountry(record.countryCode + '-' + record.countryName); setAdressItem(record.addressCode + '-' + record.addressTitle); setPhone(record.phone); setCities(record.city); setTowns(record.town); setAddress1(record.address1); setAddress2(record.address2); setZipCode(record.zipCode); setVisible(false);
                             //getInitData(userId, record.city, record.town, true);
                           },
                         };
@@ -1081,7 +1094,7 @@ export default function () {
                       <InputBox
                         label="Posta Kodu"
                         placeholder="Posta Kodu"
-                        value={postCode}
+                        value={zipCode}
                         onChange={onChangePostCodeModal}
                         important
                       />
@@ -1198,9 +1211,10 @@ export default function () {
                       value={towns}
                       disabled
                     />
-                    <InputBox label={<IntlMessages id="checkout.billingform.postCode" />}
+                    <InputBox label={<IntlMessages id="checkout.billingform.zipCode" />}
                       onChange={event => onChangePostCode(event)}
-                      value={postCode}
+                      value={zipCode}
+                      disabled
                     />
                   </div>
                   {siteMode === enumerations.SiteMode.DeliverysPoint ?

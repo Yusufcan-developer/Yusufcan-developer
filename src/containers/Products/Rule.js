@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useHistory, useLocation } from 'react-router-dom';
 
 //Components
-// import Form from "@iso/components/uielements/form";
 import IntlMessages from "@iso/components/utility/intlMessages";
 import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
@@ -15,7 +14,6 @@ import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
 import LayoutWrapper from "@iso/components/utility/layoutWrapper.js";
 import numberFormat from "@iso/config/numberFormat";
-import Dragdrop from '../Reports/Dragdrop';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import ReactJson from 'react-json-view'
 
@@ -70,7 +68,6 @@ const SearchComponent = () => {
   const history = useHistory();
   const queryString = require('query-string');
   const location = useLocation();
-  const [isPointAddress, setIsPointAddress] = useState();
   const [hide, setHide] = useState(false);
   const [popupData, setPopupData] = useState();
   const [visible, setVisible] = useState();
@@ -138,7 +135,6 @@ const SearchComponent = () => {
   const [qualityFilterSearch, setQualityFilterSearch] = useState();
   const [productProductionFilterSearch, setProductProductionFilterSearch] = useState();
   const [ruleType, setRuleType] = useState();
-  const [searchKey, setSearchKey] = useState('');
   const { Search } = Input;
   const statusChildren = [];
   const typeChildren = [];
@@ -435,7 +431,6 @@ const SearchComponent = () => {
     filterTextSearchSurface(e.target.value);
   }
 
-
   //Quality
   function filterTextSearchQuality(value) {
     let searchString = value.toLocaleLowerCase('tr').split(' ')
@@ -508,6 +503,7 @@ const SearchComponent = () => {
   //EndRegion
 
   //InputSearch Filter Event
+
   const onchangeInputSearch = e => {
     setKeyword(e.target.value);
   }
@@ -1025,21 +1021,78 @@ const SearchComponent = () => {
     setFilterStatus(value);
   }
 
-  //RadioButton değişiklikleri
-  function onChangeAmountEntered(e) {
-    if (!isNaN(e.target.value)) {
-      // setDealerLimit(parseInt(e.target.value));
-    }
+  //Kural adı değiştirme
+  const handleChangeRuleName = e => {
+    setRuleName(e.target.value);
+  }
+
+  //Kural açıklaması değiştirme
+  function handleDescription(e) {
+    setDescription(e.target.value);
+  }
+
+  //Select Component Aktiflik durumu değiştirme 
+  function isLockedChange(value) {
+    if (value === true) { setRuleStatus(enumerations.RuleStatus.Active) }
+    else { setRuleStatus(enumerations.RuleStatus.Archived) }
+    setIsLocked(!value);
+  }
+
+  //Component Size
+  const onFormLayoutChange = ({ size }) => {
+    setComponentSize(size);
+  };
+
+  const TabTitle = ({ name, value }) => {
+    return (
+
+      value === '0' ? <span><UnorderedListOutlined />
+        {name}
+      </span> : <span><FormOutlined />
+        {name}
+      </span>)
+  }
+
+  //Tab change and clear data
+  function createRuleTab() {
+    setActiveTabKey('1'); setCreateRuleTabDisable(false); setType([]);
+    setDimension([]);
+    setSeries([]);
+    setColor([]);
+    setSurface([]);
+    setKeyword();
+    setProductProduction([]);
+    setCampaignCode(false);
+    setStockStatus(enumerations.StockStatus.None);
+    setQuality([]);
+    setOnChangeFilter(true);
+    setOnChangeDimensionsFilter(true);
+    setOnChangeSerieFilter(true);
+    setOnChangeColorFilter(true);
+    setOnChangeSurfaceFilter(true);
+    setOnChangeProductProductionFilter(true);
+    setSelectedRuleObject();
+    return setOnChange(true);
+  }
+  //Talep oluşturma durumları seçimi
+  const onChangeRuleTypeRadioButton = e => {
+    // setCapacity(0);
+    setRuleType(e.target.value);
+  }
+
+  //Change from and To date
+  function onChangePicker(value, dateString) {
+    setFromDate(moment(dateString[0], null));
+    setToDate(moment(dateString[1], null));
   }
 
   //Rule Columns
   let columns = [
-
     {
       title: "Öncelik",
       dataIndex: "priority",
       key: "priority",
-      width: 125,
+      width: 85,
       render: (text) => '#' + text
 
     },
@@ -1082,21 +1135,21 @@ const SearchComponent = () => {
       render: (dealerOrderLimit) => numberFormat(dealerOrderLimit)
     },
     {
-      title: "Sipariş Bas.T",
+      title: "Sipariş Baş.T.",
       dataIndex: "orderFrom",
       key: "orderFrom",
       type: "date",
-      width: 200,
+      width: 150,
       sorter: (a, b) => (''),
       sortDirections: ['descend', 'ascend'],
       render: (orderFrom, record) => moment(orderFrom).format(siteConfig.dateFormat),
   },
   {
-    title: "Sipariş Bit.T",
+    title: "Sipariş Bit.T.",
     dataIndex: "orderTo",
     key: "orderTo",
     type: "date",
-    width: 200,
+    width: 150,
     sorter: (a, b) => (''),
     sortDirections: ['descend', 'ascend'],
     render: (orderTo, record) => moment(orderTo).format(siteConfig.dateFormat),
@@ -1170,71 +1223,6 @@ const SearchComponent = () => {
       },
     },
   ];
-
-  //Kural adı değiştirme
-  const handleChangeRuleName = e => {
-    setRuleName(e.target.value);
-  }
-
-  //Kural açıklaması değiştirme
-  function handleDescription(e) {
-    setDescription(e.target.value);
-  }
-
-  //Select Component Aktiflik durumu değiştirme 
-  function isLockedChange(value) {
-    if (value === true) { setRuleStatus(enumerations.RuleStatus.Active) }
-    else { setRuleStatus(enumerations.RuleStatus.Archived) }
-    setIsLocked(!value);
-  }
-
-  //Component Size
-  const onFormLayoutChange = ({ size }) => {
-    setComponentSize(size);
-  };
-
-  const TabTitle = ({ name, value }) => {
-    return (
-
-      value === '0' ? <span><UnorderedListOutlined />
-        {name}
-      </span> : <span><FormOutlined />
-        {name}
-      </span>)
-  }
-
-  //Tab change and clear data
-  function createRuleTab() {
-    setActiveTabKey('1'); setCreateRuleTabDisable(false); setType([]);
-    setDimension([]);
-    setSeries([]);
-    setColor([]);
-    setSurface([]);
-    setKeyword();
-    setProductProduction([]);
-    setCampaignCode(false);
-    setStockStatus(enumerations.StockStatus.None);
-    setQuality([]);
-    setOnChangeFilter(true);
-    setOnChangeDimensionsFilter(true);
-    setOnChangeSerieFilter(true);
-    setOnChangeColorFilter(true);
-    setOnChangeSurfaceFilter(true);
-    setOnChangeProductProductionFilter(true);
-    setSelectedRuleObject();
-    return setOnChange(true);
-  }
-  //Talep oluşturma durumları seçimi
-  const onChangeRuleTypeRadioButton = e => {
-    // setCapacity(0);
-    setRuleType(e.target.value);
-  }
-
-  //Change from and To date
-  function onChangePicker(value, dateString) {
-    setFromDate(moment(dateString[0], null));
-    setToDate(moment(dateString[1], null));
-  }
 
   const view = viewType('Reports');
   const filterView = viewType('Filter');
@@ -1333,9 +1321,6 @@ const SearchComponent = () => {
           </LayoutWrapper>
         </TabPane>
         <TabPane disabled={createRuleTabDisabled} tab={<TabTitle name="Kural Detayı" value="1" />} key="1">
-        {typeof ruleName!=='undefined'?   <h3 className="isoSectionTitle">{ruleNo+' '+ruleName}</h3> :'' }
-      
-
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1360,6 +1345,7 @@ const SearchComponent = () => {
               <SidebarWrapper className="isoAlgoliaRuleSidebar">
                 {newView === 'MobileView' ?
                   <Col>
+                    {typeof ruleName!=='undefined'?   <h3 className="isoSectionTitle">{ruleNo+' '+ruleName}</h3> :'' }
                     <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                     <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                     <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
@@ -1547,6 +1533,7 @@ const SearchComponent = () => {
                 <Row style={{ marginBottom: '10px' }}>
                   {newView === 'MobileView' ?
                     null : <Col span={16}>
+                      {typeof ruleName!=='undefined'?   <h3 className="isoSectionTitle">{ruleNo+' '+ruleName}</h3> :'' }
                       <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler<SortAscendingOutlined /></Button>
                       <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                       <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>

@@ -66,9 +66,6 @@ export default function TopbarUser(props) {
         <div className="isoDropdownLink" style={{ color: 'red' }} onClick={() => confirm()}>
           <IntlMessages id="topbar.cacheRefresh" />
         </div>}
-      <a className="isoDropdownLink" onClick={() => createPeriodModal()}>
-        <IntlMessages id="themeSwitcher.createPeriod" />
-      </a>
       <div className="isoDropdownLink" onClick={() => userLogOut()}>
         <IntlMessages id="topbar.logout" />
       </div>
@@ -167,7 +164,7 @@ export default function TopbarUser(props) {
     Modal.confirm({
       title: "Cache Yenileme",
       icon: <ExclamationCircleOutlined />,
-      content: "Cache yenileme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz",
+      content: "Cache yenileme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz ?",
       okText: "tamam",
       onCancel: handleCancel,
       onOk: handleCacheRefresh,

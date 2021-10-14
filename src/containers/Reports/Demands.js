@@ -23,7 +23,7 @@ import { useFilterProductCategories } from "@iso/lib/hooks/fetchData/useFilterPr
 import { usePostFilter } from "@iso/lib/hooks/fetchData/usePostFilterData";
 
 //Style
-import { CloseOutlined, SettingOutlined, DownOutlined, CheckOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons';
+import { SettingOutlined, DownOutlined, CheckOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons';
 
 //Configs
 import siteConfig from "@iso/config/site.config";
@@ -43,7 +43,6 @@ import moment from 'moment';
 import logMessage from '@iso/config/logMessage';
 import enumerations from "../../config/enumerations";
 import 'moment/locale/tr'
-import Item from "antd/lib/list/Item";
 moment.locale('tr');
 var jwtDecode = require('jwt-decode');
 
@@ -88,7 +87,6 @@ export default function () {
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [selectedItemsId, setSelectedItemsId] = useState([]);
     const [selectedItems, setSelectedItems] = useState([]);
-
     const [hasSelected, setHasSelected] = useState(false);
     const [selectedDemand, setSelectedDemand] = useState();
     const [cancelReason, setCancelReason] = useState();
@@ -107,9 +105,11 @@ export default function () {
     const [demandAmountModal, setDemandAmountModal] = useState();
     const [demandUnitModal, setDemandUnitModal] = useState();
     const [demandConfirmLoading, setDemandConfirmLoading] = useState(false);
+    const [demandToOrderConfirmLoading, setDemandToOrderConfirmLoading] = useState(false);
     const [clearTableChecked, setClearTableChecked] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-
+    const [failedDemandsNo, setFailedDemandsNo] = useState();
+    const [failedDemandsShowPopup, setFailedDemandsShowPopup] = useState(false);
     const location = useLocation();
     const queryString = require('query-string');
     const history = useHistory();
@@ -133,7 +133,6 @@ export default function () {
     }, [pageIndex]);
 
     let searchUrl = queryString.parse(location.search);
-
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
         useFetch(`${siteConfig.api.report.postDemandItems}`, { "quota": parseFloat(amount), "productCategories": selectedProductCategory, "productDimensions": selectedDimensions, "productSeries": selectedProductSeries, "DealerCodes": dealerCodes, "status": demandStatus, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
@@ -669,7 +668,7 @@ export default function () {
                         case 'Duzenle':
                             return false;
                         case 'SiparisOlustur':
-                            return true;
+                            return false;
                         case 'TalepSil':
                             return true;
                     }
@@ -682,6 +681,16 @@ export default function () {
                             return false;
                         case 'TalepSil':
                             return true;
+                    }
+                }
+                else if (item.status === 'Rejected') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return false;
+                        case 'SiparisOlustur':
+                            return false;
+                        case 'TalepSil':
+                            return false;
                     }
                 }
                 else if (item.status === 'Approved') {
@@ -722,9 +731,10 @@ export default function () {
                 else if (item.status === 'Approved') {
                     switch (transactionKey) {
                         case 'Duzenle':
-                            return true;
+                            return true
+                            ;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -740,21 +750,12 @@ export default function () {
         const token = jwtDecode(localStorage.getItem("id_token"));
         if (token.urole === 'admin') { return false; }
         else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-            if ((status === 'Cancelled') || (status === 'Rejected')) { return true; }
+            if ((status === 'Cancelled') || (status === 'Rejected') || (status === 'Approved')) { return true; }
             return false;
         }
     }
 
-    function clearTable() {
-        if (clearTableChecked === true) {
-            return [];
-        }
-        else {
-            return selectedItemsId;
-        }
-    }
-
-    //checkleenen değerler
+    //checklenen değerler
     function getSelected() {
         if (selectedRowKeys.length > 0) {
             return selectedRowKeys
@@ -880,7 +881,7 @@ export default function () {
         <Menu onClick={handleMenuClick}>
             {transactionsItemDisabled(item, "Duzenle") === false ? <Menu.Item key="Duzenle">Düzenle</Menu.Item> : null}
             {transactionsItemDisabled(item, "SiparisOlustur") === false ? <Menu.Item key="SiparisOlustur">Sipariş Oluştur</Menu.Item> : null}
-            {transactionsItemDisabled(item, "TalepSil") === false ? <Menu.Item key="TalepSil">Talep Sil</Menu.Item> : null}
+            {/* {transactionsItemDisabled(item, "TalepSil") === false ? <Menu.Item key="TalepSil">Talep Sil</Menu.Item> : null} */}
         </Menu>
     );
 
@@ -890,9 +891,9 @@ export default function () {
         setModalEditingDemand(selectedDemand);
         switch (value.key) {
             case 'Duzenle':
-                setVisible(true);
+                demandEditing();
                 break;
-            case '2':
+            case 'SiparisOlustur':
                 createOrder();
                 //Sipariş başarılı bir şekilde oluşturulduysa ekranı kapat
                 break;
@@ -916,42 +917,6 @@ export default function () {
         setDemandUnitModal(record.unit);
         setStatusModal(record.status);
     };
-
-    //Talep kaydetme işlemi
-    async function postSaveDemand(query) {
-        const siteMode = getSiteMode();
-        const token = jwtDecode(localStorage.getItem("id_token"));
-        const dealerCode = token.dcode;
-        setDemandConfirmLoading(true);
-        const reqBody = query;
-        const requestOptions = {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
-            },
-            body: JSON.stringify(reqBody)
-        };
-        await fetch(siteConfig.api.report.postDemands, requestOptions)
-            .then(response => {
-                const status = apiStatusManagement(response);
-                return status;
-            })
-            .then(data => {
-                if (typeof data !== 'undefined') {
-                    if (data.isSuccessful === false) {
-                        const getMessage = data.message;
-                        message.warning({ content: 'kaydetme işlemi başarısızdır. ', duration: 2 });
-                    } else {
-                        message.success({ content: 'başarıyla kaydedildi', duration: 2 });
-                    }
-                }
-            })
-            .catch();
-        setDemandConfirmLoading(false);
-        if (data.isSuccessful === false) { return false; }
-        else { return true; }
-    }
 
     //Talep düzenleme işlemi
     async function postEditingDemand(demandId, reqBody, messageText) {
@@ -1139,16 +1104,32 @@ export default function () {
 
     //Sipariş oluşturma
     async function createOrder() {
-        //Sipariş oluşturma işlemi
         //Sipariş başarılı bir şekilde oluşturulduysa popup pencerisini kapat
+        if ((selectedDemand && selectedDemand.status === enumerations.DemandStatus.Pending) || (selectedDemand &&  selectedDemand.status === enumerations.DemandStatus.Approved && typeof selectedDemand.orderNo!=='undefined') ) {
+            postSaveOrder([selectedDemand.id]);
+        }
+        else { message.warning('Sadece bekleyen talepleri sipariş oluşturabilirsiniz.') }
+    }
+
+    function demandEditing() {
+        if (selectedDemand && typeof selectedDemand.orderNo==='undefined') {
+            setVisible(true);
+        }
+        else { message.warning('Siparişi oluşmuş talepleri düzenleyemezsiniz.') }     
+        
     }
 
     //Seçilenleri sipariş oluşturma işlemi
-    async function multiplePostNotificationIsRead() {
-        setAcceptInfoVisible(true);
-        _.each(selectedItemsId, (item) => {
-            //   postNotificationIsread(item, true);
-        });
+    async function multiplePostSaveOrder() {
+        // setAcceptInfoVisible(true);
+        const demandStatusControl = _.filter(selectedItems, function (x) { return x.status !== enumerations.DemandStatus.Pending || x.status==enumerations.DemandStatus.Approved && typeof x.orderNo!=='undefined'; });
+        if (demandStatusControl.length > 0) {
+            message.warning('Sadece bekleyen ve siparişi oluşturulamamış talepleri sipariş oluşturabilirsiniz.')
+        }
+        else {
+            postSaveOrder(selectedItemsId);
+        }
+
     }
 
     //Seçilenleri talepleri işlemi
@@ -1179,6 +1160,50 @@ export default function () {
         }
     }
 
+    //Save Order
+    async function postSaveOrder(demandIds) {
+        const siteMode = getSiteMode();
+        const token = jwtDecode(localStorage.getItem("id_token"));
+        const dealerCode = token.dcode;
+        setDemandToOrderConfirmLoading(true);
+        const reqBody = { "demandIds": demandIds }
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + localStorage.getItem("id_token") || undefined
+            },
+            body: JSON.stringify(reqBody)
+        };
+        await fetch(siteConfig.api.report.postDemandToOrder, requestOptions)
+            .then(response => {
+                const status = apiStatusManagement(response);
+                return status;
+            })
+            .then(data => {
+                if (typeof data !== 'undefined') {
+                    if (data.isSuccessful === false) {
+                        message.warning({ content: 'Sipariş kaydetme işlemi başarısızdır. ' + data.message, duration: 2 });
+                        if ((data.failedDemands) && (data.failedDemands.length > 0)) {
+                            setFailedDemandsNo(data.successfulDemands);
+                            setFailedDemandsShowPopup(true);
+                        }
+                        else{orderFailedPopupClose();}
+                        // demandSaveResult(false, itemCode, amount, data.message);
+                    } else {
+                        message.success({content: 'Siparişler başarıyla oluşturuldu.', duration: 5 });
+                        if ((data.failedDemands) && (data.failedDemands.length > 0)) {
+                            setFailedDemandsNo(data.successfulDemands);
+                            setFailedDemandsShowPopup(true);
+                        }
+                        else{orderFailedPopupClose();}
+                    }
+                }
+            })
+            .catch();
+        setDemandToOrderConfirmLoading(false);
+    }
+
     //Modallardan iptal işlemine tıklanıldığı zaman temizleme işlemi ve modalların kapatılması.
     function handleCancel() {
         setDemandNo();
@@ -1190,6 +1215,26 @@ export default function () {
         setDeleteDemand(false);
         setEventType();
     };
+
+    function orderFailedPopupClose() {
+        setDemandNo();
+        setDemandAmountModal();
+        setStatusModal();
+        setVisible(false);
+        setAcceptInfoVisible(false);
+        setToolbarEditingButton(false);
+        setDeleteDemand(false);
+        setEventType();
+        setFailedDemandsShowPopup(false);
+        setOnRefreshMode(true);
+        setHasSelected(false); selectedTotalCount = 0; setSelectedItemsId([]); setSelectedItems([])
+        setVisible(false);
+        setSelectedDemand();
+        setSelectedItemsId();
+        setDemandConfirmLoading(false);
+        setSelectedRowKeys([]);
+        handleCancel();
+    }
 
     //Demand status modal change
     function demandStatusChangeModal(value) {
@@ -1211,15 +1256,19 @@ export default function () {
     };
 
     function demandCancelOrRejection() {
+        const demandStatusControl = _.filter(selectedItems, function (x) { return typeof x.orderNo==='undefined'; });
+        if (demandStatusControl.length===0) {
+            message.warning('Sadece bekleyen ve siparişi oluşturulamamış talepleri sipariş oluşturabilirsiniz.')
+        }
+        else {           
         let control = false;
         let status;
         _.each(selectedItems, (item) => {
             if (item.status === 'Approved') { return control = true; }
             else { status = item.status; }
         });
-        setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar')
-        // if (control === true) { return message.warning('Onaylananlar düzenleme işlemi yapılamaz.') }
-        // else { setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar') }
+        setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar');
+    }        
     }
 
     function demandEditingQuantityPermission() {
@@ -1256,93 +1305,6 @@ export default function () {
         }
     }
 
-    function toolbarPermissions(item, type, eventType) {
-
-        const token = jwtDecode(localStorage.getItem("id_token"));
-        if (eventType === 'Toolbar') {
-            if (token.urole === 'admin') { return false; }
-            else if (token.urole === 'fieldmanager') {
-            }
-            else if (token.urole === 'regionmanager') {
-            }
-            else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-                if (selectedToolbarStatus === 'Pending') {
-                    switch (type) {
-                        case 'Approved':
-                            return true;
-                        case 'Cancelled':
-                            return false;
-                        case 'Pending':
-                            return false;
-                    }
-                }
-                else if (selectedToolbarStatus === 'Cancelled') {
-                    switch (type) {
-                        case 'Approved':
-                            return true;
-                        case 'Cancelled':
-                            return false;
-                        case 'Pending':
-                            return true;
-                    }
-                }
-                else if (selectedToolbarStatus === 'Approved') {
-                    switch (type) {
-                        case 'Approved':
-                            return true;
-                        case 'Cancelled':
-                            return false;
-                        case 'Pending':
-                            return false;
-                    }
-                }
-            }
-        }
-        else {
-            if ((type !== null) && (typeof item !== 'undefined')) {
-                if (token.urole === 'admin') { return false; }
-                else if (token.urole === 'fieldmanager') {
-                }
-                else if (token.urole === 'regionmanager') {
-                }
-                else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-                    if (item.status === 'Pending') {
-                        switch (type) {
-                            case 'Approved':
-                                return true;
-                            case 'Cancelled':
-                                return false;
-                            case 'Pending':
-                                return false;
-                        }
-                    }
-                    else if (item.status === 'Cancelled') {
-                        switch (type) {
-                            case 'Approved':
-                                return true;
-                            case 'Cancelled':
-                                return false;
-                            case 'Pending':
-                                return true;
-                        }
-                    }
-                    else if (item.status === 'Approved') {
-                        switch (type) {
-                            case 'Approved':
-                                return true;
-                            case 'Cancelled':
-                                return false;
-                            case 'Pending':
-                                return false;
-                        }
-                    }
-
-
-                }
-            }
-        }
-    }
-
     //Talep cancel durumları seçimi
     function onChangeCancelReasonButton(value) {
         setCancelReason(value);
@@ -1368,7 +1330,7 @@ export default function () {
             title: "Durumu",
             dataIndex: "statusText",
             key: "statusText",
-            width: 150,
+            width: 100,
             render: (statusText) => (
                 <>
                     {statusText === 'Beklemede' ? (
@@ -1400,15 +1362,14 @@ export default function () {
             title: "Bayi Adı",
             dataIndex: "dealerName",
             key: "dealerName",
-            width: 200,
+            width: 150,
             ellipsis: true
-
         },
         {
             title: "Sevk Adresi",
             dataIndex: "addressCode",
             key: "addressCode",
-            width: 200
+            width: 150
         },
         {
             title: "Talep No",
@@ -1418,7 +1379,7 @@ export default function () {
             sorter: (a, b) => a.orderNo - b.orderNo,
             sortOrder: tableOptions.sortedInfo.columnKey === 'demandNo' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            width: 150
+            width: 150,
         },
         {
             title: "Talep Tarihi",
@@ -1457,7 +1418,7 @@ export default function () {
             key: "approvedAmount",
             align: "right",
             render: (approvedAmount) => typeof approvedAmount !== 'undefined' ? numberFormat(approvedAmount) : '-',
-            width: 200,
+            width: 120,
         },
         {
             title: "Onaylanma Tarihi",
@@ -1468,7 +1429,15 @@ export default function () {
             sorter: (a, b) => (''),
             sortOrder: tableOptions.sortedInfo.columnKey === 'orderDate' && tableOptions.sortedInfo.order,
             sortDirections: ['descend', 'ascend'],
-            render: (approveDate, record) =>typeof approveDate!=='undefined'? moment(approveDate).format(siteConfig.dateFormatAddTime):'-',
+            render: (approveDate, record) => typeof approveDate !== 'undefined' ? moment(approveDate).format(siteConfig.dateFormatAddTime) : '-',
+        },
+        {
+            title: "Sipariş Numarası",
+            dataIndex: "orderNo",
+            key: "orderNo",
+            type: "orderNo",
+            width: 150,
+            render: (orderNo, record) => typeof orderNo !== 'undefined' ? <a href={'/reports/orders/?keyword=' + orderNo}>{orderNo}</a> : '-',
         },
         {
             title: "İptal Nedeni",
@@ -1613,6 +1582,7 @@ export default function () {
                                 {productSeriesChildren}
                             </Select>
                             </Col>
+
                         </Row>
                         <Row>
                             <Col span={view !== 'MobileView' ? 6 : 0} >
@@ -1628,6 +1598,7 @@ export default function () {
                             <Col span={view !== 'MobileView' ? 6 : 0} >
                                 <FormItem label={<IntlMessages id="page.amount" />}></FormItem>
                             </Col>
+
                         </Row>
                         <Row>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -1689,7 +1660,7 @@ export default function () {
                                     </Row>
                                 </Radio.Group>
                             </Col>
-                            
+
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
                                     showSearch
@@ -1704,24 +1675,33 @@ export default function () {
                                 </Select>
                                 <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
                                 <Input size="small" placeholder="Ürün Adı, Talep No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
-                                <Button style={{ marginLeft:'10px', marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
-                                {<IntlMessages id="forms.button.label_Search" />}
-                            </Button>
-                            </Col>                          
+
+                            </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Input size="small" placeholder="Miktar giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={amount} onKeyDown={keyPress} onChange={event => onChangeAmountEntered(event)} />
-                            </Col>                          
+
+                                <Button style={{ marginLeft: '10px', marginBottom: '8px', width: view !== 'MobileView' ? '125px' : '100%' }} type="primary" onClick={searchButton}>
+                                    {<IntlMessages id="forms.button.label_Search" />}
+                                </Button>
+                            </Col>
+
                         </Row>
                     </Panel>
                 </Collapse>
             </Box>
-            {/* Data list volume */}
+
             <Box>
+                {/* Data list volume */}
+                <div style={{ textAlign: 'center', borderRadius: '4px' }}>
+                    <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={demandToOrderConfirmLoading}
+                    >
+                    </Spin></div>
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
-                        <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostNotificationIsRead())}>
+                    {token.urole === 'admin' || token.urole === 'support' ?
+                        <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostSaveOrder())}>
                             Onayla ve sipariş Oluştur    <CheckOutlined />
-                        </Button>
+                        </Button> :null}
                         <Popconfirms
                             visible={acceptInfoVisible}
                             title="Seçilen talepler arasında onaylanmayanlar var otomatik olarak onaylamak istiyor musunuz？"
@@ -1739,9 +1719,9 @@ export default function () {
                         <Button onClick={event => demandCancelOrRejection(event)}>
                             Düzenle    <EditOutlined />
                         </Button>
-                        <Button disabled={true} onClick={() => (multipleDemandDelete())}>
+                        {/* <Button disabled={true} onClick={() => (multipleDemandDelete())}>
                             Talebi Sil    <CloseOutlined />
-                        </Button>
+                        </Button> */}
                         <Popconfirms
                             visible={deleteDemand}
                             title="Seçilen talepler silmek istiyor musunuz？"
@@ -1828,10 +1808,10 @@ export default function () {
                     </Button>
                 ]}
             >
-            <div style={{textAlign:'center', borderRadius:'4px'}}>
-        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={demandConfirmLoading}
-        >
-        </Spin></div>
+                <div style={{ textAlign: 'center', borderRadius: '4px' }}>
+                    <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={demandConfirmLoading}
+                    >
+                    </Spin></div>
                 <Form
                     labelCol={{
                         span: 4,
@@ -1880,6 +1860,29 @@ export default function () {
                         <TextArea onChange={event => handleDescription(event)} value={description} style={{ marginBottom: '8px', width: view !== 'MobileView' ? '830px' : '100%' }} />
                     </Form.Item>
                 </Form>
+
+            </Modal>
+            <Modal
+                title={'Saiparişi oluşturulamayan talepler'}
+                visible={failedDemandsShowPopup}
+                maskClosable={false}
+                footer={[
+                    <Button key="back" type="primary" onClick={event => orderFailedPopupClose()}>
+                        Kapat
+                    </Button>
+                ]}>
+                <React.Fragment>
+                    {
+                        failedDemandsNo && failedDemandsNo.length > 0 ? (
+                            <React.Fragment>
+                                <p style={{ margin: '10px 0 10px 0' }}>Aşağıda listelenen talep(ler) sipariş oluşturulamamıştır:</p>
+                                <ul style={{ listStylePosition: 'inside', listStyleType: 'initial' }}>
+                                    {failedDemandsNo.map(item => { return (<li><strong>{item}</strong> </li>) })}
+                                </ul>
+                            </React.Fragment>
+                        ) : null
+                    }
+                </React.Fragment>
 
             </Modal>
         </LayoutWrapper>

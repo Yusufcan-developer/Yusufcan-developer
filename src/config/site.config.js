@@ -80,6 +80,7 @@ export default {
       postSaveLineItems: apiUrl + 'core/report/distributions/plan/{accountNo}',
       getSalesTarget: apiUrl + 'core/report/sales-goals/{year}/{month}',
       postDemands: apiUrl + 'core/demands',
+      postDemandToOrder: apiUrl + 'b2b/demands/save-order',
       postDemandItems: apiUrl + 'core/demands/search',
       postPeriodItems: apiUrl + 'core/periods/search',
       postPeriods: apiUrl + 'core/periods',
