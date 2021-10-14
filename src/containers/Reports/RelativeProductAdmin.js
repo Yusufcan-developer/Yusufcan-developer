@@ -180,13 +180,13 @@ class ImageUpload extends React.Component {
                 .then((data) => setTimeout(() => {
                     if (data.isSuccessful === false) {
                         const getMessage = data.message;
-                        message.warning({ content: 'kaydetme işlemi başarısızdır. ' + data.message, getMessage, duration: 2 })
+                        message.warning({ content: 'Kaydetme işlemi başarısızdır. ' + data.message, getMessage, duration: 2 })
                         this.setState({
                             otherProductDetail: [],
                             ProductRelationType: enumerations.ProductRelationTypestring.None
                         });
                     } else {
-                        message.success({ content: 'başarıyla kaydedildi', otherProductCode, duration: 2 })
+                        message.success({ content: 'Başarıyla kaydedildi', otherProductCode, duration: 2 })
                         this.setState({
                             dependentProducts: data.dependentProducts|| [] ,
                             relatedProducts: data.relatedProducts|| [] ,
@@ -224,9 +224,9 @@ class ImageUpload extends React.Component {
             .then(data => setTimeout(() => {
                 if (data.isSuccessful === false) {
                     const getMessage = data.message;
-                    message.warning({ content: 'silme işlemi başarısızdır. ' + data.message, getMessage, duration: 2 })
+                    message.warning({ content: 'Silme işlemi başarısızdır. ' + data.message, getMessage, duration: 2 })
                 } else {
-                    message.success({ content: 'silme başarıyla gerçekleştirildi.', value, duration: 2 })
+                    message.success({ content: 'Silme başarıyla gerçekleştirildi.', value, duration: 2 })
                 }
 
             }, 250))

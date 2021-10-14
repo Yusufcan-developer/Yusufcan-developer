@@ -265,9 +265,9 @@ export default function () {
                 if (typeof data !== 'undefined') {
                     if (data.isSuccessful === false) {
                         const getMessage = data.message;
-                        message.warning({ content: 'kaydetme işlemi başarısızdır. ' + getMessage, duration: 2 });
+                        message.warning({ content: 'Kaydetme işlemi başarısızdır. ' + getMessage, duration: 2 });
                     } else {
-                        message.success({ content: 'başarıyla kaydedildi', duration: 2 });
+                        message.success({ content: 'Başarıyla kaydedildi', duration: 2 });
                         setDemandDatePeriod(false);
                         setFromDate(null);
                         setToDate(null);
