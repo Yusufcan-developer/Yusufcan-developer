@@ -154,7 +154,7 @@ export default function TopbarUser(props) {
     const status = await refreshCache();
     if (status.isSuccessful === true) {
       message.success(status.message);
-      postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Update, status.message);
+      postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Update, 'Cache yenileme işlemi yapıldı');
       setCacheRefreshVisible(false);
     }
     else { message.error(status.message); }
