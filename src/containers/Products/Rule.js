@@ -81,8 +81,9 @@ const SearchComponent = () => {
   const [queryText, setQueryText] = useState();
   const [queryPreview, setQueryPreview] = useState(false);
   const [createRuleTabDisabled, setCreateRuleTabDisable] = useState(true);
-  const [fromDate, setFromDate] = useState(moment(new Date()));
-  const [toDate, setToDate] = useState(moment(new Date()));
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+
   const { RangePicker } = DatePicker;
 
   const [selectedItem, setSelectedItem] = useState();
@@ -159,7 +160,7 @@ const SearchComponent = () => {
 
   //Kurallar Listesi
   const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
-    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey,"types": filterType ? filterType : [ruleType], "status": filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
+    useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "types": filterType ? filterType : [ruleType], "status": filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
 
   let searchUrl = queryString.parse(location.search);
 
@@ -169,11 +170,11 @@ const SearchComponent = () => {
     statusChildren.push(<Option key={statusType[i].Key}>{statusType[i].Value}</Option>);
   }
 
-    //Types
-    const [ruleTypeData] = useFilterData(`${siteConfig.api.lookup.ruleTypes}`, searchUrl);
-    for (let x = 0; x < ruleTypeData.length; x++) {
-      typeChildren.push(<Option key={ruleTypeData[x].Key}>{ruleTypeData[x].Value}</Option>);
-    }
+  //Types
+  const [ruleTypeData] = useFilterData(`${siteConfig.api.lookup.ruleTypes}`, searchUrl);
+  for (let x = 0; x < ruleTypeData.length; x++) {
+    typeChildren.push(<Option key={ruleTypeData[x].Key}>{ruleTypeData[x].Value}</Option>);
+  }
 
   //Get Category
   const [productCategories] = useFilterProductCategories(`${siteConfig.api.lookup.postProductCategories}`, {});
@@ -221,8 +222,8 @@ const SearchComponent = () => {
 
   //Pagination : Seçili sayfanın saklandığı state'i değiştirir
   function currentPageChange(current) {
-    if(typeof selectedruleObject!=='undefined'){
-      selectedruleObject.pageIndex=current-1;
+    if (typeof selectedruleObject !== 'undefined') {
+      selectedruleObject.pageIndex = current - 1;
     }
     setPageIndex(current);
     return setOnChange(true);
@@ -575,7 +576,7 @@ const SearchComponent = () => {
     setOnChangeSurfaceFilter(true);
     return setOnChange(true);
 
-    
+
   };
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
@@ -770,8 +771,8 @@ const SearchComponent = () => {
     setDealerDemandLimit(0);
     setDealerOrderLimit(0);
     setRuleType();
-    setFromDate();
-    setToDate();
+    setFromDate(null);
+    setToDate(null);
 
   };
 
@@ -782,8 +783,9 @@ const SearchComponent = () => {
 
   //Kural ekleme işlemi
   async function handleOk() {
-    if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined')) {
-      //Yeni bir kural objesi tanımlanıyor.
+    if((dealerOrderLimit>0)&&(fromDate===null)&&(ruleType=== enumerations.RuleType.SalableBalance)){message.warning('Cari sipariş limiti tanımlıysa tarih aralığı da girilmelidir.')}
+    else{
+    if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined'))  {      //Yeni bir kural objesi tanımlanıyor.
 
 
       const query = {
@@ -803,12 +805,13 @@ const SearchComponent = () => {
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
-        "dealerDemandLimit": parseFloat(dealerDemandLimit),"dealerOrderLimit": parseFloat(dealerOrderLimit), "ruleType": ruleType ,"orderFrom": fromDate.format('YYYY-MM-DD'),"orderTo": toDate.format('YYYY-MM-DD'), "query": query
+        "dealerDemandLimit": parseFloat(dealerDemandLimit), "dealerOrderLimit": parseFloat(dealerOrderLimit), "ruleType": ruleType, "orderFrom": fromDate !== null ? fromDate.format('YYYY-MM-DD'):null, "orderTo":toDate !== null ?  toDate.format('YYYY-MM-DD'):null, "query": query
       }
       await postSaveRule(rule);
     } else {
       message.warning('Bilgileri eksiksiz giriniz!!!', 3);
     }
+  }
   };
 
   //Save Rule
@@ -830,10 +833,10 @@ const SearchComponent = () => {
       .then(data => {
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
-            message.warning({ content: 'Kural kaydetme işlemi başarısızdır. ', duration: 2 });
+            message.warning({ content: data.message, duration: 2 });
             postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.error);
           } else if (data.status === 400) {
-            message.warning({ content: 'Kural kaydetme işlemi başarısızdır. ', duration: 2 });
+            message.warning({ content: data.message, duration: 2 });
             postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.error);
           }
           else {
@@ -916,10 +919,12 @@ const SearchComponent = () => {
           ruleSetOnChange(true);
           clearParams();
         }
-        else if (data.isSuccessful === false) { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete);     setRuleDeleteLoading(false);
-      }
-        else { message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete);     setRuleDeleteLoading(false);
-      }
+        else if (data.isSuccessful === false) {
+          message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); setRuleDeleteLoading(false);
+        }
+        else {
+          message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); setRuleDeleteLoading(false);
+        }
       })
       .catch();
     return productInfo;
@@ -927,6 +932,7 @@ const SearchComponent = () => {
 
   //Kural seçmek
   function selectedRule(item) {
+    debugger
     const rule = (item.query);
     if (rule && rule.categories) {
       setCategory(rule.categories[0]);
@@ -939,8 +945,10 @@ const SearchComponent = () => {
       setColor(rule.colors);
       setDimension(rule.dimensions);
       setProductProduction(rule.productionStatus);
-      setToDate( moment(item.orderTo));
-      setFromDate(moment(item.orderFrom));
+      if(typeof item.orderTo!=='undefined'){
+        setToDate(moment(item.orderTo));
+        setFromDate(moment(item.orderFrom));
+        }
       setKeyword(rule.keyword);
 
       setOnChangeDimensionsFilter(true);
@@ -967,7 +975,8 @@ const SearchComponent = () => {
     setOnChange(true);
 
   }
-  function selectedRuleEditing(item) {    
+  function selectedRuleEditing(item) {
+    debugger
     setVisible(true);
     const rule = (item.query);
     if (rule && rule.categories) {
@@ -981,8 +990,10 @@ const SearchComponent = () => {
       setColor(rule.colors);
       setDimension(rule.dimensions);
       setProductProduction(rule.productionStatus);
-      setToDate( moment(item.orderTo));
+      if(typeof item.orderTo!=='undefined'){
+      setToDate(moment(item.orderTo));
       setFromDate(moment(item.orderFrom));
+      }
       setKeyword(rule.keyword);
 
       setSelectedRuleObject();
@@ -994,7 +1005,7 @@ const SearchComponent = () => {
     setDealerDemandLimit(item.dealerDemandLimit);
     setDealerOrderLimit(item.dealerOrderLimit);
     setRuleType(item.ruleType);
-    
+
 
   }
   function callback(key) {
@@ -1082,14 +1093,23 @@ const SearchComponent = () => {
   const onChangeRuleTypeRadioButton = e => {
     // setCapacity(0);
     setRuleType(e.target.value);
+    setFromDate(null);
+    setToDate(null);
+    setDealerOrderLimit(0);
+    setDealerOrderLimit(0);
   }
 
   //Change from and To date
   function onChangePicker(value, dateString) {
-    setFromDate(moment(dateString[0], null));
-    setToDate(moment(dateString[1], null));
+    if (value !== null) {
+      setFromDate(moment(dateString[0], null));
+      setToDate(moment(dateString[1], null));
+    }
+    else {
+      setFromDate(null);
+      setToDate(null)
+    }
   }
-
   //Rule Columns
   let columns = [
     {
@@ -1146,18 +1166,20 @@ const SearchComponent = () => {
       width: 150,
       sorter: (a, b) => (''),
       sortDirections: ['descend', 'ascend'],
-      render: (orderFrom, record) => moment(orderFrom).format(siteConfig.dateFormat),
-  },
-  {
-    title: "Sipariş Bit.T.",
-    dataIndex: "orderTo",
-    key: "orderTo",
-    type: "date",
-    width: 150,
-    sorter: (a, b) => (''),
-    sortDirections: ['descend', 'ascend'],
-    render: (orderTo, record) => moment(orderTo).format(siteConfig.dateFormat),
-},
+      render: (orderFrom, record) => typeof orderFrom !== 'undefined' ? moment(orderFrom).format(siteConfig.dateFormat) : '-',
+
+    },
+    {
+      title: "Sipariş Bit.T.",
+      dataIndex: "orderTo",
+      key: "orderTo",
+      type: "date",
+      width: 150,
+      sorter: (a, b) => (''),
+      sortDirections: ['descend', 'ascend'],
+      render: (orderTo, record) => typeof orderTo !== 'undefined' ? moment(orderTo).format(siteConfig.dateFormat) : '-',
+
+    },
     {
       title: "Açıklama",
       dataIndex: "description",
@@ -1349,7 +1371,7 @@ const SearchComponent = () => {
               <SidebarWrapper className="isoAlgoliaRuleSidebar">
                 {newView === 'MobileView' ?
                   <Col>
-                    {typeof ruleName!=='undefined'?   <h3 className="isoSectionTitle">{ruleNo+' '+ruleName}</h3> :'' }
+                    {typeof ruleName !== 'undefined' ? <h3 className="isoSectionTitle">{ruleNo + ' ' + ruleName}</h3> : ''}
                     <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                     <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                     <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
@@ -1537,7 +1559,7 @@ const SearchComponent = () => {
                 <Row style={{ marginBottom: '10px' }}>
                   {newView === 'MobileView' ?
                     null : <Col span={16}>
-                      {typeof ruleName!=='undefined'?   <h3 className="isoSectionTitle">{ruleNo+' '+ruleName}</h3> :'' }
+                      {typeof ruleName !== 'undefined' ? <h3 className="isoSectionTitle">{ruleNo + ' ' + ruleName}</h3> : ''}
                       <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler<SortAscendingOutlined /></Button>
                       <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                       <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
@@ -1650,10 +1672,10 @@ const SearchComponent = () => {
           </Button>
         ]}
       >
-<div style={{textAlign:'center', borderRadius:'4px'}}>
-        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleSaveLoading}
-        >
-        </Spin></div>
+        <div style={{ textAlign: 'center', borderRadius: '4px' }}>
+          <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleSaveLoading}
+          >
+          </Spin></div>
         <Form
           labelCol={{
             span: 4,
@@ -1687,25 +1709,21 @@ const SearchComponent = () => {
               <Radio.Group onChange={onChangeRuleTypeRadioButton} value={ruleType} style={{ paddingBottom: '25px' }} >
                 <Space direction="vertical">
                   <Radio value={enumerations.RuleType.SalableBalance}>Eksi Bakiye Limiti
-                    {ruleType === enumerations.RuleType.SalableBalance ? <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} /> : null}</Radio>
+                    {ruleType === enumerations.RuleType.SalableBalance ? <React.Fragment>
+                      <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} />  <RangePicker
+                        style={{ marginLeft: '2px' }}
+                        format="YYYY-MM-DD"
+                        onChange={onChangePicker}
+                        value={fromDate === null ? [] : [moment(fromDate), moment(toDate)]}
+                      /></React.Fragment> : null}</Radio>
                   <Radio value={enumerations.RuleType.PermittedOrder}>Toplam Sipariş Miktarı
                     {ruleType === enumerations.RuleType.PermittedOrder ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />
                       <RangePicker
                         style={{ marginLeft: '2px' }}
                         format="YYYY-MM-DD"
                         onChange={onChangePicker}
-                        value={[moment(fromDate), moment(toDate)]}
-                      // onOk={onOk}
-                      />
-                      {/* <RangePicker
-                      // disabled={selectedRadioItem === 2 ? false : true}
-                      // format={siteConfig.dateFormat}
-                      // onChange={changeTimePicker}
-                      style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                    // value={fromDate !== null ? [moment(fromDate, siteConfig.dateFormat), moment(toDate, siteConfig.dateFormat)] : null}
-                    />  */}
+                        value={fromDate === null ? [] : [moment(fromDate), moment(toDate)]} />
                     </React.Fragment> : null}</Radio>
-
                 </Space>
               </Radio.Group>
             </Form.Item>
@@ -1803,10 +1821,10 @@ const SearchComponent = () => {
         onCancel={handleCancel}
         onOk={deleteRule}
       >
-<div style={{textAlign:'center', borderRadius:'4px'}}>
-        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleDeleteLoading}
-        >
-        </Spin></div>
+        <div style={{ textAlign: 'center', borderRadius: '4px' }}>
+          <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={ruleDeleteLoading}
+          >
+          </Spin></div>
         <p>{ruleName + ' ' + 'kuralını silme işlemi gerçekleştirilecektir. Devam etmek istiyor musunuz?'}</p>
         <Form
           form={form}
