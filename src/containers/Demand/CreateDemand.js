@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 
 //Components
 import Box from "@iso/components/utility/box";
-import { Col, Card, Row, Button, Space, Image, Input } from "antd";
+import { Col, Card, Row, Button, Space, Image, Input, Alert } from "antd";
 import Form from "@iso/components/uielements/form";
 
 //Fetch
@@ -16,15 +16,14 @@ import numberFormat from "@iso/config/numberFormat";
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
 import basicStyle from '@iso/assets/styles/constants';
-
+import Modal from "antd/lib/modal/Modal";
 //Other Library
 import _ from 'underscore';
-import logMessage from '@iso/config/logMessage';
-
-import Modal from "antd/lib/modal/Modal";
+import moment from 'moment';
+import 'moment/locale/tr';
+moment.locale('tr');
 const CreateDemand = (props) => {
-    const { hide, item, onComplete, checkOutPage, demandAmount, confirmLoading, unit } = props;
-
+    const { hide, item, onComplete, checkOutPage, demandAmount, confirmLoading, unit, activePeriod } = props;
     const { rowStyle, colStyle, gutter } = basicStyle;
     const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
     const [searchSiteMode, setSearchSitemode] = useState();
@@ -167,9 +166,11 @@ const CreateDemand = (props) => {
                                 </div>
                             </Box>
 
-                        </Col>
+                        </Col>                        
                         <Col md={12} sm={12} xs={24} style={colStyle} >
-                            <span style={{ fontWeight: 'bold', color: 'red' }}>Seçilmiş olan ürün miktarı fabrika toplam üretim miktarından fazladır. Bu yüzden dolayı talep oluşturabilirsiniz.</span>
+                        <Alert message={<span style={{color: 'black' }}>Bu talebi {moment(activePeriod.deadline).format(siteConfig.dateFormat)} 23:59 tarihine kadar düzenleyebilirsiniz.</span>} type="warning" showIcon />                            
+                            <br /><br />
+                            <span style={{color: 'red' }}>Seçilmiş olan ürün miktarı fabrika toplam üretim miktarından fazladır. Bu yüzden dolayı talep oluşturabilirsiniz.</span>
                             <br /><br />
                             <Form
                                 form={form}
@@ -184,7 +185,7 @@ const CreateDemand = (props) => {
                                     <Input style={{ width: 100, marginRight:'5px' }} value={inputDemandAmount} onChange={event => onChangeAmountEntered(event)} onClick={event => onSelectAll(event)} />
                                     {unit+ " - "}
 
-                                   {(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Toplam Tutar: ' : '') + numberFormat(inputDemandAmount * item.listPrice) + " TL"}
+                                    {(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Toplam Tutar: ' : '') + numberFormat(inputDemandAmount * item.listPrice) + " TL"}
 
 
                                 </Form.Item>

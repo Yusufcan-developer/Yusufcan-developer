@@ -26,6 +26,7 @@ import ecommerceAction from '@iso/redux/ecommerce/actions';
 //Fetch
 import { useGetCartCheckOut } from "@iso/lib/hooks/fetchData/useGetCartCheckOut";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
+import { useGetPeriod } from "@iso/lib/hooks/fetchData/useGetPeriod";
 
 //Styles
 import { PlusOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
@@ -121,6 +122,7 @@ export default function () {
 
   let searchUrl = queryString.parse(location.search);
   const [data, setOnChange, dataLoading] = useGetCartCheckOut(addressCode, searchUrl, includeTransportation);
+  const [activePeriod] = useGetPeriod(`${siteConfig.api.report.getActivePeriod}`, searchUrl);
 
   //Adres bilgileri için token değerinin alınıp user Id bölümü çözümleniyor.
   useEffect(() => {
@@ -411,12 +413,26 @@ export default function () {
 
   //Save order persmission button disabled
   function saveOrderPermissions() {
+    let control=false;
+    if (data) {
+      const productList = _.filter(data.items, function (item) { return item.orderAmount > 0; });
+      let OverCapacity;
+      _.forEach(productList, (product) => {
+        if (productList.length > 0) {
+          OverCapacity = _.find(product.validationMessages, function (x) { return x.Key === "OverCapacity" || x.Key === "OverDealerOrderLimit"; });
+          if (typeof OverCapacity !== 'undefined') {
+            control=true;
+          }
+        }
+    });
+    }
     if (siteMode === enumerations.SiteMode.DeliverysPoint) {
       if ((addressCode === '') && (hasOrderSavePermission) || (transportation === '')) {
         return true
       }
       else { return false }
     }
+    else if(control===true){return true;}
     else {
       return !hasOrderSavePermission;
     }
@@ -1270,6 +1286,7 @@ export default function () {
               confirmLoading={demandConfirmLoading}
               onComplete={onCompletePopupDemand}
               unit={unit}
+              activePeriod={activePeriod}
             /> : null}
           {hide === true ? <PopupProductRelation
             hide={hide}

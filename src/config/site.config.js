@@ -89,6 +89,7 @@ export default {
       deletePeriods: apiUrl + 'core/periods/',
       postRules:apiUrl + 'b2b/rules',
       postDemandUpdate:apiUrl + 'core/demands/update-status/{demandId}',
+      getActivePeriod:apiUrl + 'core/periods/active',
 
     },
     users: {
