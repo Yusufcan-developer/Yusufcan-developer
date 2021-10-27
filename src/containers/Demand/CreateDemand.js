@@ -23,7 +23,7 @@ import moment from 'moment';
 import 'moment/locale/tr';
 moment.locale('tr');
 const CreateDemand = (props) => {
-    const { hide, item, onComplete, checkOutPage, demandAmount, confirmLoading, unit, activePeriod } = props;
+    const { hide, item, onComplete, checkOutPage, demandAmount, confirmLoading, unit, activePeriod, deleteProductBoxByCode } = props;
     const { rowStyle, colStyle, gutter } = basicStyle;
     const [salableBalanceFriendlyText, setSalableBalanceFriendlyText] = useState();
     const [searchSiteMode, setSearchSitemode] = useState();
@@ -77,6 +77,9 @@ const CreateDemand = (props) => {
         onComplete(true, item, inputDemandAmount);
     }
     
+    async function deleteBoxProductCode() {
+        deleteProductBoxByCode(item.itemCode);
+    }
     //Miktar girilen text alanında tüm değerleri seçiyor
     function onSelectAll(event) {
         event.target.select();
@@ -132,6 +135,9 @@ const CreateDemand = (props) => {
                     maskClosable={false}
                     confirmLoading={confirmLoading}
                     footer={[
+                        <Button key="back" onClick={() => deleteBoxProductCode()}>
+                            Ürünü Sepetten Çıkar
+                        </Button>,
                         <Button key="back" onClick={handleCancel}>
                             İptal
                         </Button>,

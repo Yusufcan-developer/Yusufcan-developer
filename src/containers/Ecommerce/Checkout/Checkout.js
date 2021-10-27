@@ -192,7 +192,22 @@ export default function () {
     setHide(false);
     setOnChange(true);
   }
+  //Sepetten ürünü silme işlemi
+  async function deleteBoxProductByCode(itemCode) {
+    setDemandHide(false);
+     const newProductQuantity = [];
+     _.each(productQuantity, (product, i) => {
+       if (itemCode !== product.itemCode || product.isPartial !== selectedItemPartial) {
+         newProductQuantity.push(product);
+       }
+     });
 
+     dispatch(changeProductQuantity(newProductQuantity));
+     await getCartList();
+     await AllCartItemChangeOrderAmount();
+     setOnChange(true);
+    
+  }
   async function demandSaveResult(result, itemCode, amount, errorMessage, demandNo) {
     if (result === true) {
       setHide(false);
@@ -1286,6 +1301,7 @@ export default function () {
               confirmLoading={demandConfirmLoading}
               onComplete={onCompletePopupDemand}
               unit={unit}
+              deleteProductBoxByCode={deleteBoxProductByCode}
               activePeriod={activePeriod}
             /> : null}
           {hide === true ? <PopupProductRelation
