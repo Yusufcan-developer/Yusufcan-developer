@@ -165,10 +165,6 @@ const CreateDemand = (props) => {
                                             {item.descriptionExtra}
                                         </Col>
                                     </span>
-                                    <div className="isoCardTitle" style={{ textAlign: 'center' }}>{(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Palet: ' : '') + numberFormat(item.listPrice)} {"TL"} {'/'} {item.unit}
-                                        {item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (<React.Fragment><br /> {'Parçalı: ' + numberFormat(item.partialPrice)} {"TL"} {'/'} {item.unit}</React.Fragment>) : null}<br />
-
-                                    </div>
                                 </div>
                             </Box>
 
@@ -189,9 +185,9 @@ const CreateDemand = (props) => {
                                 <Form.Item
                                     label="Talep Miktarı">
                                     <Input style={{ width: 100, marginRight:'5px' }} value={inputDemandAmount} onChange={event => onChangeAmountEntered(event)} onClick={event => onSelectAll(event)} />
-                                    {unit+ " - "}
+                                    {unit}
 
-                                    {(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Toplam Tutar: ' : '') + numberFormat(inputDemandAmount * item.listPrice) + " TL"}
+                                    {/* {(item.canBeSoldPartially && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? 'Toplam Tutar: ' : '') + numberFormat(inputDemandAmount * item.listPrice) + " TL"} */}
 
 
                                 </Form.Item>
