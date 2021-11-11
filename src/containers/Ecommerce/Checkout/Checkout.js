@@ -153,6 +153,7 @@ export default function () {
             onComplete={onCompletePopupRelation}
             quantityLess={quantityLess}
             OverCapacity={OverCapacity}
+            deleteProductBoxByCode={deleteBoxProductByCode}
           // onCompleteGoBox={}
           />
 
@@ -193,11 +194,12 @@ export default function () {
     setOnChange(true);
   }
   //Sepetten ürünü silme işlemi
-  async function deleteBoxProductByCode(itemCode) {
+  async function deleteBoxProductByCode(itemCode,isPartial) {
     setDemandHide(false);
      const newProductQuantity = [];
+     const isPartialValue=typeof selectedItemPartial!=='undefined'? selectedItemPartial:isPartial
      _.each(productQuantity, (product, i) => {
-       if (itemCode !== product.itemCode || product.isPartial !== selectedItemPartial) {
+       if (itemCode !== product.itemCode || product.isPartial !== isPartialValue ) {
          newProductQuantity.push(product);
        }
      });

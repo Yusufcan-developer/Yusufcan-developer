@@ -4,9 +4,9 @@ import numberFormat from "@iso/config/numberFormat";
 import { Col, Button, Popover } from "antd";
 import Form from "@iso/components/uielements/form";
 import { getSiteMode } from '@iso/lib/helpers/getSiteMode';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
 
-export default function ({ productItem, popupShow, quantityLess, onCompleteGoBo, OverCapacity }) {
+export default function ({ productItem, popupShow, quantityLess, onCompleteGoBo, OverCapacity, deleteProductBoxByCode }) {
   const [form] = Form.useForm();
   const [popoverShow, setPopoverShow] = useState(false);
   const trimName = productItem.item.description ? productItem.item.description.substring(0, 30) : '';
@@ -23,7 +23,9 @@ export default function ({ productItem, popupShow, quantityLess, onCompleteGoBo,
     setPopoverShow(false);
     return popupShow();
   }
-
+  async function deleteBoxProductCode(itemCode,isPartial) {    
+    deleteProductBoxByCode(itemCode,isPartial);
+}
   return (
     <div className="isoSingleOrderInfo">
       <p>
@@ -70,8 +72,11 @@ export default function ({ productItem, popupShow, quantityLess, onCompleteGoBo,
         typeof OverCapacity !== 'undefined'  ||  typeof quantityLess !=='undefined' ?
         <span style={{color:'#1890ff'}} ><Button onClick={() =>{typeof productItem.OverCapacity!=='undefined' 	||  typeof productItem.OverDealerOrderLimit!=='undefined' ? setPopoverShow(true):popupShow();}} size={'small'} style={{ height: '24px' ,color:'green', marginTop:'5px' }} ghost type="primary" icon={ <PlusOutlined />}>
         <span style={{color:'#1890ff' ,fontSize:'12px' }}>{buttonTitle} </span>
-    </Button></span>:null }</p>
-            </React.Fragment>
+      
+    </Button>   {typeof OverCapacity !== 'undefined' ?<Button onClick={() =>{deleteBoxProductCode(productItem.itemCode,productItem.isPartial)}} size={'small'} style={{ height: '24px' ,color:'green', marginTop:'5px' }} ghost type="primary" icon={ <MinusOutlined />}>
+        <span style={{color:'#1890ff' ,fontSize:'12px' }}>{'Ürünü Sepetten Çıkar'} </span>
+    </Button>:null}</span> :null }</p>    
+            </React.Fragment>            
         </ul>
       </p>
       <span>
