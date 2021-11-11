@@ -99,6 +99,7 @@ export default function () {
     const [demandNo, setDemandNo] = useState();
     const [description, setDescription] = useState();
     const [statusModal, setStatusModal] = useState();
+    const [onlyActive, setOnlyActive]=useState();
     const [selectedToolbarStatus, setSelectedToolbarStatus] = useState();
     const [eventType, setEventType] = useState();
 
@@ -135,7 +136,7 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, { "quota": parseFloat(amount), "productCategories": selectedProductCategory, "productDimensions": selectedDimensions, "productSeries": selectedProductSeries, "DealerCodes": dealerCodes, "status": demandStatus, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode }, searchUrl);
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "quota": parseFloat(amount), "productCategories": selectedProductCategory, "productDimensions": selectedDimensions, "productSeries": selectedProductSeries, "DealerCodes": dealerCodes, "status": demandStatus, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": typeof onlyActive!=='undefined'?undefined: fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":typeof onlyActive!=='undefined'?undefined: toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode, "onlyActive":typeof onlyActive!=='undefined'?true:undefined }, searchUrl);
 
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -195,6 +196,7 @@ export default function () {
                 setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true);
             } else { setSelectedProductCategory([parsed.pg]); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); }
         }
+        if (typeof parsed.onlyActive!=='undefined'){setOnlyActive(parsed.onlyActive);}
         if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
         if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
         if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
@@ -366,7 +368,8 @@ export default function () {
         params.delete('se');
         params.delete('status');
         params.delete('amount');
-
+        params.delete('onlyActive');
+        setOnlyActive();
         if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
             params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
             params.append('to', moment(moment(toDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();

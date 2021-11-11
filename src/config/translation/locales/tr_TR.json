@@ -91,6 +91,7 @@
   "sidebar.modal": "Modal",
   "sidebar.message": "Message",
   "sidebar.notification": "Bildirimler",
+  "sidebar.activeDemands": "Talepler",
   "sidebar.popConfirm": "Pop Confirm",
   "sidebar.spin": "Spin",
   "sidebar.tables": "Tables",
