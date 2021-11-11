@@ -7,6 +7,7 @@ import TopbarNotification from './TopbarNotification';
 import TopbarSearch from './TopbarSearch';
 import TopbarUser from './TopbarUser';
 import TopbarAddtoCart from './TopbarAddToCart';
+import TopbarDemands from './TopbarDemands';
 import TopbarWrapper from './Topbar.styles';
 import TopbarAlert from './TopbarAlert';
 import history from '@iso/lib/helpers/history';
@@ -80,6 +81,12 @@ export default function Topbar() {
             <li>
               <TopbarAdressDelivery />
             </li> : null}
+            {(token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') ?
+            <li
+            onClick={() => setSelectedItem('message')}
+            className={'isoMsg'}>
+            <TopbarDemands />
+          </li>:null}
           <li
             onClick={() => setSelectedItem('notification')}
             className={selectedItem ? 'isoNotify active' : 'isoNotify'}>
