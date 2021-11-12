@@ -8,9 +8,10 @@ import IntlMessages from '@iso/components/utility/intlMessages';
 import Scrollbar from '@iso/components/utility/customScrollBar';
 import TopbarDropdownWrapper from './TopbarDropdown.styles';
 import { useHistory, useLocation } from 'react-router-dom';
+import TopbarCartWrapper from './TopbarCart.style';
 
 //Configs
-import _ from 'underscore';
+import _, { contains } from 'underscore';
 import { apiStatusManagement } from '@iso/lib/helpers/apiStatusManagement';
 import siteConfig from "@iso/config/site.config";
 import numberFormat from "@iso/config/numberFormat";
@@ -24,10 +25,10 @@ export default function TopbarDemands() {
   const [visible, setVisiblity] = React.useState(false);
   const customizedTheme = useSelector(state => state.ThemeSwitcher.topbarTheme);
   const [quantity, setQuantity] = useState();
-  const [notification, setNotification] = useState([]);
+  const [activeDemands, setActiveDemands] = useState([]);
   const history = useHistory();
   useEffect(() => {
-    getActiveDemandList({"onlyActive": true,  "pageIndex": 0,"pageCount": 3});
+    getActiveDemandList({"onlyActive": true,  "pageIndex": 0,"pageCount": 5});
   }, []);
 
   function handleVisibleChange() {
@@ -55,7 +56,7 @@ export default function TopbarDemands() {
       })
       .then(data => {
         if (data !== 'Unauthorized1') {
-          setNotification(data.data);
+          setActiveDemands(data.data);
           setQuantity(data.totalDataCount);
         }
         else { setQuantity(0) }
@@ -76,7 +77,10 @@ export default function TopbarDemands() {
           <IntlMessages id="sidebar.activeDemands" />
         </h3>
       </div>
-      <Scrollbar style={{ height: 300 }}>
+      <div className="isoDropdownBody isoCartItemsWrapper">
+        <Scrollbar style={{ height: 300 }}>{renderProducts()}</Scrollbar>
+      </div>
+      {/* <Scrollbar style={{ height: 300 }}>
         <div className="isoDropdownBody">
 
           {_.map(notification, (item) => {
@@ -88,12 +92,58 @@ export default function TopbarDemands() {
             )
           })}
         </div>
-      </Scrollbar>
+      </Scrollbar> */}
       <a className="isoViewAllBtn" href="/reports/demands/?onlyActive=true">
         <IntlMessages id="topbar.viewAll" />
       </a>
     </TopbarDropdownWrapper>
   );
+
+   //Ürünler Listesinin render edilmesi SingleCart View js dosyasına yönlendiriliyor.
+   function renderProducts() {
+    if (!quantity || quantity.length === 0) {
+      return (
+        <div className="isoNoItemMsg">
+          <span>Bekleyen talebiniz yok</span>
+        </div>
+      );
+    }
+    if (activeDemands !== null) {
+      return activeDemands.map(item => {
+        let productItem;
+        productItem = item.item;
+        if (typeof productItem !== 'undefined') {
+          return (
+            <TopbarCartWrapper className="isoCartItems">
+              {productItem !== null ?
+                <div className="isoItemImage">
+                  <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} />
+                </div> : null}
+              <div className="isoCartDetails">
+                {productItem !== null ?
+                  <h3>
+                    <a href="#!">{item.demandNo} / {productItem.itemCode} - {productItem.description}</a>
+                    
+                  </h3> : <a href="#!">{' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
+                <p className="isoItemPriceQuantity">
+                  {productItem !== null ?
+                    <span>{numberFormat(item.amount)}</span> : null}
+                  {productItem !== null ?
+                    <span className="itemMultiplier"> </span> : null}
+                  {productItem !== null ?
+                    <span className="isoItemQuantity">{productItem.unit}</span> : null}
+                  <span className="itemMultiplier"> </span>
+                  {/* {productItem !== null ?
+                    <span className="isoItemQuantity"> {'('}{product.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
+                    : null} */}
+                </p>
+              </div>
+            </TopbarCartWrapper>
+          );
+        }
+      });
+    }
+  }
   return (
     <Popover
       content={content}
