@@ -8,7 +8,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Form, Col, Row, Table, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Space, Select, Comment, Avatar, DatePicker, Tag } from "antd";
+import { Checkbox, Form, Col, Row, Table, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Space, Select, Comment, Avatar, DatePicker, Tag } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -73,8 +73,8 @@ const SearchComponent = () => {
   const [visible, setVisible] = useState();
   const [form] = Form.useForm();
   const [capacity, setCapacity] = useState(0);
-  const [dealerDemandLimit, setDealerDemandLimit] = useState(0);
-  const [dealerOrderLimit, setDealerOrderLimit] = useState(0);
+  const [dealerDemandLimit, setDealerDemandLimit] = useState();
+  const [dealerOrderLimit, setDealerOrderLimit] = useState();
   const [activeTabKey, setActiveTabKey] = useState('0');
   const [selectedruleObject, setSelectedRuleObject] = useState();
   const [selectedruleObjectText, setSelectedRuleObjectText] = useState();
@@ -83,6 +83,8 @@ const SearchComponent = () => {
   const [createRuleTabDisabled, setCreateRuleTabDisable] = useState(true);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
+  const [demandChecked, setDemandChecked] =useState(false);
+  const [orderChecked, setOrderChecked] =useState(false);
 
   const { RangePicker } = DatePicker;
 
@@ -768,11 +770,13 @@ const SearchComponent = () => {
     setDescription();
     setCapacity(0);
     setPriority();
-    setDealerDemandLimit(0);
-    setDealerOrderLimit(0);
+    setDealerDemandLimit();
+    setDealerOrderLimit();
     setRuleType();
     setFromDate(null);
     setToDate(null);
+    setOrderChecked(false);
+    setDemandChecked(false);
 
   };
 
@@ -783,11 +787,13 @@ const SearchComponent = () => {
 
   //Kural ekleme işlemi
   async function handleOk() {
+    debugger
+    if((orderChecked===true)&&(typeof dealerOrderLimit==='undefined')){return message.warning('Cari sipariş limiti tanımlıysa miktar girilmelidir.')}
+    if((demandChecked===true)&&(typeof dealerDemandLimit==='undefined')){return message.warning('Cari talep limiti tanımlıysa miktar girilmelidir.')}
+
     if((dealerOrderLimit>0)&&(fromDate===null)&&(ruleType=== enumerations.RuleType.SalableBalance)){message.warning('Cari sipariş limiti tanımlıysa tarih aralığı da girilmelidir.')}
     else{
     if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined'))  {      //Yeni bir kural objesi tanımlanıyor.
-
-
       const query = {
         "keyword": keyword,
         "productionStatus": productProduction,
@@ -932,7 +938,6 @@ const SearchComponent = () => {
 
   //Kural seçmek
   function selectedRule(item) {
-    debugger
     const rule = (item.query);
     if (rule && rule.categories) {
       setCategory(rule.categories[0]);
@@ -976,7 +981,6 @@ const SearchComponent = () => {
 
   }
   function selectedRuleEditing(item) {
-    debugger
     setVisible(true);
     const rule = (item.query);
     if (rule && rule.categories) {
@@ -1002,8 +1006,15 @@ const SearchComponent = () => {
     setRuleName(item.name);
     setCapacity(item.capacity);
     setPriority(item.priority);
-    setDealerDemandLimit(item.dealerDemandLimit);
-    setDealerOrderLimit(item.dealerOrderLimit);
+
+    if ((typeof item.dealerDemandLimit !== 'undefined') && (item.dealerDemandLimit > -1)){
+      setDealerDemandLimit(item.dealerDemandLimit);
+      setDemandChecked(true);
+    }
+    if ((typeof item.dealerOrderLimit !== 'undefined') && (item.dealerOrderLimit > -1)){
+      setOrderChecked(true);
+      setDealerOrderLimit(item.dealerOrderLimit);
+    }
     setRuleType(item.ruleType);
 
 
@@ -1052,7 +1063,15 @@ const SearchComponent = () => {
     else { setRuleStatus(enumerations.RuleStatus.Archived) }
     setIsLocked(!value);
   }
-
+  function onChangeDealerDemandCheck(e) {
+    setDealerDemandLimit();
+    setDemandChecked(e);
+  }
+  function onChangeDealerOrderCheck(e) {
+    setDealerOrderLimit();
+    setOrderChecked(e);
+  }
+    
   //Component Size
   const onFormLayoutChange = ({ size }) => {
     setComponentSize(size);
@@ -1710,14 +1729,16 @@ const SearchComponent = () => {
                 <Space direction="vertical">
                   <Radio value={enumerations.RuleType.SalableBalance}>Eksi Bakiye Limiti
                     {ruleType === enumerations.RuleType.SalableBalance ? <React.Fragment>
-                      <Input id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} />  <RangePicker
+                      <Input type="text" pattern="[0-9]*"
+  id='minus' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('minus')} />  <RangePicker
                         style={{ marginLeft: '2px' }}
                         format="YYYY-MM-DD"
                         onChange={onChangePicker}
                         value={fromDate === null ? [] : [moment(fromDate), moment(toDate)]}
                       /></React.Fragment> : null}</Radio>
                   <Radio value={enumerations.RuleType.PermittedOrder}>Toplam Sipariş Miktarı
-                    {ruleType === enumerations.RuleType.PermittedOrder ? <React.Fragment><Input id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />
+                    {ruleType === enumerations.RuleType.PermittedOrder ? <React.Fragment><Input type="text" pattern="[0-9]*"
+  id='order' style={{ width: 100, marginLeft: 10 }} value={capacity} onChange={event => onChangeCapaciy(event)} onClick={event => onSelectAll('order')} />
                       <RangePicker
                         style={{ marginLeft: '2px' }}
                         format="YYYY-MM-DD"
@@ -1727,23 +1748,30 @@ const SearchComponent = () => {
                 </Space>
               </Radio.Group>
             </Form.Item>
-            <Form.Item label="Cari Limiti (Talep)">
+            <Form.Item label="Cari Limiti (Talebi) ">
+            <Switch style={{marginLeft:'5px'}} id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={demandChecked} onChange={onChangeDealerDemandCheck} />
+            {demandChecked===true ? 
               <Input
                 id="dealerDemandLimit"
                 onClick={event => onSelectAll("dealerDemandLimit")}
                 onChange={event => onChangeCustomerDemandLimit(event)}
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 value={dealerDemandLimit}
-              />
+              /> :null}
             </Form.Item>
             <Form.Item label="Cari Limiti (Sipariş)">
+            <Switch style={{ marginLeft:'5px'}} id={"isLocked"} checkedChildren="Açık" unCheckedChildren="Kapalı" checked={orderChecked} onChange={onChangeDealerOrderCheck} />
+
+            {orderChecked===true ? 
               <Input
                 id="dealerOrderLimit"
+                type="number"
+                min="0"
                 onClick={event => onSelectAll("dealerOrderLimit")}
                 onChange={event => onChangeCustomerOrderLimit(event)}
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
                 value={dealerOrderLimit}
-              />
+              />:null}
             </Form.Item>
 
             <Form.Item label="Öncelik Sırası">
