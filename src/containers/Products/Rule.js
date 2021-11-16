@@ -1167,7 +1167,17 @@ const SearchComponent = () => {
       key: "dealerDemandLimit",
       width: 100,
       align: "right",
-      render: (dealerDemandLimit) => numberFormat(dealerDemandLimit)
+      // render: (dealerDemandLimit) => numberFormat(dealerDemandLimit)
+      render: (dealerDemandLimit) => (
+        <>
+          {
+            typeof dealerDemandLimit !== 'undefined' ? (
+              (numberFormat(dealerDemandLimit))
+
+            ) : (
+              '-')}
+        </>
+      ),
     },
     {
       title: "Cari Limiti (Sipariş)",
@@ -1175,7 +1185,16 @@ const SearchComponent = () => {
       key: "dealerOrderLimit",
       width: 100,
       align: "right",
-      render: (dealerOrderLimit) => numberFormat(dealerOrderLimit)
+      render: (dealerOrderLimit) => (
+        <>
+          {
+            typeof dealerOrderLimit !== 'undefined' ? (
+              (numberFormat(dealerOrderLimit))
+
+            ) : (
+              '-')}
+        </>
+      ),
     },
     {
       title: "Sipariş Baş.T.",
@@ -1765,8 +1784,6 @@ const SearchComponent = () => {
             {orderChecked===true ? 
               <Input
                 id="dealerOrderLimit"
-                type="number"
-                min="0"
                 onClick={event => onSelectAll("dealerOrderLimit")}
                 onChange={event => onChangeCustomerOrderLimit(event)}
                 style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
