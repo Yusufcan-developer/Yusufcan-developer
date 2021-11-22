@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { throttle } from 'lodash'
 
 //Components
 import LayoutWrapper from '@iso/components/utility/layoutWrapper';
@@ -326,10 +327,10 @@ export default function () {
     } else { message.warning('Lütfen sevk adresi seçiniz!') }
   };
 
-  function saveOrder() {
+  const saveOrder = throttle(e => {
     setCreateOrderQuestionVisible(false);
     postSaveOrder();
-  }
+  }, 1000, { leading: false });
 
   //Change Phone 
   const onChangePhone = e => {
