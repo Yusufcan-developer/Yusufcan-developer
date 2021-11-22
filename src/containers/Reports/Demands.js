@@ -1158,6 +1158,7 @@ export default function () {
                 pendingDemand();
                 break;
             case 'Rejected':
+                if (!cancelReason) { return message.error('Red Durumu seçiniz'); }
                 rejectedDemand();
                 break;
         }
