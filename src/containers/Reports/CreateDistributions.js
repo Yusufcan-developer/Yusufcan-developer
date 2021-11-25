@@ -1486,7 +1486,7 @@ export default function () {
                         />
 
                         <Row style={{ margin: '10px' }}>
-                            <Col align="left" span={view !== 'MobileView' ? 12 : 0} >
+                            <Col align="left" span={view !== 'MobileView' ? 12 : 0} md={view !== 'MobileView' ? null : 24} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Checkbox onChange={handleSubmitCheck}>Tarafınıza vermiş olduğumuz siparişlerden, listede yer alan ürünlerin belirttiğimiz plakalı araca yüklenmesini rica ederiz. Karayollarının Yönetmeliğine uygun tonajda yapılan yükleme sonrası oluşabilecek kaza, hasar, hırsızlık ve tonaj ile ilgili cezai durumlarda sorumluluk tamamen tarafımıza ait olduğunu kabul ve beyan ederiz.</Checkbox>
                             </Col>
                             <Col align={'right'} span={view !== 'MobileView' ? 10 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
@@ -1494,7 +1494,7 @@ export default function () {
                                     Kapat
                               </Button>                              </Col>
 
-                            <Col htmlType="submit" align={'right'} span={view !== 'MobileView' ? 2 : 0}  >
+                            <Col htmlType="submit" align={'right'} span={view !== 'MobileView' ? 2 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24} >
                                 <Form.Item>
                                     <Button loading={confirmLoading} htmlType="submit"  key="back" type="primary" onClick={handleOk}>
                                         Kaydet
