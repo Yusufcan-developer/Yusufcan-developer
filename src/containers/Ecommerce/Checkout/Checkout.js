@@ -327,10 +327,10 @@ export default function () {
     } else { message.warning('Lütfen sevk adresi seçiniz!') }
   };
 
-  const saveOrder = throttle(e => {
+  const saveOrder = _.throttle(e => {
     setCreateOrderQuestionVisible(false);
     postSaveOrder();
-  }, 1000, { leading: false });
+  }, 3000, { leading: false });
 
   //Change Phone 
   const onChangePhone = e => {
