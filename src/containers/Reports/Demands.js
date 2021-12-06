@@ -99,7 +99,7 @@ export default function () {
     const [demandNo, setDemandNo] = useState();
     const [description, setDescription] = useState();
     const [statusModal, setStatusModal] = useState();
-    const [onlyActive, setOnlyActive]=useState();
+    const [onlyActive, setOnlyActive] = useState();
     const [selectedToolbarStatus, setSelectedToolbarStatus] = useState();
     const [eventType, setEventType] = useState();
 
@@ -122,7 +122,16 @@ export default function () {
     const productCategory = [];
     const productSeriesChildren = [];
     const productDimensionsChildren = [];
-
+    const style = {
+        height: 40,
+        width: 40,
+        lineHeight: '40px',
+        borderRadius: 4,
+        backgroundColor: '#1088e9',
+        color: '#fff',
+        textAlign: 'center',
+        fontSize: 14,
+    };
     //Burada ki useEffect'ler page index page size
     useEffect(() => {
         setCurrentPage(pageIndex);
@@ -136,7 +145,7 @@ export default function () {
     let searchUrl = queryString.parse(location.search);
     //Rapor
     const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, aggregatesOverall, code, name, setOnRefreshMode] =
-        useFetch(`${siteConfig.api.report.postDemandItems}`, { "quota": parseFloat(amount), "productCategories": selectedProductCategory, "productDimensions": selectedDimensions, "productSeries": selectedProductSeries, "DealerCodes": dealerCodes, "status": demandStatus, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": typeof onlyActive!=='undefined'?undefined: fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to":typeof onlyActive!=='undefined'?undefined: toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode, "onlyActive":typeof onlyActive!=='undefined'?true:undefined }, searchUrl);
+        useFetch(`${siteConfig.api.report.postDemandItems}`, { "quota": parseFloat(amount), "productCategories": selectedProductCategory, "productDimensions": selectedDimensions, "productSeries": selectedProductSeries, "DealerCodes": dealerCodes, "status": demandStatus, "regionCodes": regionCodes, "fieldCodes": fieldCodes, "from": typeof onlyActive !== 'undefined' ? undefined : fromDate !== null ? fromDate.format('YYYY-MM-DD') : null, "to": typeof onlyActive !== 'undefined' ? undefined : toDate !== null ? toDate.format('YYYY-MM-DD') : null, "keyword": searchKey, "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "addressCodes": address, "siteMode": searchSiteMode, "onlyActive": typeof onlyActive !== 'undefined' ? true : undefined }, searchUrl);
 
     //Bayi,Bölge ve Saha kodlarının getirilmesi
     const [treeData] = useGetTreeData(`${siteConfig.api.security.getAccountsTree}`, searchUrl);
@@ -166,13 +175,13 @@ export default function () {
     }
 
     //Post Series
-    const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "categories": selectedProductCategory, "siteMode": searchSiteMode });
+    const [serieData, loadingSerieFilter, setOnChangeSerieFilter] = usePostFilter(`${siteConfig.api.lookup.postSeries}`, { "categories": selectedProductCategory, "siteMode": "Admin" });
     for (let i = 0; i < serieData.length; i++) {
         productSeriesChildren.push(<Option key={serieData[i]}>{serieData[i]}</Option>);
     }
 
     //Post Dimension
-    const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "categories": selectedProductCategory, "siteMode": searchSiteMode });
+    const [dimensionData, loadingDimensionsFilter, setOnChangeDimensionsFilter] = usePostFilter(`${siteConfig.api.lookup.postDimensions}`, { "categories": selectedProductCategory, "siteMode": "Admin" });
     for (let i = 0; i < dimensionData.length; i++) {
         productDimensionsChildren.push(<Option key={dimensionData[i]}>{dimensionData[i]}</Option>);
     }
@@ -196,7 +205,7 @@ export default function () {
                 setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true);
             } else { setSelectedProductCategory([parsed.pg]); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); }
         }
-        if (typeof parsed.onlyActive!=='undefined'){setOnlyActive(parsed.onlyActive);}
+        if (typeof parsed.onlyActive !== 'undefined') { setOnlyActive(parsed.onlyActive); }
         if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
         if (typeof parsed.from !== 'undefined') { setFromDate(moment(parsed.from + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); }
         if (typeof parsed.from !== 'undefined') { setToDate(moment(parsed.to + 'T00:00:00-00:00', 'YYYY-MM-DD' + 'THH:mm:ss', null)); setSelectedRadioItem(2); setPrivateDate(null); }
@@ -617,7 +626,7 @@ export default function () {
                         case 'Duzenle':
                             return true;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -627,7 +636,17 @@ export default function () {
                         case 'Duzenle':
                             return true;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Rejected') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -649,7 +668,7 @@ export default function () {
                         case 'Duzenle':
                             return true;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -659,7 +678,17 @@ export default function () {
                         case 'Duzenle':
                             return true;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Rejected') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
+                        case 'SiparisOlustur':
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -671,7 +700,7 @@ export default function () {
                         case 'Duzenle':
                             return false;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -681,7 +710,7 @@ export default function () {
                         case 'Duzenle':
                             return true;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -691,7 +720,7 @@ export default function () {
                         case 'Duzenle':
                             return false;
                         case 'SiparisOlustur':
-                            return false;
+                            return true;
                         case 'TalepSil':
                             return false;
                     }
@@ -699,9 +728,9 @@ export default function () {
                 else if (item.status === 'Approved') {
                     switch (transactionKey) {
                         case 'Duzenle':
-                            return true;
-                        case 'SiparisOlustur':
                             return false;
+                        case 'SiparisOlustur':
+                            return true;
                         case 'TalepSil':
                             return true;
                     }
@@ -734,8 +763,18 @@ export default function () {
                 else if (item.status === 'Approved') {
                     switch (transactionKey) {
                         case 'Duzenle':
-                            return true
-                            ;
+                            return false;
+                        case 'SiparisOlustur':
+                            if (typeof item.orderNo === 'undefined') { return false; }
+                            return true;
+                        case 'TalepSil':
+                            return true;
+                    }
+                }
+                else if (item.status === 'Rejected') {
+                    switch (transactionKey) {
+                        case 'Duzenle':
+                            return true;
                         case 'SiparisOlustur':
                             return true;
                         case 'TalepSil':
@@ -749,11 +788,11 @@ export default function () {
     }
 
     //Kullanıcı yetkisine göre talep durumlarının seçme durumları
-    function permissionCheck(status) {
+    function permissionCheck(status, item) {
         const token = jwtDecode(localStorage.getItem("id_token"));
         if (token.urole === 'admin') { return false; }
         else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
-            if ((status === 'Cancelled') || (status === 'Rejected') || (status === 'Approved')) { return true; }
+            if ((status === 'Cancelled') || (status === 'Rejected') || (status === 'Approved') && (typeof item.orderNo !== 'undefined')) { return true; }
             return false;
         }
     }
@@ -874,14 +913,14 @@ export default function () {
             }
         },
         getCheckboxProps: (record) => ({
-            disabled: permissionCheck(record.status), // Column configuration not to be checked
+            disabled: permissionCheck(record.status, record), // Column configuration not to be checked
         }),
 
     };
 
     //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
     const menu = (item) => (
-        <Menu onClick={handleMenuClick}>
+        <Menu onClick={_.throttle (e => {handleMenuClick(e)  }, 1000, { leading: false })} loading={demandToOrderConfirmLoading}>
             {transactionsItemDisabled(item, "Duzenle") === false ? <Menu.Item key="Duzenle">Düzenle</Menu.Item> : null}
             {transactionsItemDisabled(item, "SiparisOlustur") === false ? <Menu.Item key="SiparisOlustur">Sipariş Oluştur</Menu.Item> : null}
             {/* {transactionsItemDisabled(item, "TalepSil") === false ? <Menu.Item key="TalepSil">Talep Sil</Menu.Item> : null} */}
@@ -1108,26 +1147,26 @@ export default function () {
     //Sipariş oluşturma
     async function createOrder() {
         //Sipariş başarılı bir şekilde oluşturulduysa popup pencerisini kapat
-        if ((selectedDemand && selectedDemand.status === enumerations.DemandStatus.Pending) || (selectedDemand &&  selectedDemand.status === enumerations.DemandStatus.Approved && typeof selectedDemand.orderNo!=='undefined') ) {
+        if (selectedDemand && selectedDemand.status === enumerations.DemandStatus.Approved && typeof selectedDemand.orderNo === 'undefined') {
             postSaveOrder([selectedDemand.id]);
         }
-        else { message.warning('Sadece bekleyen talepleri sipariş oluşturabilirsiniz.') }
+        else { message.warning('Sadece onaylanan talepleri sipariş oluşturabilirsiniz.') }
     }
 
     function demandEditing() {
-        if (selectedDemand && typeof selectedDemand.orderNo==='undefined') {
+        if (selectedDemand && typeof selectedDemand.orderNo === 'undefined') {
             setVisible(true);
         }
-        else { message.warning('Siparişi oluşmuş talepleri düzenleyemezsiniz.') }     
-        
+        else { message.warning('Siparişi oluşmuş talepleri düzenleyemezsiniz.') }
+
     }
 
     //Seçilenleri sipariş oluşturma işlemi
     async function multiplePostSaveOrder() {
         // setAcceptInfoVisible(true);
-        const demandStatusControl = _.filter(selectedItems, function (x) { return x.status !== enumerations.DemandStatus.Pending || x.status==enumerations.DemandStatus.Approved && typeof x.orderNo!=='undefined'; });
+        const demandStatusControl = _.filter(selectedItems, function (x) { return x.status !== enumerations.DemandStatus.Approved || x.status == enumerations.DemandStatus.Approved && typeof x.orderNo !== 'undefined'; });
         if (demandStatusControl.length > 0) {
-            message.warning('Sadece bekleyen ve siparişi oluşturulamamış talepleri sipariş oluşturabilirsiniz.')
+            message.warning('Sadece onaylanan ve siparişi oluşturulamamış talepleri sipariş oluşturabilirsiniz.')
         }
         else {
             postSaveOrder(selectedItemsId);
@@ -1166,6 +1205,7 @@ export default function () {
 
     //Save Order
     async function postSaveOrder(demandIds) {
+
         const siteMode = getSiteMode();
         const token = jwtDecode(localStorage.getItem("id_token"));
         const dealerCode = token.dcode;
@@ -1192,15 +1232,15 @@ export default function () {
                             setFailedDemandsNo(data.successfulDemands);
                             setFailedDemandsShowPopup(true);
                         }
-                        else{orderFailedPopupClose();}
+                        else { orderFailedPopupClose(); }
                         // demandSaveResult(false, itemCode, amount, data.message);
                     } else {
-                        message.success({content: 'Siparişler başarıyla oluşturuldu.', duration: 5 });
+                        message.success({ content: 'Siparişler başarıyla oluşturuldu.', duration: 5 });
                         if ((data.failedDemands) && (data.failedDemands.length > 0)) {
                             setFailedDemandsNo(data.successfulDemands);
                             setFailedDemandsShowPopup(true);
                         }
-                        else{orderFailedPopupClose();}
+                        else { orderFailedPopupClose(); }
                     }
                 }
             })
@@ -1260,19 +1300,19 @@ export default function () {
     };
 
     function demandCancelOrRejection() {
-        const demandStatusControl = _.filter(selectedItems, function (x) { return typeof x.orderNo==='undefined'; });
-        if (demandStatusControl.length===0) {
+        const demandStatusControl = _.filter(selectedItems, function (x) { return typeof x.orderNo === 'undefined'; });
+        if (demandStatusControl.length === 0) {
             message.warning('Sadece bekleyen ve siparişi oluşturulamamış talepleri sipariş oluşturabilirsiniz.')
         }
-        else {           
-        let control = false;
-        let status;
-        _.each(selectedItems, (item) => {
-            if (item.status === 'Approved') { return control = true; }
-            else { status = item.status; }
-        });
-        setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar');
-    }        
+        else {
+            let control = false;
+            let status;
+            _.each(selectedItems, (item) => {
+                if (item.status === 'Approved') { return control = true; }
+                else { status = item.status; }
+            });
+            setToolbarEditingButton(true); setVisible(true); setSelectedToolbarStatus(status); setEventType('Toolbar');
+        }
     }
 
     function demandEditingQuantityPermission() {
@@ -1702,10 +1742,10 @@ export default function () {
                     </Spin></div>
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
-                    {token.urole === 'admin' || token.urole === 'support' ?
-                        <Button style={{ paddingLeft: '10px' }} onClick={() => (multiplePostSaveOrder())}>
-                            Onayla ve sipariş Oluştur    <CheckOutlined />
-                        </Button> :null}
+                        {token.urole === 'admin' || ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) ?
+                            <Button style={{ paddingLeft: '10px' }} onClick={_.throttle (e => {multiplePostSaveOrder()  }, 1000, { leading: false })}>
+                                Sipariş Oluştur    <CheckOutlined />
+                            </Button> : null}
                         <Popconfirms
                             visible={acceptInfoVisible}
                             title="Seçilen talepler arasında onaylanmayanlar var otomatik olarak onaylamak istiyor musunuz？"
@@ -1867,7 +1907,7 @@ export default function () {
 
             </Modal>
             <Modal
-                title={'Saiparişi oluşturulamayan talepler'}
+                title={'Siparişi oluşturulamayan talepler'}
                 visible={failedDemandsShowPopup}
                 maskClosable={false}
                 footer={[
