@@ -1210,6 +1210,7 @@ export default function () {
         const token = jwtDecode(localStorage.getItem("id_token"));
         const dealerCode = token.dcode;
         setDemandToOrderConfirmLoading(true);
+        message.info('Sipariş oluşturma işlemi başladı lütfen bekleyiniz...')
         const reqBody = { "demandIds": demandIds }
         const requestOptions = {
             method: "POST",
