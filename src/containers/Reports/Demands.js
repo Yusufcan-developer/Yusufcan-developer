@@ -920,7 +920,7 @@ export default function () {
 
     //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
     const menu = (item) => (
-        <Menu onClick={_.throttle (e => {handleMenuClick(e)  }, 1000, { leading: false })} loading={demandToOrderConfirmLoading}>
+        <Menu onClick={_.debounce (e => {handleMenuClick(e)  }, 1000)} loading={demandToOrderConfirmLoading}>
             {transactionsItemDisabled(item, "Duzenle") === false ? <Menu.Item key="Duzenle">Düzenle</Menu.Item> : null}
             {transactionsItemDisabled(item, "SiparisOlustur") === false ? <Menu.Item key="SiparisOlustur">Sipariş Oluştur</Menu.Item> : null}
             {/* {transactionsItemDisabled(item, "TalepSil") === false ? <Menu.Item key="TalepSil">Talep Sil</Menu.Item> : null} */}

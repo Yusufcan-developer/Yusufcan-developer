@@ -107,6 +107,7 @@ export default function () {
   const [loading, setLoading] = useState(true);
   const history = useHistory();
   const location = useLocation();
+  const  INTERVAL = 1000;
   const {
     productQuantity,
   } = useSelector(state => state.Ecommerce);
@@ -327,11 +328,11 @@ export default function () {
     } else { message.warning('Lütfen sevk adresi seçiniz!') }
   };
 
-  const saveOrder = _.throttle(e => {
+  const saveOrder = _.debounce(() => {
     setCreateOrderQuestionVisible(false);
     postSaveOrder();
-  }, 3000, { leading: false });
-
+  }, INTERVAL);
+  
   //Change Phone 
   const onChangePhone = e => {
     setPhone(e.target.value);
