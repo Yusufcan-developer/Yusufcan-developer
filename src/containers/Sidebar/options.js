@@ -363,11 +363,11 @@ export default {
             label: 'sidebar.planDistributions',
             leftIcon: 'ion-android-mail',
           },
-          // {
-          //   key: 'reports/salesTarget',
-          //   label: 'sidebar.salesTarget',
-          //   leftIcon: 'ion-android-mail',
-          // },
+          {
+            key: 'reports/salesGoals',
+            label: 'sidebar.salesGoals',
+            leftIcon: 'ion-android-mail',
+          },
         ]
       },
       {
