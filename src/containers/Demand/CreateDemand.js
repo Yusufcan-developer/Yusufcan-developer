@@ -170,7 +170,7 @@ const CreateDemand = (props) => {
 
                         </Col>                        
                         <Col md={12} sm={12} xs={24} style={colStyle} >
-                        <Alert message={<span style={{color: 'black' }}>Bu talebi {moment(activePeriod.deadline).format(siteConfig.dateFormat)} 23:59 tarihine kadar düzenleyebilirsiniz.</span>} type="warning" showIcon />                            
+                        {/* <Alert message={<span style={{color: 'black' }}>Bu talebi {moment(activePeriod.deadline).format(siteConfig.dateFormat)} 23:59 tarihine kadar düzenleyebilirsiniz.</span>} type="warning" showIcon />                             */}
                             <br /><br />
                             <span style={{color: 'red' }}>Seçilmiş olan ürün miktarı fabrika toplam üretim miktarından fazladır. Bu yüzden dolayı talep oluşturabilirsiniz.</span>
                             <br /><br />
