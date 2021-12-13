@@ -160,7 +160,7 @@ export default function TopbarDemands() {
           //       selectedNotification();
           //     }}
         />
-        {<span>{quantity}</span>}
+        {<span>{quantity} </span>}Talepler
       </div>
     </Popover>
 
