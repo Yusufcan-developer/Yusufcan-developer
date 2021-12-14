@@ -665,41 +665,7 @@ export default {
         key: "products/categories",
         label: "sidebar.productsList",
         leftIcon: "ion-bag"
-      },
-      {
-        key: "reportTable",
-        label: "sidebar.reportTable",
-        leftIcon: "ion-ios-paper",
-        children: [
-
-          {
-            key: "reports/orders/",
-            label: "sidebar.orderFollowUp",
-            leftIcon: "ion-android-mail"
-          },
-          {
-            key: "reports/deliveries/",
-            label: "sidebar.shipping",
-            leftIcon: "ion-android-mail"
-          },
-          {
-            key: 'reports/distributions',
-            label: 'sidebar.distributions',
-            leftIcon: 'ion-android-mail',
-          },
-        ]
-      },
-      {
-        key: 'systemAdministrator',
-        label: 'sidebar.administrator',
-        leftIcon: 'ion-document-text',
-        children: [
-          {
-            key: 'admin/notification',
-            label: 'sidebar.notifications',
-          },
-        ],
-      },
+      }
     ],
   }
 

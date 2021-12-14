@@ -73,25 +73,27 @@ export default function Topbar() {
           <li className="isoSearch">
             <TopbarSearch />
           </li>
+          {(token.urole !== 'dealersub')?
           <li>
             <img src={bulutLogo} style={{ width: '100px' }} onClick={() => window.open('https://seramiksan.buluttahsilat.com/')}
             />
-          </li>
+          </li>:null}
           {token.urole === 'admin' 	|| token.dcode==='B555888' ?
             <li>
               <TopbarAdressDelivery />
             </li> : null}
-            {(token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')?
+            {(token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') ?
             <li
             onClick={() => setSelectedItem('message')}
             className={'isoMsg'}>
             <TopbarDemands />
           </li>:null}
+          {(token.urole !== 'dealersub')?
           <li
             onClick={() => setSelectedItem('notification')}
             className={selectedItem ? 'isoNotify active' : 'isoNotify'}>
             <TopbarNotification />
-          </li>
+          </li>:null}
           {(token.urole !== 'dealersub')?
           <li onClick={() => setSelectedItem('addToCart')} className="isoCart">
             <TopbarAddtoCart />
