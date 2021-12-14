@@ -80,6 +80,7 @@ const ProductDetail = () => {
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}?siteMode=${searchSiteMode}`);
   document.title = "Ürün - " + description + " - Seramiksan B2B";
   const userToken = jwtDecode(localStorage.getItem("id_token"));
+debugger
 
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.ProductDetail.browse);
@@ -489,7 +490,7 @@ const ProductDetail = () => {
                   paddingBottom: '15px',
                 }}
               >
-                {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && userToken.roleName==='dealersub' ? (
+                {searchSiteMode !== enumerations.SiteMode.DeliverysPoint 	&& userToken.roleName!=='dealersub' ? (
                   <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
                     <Row align="middle">
                       <Col span={4} align="right">
@@ -527,7 +528,7 @@ const ProductDetail = () => {
                   </Form.Item>) : null}
               </div>
               <br />
-              {canBeSoldPartially === true && userToken.roleName==='dealersub'? (
+              {canBeSoldPartially === true 	&& userToken.roleName!=='dealersub'? (
                 <Form.Item label='Parçalı Satış (KUTU)'>
                   <Row align="middle">
                     <Col span={4} align="right">

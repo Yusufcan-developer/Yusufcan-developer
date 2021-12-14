@@ -271,7 +271,7 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   }
-  const userToken = jwtDecode(localStorage.getItem("id_token"));
+  
   //Redux ürünler listeleme
   const { productQuantity } = useSelector(state => state.Ecommerce);
   const { addToCart, changeProductQuantity } = ecommerceActions;
@@ -1195,6 +1195,7 @@ const SearchComponent = () => {
   function onCompletePopupRelation() {
     setHide(false);
   }
+  const userToken = jwtDecode(localStorage.getItem("id_token"));
   return (
     <React.Fragment>
       <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
@@ -1504,7 +1505,7 @@ const SearchComponent = () => {
                             </Button>
                           </Tooltip>
                         </div>
-                        {userToken.roleName==='dealersub' ?
+                        {userToken.roleName !=='dealersub' ?
                         !inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
