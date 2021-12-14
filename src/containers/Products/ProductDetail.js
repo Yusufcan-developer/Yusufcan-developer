@@ -490,7 +490,7 @@ debugger
                   paddingBottom: '15px',
                 }}
               >
-                {searchSiteMode !== enumerations.SiteMode.DeliverysPoint 	&& userToken.roleName!=='dealersub' ? (
+                {searchSiteMode !== enumerations.SiteMode.DeliverysPoint 	&& userToken.urole!=='dealersub' ? (
                   <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
                     <Row align="middle">
                       <Col span={4} align="right">
@@ -528,7 +528,7 @@ debugger
                   </Form.Item>) : null}
               </div>
               <br />
-              {canBeSoldPartially === true 	&& userToken.roleName!=='dealersub'? (
+              {canBeSoldPartially === true 	&& userToken.urole!=='dealersub'? (
                 <Form.Item label='Parçalı Satış (KUTU)'>
                   <Row align="middle">
                     <Col span={4} align="right">

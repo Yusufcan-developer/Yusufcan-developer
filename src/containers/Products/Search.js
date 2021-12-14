@@ -1505,7 +1505,7 @@ const SearchComponent = () => {
                             </Button>
                           </Tooltip>
                         </div>
-                        {userToken.roleName !=='dealersub' ?
+                        {userToken.urole !=='dealersub' ?
                         !inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
