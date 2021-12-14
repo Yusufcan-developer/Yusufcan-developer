@@ -73,7 +73,7 @@ export default function CartTable({ style }) {
     const activeUser = localStorage.getItem("activeUser");
     const siteMode = getSiteMode();
     let account = '';
-    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) { account = token.dcode; };
+    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) { account = token.dcode; };
 
     if (typeof activeUser != 'undefined') { account = activeUser }
     const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode": siteMode };

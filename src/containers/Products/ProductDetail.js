@@ -79,6 +79,7 @@ const ProductDetail = () => {
   const [data, loadingGetApi, description, itemCode, series, productionStatus, surface, color, dimension, productItem, type, rectifying, listPrice, imageUrl, unit, canBeSoldPartially, notes, campaignImages, imageThumbBaseUrl, imageMediumBaseUrl, imageGeneralFileNames, imageTechnicalFileNames, imageOriginalBaseUrl, imageLargeBaseUrl, m2Pallet, m2Box] = useGetProductItem(`${siteConfig.api.products.getProductDetail}${productId}?siteMode=${searchSiteMode}&includeDependentAndRelatedProductDetails=true`);
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}?siteMode=${searchSiteMode}`);
   document.title = "Ürün - " + description + " - Seramiksan B2B";
+  const userToken = jwtDecode(localStorage.getItem("id_token"));
 
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.ProductDetail.browse);
@@ -488,7 +489,7 @@ const ProductDetail = () => {
                   paddingBottom: '15px',
                 }}
               >
-                {searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
+                {searchSiteMode !== enumerations.SiteMode.DeliverysPoint && userToken.roleName==='dealersub' ? (
                   <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
                     <Row align="middle">
                       <Col span={4} align="right">
@@ -526,7 +527,7 @@ const ProductDetail = () => {
                   </Form.Item>) : null}
               </div>
               <br />
-              {canBeSoldPartially === true ? (
+              {canBeSoldPartially === true && userToken.roleName==='dealersub'? (
                 <Form.Item label='Parçalı Satış (KUTU)'>
                   <Row align="middle">
                     <Col span={4} align="right">

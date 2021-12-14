@@ -142,6 +142,9 @@ export default function Sidebar() {
   else if (token.urole === 'dealerlimited') {
     newColumn = options.sideBarMenu.Dealerlimited;
   }
+  else if (token.urole ==='dealersub') {
+    newColumn = options.sideBarMenu.Dealersub;
+  }
   {
     return (
       <SidebarWrapper>

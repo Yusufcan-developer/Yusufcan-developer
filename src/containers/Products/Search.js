@@ -271,7 +271,7 @@ const SearchComponent = () => {
 
     return setOnChange(true);
   }
-
+  const userToken = jwtDecode(localStorage.getItem("id_token"));
   //Redux ürünler listeleme
   const { productQuantity } = useSelector(state => state.Ecommerce);
   const { addToCart, changeProductQuantity } = ecommerceActions;
@@ -1504,8 +1504,8 @@ const SearchComponent = () => {
                             </Button>
                           </Tooltip>
                         </div>
-
-                        {!inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
+                        {userToken.roleName==='dealersub' ?
+                        !inputNumberShowOrHide(item) || (item.canBeSoldPartially === true) & searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
                           <Row justify="center" align="bottom" style={{ minHeight: '55px' }}>
                             <Col span={20} align="middle">
                               <Button
@@ -1542,7 +1542,7 @@ const SearchComponent = () => {
                               </Button>
                             </Col>
                           </Row>
-                        )}
+                        ):null}
                       </div>
                     </SingleCardWrapper>
                   ))}

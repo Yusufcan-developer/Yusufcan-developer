@@ -81,7 +81,7 @@ export default function Topbar() {
             <li>
               <TopbarAdressDelivery />
             </li> : null}
-            {(token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') ?
+            {(token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')?
             <li
             onClick={() => setSelectedItem('message')}
             className={'isoMsg'}>
@@ -92,9 +92,10 @@ export default function Topbar() {
             className={selectedItem ? 'isoNotify active' : 'isoNotify'}>
             <TopbarNotification />
           </li>
+          {(token.urole !== 'dealersub')?
           <li onClick={() => setSelectedItem('addToCart')} className="isoCart">
             <TopbarAddtoCart />
-          </li>
+          </li>:null}
           <li onClick={() => setSelectedItem('user')} className="isoContact">
             <TopbarUser displayName={username} />
           </li>

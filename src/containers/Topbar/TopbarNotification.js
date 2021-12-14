@@ -150,7 +150,7 @@ export default function TopbarNotification() {
   const day = moment().day();
   var date = moment(new Date(), "MM-DD-YYYY");
   const token = jwtDecode(localStorage.getItem("id_token"));
-  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
   if (date.date() === 9 || date.date() === 10) {
     const lastBalanceCheckDate = localStorage.getItem('lastBalanceCheckDate');
     if (!lastBalanceCheckDate) { getCutBalance(); } else {

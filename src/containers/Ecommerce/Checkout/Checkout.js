@@ -942,7 +942,7 @@ export default function () {
     },
   ]
 
-  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+  if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
     createAddressButtonVisible = false;
   }
   //Change Status Type

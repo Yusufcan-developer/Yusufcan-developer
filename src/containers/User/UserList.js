@@ -333,7 +333,7 @@ const UserList = () => {
     //Kullanıcı rollerine göre tanımlama kontrolü
     if (!role) { return message.error('Rol seçiniz'); }
     else {
-      if ((selectedRoleName === 'dealerwhouse') || (selectedRoleName === 'dealerlimited') || (selectedRoleName === 'dealersv')) {
+      if ((selectedRoleName === 'dealerwhouse') || (selectedRoleName === 'dealerlimited') || (selectedRoleName === 'dealersv')|| (selectedRoleName === 'dealersub')) {
         if (!dealerCodes) { return message.error('Bayi kodu seçimi yapınız'); }
         else if (dealerCodes.length === 0) { return message.error('Bayi kodu seçimi yapınız'); }
       }
@@ -440,7 +440,7 @@ const UserList = () => {
   //Role göre Saha veya bayi kodunun gizlenmesi
   function fieldRegionAndDealearVisible(roleName) {
 
-    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')) {
+    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')|| (roleName === 'dealersub')) {
       setRegionVisible(true);
       setFieldVisible(true);
       setDealerCodeSelectModSingle(true);
@@ -460,7 +460,7 @@ const UserList = () => {
 
   //User Modal secilen öğelerin temizlenmesi
   function modalSelectedValueClear(roleName) {
-    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')) {
+    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')|| (roleName === 'dealersub')) {
 
     } else { setDealerCodes(); }
     setRegionCodes();

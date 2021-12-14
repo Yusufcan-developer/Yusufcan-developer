@@ -214,7 +214,7 @@ const UserList = () => {
 
     if (!role) { return message.error('Rol seçiniz'); }
     else {
-      if ((selectedRoleName === 'dealerwhouse') || (selectedRoleName === 'dealerlimited') || (selectedRoleName === 'dealersv')) {
+      if ((selectedRoleName === 'dealerwhouse') || (selectedRoleName === 'dealerlimited') || (selectedRoleName === 'dealersv')|| (token.urole === 'dealersub')) {
         if (!dealerCodes) { return message.error('Bayi kodu seçimi yapınız'); }
         else if (dealerCodes.length === 0) { return message.error('Bayi kodu seçimi yapınız'); }
       }
@@ -280,7 +280,7 @@ const UserList = () => {
 
   //User Modal secilen öğelerin temizlenmesi
   function modalSelectedValueClear(roleName) {
-    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')) {
+    if ((roleName === 'dealerwhouse') || (roleName === 'dealerlimited') || (roleName === 'dealersv')|| (token.urole === 'dealersub')) {
 
     } else { setDealerCodes(); }
   }

@@ -86,7 +86,7 @@ const OrdersReport = () => {
         setCurrentPage(pageIndex);
         getVariablesFromUrl();
         const token = jwtDecode(localStorage.getItem("id_token"));
-        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
             getAdress(token.dcode);
         }
     }, [pageIndex]);
@@ -717,7 +717,7 @@ const OrdersReport = () => {
             }
         }
     }
-    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
         const getHideColumns = ColumnOptionsConfig.OrderTableHideColumns.Dealer;
         if (getHideColumns.length > 0) {
             for (let index = 0; index < getHideColumns.length; index++) {

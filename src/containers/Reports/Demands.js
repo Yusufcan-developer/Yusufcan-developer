@@ -137,7 +137,7 @@ export default function () {
         setCurrentPage(pageIndex);
         getVariablesFromUrl();
         const token = jwtDecode(localStorage.getItem("id_token"));
-        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
             getAdress(token.dcode);
         }
     }, [pageIndex]);
@@ -739,7 +739,7 @@ export default function () {
             else if (token.urole === 'director') {
 
             }
-            else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+            else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
                 if (item.status === 'Pending') {
                     switch (transactionKey) {
                         case 'Duzenle':
@@ -791,7 +791,7 @@ export default function () {
     function permissionCheck(status, item) {
         const token = jwtDecode(localStorage.getItem("id_token"));
         if (token.urole === 'admin') { return false; }
-        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
             if ((status === 'Cancelled') || (status === 'Rejected') || (status === 'Approved') && (typeof item.orderNo !== 'undefined')) { return true; }
             return false;
         }
@@ -1327,7 +1327,7 @@ export default function () {
         else if ((token.urole === 'regionmanager') && (statusModal === 'Approved')) {
             return true;
         }
-        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
             return false;
         }
     }
@@ -1336,7 +1336,7 @@ export default function () {
 
         const token = jwtDecode(localStorage.getItem("id_token"));
 
-        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
             switch (type) {
                 case 'Approved':
                     return true;
@@ -1531,7 +1531,7 @@ export default function () {
             }
         }
     }
-    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) {
+    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
         const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer;
         if (getHideColumns.length > 0) {
             for (let index = 0; index < getHideColumns.length; index++) {
@@ -1743,7 +1743,7 @@ export default function () {
                     </Spin></div>
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
-                        {token.urole === 'admin' || ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')) ?
+                        {token.urole === 'admin' || ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) ?
                             <Button style={{ paddingLeft: '10px' }} onClick={_.throttle (e => {multiplePostSaveOrder()  }, 1000, { leading: false })}>
                                 Sipariş Oluştur    <CheckOutlined />
                             </Button> : null}
