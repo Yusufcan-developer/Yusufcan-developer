@@ -18,13 +18,13 @@ const categories = [
     "Id": "VİTRİFİYE (SSG)",
     "title": "VİTRİFİYE (SSG)",
     "description": "Lavabo, Klozet, Bide, Pisuvar, Helataşı, Bedensel Engelli Ürünler",
-    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/alves_final_14c24.jpg",
+    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/hill_c99a3.jpg",
   },
   {
     "Id": "KARO",
     "title": "Karo",
     "description": "Teknik Granit, Porselen, Yer karosu, Duvar karosu, Dekor, Serastep",
-    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/ardesia_final_35159.jpg",
+    "imageUrl": "https://www.seramiksan.com.tr/images/seriler/north_final_ac529.jpg",
   },
   {
     "Id": "YAPI KİMYASALLARI",
