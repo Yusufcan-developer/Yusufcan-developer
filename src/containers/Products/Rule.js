@@ -818,7 +818,6 @@ const SearchComponent = () => {
         "categories": category === undefined ? color : [category], "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'admin',      
         "itemCodes": itemCodes,
       }
-      debugger
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),

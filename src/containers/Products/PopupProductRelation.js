@@ -423,54 +423,8 @@ const PopupProductRelation = (props) => {
                                             paddingBottom: '15px',
                                         }}
                                     >
-                                        {siteMode !== enumerations.SiteMode.DeliverysPoint ?
-                                            <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
-                                                <Row align="middle">
-                                                    <Col span={4} align="right">
-                                                        <Button type="primary" onClick={event => onRemoveProductCart(item, false)}>
-                                                            {<IntlMessages id="product.minus" />}
-                                                        </Button>
-                                                    </Col>
-                                                    <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                                                        <Input
-                                                            id={'Paletli' + item.itemCode}
-                                                            onClick={event => onSelectAll(event)}
-                                                            onChange={event => onChange(event, item, false)}
-                                                            onBlur={event => onChangeQuantity(event, item)}
-                                                            style={{ textAlign: "right" }}
-                                                            maxLength={5}
-                                                            defaultValue={0}
-                                                            step={1}
-                                                            value={EntryInputQuantity(item, false)}
-                                                        />
-                                                    </Col>
-                                                    <Col span={4}>
-                                                        <Button disabled={productAmountControlDisabled(item, false, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
-                                                            {<IntlMessages id="product.plus" />}
-                                                        </Button>
-                                                    </Col>
-                                                    <Col span={4} style={{ width: '100%' }}>
-                                                        <Space size={1}>
-                                                            <Col span={4}>
-                                                                <Tag color="blue">
-                                                                    1 Palet: {item.m2Pallet} {item.unit}
-                                                                </Tag>
-                                                            </Col>
-                                                            {palletAmount > 0 ? (<Col span={4}>
-                                                                <Tag color="blue">
-                                                                    Stok: {salableBalanceFriendlyText}
-                                                                </Tag>
-                                                            </Col>) : null}
-                                                        </Space>
-                                                    </Col>
-                                                </Row>
-                                            </Form.Item>
-                                            : null}
-                                    </div>
-                                    <br />
-                                    {/* {siteMode !== enumerations.SiteMode.DeliverysPoint ? */}
-                                    {item.canBeSoldPartially === true ?
-                                        <Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
+                                        {item.canBeSoldPartially === true ?
+                                        <Form.Item style={{ marginTop: '10px' }} label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
                                             <Row align="middle">
                                                 <Col span={4} align="right">
                                                     <Button type="primary" onClick={event => onRemoveProductCart(item, true)}>
@@ -512,6 +466,54 @@ const PopupProductRelation = (props) => {
                                                 </Col>
                                             </Row>
                                         </Form.Item> : null}
+                                    </div>
+                                    <br />
+                                    {/* {siteMode !== enumerations.SiteMode.DeliverysPoint ? */}
+
+
+                                        {siteMode !== enumerations.SiteMode.DeliverysPoint ?
+                                            <Form.Item label="Paletli Satış (PALET)" >
+                                                <Row align="middle">
+                                                    <Col span={4} align="right">
+                                                        <Button type="primary" onClick={event => onRemoveProductCart(item, false)}>
+                                                            {<IntlMessages id="product.minus" />}
+                                                        </Button>
+                                                    </Col>
+                                                    <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                                                        <Input
+                                                            id={'Paletli' + item.itemCode}
+                                                            onClick={event => onSelectAll(event)}
+                                                            onChange={event => onChange(event, item, false)}
+                                                            onBlur={event => onChangeQuantity(event, item)}
+                                                            style={{ textAlign: "right" }}
+                                                            maxLength={5}
+                                                            defaultValue={0}
+                                                            step={1}
+                                                            value={EntryInputQuantity(item, false)}
+                                                        />
+                                                    </Col>
+                                                    <Col span={4}>
+                                                        <Button disabled={productAmountControlDisabled(item, false, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
+                                                            {<IntlMessages id="product.plus" />}
+                                                        </Button>
+                                                    </Col>
+                                                    <Col span={4} style={{ width: '100%' }}>
+                                                        <Space size={1}>
+                                                            <Col span={4}>
+                                                                <Tag color="blue">
+                                                                    1 Palet: {item.m2Pallet} {item.unit}
+                                                                </Tag>
+                                                            </Col>
+                                                            {palletAmount > 0 ? (<Col span={4}>
+                                                                <Tag color="blue">
+                                                                    Stok: {salableBalanceFriendlyText}
+                                                                </Tag>
+                                                            </Col>) : null}
+                                                        </Space>
+                                                    </Col>
+                                                </Row>
+                                            </Form.Item>
+                                            : null}
                                 </div>
 
                             </Box>
@@ -578,7 +580,45 @@ const PopupProductRelation = (props) => {
                                                                             paddingBottom: '15px',
                                                                         }}
                                                                     >
-                                                                        <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
+
+<Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
+                                                                        <Row align="middle">
+                                                                            <Col span={4} align="right">
+                                                                                <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
+                                                                                    {<IntlMessages id="product.minus" />}
+                                                                                </Button>
+                                                                            </Col>
+                                                                            <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                                                                                <Input
+                                                                                    id={'Parçalı' + item.itemCode}
+                                                                                    onClick={event => onSelectAll(event)}
+                                                                                    onChange={event => onChange(event, item, true)}
+                                                                                    onBlur={event => onChangeQuantity(event, item, true)}
+                                                                                    style={{ textAlign: "right" }}
+                                                                                    maxLength={5}
+                                                                                    defaultValue={1}
+                                                                                    step={1}
+                                                                                    value={EntryInputQuantity(item, true)}
+                                                                                />
+                                                                            </Col>
+                                                                            <Col span={4} style={{ width: '100%' }}>
+                                                                                <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
+                                                                                    {<IntlMessages id="product.plus" />}
+                                                                                </Button>
+                                                                            </Col>
+                                                                            <Col span={4} style={{ width: '100%' }}>
+                                                                                <Col span={4}>
+                                                                                    {item.unit !== 'TOR' ? <Tag color="blue">
+                                                                                        1 Kutu: {item.m2Box} {item.unit}
+                                                                                    </Tag> : null}
+
+                                                                                </Col>
+                                                                            </Col>
+                                                                        </Row>
+                                                                    </Form.Item>
+                                                                    </div>
+                                                                    <br />
+                                                                    <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
                                                                             <Row align="middle">
                                                                                 <Col span={4} align="right">
                                                                                     <Button type="primary" onClick={event => onRemoveProductCart(item, false)}>
@@ -617,43 +657,6 @@ const PopupProductRelation = (props) => {
                                                                                 </Col>
                                                                             </Row>
                                                                         </Form.Item>
-                                                                    </div>
-                                                                    <br />
-                                                                    <Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
-                                                                        <Row align="middle">
-                                                                            <Col span={4} align="right">
-                                                                                <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
-                                                                                    {<IntlMessages id="product.minus" />}
-                                                                                </Button>
-                                                                            </Col>
-                                                                            <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                                                                                <Input
-                                                                                    id={'Parçalı' + item.itemCode}
-                                                                                    onClick={event => onSelectAll(event)}
-                                                                                    onChange={event => onChange(event, item, true)}
-                                                                                    onBlur={event => onChangeQuantity(event, item, true)}
-                                                                                    style={{ textAlign: "right" }}
-                                                                                    maxLength={5}
-                                                                                    defaultValue={1}
-                                                                                    step={1}
-                                                                                    value={EntryInputQuantity(item, true)}
-                                                                                />
-                                                                            </Col>
-                                                                            <Col span={4} style={{ width: '100%' }}>
-                                                                                <Button disabled={productAmountControlDisabled(item, item.canBeSoldPartially, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, true)}>
-                                                                                    {<IntlMessages id="product.plus" />}
-                                                                                </Button>
-                                                                            </Col>
-                                                                            <Col span={4} style={{ width: '100%' }}>
-                                                                                <Col span={4}>
-                                                                                    {item.unit !== 'TOR' ? <Tag color="blue">
-                                                                                        1 Kutu: {item.m2Box} {item.unit}
-                                                                                    </Tag> : null}
-
-                                                                                </Col>
-                                                                            </Col>
-                                                                        </Row>
-                                                                    </Form.Item>
                                                                 </div>
                                                             </Col>
                                                         </Row>) : (null)
@@ -751,43 +754,8 @@ const PopupProductRelation = (props) => {
                                                                             paddingBottom: '15px',
                                                                         }}
                                                                     >
-                                                                        <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
-                                                                            <Row align="middle">
-                                                                                <Col span={4} align="right">
-                                                                                    <Button type="primary" onClick={event => onRemoveProductCart(item, false)}>
-                                                                                        {<IntlMessages id="product.minus" />}
-                                                                                    </Button>
-                                                                                </Col>
-                                                                                <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
-                                                                                    <Input
-                                                                                        id={'Paletli' + item.itemCode}
-                                                                                        onClick={event => onSelectAll(event)}
-                                                                                        onChange={event => onChange(event, item, false)}
-                                                                                        onBlur={event => onChangeQuantity(event, item)}
-                                                                                        style={{ textAlign: "right" }}
-                                                                                        maxLength={5}
-                                                                                        defaultValue={0}
-                                                                                        step={1}
-                                                                                        value={EntryInputQuantity(item, false)}
-                                                                                    />
-                                                                                </Col>
-                                                                                <Col span={4}>
-                                                                                    <Button disabled={productAmountControlDisabled(item, false, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
-                                                                                        {<IntlMessages id="product.plus" />}
-                                                                                    </Button>
-                                                                                </Col>
-                                                                                <Col span={4} style={{ width: '100%' }}>
-                                                                                    <Col span={4}>
-                                                                                        <Tag color="blue">
-                                                                                            1 Palet: {item.m2Pallet} {item.unit}
-                                                                                        </Tag>
-                                                                                    </Col>
-                                                                                </Col>
-                                                                            </Row>
-                                                                        </Form.Item>
-                                                                    </div>
-                                                                    <br />
-                                                                    <Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
+
+<Form.Item label={item.unit !== 'TOR' ? 'Parçalı Satış (KUTU)' : 'Parçalı Satış(TORBA)'} >
                                                                         <Row align="middle">
                                                                             <Col span={4} align="right">
                                                                                 <Button type="primary" onClick={event => onRemoveProductCart(item, true, true)}>
@@ -822,6 +790,43 @@ const PopupProductRelation = (props) => {
                                                                             </Col>
                                                                         </Row>
                                                                     </Form.Item>
+                                                                        
+                                                                    </div>
+                                                                    <br />
+                                                                    <Form.Item label="Paletli Satış (PALET)" style={{ marginTop: '10px' }}>
+                                                                            <Row align="middle">
+                                                                                <Col span={4} align="right">
+                                                                                    <Button type="primary" onClick={event => onRemoveProductCart(item, false)}>
+                                                                                        {<IntlMessages id="product.minus" />}
+                                                                                    </Button>
+                                                                                </Col>
+                                                                                <Col span={4} align="middle" style={{ marginRight: '2px', marginLeft: '2px' }}>
+                                                                                    <Input
+                                                                                        id={'Paletli' + item.itemCode}
+                                                                                        onClick={event => onSelectAll(event)}
+                                                                                        onChange={event => onChange(event, item, false)}
+                                                                                        onBlur={event => onChangeQuantity(event, item)}
+                                                                                        style={{ textAlign: "right" }}
+                                                                                        maxLength={5}
+                                                                                        defaultValue={0}
+                                                                                        step={1}
+                                                                                        value={EntryInputQuantity(item, false)}
+                                                                                    />
+                                                                                </Col>
+                                                                                <Col span={4}>
+                                                                                    <Button disabled={productAmountControlDisabled(item, false, palletQuantityEntry(item))} type="primary" onClick={event => onAddProductCart(item, true, false)}>
+                                                                                        {<IntlMessages id="product.plus" />}
+                                                                                    </Button>
+                                                                                </Col>
+                                                                                <Col span={4} style={{ width: '100%' }}>
+                                                                                    <Col span={4}>
+                                                                                        <Tag color="blue">
+                                                                                            1 Palet: {item.m2Pallet} {item.unit}
+                                                                                        </Tag>
+                                                                                    </Col>
+                                                                                </Col>
+                                                                            </Row>
+                                                                        </Form.Item>
                                                                 </div>
                                                             </Col>
                                                         </Row>) : (null)
