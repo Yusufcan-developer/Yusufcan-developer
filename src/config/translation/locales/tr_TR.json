@@ -52,6 +52,8 @@
   "forms.button.label_Choose": "Sepete Git",
   "forms.button.exportExcel": "Excel",
   "forms.button.createPeriod": "Dönemsel Tarih Oluştur",
+  "forms.button.selectAll": "Tümünü Seç",
+  "forms.button.unSelectAll": "Seçilenleri Temizle",
   "forms.button.createRule": "Kural Oluştur",
   "forms.button.editingRule": "Kural Düzenle",
   "forms.button.createAddress": "Yeni Adres",

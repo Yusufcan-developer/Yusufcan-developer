@@ -8,7 +8,7 @@ import { CheckboxGroup } from '@iso/components/uielements/checkbox';
 import Radio, { RadioGroup } from '@iso/components/uielements/radio';
 import { InputSearch, } from '@iso/components/uielements/input';
 import Box from "@iso/components/utility/box";
-import { Checkbox, Form, Col, Row, Table, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Space, Select, Comment, Avatar, DatePicker, Tag } from "antd";
+import { Tooltip, Affix, Form, Col, Row, Table, Button, Pagination, Collapse, Spin, Badge, Typography, Input, Tabs, Modal, message, Switch, Space, Select, Comment, Avatar, DatePicker, Tag } from "antd";
 import PopupProductRelation from "../../../src/containers/Products/PopupProductRelation";
 import viewType from '@iso/config/viewType';
 import ReportPagination from "../Reports/ReportPagination";
@@ -41,7 +41,7 @@ import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 
 import {
-  SortAscendingOutlined, ClearOutlined, FormOutlined, CloseOutlined, ExclamationOutlined, UnorderedListOutlined, EyeOutlined
+  SortAscendingOutlined, ClearOutlined, FormOutlined, CloseOutlined, CheckOutlined, UnorderedListOutlined, EyeOutlined, wechat
 } from '@ant-design/icons';
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
@@ -85,7 +85,8 @@ const SearchComponent = () => {
   const [toDate, setToDate] = useState(null);
   const [demandChecked, setDemandChecked] =useState(false);
   const [orderChecked, setOrderChecked] =useState(false);
-
+  const [itemStatus, setItemStatus]=useState();
+  const [selectedItemCount, setSelectedItemCount]=useState(0);
   const { RangePicker } = DatePicker;
 
   const [selectedItem, setSelectedItem] = useState();
@@ -145,6 +146,7 @@ const SearchComponent = () => {
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
     setCurrentPage(pageIndex);
+
     if (typeof category === 'undefined') {
       setOnChangeFilter(true);
       setOnChangeDimensionsFilter(true);
@@ -546,6 +548,7 @@ const SearchComponent = () => {
     setOnChangeColorFilter(true);
     setOnChangeSurfaceFilter(true);
     setOnChangeProductProductionFilter(true);
+    localStorage.removeItem('itemCodes');
 
     return setOnChange(true);
   };
@@ -576,9 +579,9 @@ const SearchComponent = () => {
     setOnChangeSerieFilter(true);
     setOnChangeColorFilter(true);
     setOnChangeSurfaceFilter(true);
+    localStorage.removeItem('itemCodes');
+
     return setOnChange(true);
-
-
   };
   //Dimension Filter Event
   function onChangeDimension(checkedDimensionValue) {
@@ -598,6 +601,7 @@ const SearchComponent = () => {
     setOnChangeColorFilter(true);
     setOnChangeSurfaceFilter(true);
     setOnChangeProductProductionFilter(true);
+    localStorage.removeItem('itemCodes');
 
     return setOnChange(true);
   };
@@ -619,6 +623,7 @@ const SearchComponent = () => {
     setOnChangeColorFilter(true);
     setOnChangeSurfaceFilter(true);
     setOnChangeProductProductionFilter(true);
+    localStorage.removeItem('itemCodes');
 
     return setOnChange(true);
   };
@@ -643,6 +648,7 @@ const SearchComponent = () => {
     setOnChangeSerieFilter(true);
     setOnChangeSurfaceFilter(true);
     setOnChangeProductProductionFilter(true);
+    localStorage.removeItem('itemCodes');
 
     return setOnChange(true);
   }
@@ -667,7 +673,8 @@ const SearchComponent = () => {
     setOnChangeSerieFilter(true);
     setOnChangeColorFilter(true);
     setOnChangeProductProductionFilter(true);
-
+    localStorage.removeItem('itemCodes');
+    
     return setOnChange(true);
   }
 
@@ -735,6 +742,7 @@ const SearchComponent = () => {
     setOnChangeSurfaceFilter(true);
     setOnChangeProductProductionFilter(true);
     setSelectedRuleObject();
+    localStorage.removeItem('itemCodes');
     return setOnChange(true);
   }
 
@@ -777,7 +785,7 @@ const SearchComponent = () => {
     setToDate(null);
     setOrderChecked(false);
     setDemandChecked(false);
-
+    localStorage.removeItem('itemCodes');
   };
 
   //Query Modal popup
@@ -787,16 +795,17 @@ const SearchComponent = () => {
 
   //Kural ekleme işlemi
   async function handleOk() {
-    debugger
     if((orderChecked===true)&&(typeof dealerOrderLimit==='undefined')){return message.warning('Cari sipariş limiti tanımlıysa miktar girilmelidir.')}
     if((demandChecked===true)&&(typeof dealerDemandLimit==='undefined')){return message.warning('Cari talep limiti tanımlıysa miktar girilmelidir.')}
 
     if((dealerOrderLimit>0)&&(fromDate===null)&&(ruleType=== enumerations.RuleType.SalableBalance)){message.warning('Cari sipariş limiti tanımlıysa tarih aralığı da girilmelidir.')}
     else{
-    if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined'))  {      //Yeni bir kural objesi tanımlanıyor.
+    if ((typeof capacity !== 'undefined') && (!isNaN(capacity)) && (typeof ruleName !== 'undefined'))  { //Yeni bir kural objesi tanımlanıyor.
+      let itemCodes = localStorage.getItem('itemCodes');
+      if (itemCodes !== null) { itemCodes = JSON.parse(itemCodes) } else { itemCodes = [] }
       const query = {
         "keyword": keyword,
-        "productionStatus": productProduction,
+        // "productionStatus": productProduction,
         "qualities": quality,
         "salesStatus": salesStatus,
         "onlyHavingCampaigns": campaign,
@@ -806,8 +815,10 @@ const SearchComponent = () => {
         "colors": color,
         "dimensions": dimension,
         "balanceLevel": stockStatus,
-        "categories": category === undefined ? color : [category], "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'admin'
+        "categories": category === undefined ? color : [category], "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'admin',      
+        "itemCodes": itemCodes,
       }
+      debugger
       const rule = {
         "ruleNo": ruleNo,
         "name": ruleName, "description": description, "status": ruleStatus, "priority": parseInt(priority), "capacity": parseFloat(capacity),
@@ -978,7 +989,21 @@ const SearchComponent = () => {
     setRuleName(item.name);
     setSelectedItem(item);
     setOnChange(true);
+    let itemCodes = localStorage.getItem('itemCodes');
+    if (itemCodes !== null) { itemCodes = JSON.parse(itemCodes) } else { itemCodes = [] }
+    if (typeof rule.itemCodes !== 'undefined') {
+      //Tüm ürünler seçilecek
+      rule.itemCodes.forEach(item => {
+        const findItem = _.find(itemCodes, function (num) { return num === item; });
+        if ((findItem === null) || (typeof findItem === 'undefined')) {
+          itemCodes.push(item);
+        }
+      });
 
+      localStorage.setItem('itemCodes', JSON.stringify(itemCodes));
+      setItemStatus(itemCodes);
+      setSelectedItemCount(itemCodes.length);
+    }
   }
   function selectedRuleEditing(item) {
     setVisible(true);
@@ -1026,7 +1051,7 @@ const SearchComponent = () => {
     setRuleName();
     setRuleNo();
     setPageIndex(1);
-
+    localStorage.removeItem('itemCodes');
     // if (key === enumerations.ProductRelationTypestring.Dependent) { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Dependent, productTypeTitle: 'Bağlı Ürün' }); }
     // else { this.setState({ productRelatedTypeTab: enumerations.ProductRelationTypestring.Related, productTypeTitle: 'İlgili Ürün' }); }
     // this.formRef.current.resetFields();
@@ -1128,6 +1153,27 @@ const SearchComponent = () => {
       setFromDate(null);
       setToDate(null)
     }
+  }
+  function unSelectItems() {
+    localStorage.removeItem('itemCodes');
+    setItemStatus([]);
+    setSelectedItemCount(0);
+  }
+  function itemAllStatusChange() {
+    let itemCodes = localStorage.getItem('itemCodes');
+    if (itemCodes !== null) { itemCodes = JSON.parse(itemCodes) } else { itemCodes = [] }
+      //Tüm ürünler seçilecek
+      data.forEach(item => {
+        const findItem = _.find(itemCodes, function (num) { return num === item.itemCode; });
+        if ((findItem === null) || (typeof findItem === 'undefined')) {
+          itemCodes.push(item.itemCode);
+        }
+      });
+
+    localStorage.setItem('itemCodes', JSON.stringify(itemCodes));
+    setItemStatus(itemCodes);
+    setSelectedItemCount(itemCodes.length);
+
   }
   //Rule Columns
   let columns = [
@@ -1288,11 +1334,39 @@ const SearchComponent = () => {
     },
   ];
 
+  function getSelectedItemCodeStatus(itemCode) {
+    let itemCodes = localStorage.getItem('itemCodes');
+    itemCodes = JSON.parse(itemCodes);
+    if ((itemCodes === null) || (typeof itemCodes === 'undefined')) { return false; }
+    const item = _.find(itemCodes, function(num){ return num ===itemCode; });
+    if ((item !== null) && (typeof item !== 'undefined')) { return true; }
+    return false;
+  }
+  function onChangeRuleItemCode(checked, e) {
+    const itemCode = e.currentTarget.id;
+    let itemCodes = localStorage.getItem('itemCodes');
+    if (itemCodes !== null) { itemCodes = JSON.parse(itemCodes) } else { itemCodes = [] }
+    if (typeof itemCode !== 'undefined') {
+      if (checked) {
+        itemCodes.push(itemCode);
+      }
+      else {
+        itemCodes = _.without(itemCodes, itemCode);
+      }
+      localStorage.setItem('itemCodes', JSON.stringify(itemCodes));
+      setItemStatus(itemCodes);
+      setSelectedItemCount(itemCodes.length);
+    }
+    else {
+      message.warning('Ürün kodu alınamıyor');
+    }
+  }
+  
   const view = viewType('Reports');
   const filterView = viewType('Filter');
   return (
     <React.Fragment>
-
+ 
       <Tabs activeKey={activeTabKey} onChange={event => callback()} >
         <TabPane tab={<TabTitle name="Kural Listesi" value="0" />} key="0" >
           <LayoutWrapper>
@@ -1354,7 +1428,7 @@ const SearchComponent = () => {
                 </Panel>
               </Collapse>
             </Box>
-            <Box >
+            <Box >          
               <ReportPagination
                 onShowSizeChange={onShowSizeChange}
                 onChange={currentPageChange}
@@ -1363,6 +1437,7 @@ const SearchComponent = () => {
                 current={pageIndex}
                 position="top"
               />
+             
               <Table
                 columns={columns}
                 dataSource={ruleData}
@@ -1373,6 +1448,8 @@ const SearchComponent = () => {
               //   onClick: () => (selectedRule(record))
               // })}
               />
+             
+             
               <ReportPagination
                 onShowSizeChange={onShowSizeChange}
                 onChange={currentPageChange}
@@ -1383,8 +1460,33 @@ const SearchComponent = () => {
               />
             </Box>
           </LayoutWrapper>
+         
         </TabPane>
         <TabPane disabled={createRuleTabDisabled} tab={<TabTitle name="Kural Detayı" value="1" />} key="1">
+        {typeof ruleName !== 'undefined' ? <h3 className="isoSectionTitle">{ruleNo + ' ' + ruleName}</h3> : ''}
+        <React.Fragment>
+            {/* <Affix offsetTop={120} onChange={affixed => console.log(affixed)}>
+            
+              </Affix>  */}
+              <Affix style={{position:'fixed',bottom:20,right:20, zIndex:1000 }}>
+              <Space direction="vertical" style={{zIndex:1000}} >
+              <Tooltip placement="top" title={"Sayfadakilerin Tümünü Seç"} color={'#097969'}>
+                <Button style={{height:'50px', width:'50px', backgroundColor:'green'}} shape="circle" onClick={event => itemAllStatusChange(event)}
+                  icon={<CheckOutlined style={{color:'white'}}  />} >
+                  {/* {< IntlMessages id="forms.button.selectAll" />} */}
+                </Button>
+              </Tooltip>
+                {selectedItemCount > 0 && <span style={{position:'fixed',bottom:25,right:80, zIndex:1000, color: "dodgerblue", fontSize:'15px' }}> {selectedItemCount} adet seçildi</span>}
+              <Tooltip placement="bottom" title={"Tümünü Temizle"} color={'red'}>
+            <Button style={{height:'50px', width:'50px',  backgroundColor:'red'}} shape="circle"  onClick={event => unSelectItems()}                
+                  icon={ <ClearOutlined style={{color:'white'}} />} >
+                  {/* {< IntlMessages id="forms.button.unSelectAll" />} */}
+                </Button>
+              </Tooltip>
+              </Space>
+</Affix>   
+    
+              </React.Fragment>
           <AlgoliaSearchPageWrapper className={`${className} isoAlgoliaSearchPage`}>
             {newView === 'MobileView' || newView === 'TabletView' ? <React.Fragment> {state.collapsed === true ? <Button style={{ marginBottom: !state.collapsed ? '-20px' : '0px' }}
               className="ant-btn-primary isoAlgoliaSidebarToggle"
@@ -1404,12 +1506,11 @@ const SearchComponent = () => {
                   </Button> : null
                 }
               </Col></React.Fragment> : null}
-
+          
             <div className="isoAlgoliaMainWrapper">
               <SidebarWrapper className="isoAlgoliaRuleSidebar">
                 {newView === 'MobileView' ?
-                  <Col>
-                    {typeof ruleName !== 'undefined' ? <h3 className="isoSectionTitle">{ruleNo + ' ' + ruleName}</h3> : ''}
+                  <Col>                    
                     <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler <SortAscendingOutlined /></Button>
                     <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                     <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
@@ -1585,7 +1686,6 @@ const SearchComponent = () => {
                 >{<IntlMessages id="filter.clear" />}
                 </Button>
               </SidebarWrapper>
-
               <ContentHolder>
                 <Col span={typeof ruleNo !== 'undefined' ? 24 : 24} align="right" >
                   <Button type="primary" size="small" style={{ marginBottom: '5px' }} onClick={event => createRule(selectedItem)}
@@ -1593,11 +1693,11 @@ const SearchComponent = () => {
                     {ruleEditing && ruleEditing === true ?
                       < IntlMessages id="forms.button.editingRule" /> : < IntlMessages id="forms.button.createRule" />}
                   </Button>
+                   
                 </Col>
                 <Row style={{ marginBottom: '10px' }}>
                   {newView === 'MobileView' ?
                     null : <Col span={16}>
-                      {typeof ruleName !== 'undefined' ? <h3 className="isoSectionTitle">{ruleNo + ' ' + ruleName}</h3> : ''}
                       <Button type={itemRefButtonType} onClick={event => itemRefSorting()}>En yeniler<SortAscendingOutlined /></Button>
                       <Button type={listPriceLowestButtonType} onClick={event => listPriceLowestSorting()}>En düşük fiyat <SortAscendingOutlined /></Button>
                       <Button type={listPriceHighestButtonType} onClick={event => listPriceHighestSorting()}>En yüksek fiyat <SortAscendingOutlined /></Button>
@@ -1610,9 +1710,9 @@ const SearchComponent = () => {
                     </Col>}
                 </Row>
                 <Box>
-
+               
                   <Spin spinning={loading}>
-                    <Row gutter={[24, 16]}>
+                    <Row gutter={[24, 16]}>                   
                       {data.map((item, i) => (
                         <SingleCardWrapper className={listClass} style={style} xs={{ span: 12 }} sm={{ span: 12 }} lg={{ span: 12 }} >
                           {item.canBeSoldPartially === true && searchSiteMode !== enumerations.SiteMode.DeliverysPoint ? (
@@ -1666,6 +1766,11 @@ const SearchComponent = () => {
                                 {item.descriptionExtra}
                               </Col>
                             </span>
+                          <Row justify="center" align="bottom" style={{ minHeight: '20px' }}>
+                            <Col span={20} align="middle">
+                            <Switch id={item.itemCode} checked={getSelectedItemCodeStatus(item.itemCode)} checkedChildren="Seçildi" unCheckedChildren="Seçilmedi" onChange={onChangeRuleItemCode}></Switch>
+                            </Col>
+                          </Row>
                           </div>
                         </SingleCardWrapper>
                       ))}
@@ -1683,7 +1788,9 @@ const SearchComponent = () => {
               </ContentHolder>
             </div>
           </AlgoliaSearchPageWrapper>
+        
         </TabPane>
+        
       </Tabs>
       <Modal
         width={800}

@@ -80,7 +80,6 @@ const ProductDetail = () => {
   const [warehouseDataList] = useGetWarehouseData(`${siteConfig.api.warehouse}${productId}?siteMode=${searchSiteMode}`);
   document.title = "Ürün - " + description + " - Seramiksan B2B";
   const userToken = jwtDecode(localStorage.getItem("id_token"));
-debugger
 
   useEffect(() => {
     postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.ProductDetail.browse);

@@ -117,7 +117,6 @@ export default function Sidebar() {
     color: siteMode !== enumerations.SiteMode.DeliverysPoint ? 'black' : '#black',
   };
 
-  debugger
   //SidebarMenu Desing
   if (token.urole === 'admin') {
     newColumn = options.sideBarMenu.Admin;

@@ -66,7 +66,6 @@ function useProductData(url, reqBody, categorie, searchUrl) {
     }
     if (categorie === undefined) {
       if (reqBody.keyword !== undefined) {
-        debugger
         setLoading(true);
         fetchUrl();
       }
