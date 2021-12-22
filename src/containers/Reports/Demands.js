@@ -83,6 +83,7 @@ export default function () {
     const [demandStatus, setDemandStatus] = useState(enumerations.DemandStatus.Pending);
     const [selectedProductCategory, setSelectedProductCategory] = useState();
     const [selectedProductSeries, setSelectedProductSeries] = useState();
+    const [selectedProductType, setSelectedProductType] = useState();
     const [selectedDimensions, setSelectedDimensions] = useState();
     const [searchSiteMode, setSearchSitemode] = useState(getSiteMode());
     const [selectedItemsId, setSelectedItemsId] = useState([]);
@@ -122,6 +123,8 @@ export default function () {
     const productCategory = [];
     const productSeriesChildren = [];
     const productDimensionsChildren = [];
+    const productTypesChildren = [];
+
     const style = {
         height: 40,
         width: 40,
@@ -137,7 +140,7 @@ export default function () {
         setCurrentPage(pageIndex);
         getVariablesFromUrl();
         const token = jwtDecode(localStorage.getItem("id_token"));
-        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
+        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) {
             getAdress(token.dcode);
         }
     }, [pageIndex]);
@@ -186,6 +189,12 @@ export default function () {
         productDimensionsChildren.push(<Option key={dimensionData[i]}>{dimensionData[i]}</Option>);
     }
 
+    //Post Type
+    const [typeData, loadingTypesFilter, setOnChangeTypesFilter] = usePostFilter(`${siteConfig.api.lookup.postProductTypes}`, { "categories": selectedProductCategory, "siteMode": "Admin" });
+    for (let i = 0; i < typeData.length; i++) {
+        productTypesChildren.push(<Option key={typeData[i]}>{typeData[i]}</Option>);
+    }
+
     //Url'i çözümleme işlemi
     function getVariablesFromUrl() {
         //Url değerini alıyoruz.
@@ -203,7 +212,8 @@ export default function () {
             if (Array.isArray(parsed.pg)) {
                 setSelectedProductCategory([parsed.pg]);
                 setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true);
-            } else { setSelectedProductCategory([parsed.pg]); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); }
+                setOnChangeTypesFilter(true);
+            } else { setSelectedProductCategory([parsed.pg]); setOnChangeDimensionsFilter(true); setOnChangeSerieFilter(true); setOnChangeTypesFilter(true); }
         }
         if (typeof parsed.onlyActive !== 'undefined') { setOnlyActive(parsed.onlyActive); }
         if (typeof parsed.smode !== 'undefined') { setSiteMode(parsed.smode); }
@@ -235,6 +245,24 @@ export default function () {
         }
         setAddress(getAddress);
 
+        //Type get url data
+        if (typeof parsed.type !== 'undefined') {
+            let typeNewArray
+            if (parsed.type)
+                if (Array.isArray(parsed.type)) {
+                    typeNewArray = _.map(parsed.type.map(e => e === 'null' || e === '' ? null : e));
+                } else {
+                    typeNewArray = _.map([parsed.type].map(e => e === 'null' || e === '' ? null : e));
+                }
+            const nullOrBlankData = _.filter(typeNewArray, function (Item) {
+                if (Item === null || Item === '') {
+                    return true;
+                }
+            });
+            if (nullOrBlankData.length > 0) { typeNewArray.push(''); }
+
+            setSelectedProductType(typeNewArray);
+        }
 
         //Dimension get url data
         if (typeof parsed.dm !== 'undefined') {
@@ -326,7 +354,7 @@ export default function () {
 
     //Get adress
     async function getAdress(dealerCodes) {
-        //Get User Info  
+        //Get User Info
         const requestOptions = {
             method: "GET",
             headers: {
@@ -378,6 +406,7 @@ export default function () {
         params.delete('status');
         params.delete('amount');
         params.delete('onlyActive');
+        params.delete('type');
         setOnlyActive();
         if ((fromDate !== '' & toDate !== '') && (fromDate !== null & toDate !== null)) {
             params.append('from', moment(moment(fromDate, "DD/MM/YYYY")).format("YYYY-MM-DD")); params.toString();
@@ -392,7 +421,15 @@ export default function () {
                 }
             })
         }
-
+        if (selectedProductType && selectedProductType.length > 0) {
+            selectedProductType.forEach(item => {
+                if (item === siteConfig.nullOrEmptySearchItem) { params.append('type', null); }
+                else {
+                    params.append('type', item);
+                    params.toString();
+                }
+            })
+        }
         _.forEach(address, (item) => {
             params.append('address', item); params.toString();
         });
@@ -554,6 +591,10 @@ export default function () {
             setToDate(moment(new Date()));
         }
     }
+    //Product Type handle change
+    function productTypeHandleChange(value) {
+        setSelectedProductType(value);
+    }
 
     //Product Dimension handle change
     function productDimensionsHandleChange(value) {
@@ -570,6 +611,7 @@ export default function () {
         if (typeof value !== 'undefined') { setSelectedProductCategory([value]); } else { setSelectedProductCategory(); }
         setOnChangeSerieFilter(true);
         setOnChangeDimensionsFilter(true);
+        setOnChangeTypesFilter(true);
     }
 
     //Status handle change
@@ -583,7 +625,7 @@ export default function () {
         setPrivateDate(null);
     }
 
-    //Select Component Rol değiştirme 
+    //Select Component Rol değiştirme
     function addressHandleChange(value) {
         setAddress(value);
     }
@@ -739,7 +781,7 @@ export default function () {
             else if (token.urole === 'director') {
 
             }
-            else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
+            else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) {
                 if (item.status === 'Pending') {
                     switch (transactionKey) {
                         case 'Duzenle':
@@ -791,7 +833,7 @@ export default function () {
     function permissionCheck(status, item) {
         const token = jwtDecode(localStorage.getItem("id_token"));
         if (token.urole === 'admin') { return false; }
-        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
+        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) {
             if ((status === 'Cancelled') || (status === 'Rejected') || (status === 'Approved') && (typeof item.orderNo !== 'undefined')) { return true; }
             return false;
         }
@@ -920,7 +962,7 @@ export default function () {
 
     //Table üzerinde bulunan işlemler menüsü (Düzenle,Yeni parola,Sil)
     const menu = (item) => (
-        <Menu onClick={_.debounce (e => {handleMenuClick(e)  }, 1000)} loading={demandToOrderConfirmLoading}>
+        <Menu onClick={_.debounce(e => { handleMenuClick(e) }, 1000)} loading={demandToOrderConfirmLoading}>
             {transactionsItemDisabled(item, "Duzenle") === false ? <Menu.Item key="Duzenle">Düzenle</Menu.Item> : null}
             {transactionsItemDisabled(item, "SiparisOlustur") === false ? <Menu.Item key="SiparisOlustur">Sipariş Oluştur</Menu.Item> : null}
             {/* {transactionsItemDisabled(item, "TalepSil") === false ? <Menu.Item key="TalepSil">Talep Sil</Menu.Item> : null} */}
@@ -1291,7 +1333,7 @@ export default function () {
         setDescription(e.target.value);
     }
 
-    // '.' at the end or only '-' in the input box.   
+    // '.' at the end or only '-' in the input box.
     function onChangeAmount(e) {
         const { value } = e.target;
         const reg = /^-?\d*(\.\d*)?$/;
@@ -1327,7 +1369,7 @@ export default function () {
         else if ((token.urole === 'regionmanager') && (statusModal === 'Approved')) {
             return true;
         }
-        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
+        else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) {
             return false;
         }
     }
@@ -1336,7 +1378,7 @@ export default function () {
 
         const token = jwtDecode(localStorage.getItem("id_token"));
 
-        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
+        if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) {
             switch (type) {
                 case 'Approved':
                     return true;
@@ -1531,7 +1573,7 @@ export default function () {
             }
         }
     }
-    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) {
+    else if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) {
         const getHideColumns = ColumnOptionsConfig.CustomerRecordTableHideColumns.Dealer;
         if (getHideColumns.length > 0) {
             for (let index = 0; index < getHideColumns.length; index++) {
@@ -1564,15 +1606,16 @@ export default function () {
                                 <Col span={6}>
                                     <FormItem label={<IntlMessages id="page.dealerCodeTitle" />}></FormItem>
                                 </Col>
-                                <Col span={6} >
-                                    <FormItem label={<IntlMessages id="page.status" />}></FormItem>
-                                </Col>
+
                                 <Col span={6} >
                                     <FormItem label={<IntlMessages id="page.productGroup" />}></FormItem>
                                 </Col>
                                 <Col span={view !== 'MobileView' ? 6 : 0} >
                                     <FormItem label={<IntlMessages id="page.series" />}></FormItem>
                                 </Col>
+                                <Col span={view !== 'MobileView' ? 6 : 0} >
+                            <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
+                            </Col>
                             </Row>
                             : null}
                         <Row>
@@ -1592,18 +1635,6 @@ export default function () {
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
-                                    mode="multiple"
-                                    placeholder="Talep durumu seçiniz"
-                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
-                                    onChange={statusHandleChange}
-                                    optionFilterProp="children"
-                                    value={demandStatus}
-                                >
-                                    {searchStatusChildren}
-                                </Select>
-                            </Col>
-                            <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
-                                <Select
                                     allowClear
                                     showSearch
                                     placeholder="Ürün grubu seçiniz"
@@ -1615,6 +1646,7 @@ export default function () {
                                     {productCategory}
                                 </Select>
                             </Col>
+
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>                            <Select
                                 showSearch
                                 mode="multiple"
@@ -1627,11 +1659,11 @@ export default function () {
                                 {productSeriesChildren}
                             </Select>
                             </Col>
-
+                            <Input size="small" placeholder="Ürün Adı, Talep No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
                         </Row>
                         <Row>
-                            <Col span={view !== 'MobileView' ? 6 : 0} >
-                                <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+                            <Col span={6} >
+                                <FormItem label={<IntlMessages id="page.status" />}></FormItem>
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} >
                                 <FormItem label={<IntlMessages id="page.dateRangeTitle" />}></FormItem>
@@ -1648,6 +1680,19 @@ export default function () {
                         <Row>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Select
+                                    mode="multiple"
+                                    placeholder="Talep durumu seçiniz"
+                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                    onChange={statusHandleChange}
+                                    optionFilterProp="children"
+                                    value={demandStatus}
+                                >
+                                    {searchStatusChildren}
+                                </Select>
+                                {<Col span={view !== 'MobileView' ? 6 : 0} >
+                                    <FormItem label={<IntlMessages id="page.addressTitle" />}></FormItem>
+                                </Col>}
+                                {<Select
                                     mode={"multiple"}
                                     style={{ width: '100%' }}
                                     placeholder="Sevk Adresi Seçiniz"
@@ -1660,7 +1705,7 @@ export default function () {
                                     }
                                 >
                                     {lookupAddressChildren}
-                                </Select>
+                                </Select>}
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
                                 <Radio.Group onChange={onChangeRadioButton} value={selectedRadioItem} style={view === 'MobileView' ? null : { marginLeft: '-30px' }}>
@@ -1718,8 +1763,18 @@ export default function () {
                                 >
                                     {productDimensionsChildren}
                                 </Select>
-                                <FormItem label={<IntlMessages id="page.keywordTitle" />}></FormItem>
-                                <Input size="small" placeholder="Ürün Adı, Talep No ... giriniz" style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }} value={searchKey} onKeyDown={keyPress} onChange={event => setSearchKey(event.target.value)} />
+                                <FormItem label={<IntlMessages id="filter.productType" />}></FormItem>
+                                <Select
+                                    showSearch
+                                    mode="multiple"
+                                    placeholder="Tip seçiniz"
+                                    style={{ marginBottom: '8px', width: view !== 'MobileView' ? '250px' : '100%' }}
+                                    onChange={productTypeHandleChange}
+                                    optionFilterProp="children"
+                                    value={selectedProductType}
+                                >
+                                    {productTypesChildren}
+                                </Select>
 
                             </Col>
                             <Col span={view !== 'MobileView' ? 6 : 0} md={view !== 'MobileView' ? null : 12} sm={view !== 'MobileView' ? null : 12} xs={view !== 'MobileView' ? null : 24}>
@@ -1743,8 +1798,8 @@ export default function () {
                     </Spin></div>
                 {hasSelected ?
                     <Col span={8} offset={16} align="right" >
-                        {token.urole === 'admin' || ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) ?
-                            <Button style={{ paddingLeft: '10px' }} onClick={_.throttle (e => {multiplePostSaveOrder()  }, 1000, { leading: false })}>
+                        {token.urole === 'admin' || ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) ?
+                            <Button style={{ paddingLeft: '10px' }} onClick={_.throttle(e => { multiplePostSaveOrder() }, 1000, { leading: false })}>
                                 Sipariş Oluştur    <CheckOutlined />
                             </Button> : null}
                         <Popconfirms
