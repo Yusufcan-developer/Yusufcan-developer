@@ -1040,7 +1040,22 @@ const SearchComponent = () => {
       setDealerOrderLimit(item.dealerOrderLimit);
     }
     setRuleType(item.ruleType);
+    
+    let itemCodes = localStorage.getItem('itemCodes');
+    if (itemCodes !== null) { itemCodes = JSON.parse(itemCodes) } else { itemCodes = [] }
+    if (typeof rule.itemCodes !== 'undefined') {
+      //Tüm ürünler seçilecek
+      rule.itemCodes.forEach(item => {
+        const findItem = _.find(itemCodes, function (num) { return num === item; });
+        if ((findItem === null) || (typeof findItem === 'undefined')) {
+          itemCodes.push(item);
+        }
+      });
 
+      localStorage.setItem('itemCodes', JSON.stringify(itemCodes));
+      setItemStatus(itemCodes);
+      setSelectedItemCount(itemCodes.length);
+    }
 
   }
   function callback(key) {
