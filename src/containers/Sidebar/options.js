@@ -581,6 +581,11 @@ export default {
             leftIcon: "ion-android-mail"
           },
           {
+            key: 'plan/distribution',
+            label: 'sidebar.planDistributions',
+            leftIcon: 'ion-android-mail',
+          },
+          {
             key: 'reports/distributions',
             label: 'sidebar.distributions',
             leftIcon: 'ion-android-mail',
