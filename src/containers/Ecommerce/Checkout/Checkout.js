@@ -977,7 +977,7 @@ export default function () {
       <LayoutWrapper className="isoCheckoutPage">
         <Box>
           <div style={{ textAlign: 'center', borderRadius: '4px' }}>
-            <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={dataLoading}
+            <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={confirmLoading}
             >
             </Spin></div>
           <div className="isoBillingAddressWrapper">
