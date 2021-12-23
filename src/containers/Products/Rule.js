@@ -41,7 +41,7 @@ import AlgoliaSearchPageWrapper from './Algolia.styles';
 import { SingleCardWrapper } from './Shuffle.styles';
 
 import {
-  SortAscendingOutlined, ClearOutlined, FormOutlined, CloseOutlined, CheckOutlined, UnorderedListOutlined, EyeOutlined, wechat
+  SortAscendingOutlined, ClearOutlined, FormOutlined, CloseOutlined, CheckOutlined, UnorderedListOutlined, EyeOutlined, InfoCircleOutlined
 } from '@ant-design/icons';
 var jwtDecode = require('jwt-decode');
 const { Panel } = Collapse;
@@ -160,12 +160,11 @@ const SearchComponent = () => {
   const parsed = queryString.parse(location.search);
   //Hook ProductList
   const [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange] =
-    useProductData(`${siteConfig.api.products.postProducts}`, typeof selectedruleObject === 'undefined' ? { "keyword": keyword, "qualities": quality, "productionStatus": productProduction, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin' } : selectedruleObject, category);
-
+    useProductData(`${siteConfig.api.products.postProducts}`, typeof selectedruleObject === 'undefined' ? { "keyword": keyword, "qualities": quality, "productionStatus": productProduction, "salesStatus": salesStatus, "onlyHavingCampaigns": campaign, "series": series, "types": type, "surfaces": surface, "colors": color, "dimensions": dimension, "balanceLevel": stockStatus, "categories": category === undefined ? color : [category], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": 'Admin', "includeRuleDetails":true } : selectedruleObject, category);
   //Kurallar Listesi
   const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
     useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "types": filterType ? filterType : [ruleType], "status": filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
-
+    
   let searchUrl = queryString.parse(location.search);
 
   //Status
@@ -1040,7 +1039,7 @@ const SearchComponent = () => {
       setDealerOrderLimit(item.dealerOrderLimit);
     }
     setRuleType(item.ruleType);
-    
+
     let itemCodes = localStorage.getItem('itemCodes');
     if (itemCodes !== null) { itemCodes = JSON.parse(itemCodes) } else { itemCodes = [] }
     if (typeof rule.itemCodes !== 'undefined') {
@@ -1780,6 +1779,19 @@ const SearchComponent = () => {
                                 {item.descriptionExtra}
                               </Col>
                             </span>
+                              {typeof item.activeRule === 'undefined' ?
+                                <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '30px' }}>
+
+                                  <Tooltip trigger={["click", "hover"]} title={
+                                    <div>
+                                      Kural Id: {item.activeRuleId}<br />
+                                    </div>} color={"#108ee9"}>
+                                    <Button type='link' size="small"
+                                      icon={<InfoCircleOutlined />} >
+                                    </Button>
+                                  </Tooltip>
+                                </div>
+                                : null}
                           <Row justify="center" align="bottom" style={{ minHeight: '20px' }}>
                             <Col span={20} align="middle">
                             <Switch id={item.itemCode} checked={getSelectedItemCodeStatus(item.itemCode)} checkedChildren="Seçildi" unCheckedChildren="Seçilmedi" onChange={onChangeRuleItemCode}></Switch>
