@@ -164,7 +164,7 @@ const SearchComponent = () => {
   //Kurallar Listesi
   const [ruleData, ruleLoading, rulecurrentPage, rulesetCurrentPage, rulechangePageSize, rulesetChangePageSize, ruleTotalDataCount, ruleSetOnChange] =
     useProductData(`${siteConfig.api.report.rules}`, typeof selectedruleObject === 'undefined' ? { "keyword": ruleSearchKey, "types": filterType ? filterType : [ruleType], "status": filterStatus ? filterStatus : [ruleStatus], "pageIndex": pageIndex - 1, "pageCount": pageSize, "sortingField": sortingField, "sortingOrder": sortingOrder, "siteMode": searchSiteMode } : selectedruleObject, category);
-    
+
   let searchUrl = queryString.parse(location.search);
 
   //Status
@@ -1779,13 +1779,13 @@ const SearchComponent = () => {
                                 {item.descriptionExtra}
                               </Col>
                             </span>
-                              {typeof item.activeRule === 'undefined' ?
+                              {typeof item.activeRule !== 'undefined' ?
                                 <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '30px' }}>
 
                                   <Tooltip trigger={["click", "hover"]} title={
                                     <div>
-                                      Kural Id: {item.activeRuleId}<br />
-                                    </div>} color={"#108ee9"}>
+                                      <ReactJson src={item.activeRule} />
+                                    </div>} color={"#C5C5C5"}>
                                     <Button type='link' size="small"
                                       icon={<InfoCircleOutlined />} >
                                     </Button>
