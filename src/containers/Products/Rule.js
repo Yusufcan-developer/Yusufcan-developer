@@ -80,6 +80,9 @@ const SearchComponent = () => {
   const [selectedruleObjectText, setSelectedRuleObjectText] = useState();
   const [queryText, setQueryText] = useState();
   const [queryPreview, setQueryPreview] = useState(false);
+  const [ruleDataQueryPreview, setRuleDataQueryPreview] = useState(false);
+  const [ruleDataQueryText, setRuleDataQueryText] = useState();
+
   const [createRuleTabDisabled, setCreateRuleTabDisable] = useState(true);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
@@ -790,6 +793,7 @@ const SearchComponent = () => {
   //Query Modal popup
   function queryPreviewModalCancel() {
     setQueryPreview(false);
+    setRuleDataQueryPreview(false);
   }
 
   //Kural ekleme işlemi
@@ -1071,6 +1075,10 @@ const SearchComponent = () => {
     // this.formRef.current.setFieldsValue({ product: this.state.productCode })
   }
 
+  function showRuleDetailModal(text) {
+    setRuleDataQueryText(text)
+    setRuleDataQueryPreview(true);
+  }
   //Kriter Görüntüleme işlemleri
   function queryShowText(text) {
     setQueryPreview(true);
@@ -1780,16 +1788,10 @@ const SearchComponent = () => {
                               </Col>
                             </span>
                               {typeof item.activeRule !== 'undefined' ?
-                                <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '30px' }}>
-
-                                  <Tooltip trigger={["click", "hover"]} title={
-                                    <div>
-                                      <ReactJson src={item.activeRule} />
-                                    </div>} color={"#C5C5C5"}>
-                                    <Button type='link' size="small"
-                                      icon={<InfoCircleOutlined />} >
+                                <div className="isoCardTitle" style={{ textAlign: 'center', minHeight: '30px' }}>                                  
+                                    <Button type='link' size="small" onClick={event => showRuleDetailModal(item.activeRule)}
+                                      icon={<InfoCircleOutlined  />  } >
                                     </Button>
-                                  </Tooltip>
                                 </div>
                                 : null}
                           <Row justify="center" align="bottom" style={{ minHeight: '20px' }}>
@@ -1989,7 +1991,19 @@ const SearchComponent = () => {
         <ReactJson src={queryText} />
 
       </Modal>
+      <Modal title="Kriterler" visible={ruleDataQueryPreview} onCancel={queryPreviewModalCancel} size='150px' footer={[
+        <Button
+          key="submit"
+          type="primary"
+          loading={loading}
+          onClick={queryPreviewModalCancel}
+        >
+          Tamam
+        </Button>
+      ]}>
+        <ReactJson src={ruleDataQueryText} />
 
+      </Modal>
       <Modal
         visible={deleteRuleVisible}
         title={ruleName + " kuralı silinecektir"}
