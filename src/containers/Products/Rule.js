@@ -117,7 +117,7 @@ const SearchComponent = () => {
   const [description, setDescription] = useState('');
   const [isLocked, setIsLocked] = useState();
   const [ruleStatus, setRuleStatus] = useState(enumerations.RuleStatus.Active);
-  const [filterStatus, setFilterStatus] = useState();
+  const [filterStatus, setFilterStatus] = useState([enumerations.RuleStatus.Active]);
   const [filterType, setFilterType] = useState([]);
   const [priority, setPriority] = useState();
   const [ruleEditing, setRuleEditing] = useState(false);
@@ -1211,7 +1211,7 @@ const SearchComponent = () => {
       dataIndex: "name",
       key: "name",
       style: { font: { sz: "48", bold: true } },
-      width: 150,
+      width: 250,
     },
     {
       title: "Kodu",
@@ -1284,13 +1284,7 @@ const SearchComponent = () => {
       sortDirections: ['descend', 'ascend'],
       render: (orderTo, record) => typeof orderTo !== 'undefined' ? moment(orderTo).format(siteConfig.dateFormat) : '-',
 
-    },
-    {
-      title: "Açıklama",
-      dataIndex: "description",
-      key: "description",
-      width: 200,
-    },
+    },    
     {
       title: "Tip",
       dataIndex: "ruleTypeText",
@@ -1333,6 +1327,12 @@ const SearchComponent = () => {
       ),
       // render: (query) => JSON.stringify(query)
     },
+    // {
+    //   title: "Açıklama",
+    //   dataIndex: "description",
+    //   key: "description",
+    //   width: 200,
+    // },
     {
       dataIndex: 'operation',
       fixed: 'right',
@@ -1991,7 +1991,7 @@ const SearchComponent = () => {
         <ReactJson src={queryText} />
 
       </Modal>
-      <Modal title="Kriterler" visible={ruleDataQueryPreview} onCancel={queryPreviewModalCancel} size='150px' footer={[
+      <Modal title="Ürün Aktif Kural Detayı" visible={ruleDataQueryPreview} onCancel={queryPreviewModalCancel} size='150px' footer={[
         <Button
           key="submit"
           type="primary"
