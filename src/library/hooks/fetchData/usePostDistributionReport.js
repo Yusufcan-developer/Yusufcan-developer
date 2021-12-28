@@ -39,7 +39,6 @@ function usePostDistributionReport(url, reqBody, searchUrl) {
                 return status;
             })
             .then(data => {
-
                 if (data.data !== undefined) {
                     const distributionIdArrayH = [];
                     const value = data.data.slice();
@@ -81,16 +80,10 @@ function usePostDistributionReport(url, reqBody, searchUrl) {
             .catch(setOnChange(false));
     }
     useEffect(() => {
-        if ((reqBody.DealerCodes === undefined) & (reqBody.regionCodes === undefined) & (reqBody.fieldCodes === undefined)) {
-            setLoading(false);
-            setOnChange(false);
-        }
-        else {
             if (!_.isEqual(lastReqBody, searchUrl)) {
                 setLoading(true);
                 fetchUrl();
             } else { setOnChange(false); }
-        }
     }, [currentPage, changePageSize, onChange]);
     return [data, loading, currentPage, setCurrentPage, changePageSize, setChangePageSize, totalDataCount, setOnChange, distributionDetailData, aggregates];
 }

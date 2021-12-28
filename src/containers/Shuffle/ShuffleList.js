@@ -7,7 +7,6 @@ import { Icon, Switch, Card, Avatar, Form, Row, Col, Space,Button } from "antd";
 export default class extends Component {
   render() {
     const listClass = `isoSingleCard card ${this.props.view}`;
-    console.log('xxxx list',listClass)
     const style = { zIndex: 100 - this.props.index };
 
     return (
