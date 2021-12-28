@@ -11,7 +11,7 @@ import Form from "@iso/components/uielements/form";
 import Input from '@iso/components/uielements/input';
 import ProductsTable from './CartTable.styles';
 import { direction } from '@iso/lib/helpers/rtl';
-import { Col, Row, Button, Modal, message } from "antd";
+import { Col, Row, Button, Modal, message, Spin } from "antd";
 import PageHeader from "@iso/components/utility/pageHeader";
 import { postSaveLog } from "@iso/lib/hooks/fetchData/postSaveLog";
 import { productAmountControl, productAmountControlDisabled } from '@iso/lib/helpers/productAmountControl';
@@ -59,6 +59,7 @@ export default function CartTable({ style }) {
   const dispatch = useDispatch();
   const { productQuantity } = useSelector(state => state.Ecommerce);
   const [form] = Form.useForm();
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   async function allCartItemChangeOrderAmount() {
     let sendDatabaseProductList;
@@ -73,7 +74,7 @@ export default function CartTable({ style }) {
     const activeUser = localStorage.getItem("activeUser");
     const siteMode = getSiteMode();
     let account = '';
-    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited')|| (token.urole === 'dealersub')) { account = token.dcode; };
+    if ((token.urole === 'dealersv') || (token.urole === 'dealerwhouse') || (token.urole === 'dealerlimited') || (token.urole === 'dealersub')) { account = token.dcode; };
 
     if (typeof activeUser != 'undefined') { account = activeUser }
     const reqBody = { "items": sendDatabaseProductList, "accountNo": account, "siteMode": siteMode };
@@ -122,6 +123,7 @@ export default function CartTable({ style }) {
   }
   //Get Cart
   async function getCartList() {
+    setConfirmLoading(true);
     let productInfo;
     const requestOptions = {
       method: "GET",
@@ -150,8 +152,9 @@ export default function CartTable({ style }) {
         setTotalVat(data.totalVat);
         setCartChangeItem(false);
         getInitData();
+        setConfirmLoading(false);
       })
-      .catch();
+      .catch(setConfirmLoading(false));
     return productInfo;
   }
   function onChange(e, item, isPartial) {
@@ -212,7 +215,7 @@ export default function CartTable({ style }) {
               <div justify='center' className="isoNoItemMsg">
                 <span> <a href="/products/categories" >
                   Sepete Ürün Eklemek İçin Tıklayınız
-            </a></span>
+                </a></span>
               </div>
             </div>
           </tr>
@@ -497,6 +500,11 @@ export default function CartTable({ style }) {
           {<IntlMessages id="forms.button.cartAllRemove" />}
         </Button>
       </Col>
+
+      <div style={{ textAlign: 'center', borderRadius: '4px' }}>
+        <Spin tip="İşlem uzun sürebilir lütfen bekleyiniz..." spinning={confirmLoading}
+        >
+        </Spin></div>
       <ProductsTable className={`isoCartTable ${classname}`}>
         <table className="sticky-column" style={{ overflow: 'auto' }}>
           <thead>
@@ -561,12 +569,12 @@ export default function CartTable({ style }) {
               <td>
                 <Button onClick={allProductToOrder}>
                   Tümünden Sipariş Oluştur
-              </Button>
+                </Button>
               </td>
               <td>
                 <Button onClick={orderPartial} >
                   Kısmi Sipariş Oluştur
-              </Button>
+                </Button>
               </td>
             </tr>
           </tfoot>

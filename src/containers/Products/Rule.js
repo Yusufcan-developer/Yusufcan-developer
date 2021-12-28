@@ -114,6 +114,9 @@ const SearchComponent = () => {
   const [salesStatus, setSalesStatus] = useState(enumerations.SalesStatus.All);
   const [ruleName, setRuleName] = useState();
   const [ruleNo, setRuleNo] = useState();
+  const [ruleId, setRuleId] = useState();
+  const [ruleTypeText, setRuleTypeText] = useState();
+
   const [description, setDescription] = useState('');
   const [isLocked, setIsLocked] = useState();
   const [ruleStatus, setRuleStatus] = useState(enumerations.RuleStatus.Active);
@@ -147,7 +150,7 @@ const SearchComponent = () => {
   const typeChildren = [];
 
   useEffect(() => {
-    postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Browse, logMessage.Products.browse);
+    postSaveLog(enumerations.LogSource.Rule, enumerations.LogTypes.Browse, logMessage.Products.browse);
     setCurrentPage(pageIndex);
 
     if (typeof category === 'undefined') {
@@ -853,14 +856,14 @@ const SearchComponent = () => {
         if (typeof data !== 'undefined') {
           if (data.isSuccessful === false) {
             message.warning({ content: data.message, duration: 2 });
-            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.error);
+            postSaveLog(enumerations.LogSource.Rule, enumerations.LogTypes.Add, logMessage.Rule.error);
           } else if (data.status === 400) {
             message.warning({ content: data.message, duration: 2 });
-            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.error);
+            postSaveLog(enumerations.LogSource.Rule, enumerations.LogTypes.Add, logMessage.Rule.error);
           }
           else {
             message.success({ content: 'Kural başarılı bir şekilde kayıt edilmiştir ', duration: 2 });
-            postSaveLog(enumerations.LogSource.ReportOrders, enumerations.LogTypes.Add, logMessage.Rule.save);
+            postSaveLog(enumerations.LogSource.Rule, enumerations.LogTypes.Add, logMessage.Rule.save);
             clearParams();
             ruleSetOnChange(true);
             setActiveTabKey('0');
@@ -907,7 +910,9 @@ const SearchComponent = () => {
   //Kural Silme işlemi
   function deleteRuleShowPopup(item) {
     setRuleName(item.name);
-    setRuleNo(item.id)
+    setRuleNo(item.id);
+    setRuleId(item.ruleNo);
+    setRuleTypeText(item.ruleTypeText);
     setDeleteRuleVisible(true);
   }
 
@@ -931,7 +936,7 @@ const SearchComponent = () => {
       })
       .then(data => {
         if (data.isSuccessful === true) {
-          message.info('Kural Silme işlemi başarılıdır.'); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.successDelete); handleCancel(); setRuleDeleteLoading(false);
+          message.info('Kural Silme işlemi başarılıdır.'); postSaveLog(enumerations.LogSource.Rule, enumerations.LogTypes.Delete, 'Kural No '+ruleId+' - '+'Kural Id '+ ruleNo +' - '+'Ürün Grubu '+ ruleName + ' - '+'Kural Adı '+ ruleTypeText   + logMessage.Rule.successDelete); handleCancel(); setRuleDeleteLoading(false);
           setActiveTabKey('0');
           setCreateRuleTabDisable(true);
           setRuleDeleteLoading(false);
@@ -939,10 +944,10 @@ const SearchComponent = () => {
           clearParams();
         }
         else if (data.isSuccessful === false) {
-          message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); setRuleDeleteLoading(false);
+          message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.Rule, enumerations.LogTypes.Delete,'Kural No '+ruleId+' - '+'Kural Id '+ ruleNo +' - '+'Ürün Grubu '+ ruleName + ' - '+'Kural Adı '+ ruleTypeText + logMessage.Rule.delete); setRuleDeleteLoading(false);
         }
         else {
-          message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.General, enumerations.LogTypes.Delete, ruleNo + logMessage.Rule.delete); setRuleDeleteLoading(false);
+          message.error('Kural Silme işlemi başarısızdır. ' + data.message); postSaveLog(enumerations.LogSource.Rule, enumerations.LogTypes.Delete,'Kural No '+ruleId+' - '+'Kural Id '+ ruleNo +' - '+'Ürün Grubu '+ ruleName + ' - '+'Kural Adı '+ ruleTypeText + logMessage.Rule.delete); setRuleDeleteLoading(false);
         }
       })
       .catch();
@@ -1028,6 +1033,8 @@ const SearchComponent = () => {
       setKeyword(rule.keyword);
 
       setSelectedRuleObject();
+      if (item.status === enumerations.RuleStatus.Active) { setIsLocked(false) }
+      else { setIsLocked(true); }
     }
     setRuleNo(item.ruleNo);
     setRuleName(item.name);

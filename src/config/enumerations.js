@@ -81,6 +81,7 @@ export default {
         Order: 'Order',
         ProductPhotos: 'ProductPhotos',
         Address: 'Address',
+        Rule:'Rule',
     },
     NotificationTypes:
     {
