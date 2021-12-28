@@ -85,7 +85,7 @@ export default function TopbarAddtoCart() {
         const status = apiStatusManagement(response, true);
         return status;
       })
-      .then(data => {
+      .then(data => {        
         if (data.isSuccessful === false) { return setQuantity(0) }
         else {
           cartItem = data.items;
@@ -172,10 +172,10 @@ export default function TopbarAddtoCart() {
           productItem = productItem.item;
           return (
             <TopbarCartWrapper className="isoCartItems">
-              {productItem !== null ?
+              {productItem !== null	|| typeof productItem.imageThumbBaseUrl !=='undefined' ?
                 <div className="isoItemImage">
                   <img alt="#" src={productItem.imageThumbBaseUrl + productItem.imageMainFileName} />
-                </div> : null}
+                </div> : 'Bu ürün kaldırılmıştır. Sepetinizden çıkartınız.'}
               <div className="isoCartDetails">
                 {productItem !== null ?
                   <h3>
@@ -186,14 +186,14 @@ export default function TopbarAddtoCart() {
                       </React.Fragment>))}
                   </h3> : <a href="#!">{itemCode + ' ürün logo tarafında silinmiştir. Sistem yöneticinize başvurunuz.'}</a>}
                 <p className="isoItemPriceQuantity">
-                  {productItem !== null ?
+                  {productItem !== null || typeof productItem.listPrice !=='undefined' ?
                     <span>{numberFormat(productItem.listPrice)} TL</span> : null}
                   {productItem !== null ?
                     <span className="itemMultiplier">/</span> : null}
-                  {productItem !== null ?
+                  {productItem !== null || typeof productItem.unit !=='undefined' ?
                     <span className="isoItemQuantity">{productItem.unit}</span> : null}
                   <span className="itemMultiplier"> </span>
-                  {productItem !== null ?
+                  {productItem !== null || typeof product.quantity !=='undefined' ?
                     <span className="isoItemQuantity"> {'('}{product.quantity} {product.isPartial === true ? 'Kutu' : 'Palet'}{')'}</span>
                     : null}
                 </p>
