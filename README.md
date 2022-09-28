@@ -1,4 +1,4 @@
-
+hi, i'm yusufcan, i'm a full stack software developer. I love writing javascript :)
 
 
 ![Github stats 1](https://github-readme-stats.vercel.app/api?username=Yusufcan-developer&show_icons=true&theme=gradient) 
