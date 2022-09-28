@@ -1,4 +1,4 @@
-hi, i'm yusufcan, i'm a full stack software developer. I love writing javascript :)
+### hi, i'm yusufcan, i'm a full stack software developer. I love writing javascript :)
 
 ![Alt Text](https://github.com/Yusufcan-developer/Yusufcan-developer/blob/main/js-java-script.gif)
 
