@@ -1,5 +1,6 @@
 hi, i'm yusufcan, i'm a full stack software developer. I love writing javascript :)
 
+![Alt Text](https://github.com/Yusufcan-developer/Yusufcan-developer/blob/main/js-java-script.gif)
 
 ![Github stats 1](https://github-readme-stats.vercel.app/api?username=Yusufcan-developer&show_icons=true&theme=gradient) 
 ![Github stats 2](https://github-readme-stats.vercel.app/api?username=Yusufcan-developer&show_icons=true&theme=radical)
